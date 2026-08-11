@@ -18,6 +18,35 @@ node build.js
 
 **Edit source, not `dist/`.** Same rule as the brochure.
 
+## Deploy
+
+Git repository initialised here (`main`). `dist/` is **gitignored** — it is a
+build artifact, and committing it would put generated output under review next
+to its own source. Vercel rebuilds it from `build.js` on every push.
+
+`vercel.json` sets: `node build.js` → `dist/`, `trailingSlash: false` (canonical
+tags are extensionless and slashless), a permanent `/foundations` →
+`/advisors/foundations` redirect, and the usual hardening headers.
+
+Two cache decisions worth knowing:
+
+- **`/assets/*` is one week, not `immutable`.** Image filenames carry a width,
+  not a content hash, so a re-exported photograph reuses its filename. A
+  year-long immutable cache would strand the old frame in browsers that already
+  have it.
+- **`/css/*` and `/js/*` are one hour.** They are versioned by `?v=<hash>`
+  query, so the browser already treats each build as a new URL; the short TTL
+  is only there to bound how long a CDN edge can hold a stale object.
+
+The `/foundations` redirect exists twice on purpose: as a Vercel 308, and as
+the meta-refresh page `build.js` emits. The static one is the fallback if the
+site ever moves to a host without redirect rules.
+
+**Not wired yet:** no GTM container id, and `CAPTURE_ENDPOINT` in
+`js/journey.js` is empty — the Finder's email capture validates and reports
+honestly that nothing was sent rather than pretending. `/about` still shows a
+visible `[ contact address to be confirmed ]` on the press/partnership route.
+
 ## The one architectural idea
 
 **One domain, three layout templates.** Discovery pages invite exploration;
