@@ -1,0 +1,95 @@
+/* ============================================================================
+   DISCOVER SAINT LUCIA WELL — BRAND TOKENS
+   ----------------------------------------------------------------------------
+   The SINGLE source of brand truth for every surface on discoversaintluciawell.com:
+   the consumer destination pages, the advisor gateway, and the Foundations
+   conversion page. Loaded first, before any component stylesheet.
+
+   The V4 brief's central rule is that brand coherence comes from identity,
+   typography, visual language and tokens — NOT from forcing the same navigation
+   onto every page. This file is what makes that rule enforceable: a page can
+   drop the global nav entirely and still be unmistakably part of the brand.
+
+   Never redefine these in a component stylesheet. Extend with new tokens here.
+   ========================================================================== */
+
+:root {
+  /* ── Palette ──────────────────────────────────────────────────────────────
+     Inherited verbatim from the Foundations design system so the two surfaces
+     cannot drift. Full-saturation deck colour (teal-bright / coral) appears
+     ONLY in the concentric ring mark — the brochure rule, kept on the web.   */
+  --charcoal:   #181A17;   /* volcanic charcoal — deep sections */
+  --charcoal-2: #1F2320;   /* raised surface on charcoal */
+  --ink:        #12302F;   /* deep rainforest-ink (brand ink, darkened) */
+  --ink-2:      #173A38;   /* raised surface on ink */
+  --teal:       #0B6E70;   /* ocean teal — deep */
+  --teal-bright:#00A6A8;   /* deck teal — ring mark only */
+  --gold:       #D9A03C;   /* warm gold — accent + gold text on DARK backgrounds */
+  --gold-deep:  #8A5E15;   /* deep gold — ALL gold text on LIGHT backgrounds; WCAG AA */
+  --coral:      #EF6A4A;   /* deck coral — ring mark only */
+  --paper:      #FBF8F1;   /* ivory paper — editorial sections */
+  --paper-2:    #F3EDE0;   /* warm sand — cards on paper */
+  --ivory-ink:  #1C2B29;   /* body ink on paper */
+  /* Secondary text on light. Darkened from the Foundations value #5E7378,
+     which clears AA on paper (4.71:1) but NOT on sand (4.29:1) — and this site
+     puts secondary text on sand often (village grid, footnotes). #586C71 holds
+     AA on both (5.21 / 4.74) and is a barely perceptible shift. */
+  --muted:      #586C71;
+  --mist:       #B9C6C4;   /* secondary text on dark — 8.01:1 on ink */
+  --hairline-d: rgba(251, 248, 241, 0.16);  /* hairline on dark */
+  --hairline-l: rgba(28, 43, 41, 0.16);     /* hairline on light */
+
+  /* ── Village accents ──────────────────────────────────────────────────────
+     The six Wellness Villages, muted earthy versions of the deck hues.
+     Mirrors saint-lucia-well/content/properties.js `color` exactly.
+     `-ink` variants are darkened for AA-compliant text on paper.            */
+  --v-longevity:      #2E5E5C;  --v-longevity-ink:  #224645;
+  --v-rainforest:     #566E4E;  --v-rainforest-ink: #3F523A;
+  --v-ocean:          #3F7B7B;  --v-ocean-ink:      #2E5A5A;
+  --v-heritage:       #A6803F;  --v-heritage-ink:   #6E5426;
+  --v-movement:       #B06248;  --v-movement-ink:   #834635;
+  --v-connection:     #97545E;  --v-connection-ink: #6F3D45;
+
+  /* ── Eclipse ──────────────────────────────────────────────────────────────
+     Eclipse keeps its own midnight/copper world on purpose — the shift from
+     bright destination to deep Eclipse is a deliberate signal, not a drift.  */
+  --eclipse-midnight: #0D1420;
+  --eclipse-deep:     #131D2E;
+  --eclipse-copper:   #9B7455;
+  --eclipse-copper-l: #C69878;  /* copper text on midnight */
+  --eclipse-sand:     #E8DFD2;
+  /* Text on a copper fill. Midnight itself lands at 4.41:1 — just under AA —
+     so the copper button gets this fractionally deeper ink (4.62:1). */
+  --eclipse-on-copper:#0A0E16;
+
+  /* ── Type — the 3-role system ─────────────────────────────────────────── */
+  --serif-display: 'Libre Caslon Display', 'Libre Caslon Text', Georgia, serif;
+  --serif: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  --sans: 'Hanken Grotesk', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+  --fs-hero:    clamp(2.6rem, 6.2vw, 5.1rem);
+  --fs-h2:      clamp(2rem, 4vw, 3.2rem);
+  --fs-h3:      clamp(1.35rem, 2.2vw, 1.75rem);
+  --fs-h4:      1.125rem;
+  --fs-lead:    clamp(1.1rem, 1.6vw, 1.3rem);
+  --fs-body:    1.0625rem;
+  --fs-small:   0.9rem;
+  --fs-label:   0.72rem;
+  --track-label:.30em;
+  --lh-body:    1.7;
+
+  /* ── Rhythm ───────────────────────────────────────────────────────────────
+     The consumer surface breathes more than the Foundations sales page: this
+     is a destination brochure, not an argument. Kinfolk/Monocle pacing.      */
+  --section-y:  clamp(5.5rem, 12vw, 11rem);
+  --gutter:     clamp(1.25rem, 4vw, 3rem);
+  --measure:    64ch;
+  --maxw:       1280px;
+
+  /* ── Motion — one shared vocabulary, natural deceleration ─────────────── */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.30, 1);
+
+  /* Saint Lucia — real coordinates, the brand's "real place" signature */
+  --coords: "13°54′N 60°58′W";
+}

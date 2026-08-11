@@ -1,0 +1,558 @@
+/* ============================================================================
+   DISCOVER SAINT LUCIA WELL — SHARED CHROME
+   ----------------------------------------------------------------------------
+   Base typography, buttons, and every header/footer variant. Loaded by EVERY
+   page on the domain, including the Foundations conversion page.
+
+   This file exists because of a measured defect. When Foundations also loaded
+   the full consumer stylesheet, consumer component rules bled onto it: the
+   mobile `.hero .hero-inner > *` rule stripped its hero text-shadow, and
+   `.hero .lead` overrode its measure (839px -> 768px). Foundations is a heavily
+   tuned page the brief asks to preserve, so it receives the chrome and nothing
+   else.
+
+   Rule of thumb: if it styles the header, the footer, a button, or the base
+   type ramp, it is chrome. If it styles a page section, it belongs in site.css.
+   ========================================================================== */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MINIMAL BASE
+   Deliberately tiny. Every sheet that loads chrome.css brings its OWN reset and
+   type ramp — the consumer site.css does, and so does Foundations. A second
+   base here would silently win on whichever properties the host sheet happens
+   not to declare (that is exactly how Foundations' h2 letter-spacing drifted).
+   Only box-sizing, focus and the skip link are universal enough to live here.
+   ══════════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The `hidden` attribute sets `display: none` at the UA level, which ANY
+   explicit display in a class silently beats. `.btn { display: inline-flex }`
+   did exactly that, so the Journey Finder's Back button showed on question one
+   despite being marked hidden. Make the attribute mean what it says. */
+[hidden] { display: none !important; }
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 200;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.75rem 1.25rem;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+}
+.skip-link:focus { left: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LAYOUT PRIMITIVES
+   ══════════════════════════════════════════════════════════════════════════ */
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  padding-block: var(--section-y);
+  position: relative;
+}
+
+.section--paper { background: var(--paper); color: var(--ivory-ink); }
+.section--sand  { background: var(--paper-2); color: var(--ivory-ink); }
+.section--ink   { background: var(--ink); color: var(--paper); }
+.section.dark   { background: var(--charcoal); color: var(--paper); }
+.section--eclipse {
+  background: var(--eclipse-midnight);
+  color: var(--eclipse-sand);
+}
+
+/* Hairline between two consecutive light sections keeps the rhythm legible
+   without drawing a rule the eye has to step over. */
+.section--paper + .section--paper { padding-top: 0; }
+
+/* Widths that contain DISPLAY type are set in rem, never in ch.
+   `ch` resolves against the element's own font-size — on a wrapper inheriting
+   17px body type, `22ch` is ~187px, not the ~850px the display face needs.
+   Reading measures below (which sit on body-size text) stay in ch correctly. */
+.section-head { max-width: min(46rem, 100%); margin-bottom: clamp(2.5rem, 5vw, 4rem); }
+.section-head h2 { margin-bottom: 0.4em; }
+.section-head .lead { max-width: var(--measure); }
+
+.eyebrow {
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--gold-deep);
+  margin: 0 0 1.1em;
+}
+.section--ink .eyebrow,
+.section.dark .eyebrow,
+.hero .eyebrow { color: var(--gold); }
+.eyebrow--copper { color: var(--eclipse-copper-l); }
+
+.lead {
+  font-size: var(--fs-lead);
+  line-height: 1.62;
+  color: var(--muted);
+}
+.section--ink .lead,
+.section.dark .lead,
+.hero .lead,
+.section--eclipse .lead { color: var(--mist); }
+
+.section-closing,
+.pullquote {
+  font-family: var(--serif-display);
+  font-size: var(--fs-h3);
+  line-height: 1.35;
+  color: var(--ink);
+  max-width: min(26rem, 100%);
+  margin: clamp(2rem, 4vw, 3rem) 0 0;
+  text-wrap: balance;
+}
+.section--ink .pullquote,
+.section.dark .pullquote { color: var(--paper); }
+.pullquote--center {
+  margin-inline: auto;
+  text-align: center;
+  max-width: min(34rem, 100%);
+}
+
+.section-footnote,
+.cta-note,
+.finder-privacy {
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--muted);
+  max-width: var(--measure);
+  margin: 2rem 0 0;
+}
+.section--ink .section-footnote { color: var(--mist); }
+
+.section-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+.section-cta--left { justify-content: flex-start; }
+.section-cta .cta-note { width: 100%; text-align: center; margin-top: 0.25rem; }
+.section-cta--left .cta-note { text-align: left; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 44px;
+  padding: 0.85em 1.7em;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color .24s var(--ease-out-quint),
+              color .24s var(--ease-out-quint),
+              border-color .24s var(--ease-out-quint),
+              transform .16s var(--ease-out-quint);   /* press feedback wants to be fast */
+}
+.btn--sm { padding: 0.7em 1.25em; font-size: 0.8rem; }
+
+.btn--gold { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+.btn--gold:hover { background: #E7B054; border-color: #E7B054; }
+
+.btn--ghost { background: transparent; color: currentColor; border-color: currentColor; }
+.btn--ghost:hover { background: rgba(251,248,241,.10); }
+.section--paper .btn--ghost:hover,
+.section--sand .btn--ghost:hover { background: rgba(28,43,41,.06); }
+
+.btn--ghost-dark { background: transparent; color: var(--paper); border-color: var(--hairline-d); }
+.btn--ghost-dark:hover { background: rgba(251,248,241,.10); border-color: var(--paper); }
+
+.btn--copper { background: var(--eclipse-copper); color: var(--eclipse-on-copper); border-color: var(--eclipse-copper); }
+.btn--copper:hover { background: var(--eclipse-copper-l); border-color: var(--eclipse-copper-l); }
+
+.btn:active { transform: scale(0.975); }
+.btn[disabled] { opacity: .38; cursor: not-allowed; }
+
+.link-pending {
+  opacity: .5;
+  cursor: default;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GLOBAL HEADER
+   ══════════════════════════════════════════════════════════════════════════ */
+/* The base state is the SAFE state: in normal flow, opaque, ink on paper.
+   A visitor with no JavaScript (or where the observer never runs) gets a
+   header that scrolls away with the hero and is legible everywhere it appears.
+
+   Stickiness and the transparent-over-hero treatment are both opt-in, applied
+   only once js/site.js confirms it is running. Getting this the other way round
+   is how you end up shipping paper-coloured nav links on a paper background. */
+.site-header {
+  position: relative;
+  z-index: 100;
+  background: rgba(251, 248, 241, 0.92);
+  backdrop-filter: saturate(140%) blur(12px);
+  border-bottom: 1px solid var(--hairline-l);
+  transition: transform .4s var(--ease-out-quint);
+}
+
+body[data-enhanced="true"] .site-header {
+  position: sticky;
+  top: 0;
+}
+body[data-enhanced="true"] .site-header[data-hidden="true"] { transform: translateY(-100%); }
+
+/* Transparent only while we affirmatively know we are at the top of a dark
+   hero. Any other state — including "we don't know yet" — stays opaque. */
+body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom-color: transparent;
+  color: var(--paper);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  min-height: 72px;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.brand-words {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.brand-words b {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.brand-words i {
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 0.64rem;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.site-header--conversion .brand-words i { color: var(--gold-deep); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2.4vw, 2.2rem);
+}
+.nav-items {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2.2vw, 2rem);
+}
+.nav-items a {
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  text-decoration: none;
+  padding: 0.5rem 0;
+  position: relative;
+  white-space: nowrap;
+}
+.nav-items a::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s var(--ease-out-quint);
+}
+.nav-items a:hover::after,
+.nav-items a[aria-current="page"]::after { transform: scaleX(1); }
+
+.nav-toggle {
+  display: none;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  color: inherit;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PROFESSIONAL CONTEXT BAND (/advisors)
+   ══════════════════════════════════════════════════════════════════════════ */
+.pro-context {
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom: 1px solid var(--hairline-d);
+}
+.pro-context-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+  padding-block: 0.85rem;
+}
+.pro-context .eyebrow { margin: 0; }
+.pro-context-nav { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+.pro-context-nav a {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--mist);
+  text-decoration: none;
+}
+.pro-context-nav a:hover { color: var(--paper); }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONVERSION HEADER
+   Deliberately carries NO consumer navigation (brief §8).
+   ══════════════════════════════════════════════════════════════════════════ */
+.site-header--conversion { background: var(--paper); }
+.conv-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.9rem;
+}
+.conv-title {
+  font-family: var(--serif-display);
+  font-size: 1.05rem;
+  margin: 0;
+}
+.conv-nav { border-top: 1px solid var(--hairline-l); }
+.conv-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 56px;
+}
+.conv-links { display: flex; flex-wrap: wrap; gap: clamp(1rem, 2vw, 1.9rem); }
+.conv-links a {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  text-decoration: none;
+  color: var(--muted);
+  padding: 0.4rem 0;
+}
+.conv-links a:hover { color: var(--ivory-ink); }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════════════════════════ */
+.site-footer {
+  background: var(--ink);
+  color: var(--paper);
+  padding-block: clamp(3.5rem, 7vw, 5.5rem) clamp(2rem, 4vw, 3rem);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(4, 1fr);
+  gap: clamp(2rem, 4vw, 3.5rem);
+}
+.footer-grid--conversion { grid-template-columns: 1.4fr repeat(3, 1fr); }
+.footer-brand-mark { display: flex; align-items: center; gap: 0.7rem; }
+.footer-brand .wordmark {
+  font-family: var(--sans);
+  font-size: 0.84rem;
+  font-weight: 400;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.footer-brand .wordmark b { font-weight: 600; }
+.footer-tagline {
+  color: var(--mist);
+  font-size: 0.95rem;
+  margin-top: 1.1rem;
+  max-width: 30ch;
+}
+.footer-col h2 {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+.footer-col ul { display: grid; gap: 0.65rem; }
+.footer-col a,
+.footer-col .link-pending {
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  color: var(--mist);
+  text-decoration: none;
+}
+.footer-col a:hover { color: var(--paper); }
+
+.footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 2rem;
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--hairline-d);
+}
+.footer-utility { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+.footer-utility a,
+.footer-utility .link-pending {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--mist);
+  text-decoration: none;
+}
+.footer-utility a:hover { color: var(--paper); }
+.footer-legal {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--mist);
+  margin-left: auto;
+}
+.footer-base .coords { color: var(--mist); }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION — content is never dependent on animation
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  body[data-motion="ready"] .reveal-group > *,
+  body[data-motion="ready"] .reveal-item {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* The signature animations collapse to their finished state rather than
+     disappearing: the compass is simply drawn, the arc simply lit, the step
+     rules simply present. Reduced motion means less movement, not less
+     information. `animation-duration: .001ms` above already stops the loops;
+     these rules make sure nothing is left mid-keyframe and invisible. */
+  .compass-ring { stroke-dashoffset: 0 !important; }
+  .compass-tick { opacity: .75 !important; transform: none !important; }
+  .compass-label,
+  .compass-center { opacity: 1 !important; }
+  .finder-steps li::before,
+  .tile-grid li::before,
+  .arc-track li::after { transform: scaleX(1) !important; }
+  .arc-track li::before {
+    background: var(--eclipse-copper-l) !important;
+    border-color: var(--eclipse-copper-l) !important;
+  }
+  .hero-signature .thread { transform: none !important; opacity: 1 !important; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CHROME RESPONSIVE
+   The nav and footer collapse rules live with the chrome they belong to, so
+   Foundations gets a working mobile menu without loading page components.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1080px) {
+  .footer-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 860px) {
+  .nav-toggle { display: inline-flex; align-items: center; }
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hairline-l);
+    padding: 1rem var(--gutter) 1.5rem;
+    color: var(--ivory-ink);
+    display: none;
+  }
+  .nav-links[data-open="true"] { display: flex; }
+  .nav-items { flex-direction: column; align-items: stretch; gap: 0; }
+  .nav-items a { padding: 0.85rem 0; border-bottom: 1px solid var(--hairline-l); }
+  .nav-items a::after { display: none; }
+  .nav-links .btn { margin-top: 1.1rem; }
+
+  .conv-links { display: none; }
+  .conv-links[data-open="true"] {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hairline-l);
+    padding: 0.5rem var(--gutter) 1rem;
+    z-index: 10;
+  }
+  .conv-links a { padding: 0.75rem 0; border-bottom: 1px solid var(--hairline-l); }
+  .conv-nav-inner { position: relative; }
+}
+
+@media (max-width: 700px) {
+  .footer-grid,
+  .footer-grid--conversion { grid-template-columns: 1fr 1fr; }
+  .footer-legal { margin-left: 0; width: 100%; }
+  .conv-bar { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+}
+
+@media (max-width: 520px) {
+  .footer-grid,
+  .footer-grid--conversion { grid-template-columns: 1fr; }
+}
+
+/* Very wide screens — the measure holds, the photography grows. */
+@media (min-width: 1600px) {
+  :root { --maxw: 1400px; }
+}

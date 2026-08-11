@@ -1,0 +1,525 @@
+# Discover Saint Lucia WELL — consumer umbrella site
+
+The consumer front door for **discoversaintluciawell.com**. A composed static
+site: content modules + shared layouts → plain HTML in `dist/`. No framework, no
+runtime dependency, deployable to any static host.
+
+Built to the V4 Site Architecture brief
+(`../Discover_Saint_Lucia_WELL_Site_Architecture_Claude_Code_Brief_V4.pdf`).
+
+## Build
+
+```bash
+node build.js
+```
+
+`node build.js --clean` wipes `dist/` first. Serve it with the
+`discover-saint-lucia-well` launch config (port 4602) — never a raw shell server.
+
+**Edit source, not `dist/`.** Same rule as the brochure.
+
+## The one architectural idea
+
+**One domain, three layout templates.** Discovery pages invite exploration;
+conversion pages deliberately reduce exits. Brand coherence comes from identity,
+typography, tokens and components — *not* from forcing the same navigation onto
+every page.
+
+| Layout | Chrome | Pages |
+|---|---|---|
+| `destination` | GlobalHeader + GlobalFooter | `/`, `/explore`, `/eclipse`, `/about`, `/journey` |
+| `professional` | GlobalHeader + ProfessionalContext | `/advisors` |
+| `conversion` | ConversionHeader + ConversionFooter | `/advisors/intro`, `/advisors/foundations`, `/advisors/immersion` |
+
+Layout is **declared explicitly** on each page object and never inferred from
+the URL — `/advisors` and `/advisors/foundations` share a path segment but need
+opposite chrome. `build.js` fails the build on an unknown layout rather than
+silently shipping the wrong one.
+
+## File map
+
+| Path | What it holds |
+|---|---|
+| `build.js` | Page registry + composition. Add a page here and it builds. |
+| `content/site.js` | Nav, footer, brand constants, the one primary CTA definition |
+| `content/villages.js` | The six Wellness Villages, anchors + signature experiences |
+| `content/properties-media.js` | **Generated** — property/village imagery + provenance |
+| `content/home.js` | Homepage, ten sections in the brief's fixed order |
+| `content/journey.js` | Journey Finder questions, scoring weights, copy |
+| `content/explore.js` | Villages · Experiences · Places & Properties |
+| `content/eclipse.js` | The signature journey (own midnight/copper world) |
+| `content/about.js` | What a Well Destination is, why Saint Lucia, contact |
+| `tools/build-property-images.py` | Turns the asset library into web derivatives |
+| `lib/layouts.js` | The three layouts and every chrome component |
+| `lib/components.js` | Section renderers (one per `type`) |
+| `lib/page.js` | `<head>`, metadata, JSON-LD, asset versioning |
+| `lib/brand.js` | Ring mark, wordmark, coordinates |
+| `css/tokens.css` | **The single brand-token source.** Loaded by every page. |
+| `css/chrome.css` | Headers, footers, buttons. Loaded by every page. |
+| `css/site.css` | Consumer page components. NOT loaded by Foundations. |
+| `advisors/foundations/` | The moved Foundations page + its own css/js/assets |
+
+## Design system
+
+`css/tokens.css` is the one place brand truth lives — colours, the three-role
+type system (Libre Caslon Display / Libre Caslon Text / Hanken Grotesk), the
+clamp() scale, rhythm and easings. Both this site and the Foundations page load
+it, which makes drift structurally impossible rather than merely discouraged.
+
+Two deliberate departures from the inherited Foundations values, both for
+contrast:
+
+- `--muted` darkened `#5E7378` → `#586C71`. The old value clears AA on paper
+  (4.71:1) but not on sand (4.29:1), and this site puts secondary text on sand
+  constantly. New value holds AA on both (5.21 / 4.74).
+- `--eclipse-on-copper` `#0A0E16` added. Midnight on a copper fill lands at
+  4.41:1 — just under AA — so the copper button uses this instead (4.62:1).
+
+Full-saturation deck teal/gold/coral appear **only** in the concentric ring
+mark, inline in `lib/brand.js`. Eclipse keeps its own midnight/copper world.
+
+### Widths that contain display type are set in rem, never `ch`
+
+`ch` resolves against the element's *own* font-size. On a wrapper inheriting
+17px body type, `22ch` is ~187px — not the ~850px a 82px display face needs.
+Reading measures (which sit on body-size text) correctly stay in `ch`.
+
+## The hero treatment
+
+The hero photograph (supplied 2026-08-10) is a framed vista: the Pitons seen
+through a rainforest window, a path leading down to the bay. It drove several
+decisions that are worth keeping if the image is ever replaced — **re-run the
+measurement rather than assuming the same values carry over.**
+
+The method: sample the photograph's pixel luminance behind each text block, composite
+the veil gradients over it mathematically, and measure worst-case contrast.
+Eyeballing a scrim over a busy image is how you ship 2:1 text.
+
+What the measurement found:
+
+- **The frame is high-frequency everywhere** — dappled canopy light means there
+  is no large reliably-dark area. Unscrimmed text fails somewhere at every
+  placement.
+- **The bottom third is consistently dark** (foreground foliage, shadowed
+  path), so the text block lives there and the vista stays bright and uncrushed.
+  The headline is deliberately smaller than the raw `--fs-hero` cap for exactly
+  this reason: an extra 16px of display type costs two more lines, pushes the
+  block up into the bright gap, and fails.
+- **Scrims are anchored in pixels from the edges, not percentages of the hero.**
+  The hero's height is viewport-dependent (`min(94svh, 900px)`), so a
+  percentage-based scrim drifts relative to the text — on a 720px-tall screen
+  the block sat at 45% of the hero instead of 55%, landed in the bright gap, and
+  measured 2.65:1. Both the text scrim (600px from the bottom) and the nav wash
+  (215px from the top) are px-anchored.
+- **Below 860px the hero stops being an overlay.** A narrow viewport crops this
+  16:9 frame to its middle 29% — precisely the bright gap of sky, peaks and open
+  water, where text measures 1.5:1 and no scrim fixes it without turning the
+  photograph to mud. So mobile stacks instead: the image keeps its full frame in
+  a band, the text sits beneath it on ink, and legibility stops depending on
+  what happens to be behind the words.
+- **The scrim is lighter than pure contrast maths would pick, and a text shadow
+  makes up the difference.** A scrim strong enough to clear AA against *every
+  pixel* in the text bounding box desaturates the whole frame — the turquoise
+  goes grey and the sunlit palms lose their glow. A shadow buys the same
+  legibility locally, at the glyph, and costs the photograph nothing.
+
+Measured under the **actual glyph pixels** (text rendered to a mask, backdrop
+sampled beneath it) rather than across the whole text rectangle — most of that
+rectangle is the gaps between words and lines, so it is far stricter than WCAG
+asks. Worst 5th-percentile across headline, lead, eyebrow and nav: **4.80:1**.
+Mobile text sits on solid ink at 13.3:1.
+
+`hero-final.png` in this folder is a faithful offline render of the treatment
+(browser screenshots do not composite in the preview pane). Regenerate it if the
+hero image or scrim changes.
+
+The source is 1456×816 (Midjourney's standard download). Derivatives stop at
+native width — nothing is upscaled — so a 2× upscale from Midjourney would
+sharpen the hero noticeably on a 2000px display.
+
+## The three-stylesheet split
+
+| Sheet | Loaded by | Holds |
+|---|---|---|
+| `tokens.css` | every page | colours, faces, scales, easings |
+| `chrome.css` | every page | headers, footers, buttons, minimal base |
+| `site.css` | consumer + professional pages only | page sections |
+
+Foundations loads `tokens + chrome + its own site.css` and **must not** receive
+the consumer component sheet. That split exists because of a measured defect:
+when Foundations also loaded `site.css`, consumer rules bled onto it — the
+mobile `.hero .hero-inner > *` rule stripped its hero text-shadow, and
+`.hero .lead` narrowed its measure from 839px to 768px.
+
+`chrome.css` carries only a *minimal* base (box-sizing, focus, skip link).
+Every sheet that loads it brings its own reset, and a second base here silently
+wins on whichever properties the host sheet happens not to declare — which is
+exactly how Foundations' `h2` letter-spacing drifted before this was fixed.
+
+After the split, the moved page matches the original standalone build on every
+measured property at 1280px: font sizes, line heights, margins, measures and
+text-shadows are identical.
+
+## Progressive enhancement
+
+Everything works with JavaScript off. The ladder, in order of what fails first:
+
+- **Content** — always present in the HTML. The Journey Finder ships as a
+  complete six-village explainer with real routes; the quiz replaces it only
+  once `js/journey.js` confirms its data parsed and its DOM exists.
+- **Header legibility** — the base state is the safe one: in normal flow,
+  opaque, ink on paper. Sticky positioning and the transparent-over-hero
+  treatment are gated behind `body[data-enhanced]`, set by `js/site.js`. Get
+  this backwards and you ship paper-coloured nav on a paper background.
+- **Motion** — `gsap` (Lenis inertia) → `io` (IntersectionObserver reveals,
+  automatic if a CDN script fails, or forced with `?flat=1`) → `instant`
+  (reduced-motion and automated agents; no observers created at all). A 3.6s
+  failsafe reveals everything regardless, so content can never be lost to an
+  interrupted transition.
+
+### Two things that must not be done with scroll
+
+Both are inherited lessons, and both are load-bearing:
+
+1. **Never use `scroll` events.** When Lenis drives the page they never fire —
+   a handler records nothing for real visitors while appearing to work in
+   fallback mode. `window.scrollY` stays accurate, so rAF-sample it instead.
+2. **Never place scroll-depth sentinels absolutely on `body`.** With
+   `overflow-x: hidden` making body a scroll container, a sentinel at 100% of
+   `scrollHeight` *grows* `scrollHeight`; a ResizeObserver then re-places it
+   lower and the document inflates without bound. Measured here at 26,124px
+   against 10,432px of real content before it was replaced with rAF sampling.
+
+## Attribution
+
+`js/attribution.js` separates two classes of parameter:
+
+- **Advisor referral** (`advisor`, `ref`) — establishes lead ownership.
+  **First touch wins** and is never overwritten, so a later untagged visit
+  cannot silently reassign a lead. Reattached to internal links so ownership
+  survives a new tab.
+- **Everything else** (`utm_*`, `src`, `campaign`) — last touch, retained for
+  reporting only.
+
+Held in `sessionStorage` (no consent banner needed, expires with the visit) and
+transmitted nowhere. `js/analytics.js` stamps it onto every event alongside
+`surface: consumer | advisor`, which is what keeps the two funnels separable on
+one domain.
+
+**Script order is load-bearing:** `attribution.js` must load before
+`analytics.js`, which fires `page_view` at parse time and reads
+`window.dslwAttribution`.
+
+## Asset versioning
+
+Local css/js URLs carry `?v=<content hash>`. This fixes the preview pane caching
+`js/`/`css/` during development *and* means a returning visitor never needs a
+hard refresh in production. The URL only changes when the file does, so
+far-future cache headers on `css/` and `js/` are safe.
+
+## Property imagery
+
+Built from the 2026-08-10 asset library by
+`tools/build-property-images.py`. Re-run it with the extracted library as its
+argument; it rewrites `content/properties-media.js`.
+
+```bash
+py tools/build-property-images.py <path-to-extracted-asset-library>
+```
+
+Choices are **named explicitly** in `HEROES` / `VILLAGES` in that script rather
+than picked by a "largest landscape" heuristic, which reliably chose a bedroom
+over a Piton view. A named list is also reviewable in a diff.
+
+Three things learned the hard way, all encoded in the script's comments:
+
+- **The catalogue's categories are not reliable.** Anse Chastanet's
+  "Pool, beach & views" entries are room interiors; TheLifeCo's
+  "Exterior & aerial" hero is a restaurant. Verify the frame, not the label —
+  alt text has to describe what is actually there.
+- **A'ila's exterior/aerial assets are CGI renderings** of in-development
+  phases, not photographs. Showing one as a place you can visit today would be
+  a false claim. The hero is the built residence instead, and the constraint
+  lives in `RENDERING_WARNING` so it travels with the data.
+- **Quality steps down as width goes up.** The large derivatives only serve
+  high-DPR screens where artefacts are half-size. At a flat q=82 an aerial of
+  water and canopy landed at 497 KB for a frame displayed about 440 px wide.
+
+Every image is cropped to 3:2 so grids align, and nothing is upscaled — the
+widest derivative is whatever the source could give.
+
+**Deployment note:** `.webp` must be served as `image/webp`. Python's
+`http.server` sends `application/octet-stream`, which browsers tolerate here
+because `<source type="image/webp">` drives selection, but a production host
+should be configured properly.
+
+## Truth discipline
+
+- **Properties are confirmed** (Duncan, 2026-08-08) and ship as named anchors.
+  They are real third-party businesses — do not extend beyond what each
+  property publishes about itself.
+- **Only Eclipse is promoted as a signature journey.** The brochure's seven
+  "initial journey families" stay unpublished until those products genuinely
+  exist (brief §1).
+- **Eclipse arc uses the brochure's spelling** — ARRIVE · REGULATE · REAWAKEN ·
+  RELEASE · RESTORE · RETURN. The brief writes "Awaken"; the brochure is the
+  designated source of truth.
+- **WELL Pass** is modelled separately from Journey content so it can be added
+  later without restructuring. It appears nowhere on the site.
+- Footer entries with `pending: true` render as plain text, not links. We do not
+  ship 404s, and we do not invent a privacy policy.
+- Images we do not have render as **labelled art-direction placeholders**
+  (`lib/components.js` → `figure()`), carrying the Midjourney direction. A
+  placeholder always reads as a placeholder.
+
+## Status
+
+**Waves 1 and 2 complete** — build system, three layouts, design tokens,
+homepage, Journey Finder, attribution and analytics; `/explore`, `/eclipse`,
+`/about`, and property imagery.
+
+Wave 3: `/advisors` hierarchy, the Foundations move, polish passes.
+`/advisors*` links currently 404.
+
+### Wave 2 notes
+
+- **Two properties are placed by inference**, flagged `inferred: true` in
+  `content/villages.js`: Cap Maison → Connection & Romance, Stonefield Villa
+  Resort → Rainforest & Nature. They arrived with the asset library and are not
+  in the brochure's `properties.js`. Confirm before regenerating the brochure.
+- **Zoëtry Marigot Bay and Calabash Cove have no library imagery**, so they
+  render as typographic cards in the village accent — a deliberate treatment,
+  and photography drops in later without a layout change.
+- **The brochure and deck were regenerated** with all properties confirmed: no
+  validation flags remain in either. The 53 `PHOTOGRAPHY PLACEHOLDER` blocks
+  still in the deck are art direction for imagery the *brochure* does not have —
+  unrelated to property validation.
+- `/about` deliberately omits the framework's 8 Pillars, 5 Conditions and GWI
+  market figures. That document labels them "market & product language" and
+  "design & governance language" — partner vocabulary. They belong on
+  `/advisors`.
+
+### The choreography
+
+The consumer surface runs the same vocabulary as Foundations, deliberately at
+lower volume — Foundations is a sales argument and performs; this is a
+destination brochure and invites. Same techniques, shorter travel, gentler
+tilt, nothing that pins or scrubs.
+
+| Effect | Where | Note |
+|---|---|---|
+| Split headlines | hero h1, page headers, section h2, final CTAs | words rise from masked slots; splits text nodes only, so inline `<em>` survives |
+| Staggered grids | 14 grid types | index set as `--i`, not nth-child, so grids longer than six still cascade |
+| 3D tilt + glare | village cards, property cards, Eclipse tiles | 4°/5° (Foundations uses 7°/9°). Glare takes the card's own `--v` accent — six villages should not all catch the light in the same gold |
+| Magnetic CTAs | primary gold buttons only | plus a slow sheen sweep. A page where everything is magnetic is a page where nothing is |
+| Reading thread | every page | teal → gold, rAF-sampled |
+| Hero parallax | desktop only | drift + easing Ken Burns; **disabled below 860px**, where the hero is a stacked band and translating it would slide the photo out of its own frame |
+| Editorial parallax | village + split imagery | ±16px against the section |
+
+All hover-dependent effects are gated on `(hover: hover) and (pointer: fine)`.
+
+### The WELL Compass is the one interactive diagram
+
+The eight directions were bare words on every surface — the site, the brochure,
+the deck — under a headline asking the visitor to "begin with how you want to
+feel." Pointing at one now brings it forward, recedes the other seven, and
+prints its line beneath the figure. Five of the eight glosses are the Journey
+Finder's own intention notes (`content/journey.js` Q1) reused verbatim, so
+Restore cannot mean one thing here and another three clicks later.
+
+Three things about it are load-bearing and easy to undo by accident:
+
+- **The hover state is picked in JS, not by `:hover`.** The hit circles are
+  generous (r=58) and the *active* radius is wider still (118), so adjacent
+  zones overlap and CSS would light two directions at once — or whichever came
+  later in document order. `js/motion.js` listens once on the SVG and takes the
+  nearest point, which is a Voronoi split of the ring: exactly one direction
+  owns each 45° wedge, and the dead centre owns none.
+- **Dimming rides on `fill-opacity` / `stroke-opacity`, never `opacity`.** The
+  compass entrance animations end in `forwards`, so their final `opacity` keeps
+  applying *from the animation origin*, which outranks ordinary author rules.
+  Anything hover-driven written as `opacity` here silently does nothing. These
+  two properties are untouched by the entrance, so the systems compose.
+- **Only the outer ring draws.** `.compass-ring--inner` is dotted by design
+  (`stroke-dasharray: 3 7`), and a dash-draw animation has to own
+  `stroke-dasharray` — animating it converts the dotted ring to a solid one and
+  leaves it that way. The inner ring fades and settles instead.
+
+Touch has no hover, so the same eight lines render as a visible `<dl>` legend
+and the readout stands down. On pointer devices that legend is clipped to 1×1
+rather than `display: none`, which keeps it in the accessibility tree — a
+screen-reader user reads all eight without having to hover anything.
+
+Dimmed labels sit at `fill-opacity: .55`, which is a contrast floor rather than
+a taste call: paper at `.3` over the ink section composites to about 2.5:1, and
+at 21px these do not qualify as large text. Measured from rendered pixels, the
+dimmed labels are 5.0:1 and the active gold label 5.8:1.
+
+Applied from the Emil Kowalski design-engineering pass:
+
+- **Movement-based hover is gated behind `@media (hover: hover) and (pointer: fine)`.**
+  On touch, `:hover` fires on tap and *stays* — the village cards lifted and
+  never settled back, reading as stuck rather than as an affordance. Colour-only
+  hovers are left ungated; they flash and clear harmlessly.
+- **`.btn:active` uses `scale(0.975)`** rather than a 1px nudge, with a faster
+  160ms transition on transform. Press feedback should be the quickest thing on
+  the page.
+- **Scroll reveals run at 620ms**, down from 800ms — still editorial, no longer
+  sluggish. Stagger stays at 70ms per item, inside the 30–80ms band.
+- No `transition: all` anywhere; no `scale(0)` entrances; no `ease-in` on UI.
+
+### Eclipse imagery
+
+Eclipse was the last page with art-direction placeholders, and the asset library
+has almost no twilight photography. Rather than fabricate one, the recognition
+frame is a **real Saint Lucia photograph pushed into the Eclipse colour world**
+— desaturated, darkened and tinted toward the printed edition's midnight. The
+place is unaltered in form; only the grade moves. The brochure already treats
+Eclipse as a separate colour world; this is that rule applied to photography.
+
+The closing frame is deliberately **not** graded. The page opens in the Eclipse
+world and ends in real light, and grading `dawn-horizon` flattened its
+blue-to-gold horizon into mud. The contrast is the point.
+
+Regenerate with the grade block in this README's history, or replace both with
+commissioned twilight photography when it exists.
+
+### A note on auditing contrast
+
+The contrast sweep in this project reads computed styles, and it has bitten
+twice. Both traps are worth knowing:
+
+1. **Gradient backgrounds.** Reading only `backgroundColor` misses
+   `background-image: linear-gradient(...)` and the walk falls through to
+   `<body>`, reporting light-on-dark text as light-on-paper. Foundations paints
+   `.section--ink` as a gradient; a naive audit reported 55 false failures.
+   Parse the gradient's stops and take the darkest.
+2. **Reveal timing.** Elements still at `opacity: 0` have zero height and get
+   skipped, so an audit run too early silently measures a subset. Wait past the
+   3.6s reveal failsafe before trusting a clean result.
+
+### Anti-slop audit (taste-skill, 2026-08-10)
+
+Ran the `design-taste-frontend` checklist over the built pages as a fresh-eyes
+pass. Design read: *redesign-preserve of an editorial destination brand for
+design-conscious travellers, Kinfolk/Monocle print-derived language.*
+
+**Fixed:**
+
+| Finding | Action |
+|---|---|
+| Six consecutive alternating image/text village rows on `/explore` (cap is 2) | Every third village now breaks to a full-measure band: 21:9 photograph, copy in two columns beneath. Rhythm is `split · flip · WIDE · flip · split · WIDE` |
+| CTA casing drift: both "Find My WELL Journey" and "Find my WELL journey" shipped | `/explore` now references `SITE.primaryCta` instead of retyping it |
+| Duplicate CTA intent on the homepage: three labels for two destinations | One label per intent. "Not sure yet? Start with the Finder" and "See what the island offers" both became "Explore the island" |
+| An eyebrow above nearly every section (the templated rhythm) | Dropped 11 that only restated their own headline. Kept the ones that NAME something the headline does not: the Compass, the Villages, the signature journey, the partner strip |
+
+**Deliberately not changed, with reasons:**
+
+- **62 em-dashes.** The skill bans these outright as the top LLM tell. Here they
+  are not AI habit: most are verbatim from the human-authored Editorial Founding
+  Edition, and 25 are property role strings (`Anchor stay — marina`) that also
+  live in `properties.js`, the printed brochure and the PPTX deck. Rewriting
+  them desynchronises three publications to satisfy a heuristic aimed at
+  generated copy. **Duncan's call, not a unilateral fix.**
+- **The palette.** The skill explicitly bans `#fbf8f1` backgrounds plus brass
+  accents as the default reach for wellness briefs. That is exactly this
+  palette — but it is the established brand from the printed edition, the deck
+  and the Foundations site, not a default we reached for. The skill's own
+  override clause covers this ("the brand brief explicitly names those colors").
+- **Libre Caslon.** Serif is "very discouraged as default"; the override applies
+  (brand names it, genuinely editorial/publication). Not Fraunces or
+  Instrument Serif, which are the two specifically banned.
+- **Homepage sits at 5 eyebrows against a cap of 4.** The remaining five each
+  name a distinct brand concept rather than labelling a section. Stopping there
+  was a judgment call against cargo-culting a numeric cap.
+- **The hero scroll cue** ("Scroll · the island opens") is banned outright by
+  the skill, and its reasoning is sound. It is kept only because it mirrors an
+  established device on the Foundations page. **Worth a decision** — removing it
+  from both surfaces together would be defensible.
+
+### Visual review (headless Chrome, 2026-08-10)
+
+Screenshots do not composite in the preview pane, so for a long stretch every
+claim about this site rested on measured geometry rather than on looking at it.
+Chrome headless renders it fine:
+
+```bash
+"/c/Program Files/Google/Chrome/Application/chrome.exe" --headless=new   --disable-gpu --hide-scrollbars --window-size=1440,15000   --virtual-time-budget=9000 --screenshot=out.png http://localhost:4602/
+```
+
+Doing that immediately found **three defects that every numeric check had
+passed**:
+
+1. **`<picture>` had no height.** `.hero-media img { height: 100% }` resolved
+   against a `<picture>` wrapper with `height: auto`, so the image fell back to
+   its natural ratio and left a ~90px band of bare `--ink` under the hero and
+   under every final CTA. Fixed by making the wrapper fill.
+2. **The final CTA used a portrait image as a full-width band.**
+   `dawn-horizon.jpg` is 771x998; `object-fit: cover` cropped it to a strange
+   strip with a hard seam. Replaced with dedicated 21:9 crops
+   (`assets/cta/cta-seacliff`, `cta-dawn`), alternated across pages.
+3. **The final CTA text was over-bright and the contrast audit gave it a false
+   pass.** The audit walked up to `.section.dark` and measured against charcoal,
+   never seeing the photograph. The section also reused the hero's veil, which
+   is bottom-anchored, while this section's text is centred — so the middle was
+   barely scrimmed. Fixed with a centred scrim plus glyph-level text shadow;
+   measured 10.4 / 5.7 / 6.5 under the actual glyphs.
+
+**The audit lesson worth keeping:** a computed-style contrast check answers
+"what colour is the CSS background," not "what is actually behind these words."
+It has now produced false passes twice on this project — once through gradients,
+once through a photograph under a `.dark` section. Anything with a photographic
+backdrop must be measured by sampling the composited image, the way the hero is.
+
+### Cinemagraphs
+
+Four ambient loops, layered over always-present stills. `js/ambient-video.js` is
+ported verbatim from the Foundations page — do not simplify it; every branch is
+a real failure mode. It skips video entirely for reduced-motion, automated
+agents, Save-Data / 2G and narrow viewports, pauses off-screen and on hidden
+tabs, and catches blocked autoplay silently so the still simply remains.
+
+| Loop | Where | Source |
+|---|---|---|
+| `hero-loop` | homepage hero | **Generated** — Kling `kling-video-v2_6` |
+| `seacliff-loop` | final CTA on `/`, `/journey`, `/about`, `/advisors` | reused from Foundations |
+| `sulphur-loop` | homepage "the island is the therapy" | reused from Foundations |
+
+Three of the four cost nothing: Foundations had already made them from the same
+source frames, and `seacliff-loop` is 1280x586 (~21:9), which matches the CTA
+band almost exactly. Only the new hero needed generating.
+
+**The hero loop recipe**, which is worth repeating rather than re-deriving:
+
+- Prompt is a *locked-off camera* with ambient motion only. The page drives its
+  own parallax and Ken Burns on top, so any camera move in the source fights it
+  and exposes the loop seam.
+- `enable_audio: false`. These are muted background loops; generating sound is
+  wasted cost and bytes.
+- Looped by **crossfade, not boomerang** — cloud and water motion is
+  directional and reads backwards in a boomerang. Recipe from the Foundations
+  README: body = source[1s..5s], head = source[0s..1s], `xfade` the head over
+  the body's tail. `xfade` needs constant frame rate, so re-stamp `fps=24`
+  after each trim. Measured seam: 1.7% mean pixel difference, structurally
+  identical.
+- **The scrim was re-verified against the video, not just the poster.** A
+  cinemagraph changes the luminance behind the words over time. Sampled four
+  frames across the loop: worst 5th-percentile under the glyphs is 5.03:1, so
+  the hero stays legible for the whole cycle rather than only at the poster
+  frame.
+
+Output is 0.77 MB mp4 / 0.42 MB webm at 1280x716.
+
+### Open items
+
+- Hosting target (no deploy config exists yet)
+- ESP endpoint — `CAPTURE_ENDPOINT` in `js/journey.js`. Until it is set the form
+  validates and says plainly that nothing was sent.
+- GTM container — `GTM_ID` in `js/analytics.js`. Empty means events queue on
+  `dataLayer` but no network request is made.
+- New photography — see the image list in the plan. Property photography must
+  come from official press kits; AI generation is not an option for real named
+  hotels.
+- Longevity and Connection villages have **no signature experiences** in the
+  brochure's excursion data, so a result matching only those two shows fewer
+  experiences than the others.

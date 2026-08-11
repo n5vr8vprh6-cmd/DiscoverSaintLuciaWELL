@@ -1,0 +1,23 @@
+# Build output. Vercel runs `node build.js` and serves dist/ — committing it
+# would put a generated artifact under review alongside its own source, which
+# is exactly the confusion CLAUDE.md's "edit source, not output" rule exists to
+# prevent. Delete dist/ and rebuild at any time.
+dist/
+
+# Held back pending Duncan's decision: Kling loops generated from licensed
+# press photography of Sugar Beach and Anse Chastanet, one of which animates
+# identifiable people. These must not reach a deploy by accident.
+_review/
+
+node_modules/
+.vercel/
+
+# Tooling scratch
+.impeccable/
+.tmpvid/
+_gen-*.jpg
+_shot-*.html
+
+# OS
+Thumbs.db
+.DS_Store
