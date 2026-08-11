@@ -56,11 +56,19 @@ module.exports = {
       skin: 'eclipse',
       headline: 'Still functioning. No longer restored.',
       body: [
+        /* The page previously fell from "a curated recovery journey" straight
+           into depletion in one step. This line is the hinge: it names the
+           tonal change as deliberate before the reader has to absorb it. */
+        'Most Saint Lucia WELL journeys begin with what you want more of. Eclipse begins with what has stopped restoring you.',
         'They are still showing up. Still meeting expectations. Still carrying what needs to be carried.',
         'But sleep no longer fully restores. Effort has replaced ease. The body, mind and emotions no longer seem to move together.',
         'Eclipse is designed for this quieter form of depletion — not only collapse, but the gradual loss of internal rhythm.'
       ],
-      closing: 'You are not broken. You may simply be out of rhythm.',
+      /* Dropped "You are not broken." — asserting it puts the idea of being
+         broken in front of the reader in order to deny it, which is the one
+         thing this page is otherwise careful never to do. The second sentence
+         was always carrying the meaning. */
+      closing: 'You may simply be out of rhythm.',
       /* A real Saint Lucia photograph pushed into the Eclipse colour world —
          desaturated, darkened and tinted toward the printed edition's midnight.
          The place is unaltered in form; only the grade moves. The brochure

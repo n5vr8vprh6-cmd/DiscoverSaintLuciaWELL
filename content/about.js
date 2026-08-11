@@ -36,7 +36,12 @@ module.exports = {
       type: 'pageHeader',
       eyebrow: 'About',
       headline: 'Saint Lucia is not simply becoming a wellness destination.',
-      lead: 'She is becoming a <em>Well Destination</em> — a place where travel helps people, communities, culture and nature flourish.',
+      /* The category-building sentence is the right one for SLTA, host
+         agencies and properties — but it was the FIRST thing a traveller met,
+         and it answers a question they have not asked. One plain sentence goes
+         in front of it. The thesis is untouched; it just no longer has to
+         carry the introduction as well. */
+      lead: 'Travel designed around how you want to feel, on an island that already holds the ingredients. Saint Lucia is becoming a <em>Well Destination</em> — a place where travel helps people, communities, culture and nature flourish.',
       meta: ['A shared definition', 'Why here', 'How it works']
     },
 
@@ -85,6 +90,30 @@ module.exports = {
       }
     },
 
+    /* ── HOW IT WORKS ───────────────────────────────────────────────────────
+       Moved ahead of the Continuum. The page answers three plain questions in
+       order — what is this (Well Destination) · why here (the ingredients) ·
+       how does it work for me (this section) — and the Continuum used to sit
+       in the middle of them, interrupting a consumer's path with framework
+       theory before they had been told how any of it applies to them.
+
+       The theory is not cut, only moved beneath the answers. Anchor ids are
+       unchanged, so #continuum and #approach keep working.               */
+    {
+      type: 'finder',
+      id: 'approach',
+      headline: 'How a journey gets designed.',
+      lead: 'The same sequence every time, whether the answer is three easy days or a fully structured recovery journey.',
+      steps: [
+        { title: 'Intention',       text: 'Begin with how you want to feel, not with a hotel or a list of attractions.' },
+        { title: 'Villages',        text: 'The parts of the island that answer that intention — six wellbeing worlds rather than regions.' },
+        { title: 'Experiences',     text: 'What the island actually does for you: volcano, waterfall, forest, cacao estate, sea.' },
+        { title: 'Personalization', text: 'An advisor shapes pacing, rooms, companions and logistics around your real life.' },
+        { title: 'Return',          text: 'Preparation before arrival, and a pathway for what happens after you go home.' }
+      ],
+      note: 'The journey is curated. The travel experience remains personal.'
+    },
+
     /* ── THE CONTINUUM ──────────────────────────────────────────────────── */
     {
       type: 'lens',
@@ -103,22 +132,6 @@ module.exports = {
       closing: 'Position honestly. Then sequence well.'
     },
 
-    /* ── HOW IT WORKS ───────────────────────────────────────────────────── */
-    {
-      type: 'finder',
-      id: 'approach',
-      headline: 'How a journey gets designed.',
-      lead: 'The same sequence every time, whether the answer is three easy days or a fully structured recovery journey.',
-      steps: [
-        { title: 'Intention',       text: 'Begin with how you want to feel, not with a hotel or a list of attractions.' },
-        { title: 'Villages',        text: 'The parts of the island that answer that intention — six wellbeing worlds rather than regions.' },
-        { title: 'Experiences',     text: 'What the island actually does for you: volcano, waterfall, forest, cacao estate, sea.' },
-        { title: 'Personalization', text: 'An advisor shapes pacing, rooms, companions and logistics around your real life.' },
-        { title: 'Return',          text: 'Preparation before arrival, and a pathway for what happens after you go home.' }
-      ],
-      note: 'The journey is curated. The travel experience remains personal.'
-    },
-
     /* ── PARTNERS ───────────────────────────────────────────────────────── */
     {
       type: 'credibility',
@@ -126,7 +139,10 @@ module.exports = {
       label: 'Partners',
       eyebrow: 'In collaboration with',
       partners: SITE.partners,
-      note: 'Fifteen anchor properties across the six villages participate in the destination programme. Local guides, practitioners and cultural partners deliver the experiences alongside them.'
+      /* Sits directly under the partner logos, which makes any overstatement
+         here read as an endorsement by the named partners. The properties are
+         mapped to villages; they have not joined a programme. */
+      note: 'Fifteen anchor properties are mapped across the six villages. Local guides, practitioners and cultural partners deliver the experiences alongside them.'
     },
 
     /* ── CONTACT ────────────────────────────────────────────────────────── */

@@ -59,7 +59,10 @@ module.exports = {
       body: [
         'It is hard to differentiate, hard to price, and hard to train staff against. Most destinations selling wellness are selling disconnected spa add-ons, and most clients cannot tell one from another.',
         'A Well Destination replaces that vagueness with structure: six villages, a continuum that positions every experience honestly, and journeys that are sequenced rather than assembled.',
-        'What an advisor gets is not a new niche to bolt on. It is a language every partner on the island already speaks.'
+        /* Was "a language every partner on the island already speaks" — a
+           present-tense operational claim about parties who have not been
+           trained on any of it. The promise is the same without it. */
+        'What an advisor gets is not a new niche to bolt on. It is a shared language that advisors, properties and destination partners can build on.'
       ],
       list: [
         'Match motivation to experience, credibly',
@@ -130,7 +133,11 @@ module.exports = {
       lead: 'The framework only matters if there is something behind it. There is.',
       items: [
         { title: 'Six villages',          text: 'Longevity · Rainforest & Nature · Ocean & Restoration · Heritage & Nourishment · Movement & Adventure · Connection & Romance.' },
-        { title: 'Fifteen anchor properties', text: 'Confirmed participation across all six villages, from a wellness institution to a working cacao estate.' },
+        /* Not "confirmed participation" — the properties are mapped, not
+           signed. An advisor deciding whether to invest in this pathway is
+           exactly who would check, and exactly who should not be told the
+           programme has commitments it does not have yet. */
+        { title: 'Fifteen anchor properties', text: 'Mapped across all six villages, from a wellness institution to a working cacao estate.' },
         { title: 'A signature journey',   text: 'Eclipse — fully sequenced, designed by practitioners, and the proof that the framework becomes a real product.' },
         { title: 'Island-wide experiences', text: 'Volcano, waterfalls, rainforest, cacao trails and open water, coordinated by local partners.' },
         { title: 'A shared continuum',    text: 'Relax → Restore → Reconnect → Recover → Transform → Sustain. Position every experience honestly.' },

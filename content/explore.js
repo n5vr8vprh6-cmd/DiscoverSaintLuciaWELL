@@ -63,7 +63,12 @@ module.exports = {
       headline: 'Where you rest between.',
       lead: 'The villages are the themes. The properties are the basecamps — chosen for what each one contributes to a journey, not ranked against each other.',
       villages: VILLAGES,
-      footnote: 'Property participation is confirmed. Descriptions stay within what each property publishes about itself; nothing here extends beyond that.'
+      /* "Participation is confirmed" claimed a commercial agreement none of
+         these properties has made. What is confirmed is the mapping — that
+         these are the right anchors for each village. The Founding Advisor
+         deck already says "validation pending"; this line said the opposite,
+         and the deck is the one that was right. */
+      footnote: 'These fifteen are mapped to the villages they anchor. Descriptions stay within what each property publishes about itself; nothing here extends beyond that.'
     },
 
     /* ── ISLAND AS CAMPUS ───────────────────────────────────────────────── */
@@ -73,12 +78,13 @@ module.exports = {
       skin: 'sand',
       flip: true,
       eyebrow: 'Wellness across the whole island',
-      headline: 'The island is the therapy.',
+      /* Same change as home.js and the brochure — see the note there. */
+      headline: 'You don’t visit the wellness. You move through it.',
       body: [
         'Saint Lucia’s landscape does real physiological work: mineral-rich mud and volcano-heated springs, magnesium drawn in on a mountain trail, cool freshwater after heat, slow sensory time beneath the canopy.',
-        'The island has long known this as natural healing. What Saint Lucia WELL adds is sequence — the order things happen in, and the pacing between them.'
+        'The island has long known this as natural healing.'
       ],
-      closing: 'You don’t visit the wellness. You move through it.',
+      closing: 'What Saint Lucia WELL adds is sequence — the order things happen in, and the pacing between them.',
       cta: SITE.primaryCta,   /* the one definition — never retype it */
       ctaVariant: 'gold',
       img: {

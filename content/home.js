@@ -73,13 +73,19 @@ module.exports = {
       eyebrow: 'Saint Lucia through a different lens',
       headline: 'The environment is not the backdrop.',
       lead: 'Different environments invite different states. When they are intentionally sequenced, the destination itself becomes part of the experience.',
+      /* Trimmed from ~20 words each to ~13. This section, the Compass and the
+         Villages run back to back — twenty named concepts before the visitor
+         reaches anything they can act on. The fix is not to cut a section but
+         to stop three consecutive lists all reading at the same weight. This
+         one goes lightest: it is scene-setting, and the reader needs to feel
+         the range rather than study it. */
       items: [
-        { title: 'Ocean',          text: 'Water creates movement and reflection — and, reliably, the downshift that everything else depends on.' },
-        { title: 'Rainforest',     text: 'The forest slows attention. Sound becomes textured, breathing noticeable, movement responsive rather than performative.' },
-        { title: 'Volcanic earth', text: 'Mineral-rich mud and volcano-heated springs reconnect us with physical sensation. The island has long known this as natural healing.' },
-        { title: 'Culture',        text: 'Cacao, cuisine, music and storytelling bring vitality, belonging and perspective — nourishment that is not only what we consume.' },
-        { title: 'Movement',       text: 'From a gentle coastal walk to a guided summit. Chosen for your energy and your stage in the journey, never because an activity exists.' },
-        { title: 'Connection',     text: 'Hospitality creates safety, ease and care — the conditions that make everything else possible.' }
+        { title: 'Ocean',          text: 'Movement, reflection, and reliably the downshift everything else depends on.' },
+        { title: 'Rainforest',     text: 'Attention slows. Sound becomes textured, breathing noticeable, movement unforced.' },
+        { title: 'Volcanic earth', text: 'Mineral mud and volcano-heated springs, and the return of physical sensation.' },
+        { title: 'Culture',        text: 'Cacao, cuisine, music, storytelling — nourishment that is not only what we consume.' },
+        { title: 'Movement',       text: 'A gentle coastal walk or a guided summit, chosen for your energy that day.' },
+        { title: 'Connection',     text: 'Hospitality creates safety and ease — the conditions that make the rest possible.' }
       ],
       closing: 'Recovery through place.'
     },
@@ -116,9 +122,14 @@ module.exports = {
       eyebrow: 'The WELL Compass',
       headline: 'Begin with how you want to feel.',
       lead: 'Traditional travel planning begins with a hotel, a room category, a list of attractions. Saint Lucia WELL begins with a different question: <em>what do you need from this journey?</em>',
+      /* The sidebar used to open by explaining that directions combine, then
+         illustrate it. The diagram now answers that itself — each direction
+         explains itself on hover, and the eight sit on one ring — so the
+         explanation is redundant with the thing it was explaining. What is
+         left is the point the Compass cannot make visually. */
       sidebar: {
         title: 'Your journey may combine several directions.',
-        text: 'A traveler may arrive seeking rest, rediscover movement, reconnect through culture and finish with reflection by the ocean. The Compass does not replace choice. It gives choice greater meaning.'
+        text: 'The Compass does not replace choice. It gives choice greater meaning.'
       }
     },
 
@@ -183,13 +194,19 @@ module.exports = {
       type: 'split',
       id: 'campus',
       skin: 'paper',
-      headline: 'The island is the therapy.',
+      /* Was "The island is the therapy." — a destination cannot be therapy,
+         and on a site run by a mental health professional that reads as a
+         health claim rather than as the metaphor it was meant to be. The line
+         beneath it was always the more distinctive one, so it moves up. The
+         brochure (copy.js) carries the identical change; changing one without
+         the other is the drift the source-of-truth rule exists to prevent. */
+      headline: 'You don’t visit the wellness. You move through it.',
       body: [
-        'The villages are the themes and the properties are the basecamps. Experiences are where wellbeing steps outside — into the volcano, the waterfalls, the forest, the cacao estates and the sea.',
+        'Experiences are where wellbeing steps outside — into the volcano, the waterfalls, the forest, the cacao estates and the sea.',
         'Saint Lucia’s landscape does real physiological work: mineral-rich mud and volcano-heated springs, magnesium drawn in on a mountain trail, cool freshwater after heat, slow sensory time beneath the canopy.',
         'None of it is a fixed catalogue. Experiences are coordinated by local partners and paced by your advisor — chosen for your energy, mobility and stage in the journey.'
       ],
-      closing: 'You don’t visit the wellness. You move through it.',
+      closing: 'The villages are the themes. The properties are the basecamps.',
       cta: { label: 'Explore the island', href: '/explore' },
       img: {
         tone: 'copper',
