@@ -118,6 +118,8 @@ module.exports = {
     {
       type: 'lens',
       id: 'continuum',
+      /* The one lens on the site that is an ordered range, not a set. */
+      sequence: true,
       eyebrow: 'The Wellness Continuum',
       headline: 'Not everything has to transform you.',
       lead: 'One of the more useful ideas in the framework, and the one most worth saying out loud to travellers: every experience sits honestly somewhere on this range. A week of ease is a legitimate answer.',
@@ -167,10 +169,12 @@ module.exports = {
         {
           title: 'Properties, partners and press',
           text: 'For destination partnership, property participation or media enquiries.',
-          /* Confirmed by Duncan 2026-08-11, replacing the visible placeholder
-             this route carried since launch. The `href` turns it into a real
-             link rather than the `.ph` span the renderer falls back to. */
-          label: 'concierge@discoversaintluciawell.com',
+          /* A label, not the address. Printing a mailbox on a public page is
+             free food for scrapers, and it reads as an instruction rather than
+             an invitation — the other two routes are actions, so this one is
+             too. The address still travels in the href, so a click does the
+             right thing and a right-click can still copy it. */
+          label: 'Email the concierge',
           href: 'mailto:concierge@discoversaintluciawell.com'
         }
       ]

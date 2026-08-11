@@ -317,9 +317,10 @@
      Each entry lights an item once its top crosses `line` (a fraction of the
      viewport), which is roughly where a reader is actually looking. */
   var LIT_TRACKS = [
-    { sel: '.arc-list > li',       cls: 'is-lit',    line: 0.74 },
-    { sel: '.finder-steps > li',   cls: 'is-active', line: 0.80 },
-    { sel: '.expertise-grid > li', cls: 'is-active', line: 0.82 }
+    { sel: '.arc-list > li',              cls: 'is-lit',    line: 0.74 },
+    { sel: '.finder-steps > li',          cls: 'is-active', line: 0.80 },
+    { sel: '.expertise-grid > li',        cls: 'is-active', line: 0.82 },
+    { sel: '.lens--sequence .lens-item',  cls: 'is-active', line: 0.82 }
   ].map(function (t) {
     t.nodes = [].slice.call(document.querySelectorAll(t.sel));
     return t;

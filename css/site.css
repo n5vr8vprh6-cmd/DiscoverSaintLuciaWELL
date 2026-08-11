@@ -1566,17 +1566,6 @@ body[data-motion="ready"] .tile-grid--media li::before { z-index: 2; }
   align-items: center;
   gap: 0.4em;
 }
-/* An address is not a label. The uppercase treatment is right for "VISIT THE
-   ADVISOR HUB", but an email shown in caps reads as a shout and misleads
-   anyone transcribing it by hand — so mailto links keep their real casing and
-   a wider size, and lose the letter-spacing that makes an address hard to
-   read back. */
-.contact-link[href^="mailto:"] {
-  text-transform: none;
-  letter-spacing: 0.01em;
-  font-size: 0.92rem;
-  font-weight: 500;
-}
 .contact-link::after { content: '→'; transition: transform .3s var(--ease-out-quint); }
 @media (hover: hover) and (pointer: fine) {
   .contact-link:hover::after { transform: translateX(4px); }
@@ -2099,6 +2088,49 @@ body[data-motion="ready"] .finder-step-n {
   transition: color .5s var(--ease-out-quint);
 }
 body[data-motion="ready"] .finder-steps li.is-active .finder-step-n { color: var(--gold-deep); }
+
+/* ── 3a · The Wellness Continuum reads as a range ─────────────────────────
+   Six stages laid out in a 3×2 grid do not look like a progression — they
+   look like six equal boxes, which is precisely the misreading this section
+   exists to correct ("not everything has to transform you" only lands if you
+   can see that Relax and Transform sit at different ends of one range).
+
+   So each stage is numbered, and the rules light in order as you scroll.
+   Scoped to .lens--sequence: the other five lenses on the site are sets, and
+   numbering a set invents a hierarchy that is not there. */
+.lens--sequence .lens-item { position: relative; counter-increment: continuum; }
+.lens--sequence .lens-grid { counter-reset: continuum; }
+.lens--sequence .lens-item h3::before {
+  content: counter(continuum, decimal-leading-zero);
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  margin-bottom: 0.5em;
+  transition: color .45s var(--ease-out-quint);
+}
+body[data-motion="ready"] .lens--sequence .lens-item::before {
+  content: '';
+  position: absolute;
+  inset: -1px auto auto 0;
+  height: 2px;
+  width: 100%;
+  background: var(--gold-deep);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .7s var(--ease-out-expo);
+}
+body[data-motion="ready"] .lens--sequence .lens-item.is-active::before { transform: scaleX(1); }
+body[data-motion="ready"] .lens--sequence .lens-item.is-active h3::before { color: var(--gold-deep); }
+
+/* Hovering one stage brings it forward without moving anything: this is a
+   range you scan, and being able to settle on one point of it is the whole
+   interaction. */
+.lens--sequence .lens-item p { transition: color .4s var(--ease-out-quint); }
+@media (hover: hover) and (pointer: fine) {
+  .lens--sequence .lens-item:hover::before { background: var(--gold); }
+  .lens--sequence .lens-item:hover p { color: var(--ink); }
+}
 
 /* ── 3b · The homepage Journey Architecture follows the scroll ────────────
    The vertical spine and its six nodes on the homepage teaser were static.

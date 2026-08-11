@@ -518,7 +518,9 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   /* Scroll-linked accents settle in their finished state rather than tracking
      the scroll: the information is the line being there, not it arriving. */
   .finder-steps li::before,
-  .expertise-grid li::before { transform: scaleX(1) !important; }
+  .expertise-grid li::before,
+  .lens--sequence .lens-item::before { transform: scaleX(1) !important; }
+  .lens--sequence .lens-item h3::before { color: var(--gold-deep) !important; }
   .arc-list > li::after { transform: scaleY(1) !important; }
   .arc-list > li::before {
     background: var(--eclipse-copper-l) !important;
