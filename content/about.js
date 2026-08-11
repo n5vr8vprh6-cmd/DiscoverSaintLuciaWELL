@@ -167,9 +167,11 @@ module.exports = {
         {
           title: 'Properties, partners and press',
           text: 'For destination partnership, property participation or media enquiries.',
-          /* No public enquiry address is confirmed yet — this renders as a
-             visible placeholder rather than an invented mailbox. */
-          label: '[ contact address to be confirmed ]'
+          /* Confirmed by Duncan 2026-08-11, replacing the visible placeholder
+             this route carried since launch. The `href` turns it into a real
+             link rather than the `.ph` span the renderer falls back to. */
+          label: 'concierge@discoversaintluciawell.com',
+          href: 'mailto:concierge@discoversaintluciawell.com'
         }
       ]
     },

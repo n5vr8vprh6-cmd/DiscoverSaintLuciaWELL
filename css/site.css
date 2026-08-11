@@ -1459,6 +1459,15 @@ body[data-motion="ready"] .tile-grid--media li::before { z-index: 2; }
    CREDIBILITY
    ══════════════════════════════════════════════════════════════════════════ */
 .credibility { padding-block: clamp(3rem, 6vw, 4.5rem); border-top: 1px solid var(--hairline-l); }
+/* This section draws its own top rule, so it is the one case that must keep
+   its top padding when it follows another paper section. `.section--paper +
+   .section--paper { padding-top: 0 }` in chrome.css exists to stop two light
+   bands stacking their padding — correct in general, but here it left the
+   hairline sitting 1px above "IN COLLABORATION WITH" while 154px of the
+   previous section's padding floated above it. More space above the rule than
+   below is right: the rule separates from what came before and binds to what
+   follows. One pixel below it is not. */
+.section--paper + .section--paper.credibility { padding-top: clamp(3rem, 6vw, 4.5rem); }
 .cred-label {
   font-family: var(--sans);
   font-size: var(--fs-label);
@@ -1556,6 +1565,17 @@ body[data-motion="ready"] .tile-grid--media li::before { z-index: 2; }
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
+}
+/* An address is not a label. The uppercase treatment is right for "VISIT THE
+   ADVISOR HUB", but an email shown in caps reads as a shout and misleads
+   anyone transcribing it by hand — so mailto links keep their real casing and
+   a wider size, and lose the letter-spacing that makes an address hard to
+   read back. */
+.contact-link[href^="mailto:"] {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: 0.92rem;
+  font-weight: 500;
 }
 .contact-link::after { content: '→'; transition: transform .3s var(--ease-out-quint); }
 @media (hover: hover) and (pointer: fine) {
