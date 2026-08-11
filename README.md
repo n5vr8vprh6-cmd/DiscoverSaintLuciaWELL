@@ -298,6 +298,40 @@ widest derivative is whatever the source could give.
 because `<source type="image/webp">` drives selection, but a production host
 should be configured properly.
 
+## Canonical village names
+
+Check here before writing a village name anywhere. These six strings must match
+across **four** places — this site, `saint-lucia-well/content/properties.js`,
+the Foundations page (`advisors/foundations/index.src.html`) and `pptx-build/`.
+
+| # | Canonical name | Short form | `key` |
+|---|---|---|---|
+| 1 | Longevity Village | Longevity | `longevity` |
+| 2 | **Nature & Renewal Village** | Nature & Renewal | `rainforest` |
+| 3 | Ocean & Restoration Village | Ocean & Restoration | `ocean` |
+| 4 | Heritage & Nourishment Village | Heritage & Nourishment | `heritage` |
+| 5 | Movement & Adventure Village | Movement & Adventure | `movement` |
+| 6 | **Connection & Romance Village** | Connection & Romance | `connection` |
+
+The two in bold were drifting until 2026-08-11: the Foundations page said
+"Nature & Renewal" and "Love & Connection" while every other publication said
+"Rainforest & Nature" and "Connection & Romance". Two live pages on one domain
+disagreed. Village 2 resolved in Foundations' favour (Duncan: "rainforest and
+nature are similar, I want to add a wellness relationship"); village 6 resolved
+the other way, because "Love & Connection" is the same redundancy and breaks
+the *state + travel category* shape the other names share.
+
+**`key` is not a label.** It addresses asset filenames, `#village-*` anchors,
+the `properties-media.js` manifest and the Journey Finder's scoring weights.
+`rainforest` still keys village 2 and that is intentional — renaming it would
+break four systems to change a string nobody reads.
+
+Two grep traps worth knowing, both of which hid this drift from an earlier
+search: the HTML files write the ampersand as `&amp;`, so a literal `&` search
+misses them, and `dist/` and `brochure*.html` contain stale copies that make a
+finished rename look incomplete. Search with
+`grep -rnE "Name (&amp;|&|and) Other"` and exclude build output.
+
 ## Truth discipline
 
 - **Properties are confirmed** (Duncan, 2026-08-08) and ship as named anchors.
@@ -330,7 +364,7 @@ Wave 3: `/advisors` hierarchy, the Foundations move, polish passes.
 
 - **Two properties are placed by inference**, flagged `inferred: true` in
   `content/villages.js`: Cap Maison → Connection & Romance, Stonefield Villa
-  Resort → Rainforest & Nature. They arrived with the asset library and are not
+  Resort → Nature & Renewal. They arrived with the asset library and are not
   in the brochure's `properties.js`. Confirm before regenerating the brochure.
 - **Zoëtry Marigot Bay and Calabash Cove have no library imagery**, so they
   render as typographic cards in the village accent — a deliberate treatment,

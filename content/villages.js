@@ -52,9 +52,15 @@ const VILLAGES = [
   },
 
   {
+    /* `key` stays 'rainforest' deliberately. It is an internal identifier, not
+       a label: it addresses the #village-rainforest anchor, the
+       village-rainforest-*.jpg asset set, the properties-media.js manifest and
+       the Journey Finder's scoring weights. Renaming it would break all four to
+       change a string nobody reads. The rainforest is still the environment;
+       only the village's name has moved on. */
     key: 'rainforest',
-    name: 'Rainforest & Nature Village',
-    short: 'Rainforest & Nature',
+    name: 'Nature & Renewal Village',
+    short: 'Nature & Renewal',
     color: '#566E4E',
     ink: '#3F523A',
     subline: 'Not every part of recovery needs to be spoken.',

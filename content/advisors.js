@@ -132,7 +132,7 @@ module.exports = {
       headline: 'Real inventory, not a concept.',
       lead: 'The framework only matters if there is something behind it. There is.',
       items: [
-        { title: 'Six villages',          text: 'Longevity · Rainforest & Nature · Ocean & Restoration · Heritage & Nourishment · Movement & Adventure · Connection & Romance.' },
+        { title: 'Six villages',          text: 'Longevity · Nature & Renewal · Ocean & Restoration · Heritage & Nourishment · Movement & Adventure · Connection & Romance.' },
         /* Not "confirmed participation" — the properties are mapped, not
            signed. An advisor deciding whether to invest in this pathway is
            exactly who would check, and exactly who should not be told the
