@@ -300,6 +300,18 @@
   var parallaxImgs = [].slice.call(document.querySelectorAll('.village-block-media picture, .split-media .photo picture'));
   var arcTrack = document.querySelector('.arc-track');
   var arcNodes = arcTrack ? [].slice.call(arcTrack.children) : [];
+  /* The five-day timeline lights the same way as the arc, but per item rather
+     than from one progress value: the track is tall enough that a single
+     measure of its travel through the viewport would light day five while day
+     one is still off-screen. Each day lights when it crosses the reading line. */
+  var dayTrack = document.querySelector('.day-track');
+  var dayNodes = dayTrack ? [].slice.call(dayTrack.children) : [];
+  /* The same hard guarantee the reveal system makes. Each day's copy is hidden
+     until its node lights, which means a stalled rAF loop would leave the
+     five-day plan blank. Four seconds later it is visible no matter what. */
+  if (dayTrack) {
+    setTimeout(function () { dayTrack.classList.add('settled'); }, 4000);
+  }
   var ticking = false;
 
   /* Below 860px the hero is a STACKED band, not an overlay — .hero-media is in
@@ -339,6 +351,19 @@
       for (var a = 0; a < arcNodes.length; a++) {
         var threshold = (a + 0.55) / arcNodes.length;
         arcNodes[a].classList.toggle('is-lit', p >= threshold);
+      }
+    }
+
+    /* Each day lights once its node reaches roughly two-thirds down the
+       viewport — the point a reader is actually looking at, rather than the
+       moment the element technically enters the screen. Latching (never
+       unsetting) would be cheaper, but scrolling back up and seeing the path
+       still lit ahead of you breaks the idea that it is a route being walked. */
+    if (dayNodes.length) {
+      var line = window.innerHeight * 0.68;
+      for (var d = 0; d < dayNodes.length; d++) {
+        dayNodes[d].classList.toggle(
+          'is-lit', dayNodes[d].getBoundingClientRect().top <= line);
       }
     }
 

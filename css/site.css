@@ -1104,15 +1104,33 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
 }
 
 /* — day plan — */
-.day-grid {
+/* — the five days, as a vertical timeline —
+   Selectors are `> li` throughout: each day contains its own <ul> of items and
+   must not inherit the track's own rules. */
+.day-track { display: grid; }
+.day-track > li {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: clamp(1.25rem, 2.5vw, 2rem);
+  /* 4.5rem fits "DAY 1" and no more. At 8rem the rail left ~70px of dead
+     gutter between the label and the day it belongs to, which read as a
+     column break rather than a timeline. */
+  grid-template-columns: minmax(0, 4.5rem) minmax(0, 1fr);
+  gap: clamp(1rem, 2vw, 1.75rem);
+  padding: 0 0 clamp(2.25rem, 4vw, 3.25rem) clamp(1.75rem, 3vw, 2.5rem);
+  border-left: 1px solid rgba(155, 116, 85, .22);
 }
-.day-grid > li {
-  border-top: 1px solid rgba(155, 116, 85, .35);
-  padding-top: 1.2rem;
+/* Nothing follows the last day, so its spine would be a line to nowhere. */
+.day-track > li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.day-track > li::before {
+  content: '';
+  position: absolute;
+  left: -5px; top: 0.15em;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--eclipse-midnight);
+  border: 1px solid var(--eclipse-copper);
 }
+.day-rail { padding-top: 0.05em; }
 .day-n {
   font-family: var(--sans);
   font-size: 0.68rem;
@@ -1122,9 +1140,10 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   color: var(--eclipse-copper-l);
   margin-bottom: 0.7rem;
 }
-.day-grid h3 { font-size: 1.12rem; margin-bottom: 0.8em; }
-.day-grid ul { display: grid; gap: 0.5rem; }
-.day-grid ul li { font-size: 0.88rem; color: rgba(232, 223, 210, .66); }
+.day-n { margin-bottom: 0; }
+.day-track h3 { font-size: 1.16rem; margin-bottom: 0.7em; }
+.day-track ul { display: grid; gap: 0.55rem; }
+.day-track ul li { font-size: 0.92rem; color: rgba(232, 223, 210, .7); }
 
 /* — signature experience tiles — */
 .tile-grid {
@@ -1300,7 +1319,11 @@ body[data-motion="ready"] .tile-grid--media li::before { z-index: 2; }
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: clamp(2rem, 5vw, 4.5rem);
-  align-items: start;
+  /* Centred, not top-aligned. The safety note is a third the height of the
+     six-item list beside it, so `start` pinned it to the top and left a void
+     below that read as section padding — which is why the gap into the next
+     section looked twice as large as it is. */
+  align-items: center;
 }
 .check-list { display: grid; gap: 1rem; }
 .check-list li {
@@ -1709,7 +1732,6 @@ body[data-motion="ready"] .settled {
 @media (max-width: 1080px) {
   .prop-grid { grid-template-columns: repeat(2, 1fr); }
   .arc-track { grid-template-columns: repeat(3, 1fr); row-gap: 2.5rem; }
-  .day-grid { grid-template-columns: repeat(3, 1fr); row-gap: 2rem; }
 }
 
 @media (max-width: 940px) {
@@ -1746,7 +1768,8 @@ body[data-motion="ready"] .settled {
   .contact-grid,
   .tile-grid { grid-template-columns: 1fr; }
   .arc-track { grid-template-columns: repeat(2, 1fr); }
-  .day-grid { grid-template-columns: 1fr; }
+  /* The day rail stacks above its content; the spine and nodes stay. */
+  .day-track > li { grid-template-columns: 1fr; gap: 0.5rem; }
   .expertise-grid { grid-template-columns: 1fr; }
   .hero-signature { display: none; }
   .hero-inner { max-width: none; }
@@ -2042,6 +2065,43 @@ body[data-motion="ready"] .arc-track li.is-lit::before {
 body[data-motion="ready"] .arc-track .arc-key { transition: color .45s var(--ease-out-quint); }
 body[data-motion="ready"] .arc-track li.is-lit .arc-key { color: #FFFFFF; }
 
+/* ── 4b · The five days light down the page ───────────────────────────────
+   The same idea as the arc rotated onto the Y axis: the spine fills downward
+   and each day's node ignites as it is reached. Gated on data-motion so that
+   without JS the timeline keeps its solid copper spine and nodes rather than
+   sitting permanently dimmed. */
+body[data-motion="ready"] .day-track > li { border-left-color: rgba(155, 116, 85, .14); }
+/* Must be restated here: the rule above out-specifies the base `:last-child`
+   reset, so without this the dim spine runs on past the final day — a line to
+   nowhere under the last item. */
+body[data-motion="ready"] .day-track > li:last-child { border-left-color: transparent; }
+body[data-motion="ready"] .day-track > li::after {
+  content: '';
+  position: absolute;
+  left: -1px; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--eclipse-copper);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform .7s var(--ease-out-expo);
+}
+body[data-motion="ready"] .day-track > li:last-child::after { display: none; }
+body[data-motion="ready"] .day-track > li.is-lit::after { transform: scaleY(1); }
+
+body[data-motion="ready"] .day-track > li::before {
+  transition: background-color .45s var(--ease-out-quint),
+              border-color .45s var(--ease-out-quint),
+              box-shadow .45s var(--ease-out-quint);
+}
+body[data-motion="ready"] .day-track > li.is-lit::before {
+  background: var(--eclipse-copper-l);
+  border-color: var(--eclipse-copper-l);
+  box-shadow: 0 0 0 4px rgba(198, 152, 120, .16);
+}
+body[data-motion="ready"] .day-track > li .day-n,
+body[data-motion="ready"] .day-track > li h3 { transition: color .45s var(--ease-out-quint); }
+body[data-motion="ready"] .day-track > li.is-lit h3 { color: #FFFFFF; }
+
 /* ── 5 · Signature experience tiles ───────────────────────────────────────
    A copper hairline draws across the top of each tile as it arrives, and the
    title lifts a little on hover. Nine identical boxes needed an entrance. */
@@ -2061,4 +2121,49 @@ body[data-motion="ready"] .tile-grid.is-revealed li::before { transform: scaleX(
 .tile-grid h3 { transition: transform .35s var(--ease-out-quint); }
 @media (hover: hover) and (pointer: fine) {
   .tile-grid li:hover h3 { transform: translateY(-2px); }
+
+  /* The tile now holds a photograph, so the hover can come from the image
+     rather than from the type: a slow 1.04 push inside a fixed frame, with the
+     village chip warming at the same time. Transform only — animating width or
+     filter here would repaint nine tiles at once. */
+  .tile-grid--media .tile-media picture,
+  .tile-grid--media .tile-media img {
+    transition: transform .8s var(--ease-out-quint);
+    will-change: transform;
+  }
+  .tile-grid--media li:hover .tile-media img { transform: scale(1.04); }
+
+  .tile-village { transition: color .4s var(--ease-out-quint); }
+  .tile-grid--media li:hover .tile-village {
+    color: color-mix(in srgb, var(--v, var(--eclipse-copper-l)) 30%, var(--paper));
+  }
+
+  /* Eclipse's own column in the comparison is the one that should feel alive;
+     the "typical wellness stay" column deliberately stays inert. */
+  .cmp-col--ours li { transition: color .35s var(--ease-out-quint); }
+  .cmp-col--ours:hover li { color: var(--eclipse-sand); }
+
+  /* Roles lift a hair on approach. No shadow — on midnight a shadow is
+     invisible, so the only honest affordance is position. */
+  .expertise-grid li { transition: transform .4s var(--ease-out-quint); }
+  .expertise-grid li:hover { transform: translateY(-3px); }
+}
+
+/* Each day's items arrive with the day that carries them, rather than all
+   twenty-three appearing at once when the section reveals. */
+body[data-motion="ready"] .day-track > li .day-body > * {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .55s var(--ease-out-quint), transform .55s var(--ease-out-quint);
+}
+body[data-motion="ready"] .day-track > li.is-lit .day-body > * {
+  opacity: 1;
+  transform: none;
+}
+body[data-motion="ready"] .day-track > li.is-lit .day-body > ul { transition-delay: .08s; }
+/* Failsafe: js/motion.js sets `settled` four seconds in, whatever happened to
+   the scroll loop. Hidden copy must never depend on an animation succeeding. */
+body[data-motion="ready"] .day-track.settled > li .day-body > * {
+  opacity: 1;
+  transform: none;
 }

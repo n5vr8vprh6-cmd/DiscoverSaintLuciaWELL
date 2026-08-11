@@ -70,6 +70,13 @@
 .section--eclipse {
   background: var(--eclipse-midnight);
   color: var(--eclipse-sand);
+  /* Tighter than --section-y, which caps at 11rem and so puts 352px between
+     every pair of sections on a 2000px screen. That reads as generous on the
+     sparse light pages; on Eclipse, where the sections now carry photography,
+     a timeline and a nine-tile grid, it read as the page falling apart between
+     ideas. The same cap governs the rest of the site if it wants the same
+     treatment — this is scoped to the Eclipse world for now. */
+  padding-block: clamp(4.5rem, 9vw, 8.5rem);
 }
 
 /* Hairline between two consecutive light sections keeps the rhythm legible
@@ -485,6 +492,15 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   .finder-steps li::before,
   .tile-grid li::before,
   .arc-track li::after { transform: scaleX(1) !important; }
+  /* The five-day spine settles fully drawn and every node lit — the timeline
+     still reads as a route, it just does not animate into one. */
+  .day-track > li::after { transform: scaleY(1) !important; }
+  /* The per-day copy must not depend on the node having lit. */
+  .day-track > li .day-body > * { opacity: 1 !important; transform: none !important; }
+  .day-track > li::before {
+    background: var(--eclipse-copper-l) !important;
+    border-color: var(--eclipse-copper-l) !important;
+  }
   .arc-track li::before {
     background: var(--eclipse-copper-l) !important;
     border-color: var(--eclipse-copper-l) !important;

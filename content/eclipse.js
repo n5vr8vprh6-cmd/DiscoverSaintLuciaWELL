@@ -65,11 +65,11 @@ module.exports = {
       img: {
         src: '/assets/eclipse/eclipse-hero.jpg',
         widths: [960, 1440, 2000],
-        w: 3360, h: 1440,
+        w: 2944, h: 1261,
         alt: ''
-      }
-      /* video: { webm: '/assets/video/eclipse-hero-loop.webm',
-                  mp4:  '/assets/video/eclipse-hero-loop.mp4' } */
+      },
+      video: { webm: '/assets/video/eclipse-hero-loop.webm',
+               mp4:  '/assets/video/eclipse-hero-loop.mp4' }
     },
 
     /* ── RECOGNITION ────────────────────────────────────────────────────── */
@@ -155,9 +155,10 @@ module.exports = {
       img: {
         src: '/assets/eclipse/eclipse-arc.jpg',
         widths: [960, 1440, 2000],
-        w: 3360, h: 1440,
+        w: 2560, h: 1097,
         alt: ''
       },
+      video: { mp4: '/assets/video/eclipse-arc-loop.mp4' },
       phases: [
         { k: 'ARRIVE',   s: 'Safety and softening' },
         { k: 'REGULATE', s: 'Sleep, nourishment and nervous-system support' },
@@ -211,7 +212,8 @@ module.exports = {
         { t: 'Earth Descent', village: V.rainforest,
           s: 'A coastal journey through the Pitons, waterfalls and volcanic earth, ending in release.',
           img: { base: '/assets/eclipse/eclipse-earth-descent', widths: [640, 960],
-                 alt: 'A waterfall falling into a pool deep in rainforest shade.' } },
+                 alt: 'A waterfall falling into a pool deep in rainforest shade.' },
+          video: { mp4: '/assets/video/earth-descent-loop.mp4' } },
 
         { t: 'The Phoenix Passage', village: V.rainforest,
           s: 'Guided breathwork and visualization, to process emotion and reach inner clarity.',
@@ -221,7 +223,8 @@ module.exports = {
         { t: 'The Tides Within', village: V.ocean,
           s: 'Breathwork and sound to release what is held, closing with a lantern release over water.',
           img: { base: '/assets/eclipse/eclipse-tides-within', widths: [640, 960],
-                 alt: 'Paper lanterns drifting across dark water at night, their reflections beneath.' } },
+                 alt: 'Paper lanterns drifting across dark water at night, their reflections beneath.' },
+          video: { mp4: '/assets/video/tides-within-loop.mp4' } },
 
         { t: 'Nightfall', village: V.longevity,
           s: 'A sleep-focused evening: nourishing dinner, sound bath, Yoga Nidra, nervous-system downshift.',
@@ -241,7 +244,8 @@ module.exports = {
         { t: 'Ocean Within', village: V.ocean,
           s: 'An immersive sound and vocal journey at twilight, paired with float therapy.',
           img: { base: '/assets/eclipse/eclipse-ocean-within', widths: [640, 960],
-                 alt: 'A single swimmer far below on open water, ripples spreading outward.' } }
+                 alt: 'A single swimmer far below on open water, ripples spreading outward.' },
+          video: { mp4: '/assets/video/ocean-within-loop.mp4' } }
       ],
       footnote: 'Experiences are sequenced to the arc and paced to you. Final selection is set during guided entry, before anything is booked.'
     },
@@ -250,6 +254,7 @@ module.exports = {
     {
       type: 'expertise',
       id: 'team',
+      skin: 'eclipse',
       headline: 'Designed by specialists. Personalized by your advisor.',
       roles: [
         { role: 'Practitioners and health professionals', text: 'Design the recovery architecture, sequencing and facilitation.' },
@@ -308,6 +313,10 @@ module.exports = {
       img: {
         src: '/assets/dawn-horizon.jpg',
         w: 771, h: 998,
+        /* `split` renders its media through figure(), which reads the loop from
+           inside `img` — a sibling `video:` key here is silently ignored. */
+        video: { webm: '/assets/video/return-dawn-loop.webm',
+                 mp4:  '/assets/video/return-dawn-loop.mp4' },
         alt: 'First light over a calm sea, the island low on the horizon.',
         caption: 'The eclipse passing'
       }

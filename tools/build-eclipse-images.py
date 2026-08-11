@@ -27,13 +27,26 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(HERE, 'assets', 'eclipse')
 
 # The two wide frames. 21:9, full measure, so they carry an extra width.
-#   base -> (source filename, alt text)
+#
+# POSTER FRAMING MUST MATCH THE VIDEO LOOP, or the ambient video visibly jumps
+# when it fades in over its own poster. Kling will not accept an input wider
+# than 2:1, so both loops were generated from a 16:9 intermediate — and these
+# posters are therefore cut through that same 16:9 window rather than straight
+# from the widest source. Cutting the hero from the native 21:9 file instead
+# measured 42.7/255 against the video's first frame; through the 16:9 window it
+# is a match.
+#
+#   base -> (source filename, pre-crop ratio or None, alt text)
 WIDES = {
+    # Duncan supplied a native 16:9 of this frame as well as the 21:9. The 16:9
+    # is what Kling animated, so the poster comes from it too.
     'eclipse-hero': (
-        '01-1 - Twilight over the Caribbean Sea in Saint Lucia.png',
+        '01 - Twilight over the Caribbean Sea in Saint Lucia.png', None,
         'The Pitons in silhouette across a calm sea as the sun meets the horizon.'),
+    # Only a 21:9 exists here, so it was centre-cropped to 16:9 for Kling. The
+    # poster takes the same two-step path: 21:9 -> 16:9 -> 21:9.
     'eclipse-arc': (
-        '02 - Pre-dawn Caribbean Sea in Saint Lucia.png',
+        '02 - Pre-dawn Caribbean Sea in Saint Lucia.png', 16 / 9,
         ''),                       # decorative band, behind the arc — no alt
 }
 
@@ -101,7 +114,7 @@ def save_pair(im, base, w):
     im.save(os.path.join(OUT, f'{base}-{w}.webp'), 'WEBP', quality=webp_q, method=6)
 
 
-def emit(src_dir, base, filename, ratio, widths, bias=0.40):
+def emit(src_dir, base, filename, ratio, widths, bias=0.40, pre_ratio=None):
     path = os.path.join(src_dir, filename)
     if not os.path.exists(path):
         print(f'  MISSING  {base:24s} {filename}')
@@ -109,6 +122,10 @@ def emit(src_dir, base, filename, ratio, widths, bias=0.40):
     im = Image.open(path)
     if im.mode in ('RGBA', 'P', 'LA'):
         im = im.convert('RGB')
+    # `pre_ratio` reproduces the intermediate crop the video generator needed,
+    # so poster and loop end up looking through the same window.
+    if pre_ratio:
+        im = crop_to_ratio(im, pre_ratio, 0.5)
     im = crop_to_ratio(im, ratio, bias)
     full_w, full_h = im.size
     for w in widths:
@@ -128,8 +145,9 @@ def main():
     print(f'source: {src}\noutput: {OUT}\n')
 
     print('WIDE (21:9)')
-    for base, (fn, _alt) in WIDES.items():
-        emit(src, base, fn, WIDE_RATIO, WIDE_WIDTHS)
+    for base, (fn, pre, _alt) in WIDES.items():
+        # bias 0.5: the loops crop vertical-centre, so these must too.
+        emit(src, base, fn, WIDE_RATIO, WIDE_WIDTHS, 0.5, pre)
 
     print('\nTILES (4:5)')
     for base, (fn, _alt) in TILES.items():
