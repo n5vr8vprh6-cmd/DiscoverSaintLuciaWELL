@@ -53,6 +53,7 @@ module.exports = {
     {
       type: 'pageHeader',
       id: 'eclipse-hero',
+      mark: true,
       eyebrow: 'Signature journey',
       headline: 'Eclipse',
       lead: 'A curated recovery journey through Saint Lucia — designed by practitioners and health professionals, brought to life through place, hospitality and experience.',
@@ -143,6 +144,7 @@ module.exports = {
     {
       type: 'journeyArc',
       id: 'arc',
+      mark: true,
       headline: 'Rhythm returns in phases.',
       /* The rhythm thesis lands here rather than in the recognition section.
          Recognition is where a reader asks "is this me?" — an explanation
@@ -269,6 +271,7 @@ module.exports = {
     {
       type: 'checklist',
       id: 'fit',
+      mark: true,
       eyebrow: 'Is this for you?',
       headline: 'Eclipse may be for you if…',
       /* The Executive Pack's three guest profiles, reworded ungendered — the

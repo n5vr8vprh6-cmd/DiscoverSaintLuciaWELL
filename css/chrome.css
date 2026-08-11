@@ -497,6 +497,8 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   .day-track > li::after { transform: scaleY(1) !important; }
   /* The per-day copy must not depend on the node having lit. */
   .day-track > li .day-body > * { opacity: 1 !important; transform: none !important; }
+  /* The mark is simply present rather than resolving into view. */
+  .eclipse-mark--sign { opacity: 1 !important; transform: none !important; }
   .day-track > li::before {
     background: var(--eclipse-copper-l) !important;
     border-color: var(--eclipse-copper-l) !important;

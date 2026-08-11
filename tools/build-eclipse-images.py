@@ -83,6 +83,7 @@ TILES = {
 
 WIDE_WIDTHS = [960, 1440, 2000]
 TILE_WIDTHS = [640, 960]
+MARK_WIDTHS = [220, 440, 1100]   # hero @1x/@2x, and the section watermark
 WIDE_RATIO = 21 / 9
 TILE_RATIO = 4 / 5
 
@@ -139,6 +140,47 @@ def emit(src_dir, base, filename, ratio, widths, bias=0.40, pre_ratio=None):
             'w': full_w, 'h': full_h}
 
 
+def build_mark(svg_path):
+    """Extract the Eclipse symbol from its supplied .svg.
+
+    The file is named .svg but contains NO vector geometry — zero <path>, zero
+    <circle>, two base64 PNGs and a pair of opaque white <rect> backgrounds. It
+    is a raster export in an SVG wrapper, so used directly it would paint a
+    white square on the midnight page.
+
+    The real artwork is the colour PNG painted through the mask PNG (the SVG
+    applies the mask's luminance as alpha, peaking at 73% — the mark is meant
+    to be delicate). This pulls those two layers back apart, recombines them
+    into straight RGBA, and trims to the ink.
+
+    It stays a raster on purpose. The ring is subtly irregular and hand-drawn,
+    with a raking light running around it; redrawing it as a mathematically
+    perfect <circle> with a gradient stroke would be cleaner to animate and
+    would lose exactly what makes it look made rather than generated.
+    """
+    import base64, io, re
+    import numpy as np
+
+    raw = open(svg_path, encoding='utf-8').read()
+    blobs = re.findall(r'data:image/png;base64,([A-Za-z0-9+/=]+)', raw)
+    if len(blobs) != 2:
+        print(f'  mark: expected 2 embedded images, found {len(blobs)} — skipped')
+        return
+    mask = np.asarray(Image.open(io.BytesIO(base64.b64decode(blobs[0]))).convert('L')).astype(float)
+    col = np.asarray(Image.open(io.BytesIO(base64.b64decode(blobs[1]))).convert('RGB')).astype(float)
+
+    im = Image.fromarray(np.dstack([col, mask]).astype('uint8'), 'RGBA')
+    im = im.crop(im.getbbox())
+    for w in MARK_WIDTHS:
+        s = im.resize((w, round(w * im.size[1] / im.size[0])), Image.LANCZOS)
+        s.save(os.path.join(OUT, f'eclipse-mark-{w}.png'), 'PNG', optimize=True)
+        s.save(os.path.join(OUT, f'eclipse-mark-{w}.webp'), 'WEBP', quality=88, method=6)
+    kb = sum(os.path.getsize(os.path.join(OUT, f))
+             for f in os.listdir(OUT) if f.startswith('eclipse-mark-')) / 1024
+    print(f'  eclipse-mark  {im.size[0]}x{im.size[1]} ink, peak alpha {mask.max()/255:.0%}'
+          f'  ->  {len(MARK_WIDTHS)} widths, {kb:.0f} KB total')
+
+
 def main():
     src = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser('~/Downloads')
     os.makedirs(OUT, exist_ok=True)
@@ -155,6 +197,14 @@ def main():
         # subject out of the bottom of the tile entirely.
         bias = 0.50 if base == 'ocean-within' else 0.40
         emit(src, f'eclipse-{base}', fn, TILE_RATIO, TILE_WIDTHS, bias)
+
+    print('\nMARK')
+    mark = os.path.join(src, 'Eclipse Logo - 1000x1000px',
+                        'Eclipse Logo - Symbol 1000x1000px.svg')
+    if os.path.exists(mark):
+        build_mark(mark)
+    else:
+        print(f'  MISSING  {mark}')
 
     print('\nAlt text lives in content/eclipse.js, next to the copy it belongs to.')
 
