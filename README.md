@@ -20,9 +20,19 @@ node build.js
 
 ## Deploy
 
-Git repository initialised here (`main`). `dist/` is **gitignored** — it is a
-build artifact, and committing it would put generated output under review next
-to its own source. Vercel rebuilds it from `build.js` on every push.
+**origin** → github.com/n5vr8vprh6-cmd/DiscoverSaintLuciaWELL (`main`)
+**Vercel** → `burnout-concierge-venture-studio/discover-saint-lucia-well`,
+connected to that repo. **A push to `main` deploys.** There is nothing to run by
+hand; `vercel deploy --prod` exists as an escape hatch, not the normal path.
+
+Currently served at `discover-saint-lucia-well.vercel.app` with no custom domain
+attached yet.
+
+`dist/` is **gitignored** — it is a build artifact, and committing it would put
+generated output under review next to its own source. Vercel rebuilds it from
+`build.js` on every push, which is also what keeps the repo honest: if the build
+only works because of something sitting untracked on one laptop, the deploy
+fails rather than quietly succeeding.
 
 `vercel.json` sets: `node build.js` → `dist/`, `trailingSlash: false` (canonical
 tags are extensionless and slashless), a permanent `/foundations` →
@@ -41,6 +51,12 @@ Two cache decisions worth knowing:
 The `/foundations` redirect exists twice on purpose: as a Vercel 308, and as
 the meta-refresh page `build.js` emits. The static one is the fallback if the
 site ever moves to a host without redirect rules.
+
+**The `.vercel.app` preview is `noindex`, and that expires by itself.** The
+`X-Robots-Tag` header is scoped with a host condition matching `*.vercel.app`,
+so attaching discoversaintluciawell.com switches it off without anyone
+remembering to. A blanket noindex header would have been a trap waiting for
+launch day. Canonical tags already point at the real domain.
 
 **Not wired yet:** no GTM container id, and `CAPTURE_ENDPOINT` in
 `js/journey.js` is empty — the Finder's email capture validates and reports
