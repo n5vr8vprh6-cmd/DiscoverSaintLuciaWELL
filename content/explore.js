@@ -91,7 +91,11 @@ module.exports = {
         src: '/assets/sulphur-springs.jpg',
         w: 896, h: 1162,
         alt: 'Steam rising from the terraced mineral pools of Sulphur Springs, forested Piton slopes behind.',
-        caption: 'Sulphur Springs · the drive-in volcano'
+        caption: 'Sulphur Springs · the drive-in volcano',
+        /* The loop already existed and the homepage was already using it —
+           this page was showing the still beside it. Rising steam is the one
+           subject that needs no seam work at all. */
+        video: { webm: '/assets/video/sulphur-loop.webm', mp4: '/assets/video/sulphur-loop.mp4' }
       }
     },
 

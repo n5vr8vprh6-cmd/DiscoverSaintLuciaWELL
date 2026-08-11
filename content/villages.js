@@ -79,6 +79,10 @@ const VILLAGES = [
       { name: 'Zoëtry Marigot Bay St. Lucia',  role: 'Anchor stay — marina', folder: '14-zoetry-marigot-bay' },
       { name: 'Stonefield Villa Resort',       role: 'Anchor stay — Soufrière hillside', folder: '13-stonefield-villa-resort' }
     ],
+    /* Ambient loop layered over the still. Motion is confined to water and
+       foliage with a locked-off frame, so the property itself is never shown
+       as anything other than what its own photograph shows. */
+    video: { mp4: '/assets/video/village-rainforest-loop.mp4' },
     intentions: ['reflect', 'restore']
   },
 
@@ -105,6 +109,10 @@ const VILLAGES = [
       { name: 'StolenTime by Rendezvous',   role: 'Anchor stay — sister resort',        folder: '08-stolentime' },
       { name: 'Calabash Cove Resort & Spa', role: 'Anchor stay — boutique',             folder: '15-calabash-cove' }
     ],
+    /* Ambient loop layered over the still. Motion is confined to water and
+       foliage with a locked-off frame, so the property itself is never shown
+       as anything other than what its own photograph shows. */
+    video: { mp4: '/assets/video/village-ocean-loop.mp4' },
     intentions: ['restore', 'reflect']
   },
 
@@ -155,6 +163,12 @@ const VILLAGES = [
       { name: 'Sandals Grande St. Lucian', role: 'Anchor stay — sport & watersports',  folder: '05-sandals-grande-st-lucian' },
       { name: 'Anse Chastanet',            role: 'Anchor stay — dive & jungle biking', folder: '03-anse-chastanet' }
     ],
+    /* NO ambient loop here, deliberately. Two generations of this aerial both
+       drifted the camera forward despite an explicit locked-off prompt, so the
+       loop's first frame sits about 8% tighter than the still it fades from —
+       a visible lurch on the crossfade, repeating every four seconds. The
+       other three village loops hold their frame; this one does not, and a
+       band that pumps is worse than a band that is simply a photograph. */
     intentions: ['move']
   },
 
@@ -181,6 +195,10 @@ const VILLAGES = [
       { name: 'Jade Mountain',             role: 'Anchor stay — romantic sanctuaries', folder: '02-jade-mountain' },
       { name: 'Cap Maison Resort & Spa',   role: 'Anchor stay — cliffside villas',     folder: '11-cap-maison' }
     ],
+    /* Ambient loop layered over the still. Motion is confined to water and
+       foliage with a locked-off frame, so the property itself is never shown
+       as anything other than what its own photograph shows. */
+    video: { mp4: '/assets/video/village-connection-loop.mp4' },
     intentions: ['connect', 'reflect']
   }
 ];
