@@ -79,10 +79,12 @@ const VILLAGES = [
       { name: 'Zoëtry Marigot Bay St. Lucia',  role: 'Anchor stay — marina', folder: '14-zoetry-marigot-bay' },
       { name: 'Stonefield Villa Resort',       role: 'Anchor stay — Soufrière hillside', folder: '13-stonefield-villa-resort' }
     ],
-    /* Ambient loop layered over the still. Motion is confined to water and
-       foliage with a locked-off frame, so the property itself is never shown
-       as anything other than what its own photograph shows. */
-    video: { mp4: '/assets/video/village-rainforest-loop.mp4' },
+    /* NO ambient loop here, deliberately. This frame contains two people — a
+       guest in the pool and a therapist — and generative motion moved them:
+       the guest visibly changes pose across the clip. Ambient water and
+       foliage is one thing; synthesising movement for identifiable people at
+       a named property is another, and it reads as uncanny rather than calm.
+       The photograph stands on its own. */
     intentions: ['reflect', 'restore']
   },
 
