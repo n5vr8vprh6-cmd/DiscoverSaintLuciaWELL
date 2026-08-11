@@ -153,8 +153,26 @@
   margin-top: clamp(2.5rem, 5vw, 3.5rem);
 }
 .section-cta--left { justify-content: flex-start; }
-.section-cta .cta-note { width: 100%; text-align: center; margin-top: 0.25rem; }
-.section-cta--left .cta-note { text-align: left; }
+
+/* The note belongs UNDER the button, not beside it.
+   `width: 100%` was already here and never worked: `.cta-note` also picks up
+   `max-width: var(--measure)` from the grouped rule above, which capped it at
+   ~516px — narrow enough to sit on the same flex line as the button. The pair
+   then centres as a unit, which is why the button itself looked off-centre.
+
+   `flex-basis: 100%` forces the line break regardless of max-width, and the
+   measure is kept because a reassurance line still wants a readable column. */
+.section-cta .cta-note {
+  /* `max-width` must be cleared, not just overridden by flex-basis: a flex
+     item's hypothetical main size is clamped by max-width BEFORE the line is
+     broken, so a 516px basis still fits beside a 233px button and never
+     wraps. Clearing it is what actually moves the note onto its own line. */
+  flex: 0 0 100%;
+  max-width: none;
+  margin: 0.35rem 0 0;
+  text-align: center;
+}
+.section-cta--left .cta-note { text-align: left; margin-inline: 0; }
 
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -497,6 +515,16 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   .day-track > li::after { transform: scaleY(1) !important; }
   /* The per-day copy must not depend on the node having lit. */
   .day-track > li .day-body > * { opacity: 1 !important; transform: none !important; }
+  /* Scroll-linked accents settle in their finished state rather than tracking
+     the scroll: the information is the line being there, not it arriving. */
+  .finder-steps li::before,
+  .expertise-grid li::before { transform: scaleX(1) !important; }
+  .arc-list > li::after { transform: scaleY(1) !important; }
+  .arc-list > li::before {
+    background: var(--eclipse-copper-l) !important;
+    border-color: var(--eclipse-copper-l) !important;
+  }
+  .finder-step-n { color: var(--gold-deep) !important; }
   /* The mark is simply present rather than resolving into view. */
   .eclipse-mark--sign { opacity: 1 !important; transform: none !important; }
   .day-track > li::before {

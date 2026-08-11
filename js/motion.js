@@ -306,6 +306,24 @@
      one is still off-screen. Each day lights when it crosses the reading line. */
   var dayTrack = document.querySelector('.day-track');
   var dayNodes = dayTrack ? [].slice.call(dayTrack.children) : [];
+
+  /* ── Lists that light as you pass them, and unlight as you go back ───────
+     One shared mechanism for every sequence on the site that should track the
+     scroll rather than fire once. Deliberately NOT latched: these read as a
+     position indicator, and a path that stays lit behind you says nothing
+     about where you are. The reveal system still handles first appearance —
+     this only drives the accent, so scrolling back never hides content.
+
+     Each entry lights an item once its top crosses `line` (a fraction of the
+     viewport), which is roughly where a reader is actually looking. */
+  var LIT_TRACKS = [
+    { sel: '.arc-list > li',       cls: 'is-lit',    line: 0.74 },
+    { sel: '.finder-steps > li',   cls: 'is-active', line: 0.80 },
+    { sel: '.expertise-grid > li', cls: 'is-active', line: 0.82 }
+  ].map(function (t) {
+    t.nodes = [].slice.call(document.querySelectorAll(t.sel));
+    return t;
+  }).filter(function (t) { return t.nodes.length; });
   /* The same hard guarantee the reveal system makes. Each day's copy is hidden
      until its node lights, which means a stalled rAF loop would leave the
      five-day plan blank. Four seconds later it is visible no matter what. */
@@ -364,6 +382,15 @@
       for (var d = 0; d < dayNodes.length; d++) {
         dayNodes[d].classList.toggle(
           'is-lit', dayNodes[d].getBoundingClientRect().top <= line);
+      }
+    }
+
+    for (var t = 0; t < LIT_TRACKS.length; t++) {
+      var track = LIT_TRACKS[t];
+      var mark = window.innerHeight * track.line;
+      for (var n = 0; n < track.nodes.length; n++) {
+        track.nodes[n].classList.toggle(
+          track.cls, track.nodes[n].getBoundingClientRect().top <= mark);
       }
     }
 

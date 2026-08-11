@@ -2067,13 +2067,81 @@ body[data-motion="ready"] .finder-steps li::before {
   transition: transform .7s var(--ease-out-expo);
   transition-delay: calc(var(--i, 0) * 140ms);
 }
-body[data-motion="ready"] .finder-steps.is-revealed li::before { transform: scaleX(1); }
+/* Per item and scroll-linked, not once on the group. `.is-active` is toggled
+   by js/motion.js as each step crosses the reading line, so the three draw in
+   as you arrive and retract as you scroll back — 01/02/03 tracks where you
+   are rather than reporting that you once passed. The stagger delay goes with
+   it: on a scroll-linked state a fixed per-item delay fights the scroll. */
+body[data-motion="ready"] .finder-steps li::before { transition-delay: 0s; }
+body[data-motion="ready"] .finder-steps li.is-active::before { transform: scaleX(1); }
 body[data-motion="ready"] .finder-step-n {
   color: var(--muted);
   transition: color .5s var(--ease-out-quint);
-  transition-delay: calc(var(--i, 0) * 140ms + .2s);
 }
-body[data-motion="ready"] .finder-steps.is-revealed .finder-step-n { color: var(--gold-deep); }
+body[data-motion="ready"] .finder-steps li.is-active .finder-step-n { color: var(--gold-deep); }
+
+/* ── 3b · The homepage Journey Architecture follows the scroll ────────────
+   The vertical spine and its six nodes on the homepage teaser were static.
+   They now light downward as you reach each phase and unlight on the way
+   back, matching the five-day timeline on /eclipse — same idea, same
+   vocabulary, so the teaser and the page it teases move alike.
+
+   The spine fills per segment rather than as one bar down the whole list,
+   for the same reason the /eclipse arc does: a single element cannot fill
+   progressively without knowing every item's height. */
+body[data-motion="ready"] .arc-list::before { opacity: .25; }
+body[data-motion="ready"] .arc-list > li::after {
+  content: '';
+  position: absolute;
+  left: calc(-1.9rem + 5px);
+  top: 12px;
+  height: calc(100% + 1.5rem - 12px);
+  width: 1px;
+  background: var(--eclipse-copper);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform .6s var(--ease-out-expo);
+}
+body[data-motion="ready"] .arc-list > li:last-child::after { display: none; }
+body[data-motion="ready"] .arc-list > li.is-lit::after { transform: scaleY(1); }
+
+body[data-motion="ready"] .arc-list > li::before {
+  transition: background-color .45s var(--ease-out-quint),
+              border-color .45s var(--ease-out-quint),
+              box-shadow .45s var(--ease-out-quint);
+}
+body[data-motion="ready"] .arc-list > li.is-lit::before {
+  background: var(--eclipse-copper-l);
+  border-color: var(--eclipse-copper-l);
+  box-shadow: 0 0 0 4px rgba(198, 152, 120, .16);
+}
+body[data-motion="ready"] .arc-list .arc-key { transition: color .45s var(--ease-out-quint); }
+body[data-motion="ready"] .arc-list > li.is-lit .arc-key { color: #FFFFFF; }
+
+/* ── 3c · The specialists' rules draw as you reach them ───────────────────
+   Four hairlines sat inert above four columns. Each now draws left to right
+   on arrival and retracts on the way back, and brightens under the pointer —
+   the rule is the only thing that moves, so four columns of type stay still. */
+body[data-motion="ready"] .expertise-grid li { position: relative; }
+body[data-motion="ready"] .expertise-grid li::before {
+  content: '';
+  position: absolute;
+  inset: -1px auto auto 0;
+  height: 2px;
+  width: 100%;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .75s var(--ease-out-expo), background-color .4s var(--ease-out-quint);
+}
+body[data-motion="ready"] .expertise-grid li.is-active::before { transform: scaleX(1); }
+/* This component also renders on /eclipse, where gold would be the wrong
+   world. The rule takes the copper the rest of that page uses. */
+body[data-motion="ready"] .section--eclipse .expertise-grid li::before { background: var(--eclipse-copper-l); }
+@media (hover: hover) and (pointer: fine) {
+  body[data-motion="ready"] .expertise-grid li:hover::before { background: var(--paper); }
+  body[data-motion="ready"] .section--eclipse .expertise-grid li:hover::before { background: var(--eclipse-sand); }
+}
 
 /* ── 4 · The Eclipse arc lights as a path ─────────────────────────────────
    Each phase's rule draws left-to-right and its node ignites as the scroll
