@@ -1146,6 +1146,142 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
 }
 .tile-grid p { font-size: 0.9rem; color: rgba(232, 223, 210, .6); margin: 0; }
 
+/* — tiles carrying a photograph —
+   The media variant keeps the same 1px-gap grid so the two states can be mixed
+   while art is still arriving: an illustrated tile and a typographic tile sit
+   side by side without the grid breaking. */
+.tile-grid--media li { display: flex; flex-direction: column; padding: 0; }
+.tile-grid--media .tile-copy { padding: clamp(1.4rem, 3vw, 2rem); }
+/* The copper hairline that draws across each tile on arrival is a ::before on
+   the li. `.tile-media` is positioned and comes later in the DOM, so without
+   this it paints over the hairline and the animation silently disappears the
+   moment a tile gets a photograph. */
+body[data-motion="ready"] .tile-grid--media li::before { z-index: 2; }
+.tile-media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--eclipse-deep);
+}
+.tile-media picture { display: block; width: 100%; height: 100%; }
+.tile-media img,
+.tile-media video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.tile-media video { position: absolute; inset: 0; opacity: 0; transition: opacity .6s var(--ease-out-quint); }
+.tile-media video.is-ready { opacity: 1; }
+
+/* The village this experience belongs to, in that village's own accent. This
+   is the whole point of the tag — Eclipse reading as the six villages
+   sequenced, rather than as a product parked beside them. */
+.tile-village {
+  display: block;
+  font-family: var(--sans);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.7em;
+
+  /* Village accents were chosen to sit on cream, and the darkest of them
+     (Longevity #2E5E5C) lands at 4.44:1 on the Eclipse midnight — under AA for
+     text this size.
+
+     Blending toward paper rather than filtering: `brightness()` is a guess that
+     has to be re-tuned every time an accent changes, and it lifts the already-
+     bright accents further than they need. A fixed 55% mix is deterministic,
+     preserves hue, and puts the whole six-accent range between 6.9:1 and
+     9.4:1 — verified against rendered pixels, not against the token.
+
+     The first declaration is the fallback for engines without color-mix; it
+     resolves to the known-good copper rather than to an unlifted accent. */
+  color: var(--eclipse-copper-l);
+  color: color-mix(in srgb, var(--v, var(--eclipse-copper-l)) 55%, var(--paper));
+}
+
+.tile-placeholder {
+  height: 100%;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: .5rem;
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  background: var(--eclipse-deep);
+  border-bottom: 1px solid rgba(232, 223, 210, .14);
+}
+.tile-placeholder .photo-flag {
+  font-family: var(--sans); font-size: .6rem; font-weight: 600;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--eclipse-copper-l); margin: 0;
+}
+.tile-placeholder .photo-dir {
+  font-size: .82rem; line-height: 1.45;
+  color: rgba(232, 223, 210, .55); margin: 0;
+}
+
+/* — the arc's atmospheric band — */
+.arc-band {
+  position: relative;
+  aspect-ratio: 21 / 9;
+  overflow: hidden;
+  margin-bottom: clamp(2.5rem, 6vw, 4rem);
+  background: var(--eclipse-deep);
+}
+.arc-band picture { display: block; width: 100%; height: 100%; }
+.arc-band img,
+.arc-band video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.arc-band video { position: absolute; inset: 0; opacity: 0; transition: opacity .6s var(--ease-out-quint); }
+.arc-band video.is-ready { opacity: 1; }
+.arc-band .hero-placeholder { position: static; height: 100%; }
+
+/* — page header carrying full-bleed media —
+   /eclipse was the only page whose first screen was flat colour. */
+.page-header--media { position: relative; isolation: isolate; }
+.page-header--media > .wrap { position: relative; z-index: 2; }
+.page-header-media { position: absolute; inset: 0; z-index: 0; }
+.page-header-media picture { display: block; width: 100%; height: 100%; }
+.page-header-media img,
+.page-header-media video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.page-header-media video { position: absolute; inset: 0; opacity: 0; transition: opacity .8s var(--ease-out-quint); }
+.page-header-media video.is-ready { opacity: 1; }
+/* The art-direction card is a working state, not a bug — but it is what Duncan
+   looks at while deciding what to shoot, so it gets composed rather than left
+   jammed in a corner: the brief sits centred, at readable width, under the type
+   it will replace. */
+.page-header-media .hero-placeholder {
+  position: static;
+  height: 100%;
+  justify-content: flex-end;
+  align-items: center;
+  text-align: center;
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+.page-header-media .hero-placeholder .photo-dir {
+  max-width: 40rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: rgba(251, 248, 241, .5);
+}
+.page-header-media .hero-placeholder .photo-flag { color: var(--gold); }
+/* Type sits on photography here, so the scrim is structural, not decorative:
+   it is what guarantees the headline's contrast whatever the frame turns out
+   to be. Stronger at the bottom, where the lead and meta row sit. */
+.page-header-veil {
+  position: absolute; inset: 0; z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(10, 16, 26, .60) 0%, rgba(10, 16, 26, .72) 55%, rgba(10, 16, 26, .88) 100%);
+}
+.page-header--media h1,
+.page-header--media .lead { text-shadow: 0 1px 24px rgba(10, 16, 26, .55); }
+
+@media (max-width: 900px) {
+  .tile-grid--media .tile-media { aspect-ratio: 16 / 10; }
+}
+
 /* — fit checklist + safety note — */
 .checklist-wrap {
   display: grid;

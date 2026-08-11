@@ -22,6 +22,15 @@
    ========================================================================== */
 'use strict';
 
+const { VILLAGES } = require('./villages.js');
+
+/* Village lookup by key, so a signature experience can be tagged with the
+   village it happens in and inherit that village's accent. Eclipse used to sit
+   beside the six villages as a separate product; tagging makes it the proof
+   that the village system works. Pulling from VILLAGES rather than retyping
+   colours means a village rename or recolour can never desync this page. */
+const V = Object.fromEntries(VILLAGES.map((v) => [v.key, v]));
+
 module.exports = {
   key: 'eclipse',
   path: '/eclipse',
@@ -43,10 +52,23 @@ module.exports = {
   sections: [
     {
       type: 'pageHeader',
+      id: 'eclipse-hero',
       eyebrow: 'Signature journey',
       headline: 'Eclipse',
       lead: 'A curated recovery journey through Saint Lucia — designed by practitioners and health professionals, brought to life through place, hospitality and experience.',
-      meta: ['Not another retreat. A return to rhythm.', '13°54′N 60°58′W']
+      meta: ['Not another retreat. A return to rhythm.', '13°54′N 60°58′W'],
+
+      /* Eclipse was the only page on the site whose first screen was flat
+         colour. Until the photograph exists this renders a visible art-direction
+         card rather than a fake image — the same rule the rest of the project
+         follows. Drop `src` (and `widths`) in and it becomes the hero. */
+      img: {
+        tone: 'twilight',
+        ratio: '21:9',
+        dir: 'Twilight over open ocean, a low moon rising, the Pitons as dark silhouettes against deep indigo. Faint reflection on near-still water. Almost monochrome. No people, no buildings.'
+      }
+      /* video: { webm: '/assets/video/eclipse-hero-loop.webm',
+                  mp4:  '/assets/video/eclipse-hero-loop.mp4' } */
     },
 
     /* ── RECOGNITION ────────────────────────────────────────────────────── */
@@ -108,7 +130,12 @@ module.exports = {
           'Integration after returning home'
         ]
       },
-      closing: 'Rainforest before deeper reflection. Movement before emotional release. Restoration after intensity. Ocean and sound for integration.'
+      closing: 'Rainforest before deeper reflection. Movement before emotional release. Restoration after intensity. Ocean and sound for integration.',
+      /* The island-wide repositioning, stated structurally rather than by
+         naming a property — the arrangement can change between editions and
+         this sentence still holds. Consistent with the claim discipline applied
+         across the rest of the site. */
+      footnote: 'Each edition is based at a single anchor property, with the signature experiences taking place across the villages — so the journey moves through the island rather than staying in one resort.'
     },
 
     /* ── THE ARC ────────────────────────────────────────────────────────── */
@@ -116,7 +143,17 @@ module.exports = {
       type: 'journeyArc',
       id: 'arc',
       headline: 'Rhythm returns in phases.',
-      lead: 'Depletion is rarely created in a single moment. Recovery should not be treated as one either. Eclipse follows a gradual progression that respects readiness and avoids turning wellbeing into another performance demand.',
+      /* The rhythm thesis lands here rather than in the recognition section.
+         Recognition is where a reader asks "is this me?" — an explanation
+         interrupts that. Here it does real work: it is the reason the journey
+         is phased at all. */
+      lead: 'Rhythm governs how you sleep, how you feel, how you relate and how you move. When it is disrupted the body compensates and the mind accelerates. Depletion is rarely created in a single moment, and recovery should not be treated as one either — so Eclipse follows a gradual progression that respects readiness rather than turning wellbeing into another performance demand.',
+
+      img: {
+        tone: 'twilight',
+        ratio: '21:9',
+        dir: 'One wide atmospheric band above the six phases — pre-dawn sea, the horizon just separating from the sky. Nearly abstract, calm enough to sit under type. No landmarks.'
+      },
       phases: [
         { k: 'ARRIVE',   s: 'Safety and softening' },
         { k: 'REGULATE', s: 'Sleep, nourishment and nervous-system support' },
@@ -149,18 +186,51 @@ module.exports = {
       type: 'tileGrid',
       id: 'experiences',
       eyebrow: 'Signature Eclipse experiences',
-      headline: 'Nine experiences, sequenced across the journey.',
+      headline: 'Nine experiences, across the whole island.',
+      lead: 'Each one happens in the village that suits it — the rainforest for reflection, the water for release, the cacao estates for nourishment. Eclipse is the six villages sequenced into a single journey.',
+
+      /* Descriptions come from the Executive Pack, trimmed to roughly a line
+         each. `img` carries art direction until a photograph exists; a tile
+         with no photograph renders as type in its village accent rather than
+         as an empty box, so art can arrive one experience at a time. */
       tiles: [
-        { t: 'First Light',         s: 'Arrival supper, cacao and guided stillness' },
-        { t: 'The Rising Tide',     s: 'Walking meditation and rhythm-led movement' },
-        { t: 'Earth Descent',       s: 'Pitons, waterfall and volcanic nature journey' },
-        { t: 'The Phoenix Passage', s: 'Breathwork and guided visualization' },
-        { t: 'The Tides Within',    s: 'Sound, breath and emotional integration' },
-        { t: 'Nightfall',           s: 'Sleep-focused restoration with Yoga Nidra' },
-        { t: 'The Learning Salon',  s: 'Energy audit, learning and recovery pathways' },
-        { t: 'TheLifeCo Therapies', s: 'Optional physiological recovery support' },
-        { t: 'Ocean Within',        s: 'Twilight sound, water and closing integration' }
-      ]
+        { t: 'First Light', village: V.heritage,
+          s: 'A five-course plant-based supper with cacao ceremony, and a guided arrival into stillness.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'A long table at dusk, cacao vessels, candlelight, plant-based courses. Warm light against deep shadow. No faces.' } },
+
+        { t: 'The Rising Tide', village: V.movement,
+          s: 'Beachside walking meditation flowing into soca-inspired somatic movement.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'Empty beach at first light, footprints in wet sand, shallow surf. Movement implied, no bodies.' } },
+
+        { t: 'Earth Descent', village: V.rainforest,
+          s: 'A coastal journey through the Pitons, waterfalls and volcanic earth, ending in release.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'Waterfall in rainforest shade, or steam lifting off volcanic earth. Deep greens against black rock.' } },
+
+        { t: 'The Phoenix Passage', village: V.rainforest,
+          s: 'Guided breathwork and visualization, to process emotion and reach inner clarity.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'Near-abstract: light through smoke, or breath visible in cool air. Non-literal.' } },
+
+        { t: 'The Tides Within', village: V.ocean,
+          s: 'Breathwork and sound to release what is held, closing with a lantern release over water.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'Lantern release over dark water — floating lights and their reflections, night. The strongest image in the set.' } },
+
+        { t: 'Nightfall', village: V.longevity,
+          s: 'A sleep-focused evening: nourishing dinner, sound bath, Yoga Nidra, nervous-system downshift.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'A dark room, one low lamp, linen, a singing bowl. Stillness. No people.' } },
+
+        { t: 'The Learning Salon', village: V.connection,
+          s: 'A guided energy audit and group session, bringing clarity to patterns and recovery.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'A circle of empty chairs in daylight, notebooks, an open room. Anticipation rather than activity.' } },
+
+        { t: 'Restorative Therapies', village: V.longevity,
+          s: 'Optional advanced therapies supporting detox, recovery and nervous-system regulation.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'Treatment room, warm not clinical. Linen, low light, no faces and no branding.' } },
+
+        { t: 'Ocean Within', village: V.ocean,
+          s: 'An immersive sound and vocal journey at twilight, paired with float therapy.',
+          img: { tone: 'twilight', ratio: '4:5', dir: 'Twilight float — still water at dusk, or a single figure seen from far above. Near-abstract.' } }
+      ],
+      footnote: 'Experiences are sequenced to the arc and paced to you. Final selection is set during guided entry, before anything is booked.'
     },
 
     /* ── THE TEAM ───────────────────────────────────────────────────────── */
@@ -183,10 +253,17 @@ module.exports = {
       id: 'fit',
       eyebrow: 'Is this for you?',
       headline: 'Eclipse may be for you if…',
+      /* The Executive Pack's three guest profiles, reworded ungendered — the
+         pack frames Eclipse for women on p.10 and then devotes p.33 to men, so
+         it contradicts itself; the site stays open. Named profiles are far more
+         self-identifying than "you may be…" bullets, which is what a page whose
+         next step is a conversation actually needs. The last three lines stay
+         as conditions rather than characters, because readiness is not a type
+         of person. */
       items: [
-        'You are still performing, but recovery no longer holds.',
-        'Rest helps briefly, but does not feel sufficient.',
-        'Your pace no longer matches who you are becoming.',
+        'The overextended achiever — still performing at a high level, but recovery no longer holds. Sleep is inconsistent. Energy is managed rather than restored.',
+        'At a threshold — sensing a shift personally, physically or relationally, where your current pace no longer matches who you are becoming.',
+        'The private leader — carrying significant responsibility with little room for emotional release, and needing discretion, depth and precision.',
         'You want depth without a harsh or overly clinical environment.',
         'You value privacy, thoughtful guidance and exceptional hospitality.',
         'You are ready to participate in recovery, not simply observe it.'
@@ -202,9 +279,12 @@ module.exports = {
       skin: 'eclipse',
       flip: true,
       headline: 'The journey does not end at departure.',
+      /* Was "a pathway for integration afterwards" — vague where the Executive
+         Pack is specific. Ninety days, a named form of support, and the honest
+         framing that this is the point where change either holds or fades. */
       body: [
-        'Guests return to the same responsibilities, relationships and environments. What changes is how they meet them.',
-        'Eclipse includes preparation before arrival and a pathway for integration afterwards, helping insights become lived practices rather than distant memories.'
+        'Guests return to the same responsibilities, relationships and environments. What changes is how they meet them. This is the point where change either holds or slowly fades.',
+        'So Eclipse continues for ninety days after departure. Guidance carries on through your concierge, alongside an integration practitioner who helps insight become something you actually live rather than something you remember.'
       ],
       closing: 'Return with greater rhythm, clarity and capacity.',
       cta: { label: 'Speak with an advisor', href: '/about#contact' },
@@ -226,6 +306,9 @@ module.exports = {
       headline: 'Not sure Eclipse is the one?',
       lead: 'The Journey Finder starts from what you need, and shows you the parts of the island that answer it — Eclipse included, when it fits.',
       secondary: { label: 'Explore the villages', href: '/explore#villages' },
+      /* The loop already exists and /explore already uses it — this CTA was
+         showing the same still without the motion behind it. */
+      video: { webm: '/assets/video/cta-dawn-loop.webm', mp4: '/assets/video/cta-dawn-loop.mp4' },
       img: {
         base: '/assets/cta/cta-dawn', widths: [771], w: 771, h: 330,
         src: '/assets/cta/cta-dawn-771.jpg', alt: ''
