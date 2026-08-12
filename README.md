@@ -397,6 +397,25 @@ tilt, nothing that pins or scrubs.
 
 All hover-dependent effects are gated on `(hover: hover) and (pointer: fine)`.
 
+**The masked word slot must be bigger than the line box.** An `overflow: hidden`
+inline-block is only as tall as its line box, and at `line-height: 1.14` a Libre
+Caslon Display line box is *shorter than the face's own descenders*. For months
+the mask sat across the glyphs and sheared the tail off every `g`, `y`, `p` and
+comma in every split headline — and, because italic glyphs overhang their
+advance width, the right edge of italic words too. It reads as slightly-off
+typography rather than as a bug, which is why it survived so long.
+
+The slot is now padded out past the glyphs (`0.08em 0.16em 0.3em`) with matching
+negative margins, so the margin box — what `vertical-align: bottom` aligns and
+what the line box measures — is unchanged and only the paintable area grows.
+Line breaks are identical before and after, which is the check that it is right.
+
+Two things to keep in mind if this is ever touched: the hidden transform has to
+clear the *padded* slot (`translateY(calc(108% + 0.4em))`, not `108%`) or the
+word shows through the new padding before it rises — the mask failing open; and
+verifying it needs the words parked at rest **with the mask still on**, because
+headless captures at load, before the reveal transition has run.
+
 ### The WELL Compass is the one interactive diagram
 
 The eight directions were bare words on every surface — the site, the brochure,

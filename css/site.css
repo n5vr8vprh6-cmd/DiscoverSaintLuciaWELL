@@ -1646,14 +1646,36 @@ body[data-motion="ready"] .tile-grid--media li::before { z-index: 2; }
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Split headlines: words rise out of masked slots ──────────────────── */
+
+/* THE SLOT MUST BE BIGGER THAN THE LINE BOX, or it cuts the type.
+
+   An `overflow: hidden` inline-block is only as tall as its line box, and at
+   `line-height: 1.14` a Caslon Display line box is SHORTER than the face's
+   descenders. So the mask sat across the glyphs and sheared the tails off
+   every g, y, p and comma in every split headline — and, because italic
+   glyphs overhang their advance width, the right edge of italic words too
+   ("more than a break?" lost the question mark's tail).
+
+   The fix is to grow the clip region without moving anything: pad the slot out
+   past the glyphs, then pull the padding back with matching negative margins.
+   The margin box — which is what `vertical-align: bottom` aligns and what the
+   line box measures — is unchanged, so metrics, word spacing and baselines are
+   all exactly as before. Only the area the browser is willing to paint grows.
+
+   Values are in em so they track the font size through every clamp(). */
 body[data-motion="ready"] [data-splitted] .w {
   display: inline-block;
   overflow: hidden;
   vertical-align: bottom;
+  padding: 0.08em 0.16em 0.3em;
+  margin: -0.08em -0.16em -0.3em;
 }
 body[data-motion="ready"] [data-splitted] .wi {
   display: inline-block;
-  transform: translateY(108%);
+  /* Clears the PADDED slot, not just the line box. At a plain 108% the word
+     would sit inside the new bottom padding and be visible before it rises,
+     which is the mask failing open. */
+  transform: translateY(calc(108% + 0.4em));
   transition: transform .78s var(--ease-out-expo);
   transition-delay: calc(var(--i, 0) * 42ms);
   will-change: transform;
