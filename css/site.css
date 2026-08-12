@@ -1194,10 +1194,16 @@ html:not([data-finder="app"]) .finder-wash { display: none; }
 html[data-finder="app"] .result-head {
   display: grid;
   gap: clamp(1.5rem, 4vw, 3rem);
-  /* `start`, not `center`. The ring is taller than the copy beside it, so
-     centring lifted its top edge above the head and slid RESTORE — the 12
-     o'clock direction — underneath the sticky tool bar. */
-  align-items: start;
+  /* Centred against each other — the copy reads level with the ring rather
+     than hanging off its top edge.
+
+     This was briefly `start`, because centring appeared to slide RESTORE (the
+     12 o'clock direction) under the sticky bar. That was a misread: the ring
+     is the taller item, so it defines the row and its own top edge cannot rise
+     above it. The real cause was the result having no top padding and
+     `resultEl.focus()` scrolling the head under the bar — both fixed since, so
+     centring is safe. */
+  align-items: center;
   max-width: none;
 }
 @media (min-width: 900px) {
