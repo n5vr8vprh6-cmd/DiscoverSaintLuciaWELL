@@ -236,6 +236,51 @@ Everything works with JavaScript off. The ladder, in order of what fails first:
   failsafe reveals everything regardless, so content can never be lost to an
   interrupted transition.
 
+### /journey is an application, and that is a fourth rung on this ladder
+
+`/journey` presents as a tool rather than a page — global chrome gone, one
+question filling the viewport, a named step rail, a distinct result surface.
+None of that is rendered by the server.
+
+**The page is sent exactly as an ordinary destination page, and JavaScript
+promotes it.** Global header, page header, the six-village explainer, the
+browse-instead section, the closing CTA and the global footer are all in the
+HTML. With scripting off, that *is* the page and it is complete. App mode is
+CSS keyed on `html[data-finder="app"]`, and that attribute is only ever set by
+script — so the fallback needs no maintenance to stay correct.
+
+**The stamp is an inline `<script>` in `<head>` and it cannot move.** Every
+other script on the site is `defer`red, which runs after parse and after first
+paint. Promoting there shows the whole website — header, nav, footer — and
+snatches it away a frame later, which is worse than never leaving it. `page.js`
+emits the stamp before the stylesheets for any page declaring `appShell: true`.
+Verified in the build: stamp at char 73, first stylesheet at 1503. It is safe
+as inline script only because no CSP is set; if one is ever added this needs a
+hash or nonce, and **the symptom of forgetting will be the flash, not an
+error.**
+
+Two traps found while building it:
+
+- **`.finder-steps` was already taken.** It is the homepage's "find your way
+  through the island" 1-2-3 list, and it is registered in `js/motion.js`
+  `LIT_TRACKS` for scroll-lighting. The tool's step rail is `.finder-rail` —
+  reusing the name inherited the homepage's borders and let the scroll observer
+  drive the rail.
+- **Finder styles must stay in `site.css`.** `lib/page.js` drops `site.css` for
+  any page declaring its own `styles` array (that is how Foundations keeps our
+  components out). Moving these rules to a `css/finder.css` would silently strip
+  the entire consumer component sheet from `/journey`.
+
+The shaping transition between the last answer and the result is **not a timer
+pretending to compute** — scoring is synchronous and instant. The markup is
+built first and the reveal covers it, it is skipped entirely under
+`prefers-reduced-motion`, and it never runs on a restored `#r=` link, because
+someone opening a friend's result has answered nothing.
+
+**Known wart:** steps do not push history, so browser Back at question 3 leaves
+the tool entirely. Tolerable when this was a page; more jarring now it presents
+as software. Roughly fifteen lines to fix and the first thing to do next.
+
 ### Two things that must not be done with scroll
 
 Both are inherited lessons, and both are load-bearing:

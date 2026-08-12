@@ -25,6 +25,19 @@
   var resultEl = document.getElementById('finder-result');
   if (!dataEl || !appEl || !staticEl || !formEl || !resultEl) return;
 
+  /* App-shell furniture. Optional on purpose: if any of it is missing the tool
+     still runs as a plain in-page quiz, which is what it was before. */
+  var launchEl = document.getElementById('finder-launch');
+  var barEl = document.getElementById('finder-bar');
+  var stepsEl = document.getElementById('finder-rail');
+  var exitEl = document.getElementById('finder-exit');
+  var washEl = document.getElementById('finder-wash');
+  var shapingEl = document.getElementById('finder-shaping');
+  var beginEl = document.getElementById('finder-begin');
+
+  var reduced = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   var DATA;
   try { DATA = JSON.parse(dataEl.textContent); }
   catch (e) { return; }          /* leave the static explainer in place */
@@ -40,19 +53,52 @@
   staticEl.hidden = true;
   appEl.hidden = false;
 
+  /* The bar is up from the first frame, not from Begin. Without it the launch
+     screen carries no brand mark and no way out at all — the global header it
+     replaced is gone by then. The step rail is the part that waits, since
+     there is no step to be on yet. */
+  if (barEl) barEl.hidden = false;
+  if (stepsEl) stepsEl.hidden = true;
+
   var questions = DATA.questions;
   var fieldsets = Array.prototype.slice.call(formEl.querySelectorAll('.finder-q'));
-  var bar = formEl.querySelector('.finder-progress-bar');
+  var stepNodes = stepsEl
+    ? Array.prototype.slice.call(stepsEl.querySelectorAll('li'))
+    : [];
   var backBtn = formEl.querySelector('[data-finder-back]');
   var nextBtn = formEl.querySelector('[data-finder-next]');
   var answers = {};
   var step = 0;
 
+  /* ── The wash ─────────────────────────────────────────────────────────────
+     The whole of the "the destination responds to you" idea, done with the
+     accent colours the six villages already carry rather than a photograph per
+     answer. After each choice the leading village is whatever the existing
+     scoring already says it is, and its accent cross-fades in behind the shell.
+
+     Deliberately faint. It should register as the room changing colour, not as
+     a background image — if a visitor notices it as an effect it is too strong.
+     Reduced motion gets the colour without the transition. */
+  function wash() {
+    if (!washEl) return;
+    var top = score()[0];
+    if (!top) return;
+    washEl.style.setProperty('--wash', top.color);
+    washEl.classList.add('is-on');
+  }
+
   /* ── Navigation ─────────────────────────────────────────────────────────── */
+  function lightSteps(i) {
+    stepNodes.forEach(function (n, x) {
+      n.classList.toggle('is-active', x === i);
+      n.classList.toggle('is-done', x < i);
+    });
+  }
+
   function show(i, userInitiated) {
     step = i;
     fieldsets.forEach(function (fs, n) { fs.hidden = n !== i; });
-    bar.style.width = Math.round(((i + 1) / questions.length) * 100) + '%';
+    lightSteps(i);
     backBtn.hidden = i === 0;
     nextBtn.textContent = i === questions.length - 1 ? 'See my journey' : 'Continue';
     nextBtn.disabled = !answers[questions[i].id];
@@ -73,7 +119,33 @@
     if (e.target.type !== 'radio') return;
     answers[e.target.name] = e.target.value;
     nextBtn.disabled = false;
+    wash();
   });
+
+  /* ── STATE 0 → 1 ───────────────────────────────────────────────────────── */
+  function begin() {
+    if (launchEl) launchEl.hidden = true;
+    formEl.hidden = false;
+    if (stepsEl) stepsEl.hidden = false;
+    show(0, true);
+    track('finder_begin', {});
+  }
+  if (beginEl) beginEl.addEventListener('click', begin);
+
+  /* Exit goes back where they came from, but only if that was us — an
+     off-site referrer must not be able to steer this button, and a direct
+     arrival has no history to go back to. */
+  if (exitEl) {
+    exitEl.addEventListener('click', function () {
+      var from = document.referrer;
+      var internal = false;
+      try { internal = !!from && new URL(from).origin === location.origin; }
+      catch (e) { internal = false; }
+      track('finder_exit', { step: step });
+      if (internal && history.length > 1) history.back();
+      else location.href = '/';
+    });
+  }
 
   backBtn.addEventListener('click', function () {
     if (step > 0) show(step - 1, true);
@@ -133,20 +205,86 @@
     return out.slice(0, 6);
   }
 
-  function intentionLabel() {
-    var q = questions[0];
-    for (var i = 0; i < q.options.length; i++) {
-      if (q.options[i].value === answers[q.id]) return q.options[i];
+  /* ── STATE 5 · shaping ────────────────────────────────────────────────────
+     A transition, not a progress bar, and specifically not a timer pretending
+     to compute. The scoring is synchronous and instant; what takes time is the
+     visitor's eye moving from a question to a result, and this covers that. The
+     beats are named after what the four answers actually contributed, so the
+     pause says something rather than just occupying the moment.
+
+     It is skipped entirely on `instant` — which is how a shared #r= link
+     arrives. Someone opening a friend's result has not answered anything, and
+     performing a computation at them would be theatre. */
+  function shaping(then, instant) {
+    if (instant || reduced || !shapingEl) return then();
+    formEl.hidden = true;
+    shapingEl.hidden = false;
+    shapingEl.classList.add('is-running');
+
+    var beats = shapingEl.querySelectorAll('.shaping-beats li');
+    var done = false;
+    function finishUp() {
+      if (done) return;
+      done = true;
+      shapingEl.hidden = true;
+      shapingEl.classList.remove('is-running');
+      then();
     }
-    return null;
+    /* Driven by the animation itself so the pause is exactly as long as the
+       reveal, and a failsafe in case animationend never fires (a background
+       tab will not run it). */
+    var last = beats[beats.length - 1];
+    if (last) last.addEventListener('animationend', finishUp, { once: true });
+    setTimeout(finishUp, 1600);
+  }
+
+  /* ── The Compass readout ──────────────────────────────────────────────────
+     Which directions the answers leaned toward — NAMED, NOT MEASURED.
+
+     We do hold real weighted totals and could render "Restore ●●●●●". We do
+     not, on purpose. Dots imply a measurement, and four questions cannot
+     support one: the difference between a four and a five would be an artefact
+     of how the weights were hand-tuned, not something we learned about the
+     person. Naming the directions is the honest version of the same signal —
+     it still shows the tool understood them, without dressing a preference up
+     as a score.
+
+     Directions come from the answered options' own compass labels, so this can
+     never drift from what the Compass on the homepage says.
+
+     WHY IT IS SHORT, AND WHY IT IS NOT PADDED OUT.
+     Only question 1 carries compass labels, because only question 1 asks about
+     intention. "With a partner" and "Gentle" are real answers but they are not
+     compass directions, and assigning them one — Reconnect for a partner, say —
+     would be us inventing a reading of the person rather than reporting what
+     they told us. So this returns one direction, plus Return when the
+     recognition answer is yes: that gate is what surfaces Eclipse, and Return
+     is the Eclipse arc's own sixth phase (the same provenance recorded in
+     content/home.js for the homepage Compass).
+
+     One or two honest directions beats five padded ones. If a longer readout is
+     ever wanted, the way to get it is more questions, not more inference. */
+  function compassDirections() {
+    var out = [];
+    questions.forEach(function (q) {
+      var value = answers[q.id];
+      if (!value) return;
+      q.options.forEach(function (o) {
+        if (o.value === value && o.compass && out.indexOf(o.compass) === -1) {
+          out.push(o.compass);
+        }
+      });
+    });
+    if (answers.recognition === 'yes' && out.indexOf('Return') === -1) out.push('Return');
+    return out;
   }
 
   /* ── Result ─────────────────────────────────────────────────────────────── */
-  function finish() {
+  function finish(instant) {
     var matched = score();
     var exps = experiencesFor(matched);
     var wantsEclipse = answers.recognition === 'yes';
-    var intent = intentionLabel();
+    var directions = compassDirections();
 
     track('finder_complete', {
       intention: answers.intention,
@@ -188,12 +326,25 @@
         '</div>'
       : '';
 
-    resultEl.innerHTML =
+    var compassBlock = directions.length
+      ? '<div class="result-compass">' +
+          '<p class="result-compass-label">Your Compass</p>' +
+          '<ul class="result-compass-list">' + directions.map(function (d) {
+            return '<li>' + esc(d) + '</li>';
+          }).join('') + '</ul>' +
+        '</div>'
+      : '';
+
+    /* "You began with · Restore" used to sit here, directly above a Compass
+       readout whose first chip was also Restore. Two labels, one fact. The
+       Compass block keeps it, because that is the name of the system this
+       belongs to; the loose line goes. */
+    var html =
       '<div class="result-head">' +
-        (intent ? '<p class="result-intention">You began with · ' + esc(intent.compass || intent.label) + '</p>' : '') +
         '<h3>Your Saint Lucia begins here.</h3>' +
         '<p class="lead">Three villages answer what you named. They are a starting point, not a package — ' +
         'an advisor will shape the sequence around your time, your energy and who you are traveling with.</p>' +
+        compassBlock +
       '</div>' +
       '<ul class="village-grid result-villages">' + villageCards + '</ul>' +
       (expItems ? '<div class="result-block"><h4>Experiences inside them</h4><ul class="result-exp">' + expItems + '</ul></div>' : '') +
@@ -223,17 +374,27 @@
         '<p class="capture-status" id="capture-status" role="status" aria-live="polite"></p>' +
       '</form>';
 
-    formEl.hidden = true;
-    resultEl.hidden = false;
-    resultEl.focus();
+    /* The markup is built before the transition starts, so the pause covers
+       work that is genuinely finished rather than standing in for work that
+       has not begun. */
+    shaping(function () {
+      resultEl.innerHTML = html;
+      if (launchEl) launchEl.hidden = true;
+      formEl.hidden = true;
+      resultEl.hidden = false;
+      /* The step rail has nothing left to point at once the questions are
+         done, and leaving "Fit" lit implies there is more to come. */
+      if (stepsEl) stepsEl.hidden = true;
+      resultEl.focus();
+      wash();
+      wireResult();
+    }, instant);
 
     /* Shareable and returnable without us storing anything. */
     try {
       var hash = '#r=' + [answers.intention, answers.companions, answers.pace, answers.recognition].join('-');
       history.replaceState(null, '', location.pathname + hash);
     } catch (e) { /* non-fatal */ }
-
-    wireResult();
   }
 
   function wireResult() {
@@ -245,6 +406,8 @@
         formEl.hidden = false;
         resultEl.hidden = true;
         resultEl.innerHTML = '';
+        if (stepsEl) stepsEl.hidden = false;
+        if (washEl) washEl.classList.remove('is-on');
         history.replaceState(null, '', location.pathname);
         show(0, true);
         formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -317,16 +480,33 @@
     });
   }
 
-  /* ── Restore a shared result ────────────────────────────────────────────── */
+  /* ── Restore a shared result ──────────────────────────────────────────────
+     `instant` — someone arriving on a friend's link has answered nothing, so
+     performing a "shaping your journey" sequence at them would be pure
+     theatre. They get the result directly, which is what they clicked for. */
   var m = /#r=([a-z]+)-([a-z]+)-([a-z]+)-([a-z]+)/.exec(location.hash);
   if (m) {
     answers = { intention: m[1], companions: m[2], pace: m[3], recognition: m[4] };
     var valid = questions.every(function (q) {
       return q.options.some(function (o) { return o.value === answers[q.id]; });
     });
-    if (valid) { finish(); return; }
+    if (valid) {
+      if (launchEl) launchEl.hidden = true;
+      finish(true);
+      return;
+    }
     answers = {};
   }
 
-  show(0);
+  /* STATE 0. The launch screen owns the first frame; the questions stay hidden
+     until Begin. Where there is no app shell — the component rendered without
+     its furniture — fall through to the old behaviour of opening on question
+     one, so this file degrades rather than dead-ends. */
+  if (launchEl) {
+    formEl.hidden = true;
+    show(0);
+  } else {
+    formEl.hidden = false;
+    show(0);
+  }
 })();

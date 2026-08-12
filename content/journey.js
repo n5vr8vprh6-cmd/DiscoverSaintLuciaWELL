@@ -74,7 +74,13 @@ const QUESTIONS = [
 module.exports = {
   key: 'journey',
   path: '/journey',
+  /* Still the destination layout: the server sends the ordinary page, header
+     and footer and all, so a visitor without JavaScript gets a complete
+     explainer rather than a chrome-less dead end. `appShell` adds one inline
+     stamp in <head> that promotes it to a full-screen tool before first paint —
+     see the note in lib/page.js for why it cannot be deferred. */
   layout: 'destination',
+  appShell: true,
   surface: 'consumer',
   title: 'Find My WELL Journey — Discover Saint Lucia WELL',
   description: 'Answer four questions and see which of Saint Lucia’s six wellness villages match what you actually need — with the experiences and places inside them.',
@@ -98,12 +104,16 @@ module.exports = {
        It is also the primary consumer conversion path, so it now gets the same
        editorial framing every other page has — and, importantly, a route for
        the visitor who decides part-way through that they would rather browse. */
+    /* Everything outside the Finder — this header, the browse-instead section
+       and the closing CTA — is the NO-JS page. In app mode all of it is hidden
+       before first paint and the Finder takes the viewport. Do not thin it out
+       on the assumption nobody sees it: without JavaScript, it is the page. */
     {
       type: 'pageHeader',
       eyebrow: 'The WELL Journey Finder',
       headline: 'Begin with how you want to feel.',
-      lead: 'Four questions, about a minute, and the parts of Saint Lucia that answer what you actually need. No account, and nothing is stored.',
-      meta: ['Four questions', 'About a minute', 'Nothing stored']
+      lead: 'Four questions, about a minute, and the parts of Saint Lucia that answer what you actually need.',
+      meta: ['Four questions', 'About a minute', 'No account']
     },
 
     {
@@ -113,6 +123,43 @@ module.exports = {
       lead: 'There are no wrong answers here. Start with whatever is loudest.',
       questions: QUESTIONS,
       villages: VILLAGES,
+
+      toolName: 'The WELL Journey Finder',
+
+      /* STATE 0. The launch screen carries what used to be spread across a page
+         header and a section head: what this is, how long it takes, and the one
+         honest line about data. It is also the only place that offers a way out
+         other than Exit — once someone has started, we stop inviting them to
+         leave. */
+      launchHeadline: 'Begin with how you want to feel.',
+      launchLead: 'Four questions. About a minute. We match what you are looking for with the parts of Saint Lucia that fit.',
+      beginLabel: 'Begin',
+
+      /* ONE trust statement, not three.
+         This used to appear in the page lead, again as a meta chip, and a third
+         time under the form — and repetition at that volume starts to sound
+         like protesting. It was also drifting out of true: the capture form on
+         the result *does* transmit an address once the ESP is wired, so a flat
+         "nothing is stored" was about to become wrong. This is precise about
+         what it covers — the answers — and the email consent line on the result
+         speaks for itself separately. */
+      privacy: 'Your answers stay in your browser. No account needed.',
+
+      altPrefix: 'Not ready?',
+      altLabel: 'Explore Saint Lucia WELL instead',
+
+      /* The four step names, lit in turn.
+         The fourth is FIT, not "Depth". Question 4 is the Eclipse gate and it is
+         deliberately worded as recognition rather than diagnosis — see the
+         SCORING note at the top of this file. A step labelled "Depth" grades the
+         person answering it, which is the one thing this question was written to
+         avoid. */
+      steps: ['Intention', 'Company', 'Pace', 'Fit'],
+
+      /* STATE 5. Beats that settle as the result renders — the reveal covers the
+         work rather than a timer pretending there is some. */
+      shapingBeats: ['Intention', 'Place', 'Pace', 'Journey'],
+
       staticIntro: 'Saint Lucia WELL organizes the island into six wellness villages — six ways of understanding what each part of the island contributes to a journey. Below is each one, with what it is best suited to. To have a journey shaped around you, speak with a Saint Lucia WELL Advisor.',
       advisorCta: { label: 'Speak with an advisor', href: '/about#contact' },
       exploreCta: { label: 'Explore all six villages', href: '/explore#villages' }

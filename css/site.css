@@ -796,18 +796,6 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
 .finder-static .village-grid { margin-top: 3rem; }
 
 .finder-form { max-width: 760px; }
-.finder-progress {
-  height: 2px;
-  background: var(--hairline-l);
-  margin-bottom: clamp(2rem, 4vw, 3rem);
-}
-.finder-progress-bar {
-  display: block;
-  height: 100%;
-  width: 25%;
-  background: var(--gold);
-  transition: width .5s var(--ease-out-quint);
-}
 
 .finder-q { border: 0; margin: 0; padding: 0; }
 .finder-q legend { display: block; width: 100%; padding: 0; margin-bottom: 2rem; }
@@ -829,6 +817,13 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   margin-bottom: 0.4em;
   text-wrap: balance;
 }
+/* js/journey.js moves focus here on each step so screen-reader and keyboard
+   users are not stranded on a fieldset that just became hidden. It is a
+   heading, not a control — the ring is meaningful to assistive tech via the
+   focus event, and only noise on screen, where a whole new question appearing
+   is already unmissable. */
+.finder-q-text:focus { outline: none; }
+
 .finder-q-help {
   display: block;
   font-size: var(--fs-small);
@@ -836,7 +831,19 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   max-width: 52ch;
 }
 
+/* Two, three or five options should not all stack in one column on a wide
+   screen — a five-item list reads as a form, a two-item list as a decision. */
 .finder-opts { display: grid; gap: 0.75rem; }
+@media (min-width: 720px) {
+  .finder-opts--2 { grid-template-columns: 1fr 1fr; }
+  .finder-opts--3 { grid-template-columns: repeat(3, 1fr); }
+  .finder-opts--4 { grid-template-columns: 1fr 1fr; }
+  /* Five stacked cards plus a headline and the actions do not fit a laptop
+     viewport, and a question that scrolls is not one decision on one screen.
+     Two columns, last card spanning, keeps the whole choice visible. */
+  .finder-opts--5 { grid-template-columns: 1fr 1fr; }
+  .finder-opts--5 > li:last-child { grid-column: 1 / -1; }
+}
 .finder-opts input {
   position: absolute;
   opacity: 0;
@@ -855,12 +862,36 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   transition: border-color .22s var(--ease-out-quint),
               background-color .22s var(--ease-out-quint);
 }
-.finder-opts label:hover { border-color: var(--muted); }
+/* Hover lifts and warms — gated, because a touch device that reports hover
+   incorrectly leaves cards stuck in a raised state. Transform is on the label
+   itself rather than a wrapper so the whole card moves as one object. */
+@media (hover: hover) and (pointer: fine) {
+  .finder-opts label:hover {
+    border-color: var(--gold-deep);
+    background: var(--paper-2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px -12px var(--ink);
+  }
+}
 .finder-opts input:checked + label {
   border-color: var(--gold-deep);
   background: var(--paper-2);
   box-shadow: inset 3px 0 0 var(--gold-deep);
 }
+/* Selection has to read as committed, not just hovered — the two states use
+   the same warmed background, so the mark is what separates them. */
+.finder-opts input:checked + label::after {
+  content: "";
+  position: absolute;
+  top: 1.05rem;
+  right: 1.1rem;
+  width: 9px;
+  height: 5px;
+  border-left: 1.5px solid var(--gold-deep);
+  border-bottom: 1.5px solid var(--gold-deep);
+  transform: rotate(-45deg);
+}
+.finder-opts label { position: relative; }
 .finder-opts input:focus-visible + label {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
@@ -881,6 +912,260 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   gap: 0.9rem;
   margin-top: 2.5rem;
   align-items: center;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   APP MODE — /journey stops being a page
+   --------------------------------------------------------------------------
+   Everything here is keyed on html[data-finder="app"], stamped by an inline
+   script in <head> (lib/page.js) so it applies on the FIRST PAINT. It cannot
+   move to a deferred stylesheet or script: the whole point is that the website
+   is never visible on this route, and a promotion that happens one frame late
+   shows the header and footer and then snatches them away.
+
+   Without that attribute — no JavaScript — none of this applies and /journey
+   is an ordinary destination page with the six villages explained in full.
+   That fallback is the reason the markup is structured this way; see the note
+   in lib/components.js finderApp().
+
+   THESE STYLES LIVE IN site.css ON PURPOSE. Do not move them to a css/finder
+   stylesheet: lib/page.js drops site.css entirely for any page declaring its
+   own `styles` array, so giving /journey a stylesheet would silently strip the
+   whole consumer component sheet from it.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* The website goes away. */
+html[data-finder="app"] .site-header,
+html[data-finder="app"] .site-footer,
+html[data-finder="app"] #top,
+html[data-finder="app"] #other-ways,
+html[data-finder="app"] #begin { display: none; }
+
+/* No page scroll — the shell owns the viewport and each state fits inside it.
+   100dvh, never 100vh: on iOS the address bar makes vh taller than what is
+   actually visible, so the Continue button lands under the chrome. */
+html[data-finder="app"], html[data-finder="app"] body {
+  height: 100%;
+  overflow: hidden;
+}
+html[data-finder="app"] .finder-section {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+html[data-finder="app"] .finder-section > .wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;          /* the result is longer than a screen; questions are not */
+  -webkit-overflow-scrolling: touch;
+}
+/* The section head is page furniture — the tool bar says where you are. */
+html[data-finder="app"] .finder-section > .wrap > .section-head { display: none; }
+
+html[data-finder="app"] .finder-app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: clamp(1.5rem, 4vh, 3rem);
+}
+/* Wider than the 760px reading measure: this is a control surface, not a
+   column of prose, and the extra width is what lets the option cards sit two
+   across instead of overflowing the screen. */
+html[data-finder="app"] .finder-form { max-width: 62rem; }
+/* Tighter vertical rhythm than the page version — every line spent on the
+   question is a line the options do not have. */
+html[data-finder="app"] .finder-q legend { margin-bottom: 1.5rem; }
+html[data-finder="app"] .finder-q-n { margin-bottom: 0.6rem; }
+html[data-finder="app"] .finder-q-text { font-size: clamp(1.9rem, 3.6vw, 3rem); }
+html[data-finder="app"] .finder-actions { margin-top: 1.8rem; }
+/* The result is read, not decided on, so it sits at the top and scrolls. */
+html[data-finder="app"] .finder-app:has(.finder-result:not([hidden])) {
+  justify-content: flex-start;
+}
+
+/* — the wash —
+   The environmental response, in one element. Its colour is set to the
+   leading village's accent by js/journey.js; it is kept faint enough to read
+   as the room changing temperature rather than as a picture. */
+.finder-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(120% 80% at 50% 0%, var(--wash, transparent) 0%, transparent 62%);
+  transition: opacity .9s var(--ease-out-quint),
+              background-color .9s var(--ease-out-quint);
+}
+.finder-wash.is-on { opacity: 0.13; }
+html:not([data-finder="app"]) .finder-wash { display: none; }
+
+/* — tool bar — */
+.finder-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 4vw, 2.5rem);
+  padding: 0.9rem clamp(1.1rem, 4vw, 2.4rem);
+  border-bottom: 1px solid var(--hairline-l);
+  background: var(--paper);
+}
+.finder-bar-brand {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.finder-exit {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.5rem;
+  min-height: 44px;
+}
+.finder-exit:hover { color: var(--ink); }
+
+/* — the step rail —
+   Named steps, not "question 2 of 4": the name says what is being asked, the
+   position says how much is left. Deliberately NOT .finder-steps — that class
+   belongs to the homepage 1-2-3 list and is driven by motion.js. */
+.finder-rail {
+  display: flex;
+  gap: clamp(0.6rem, 2vw, 1.4rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.finder-rail li {
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.45;
+  padding-bottom: 3px;
+  border-bottom: 1.5px solid transparent;
+  transition: opacity .35s var(--ease-out-quint), color .35s var(--ease-out-quint);
+}
+.finder-rail li.is-done { opacity: 0.8; color: var(--ink); }
+.finder-rail li.is-active {
+  opacity: 1;
+  color: var(--gold-deep);
+  border-bottom-color: var(--gold-deep);
+}
+
+/* — launch — */
+.finder-launch { max-width: 46rem; margin-inline: auto; text-align: center; }
+.finder-launch-title {
+  font-size: var(--fs-hero);
+  line-height: 1.1;
+  margin: 0.5em 0 0.4em;
+  text-wrap: balance;
+}
+.finder-launch-lead {
+  font-size: var(--fs-lead);
+  color: var(--muted);
+  max-width: 40rem;
+  margin-inline: auto;
+}
+.finder-launch-actions { margin: clamp(1.8rem, 4vh, 2.6rem) 0 1.1rem; }
+.finder-launch-alt { font-family: var(--sans); font-size: 0.84rem; color: var(--muted); }
+.finder-launch-alt a { color: var(--gold-deep); }
+.finder-privacy { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); }
+
+/* — shaping —
+   Four beats settling. The sequence times the transition; it is not a
+   simulated computation, and it never runs on a restored shared result. */
+.finder-shaping { display: grid; place-items: center; flex: 1; }
+.shaping-beats {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0; padding: 0;
+  list-style: none;
+  text-align: center;
+}
+.shaping-beats li {
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0;
+}
+.finder-shaping.is-running .shaping-beats li {
+  animation: shaping-beat .95s var(--ease-out-quint) forwards;
+}
+.finder-shaping.is-running .shaping-beats li:nth-child(2) { animation-delay: .16s; }
+.finder-shaping.is-running .shaping-beats li:nth-child(3) { animation-delay: .32s; }
+.finder-shaping.is-running .shaping-beats li:nth-child(4) { animation-delay: .48s; }
+@keyframes shaping-beat {
+  from { opacity: 0; transform: translateY(6px); }
+  60%  { opacity: 1; }
+  to   { opacity: 0.55; transform: none; }
+}
+
+/* — the Compass readout —
+   Directions named, never scored. See the note in js/journey.js for why there
+   are no dots here. */
+.result-compass { margin-top: clamp(1.6rem, 3vw, 2.2rem); }
+.result-compass-label {
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin: 0 0 0.6rem;
+}
+.result-compass-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0; padding: 0;
+  list-style: none;
+}
+.result-compass-list li {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--hairline-l);
+  border-radius: 999px;
+  padding: 0.32rem 0.8rem;
+}
+
+/* Reduced motion: the wash still changes colour — it carries meaning — but
+   nothing travels, and the shaping sequence does not run at all (js skips it). */
+@media (prefers-reduced-motion: reduce) {
+  .finder-wash { transition: none; }
+  .finder-opts label { transition: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .finder-opts label:hover { transform: none; }
+  }
+  .shaping-beats li { opacity: 0.55; animation: none; }
+}
+
+@media (max-width: 640px) {
+  .finder-bar { gap: 0.75rem; padding-inline: 1.1rem; }
+  .finder-bar-brand { display: none; }   /* the rail is what matters on a phone */
+  .finder-rail { gap: 0.5rem; }
+  .finder-rail li { font-size: 0.6rem; letter-spacing: 0.12em; }
 }
 
 /* — result — */
