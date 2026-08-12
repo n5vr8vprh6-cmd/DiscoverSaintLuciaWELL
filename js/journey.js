@@ -210,6 +210,16 @@
           '<input type="email" id="finder-email" name="email" required autocomplete="email" placeholder="you@example.com">' +
           '<button class="btn btn--ghost" type="submit">Send it to me</button>' +
         '</div>' +
+        /* This is the only place on the site that asks for personal data, and
+           it said nothing about what happens to it. The sentence states use,
+           non-sharing and removal, and every word of it has to stay true of
+           whatever the ESP is eventually set to do.
+
+           It deliberately does NOT link to /privacy: that page does not exist
+           yet, and a consent line pointing at a 404 is worse than one that
+           does not. See the TODO at CAPTURE_ENDPOINT — the link goes in as
+           part of wiring the endpoint, not before. */
+        '<p class="capture-consent">We use it only to send those two emails — never sold, never shared — and you can ask us to remove it at any time.</p>' +
         '<p class="capture-status" id="capture-status" role="status" aria-live="polite"></p>' +
       '</form>';
 
@@ -245,7 +255,18 @@
        STUB. There is no ESP endpoint yet, so this validates, reports honestly,
        and records the intent — it does not pretend to have sent anything.
        Wire CAPTURE_ENDPOINT when the ESP is chosen; the event schema below is
-       already what the funnel report expects. */
+       already what the funnel report expects.
+
+       TODO — DO NOT WIRE THIS ENDPOINT ALONE.
+       Setting it turns this form from a no-op into real collection of personal
+       data, and three things have to land in the same change:
+         1. /privacy exists as a real page (it is `pending: true` in site.js
+            today and renders as plain text, not a link);
+         2. the consent line above links to it;
+         3. the removal promise in that line is actually honourable — someone
+            has to be able to act on the request.
+       Until then this form sends nothing, which is why the current wording is
+       true. Wiring the endpoint without the other three makes it false. */
     var CAPTURE_ENDPOINT = '';
     var cap = document.getElementById('finder-capture');
     var status = document.getElementById('capture-status');

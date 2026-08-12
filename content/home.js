@@ -65,7 +65,7 @@ module.exports = {
     },
 
     /* ── 2 · SAINT LUCIA THROUGH A DIFFERENT LENS ─────────────────────────
-       copy.js spread 4 — "Recovery through place". The six elements the brief
+       copy.js spread 4 — "Wellbeing through place". The six elements the brief
        names, each given the brochure's own reasoning.                       */
     {
       type: 'lens',
@@ -87,7 +87,15 @@ module.exports = {
         { title: 'Movement',       text: 'A gentle coastal walk or a guided summit, chosen for your energy that day.' },
         { title: 'Connection',     text: 'Hospitality creates safety and ease — the conditions that make the rest possible.' }
       ],
-      closing: 'Recovery through place.'
+      /* "Recovery through place" until now. Three of the six elements above it
+         — Culture, Movement, Connection — are not recovery, and the consumer
+         audience is not only depleted professionals: honeymoon, romance,
+         adventure and nature travellers land on this page too. Closing the
+         section on "recovery" quietly narrowed the whole proposition to the
+         thing Eclipse already covers. "Wellbeing" is the broader word the six
+         elements actually add up to, and it keeps this page from reading as a
+         softer Eclipse. The brochure spread headline changes with it. */
+      closing: 'Wellbeing through place.'
     },
 
     /* ── 3 · BEGIN WITH HOW YOU WANT TO FEEL ──────────────────────────────
@@ -199,11 +207,22 @@ module.exports = {
          health claim rather than as the metaphor it was meant to be. The line
          beneath it was always the more distinctive one, so it moves up. The
          brochure (copy.js) carries the identical change; changing one without
-         the other is the drift the source-of-truth rule exists to prevent. */
+         the other is the drift the source-of-truth rule exists to prevent.
+
+         The body paragraph went the same way, and for a sharper reason. It
+         used to open "Saint Lucia's landscape does real physiological work"
+         and offer "magnesium drawn in on a mountain trail" as evidence. That
+         is not a soft claim that needed hedging — walking does not take up
+         magnesium, so the sentence was simply untrue, and the framing around
+         it invited a clinical evidence burden the site cannot meet. It now
+         says what the place does to the *experience*, which is the argument
+         that was actually being made, keeps every concrete sensory detail,
+         and claims nothing about the body. Three surfaces carry this sentence
+         — here, /explore and the brochure — and they move together. */
       headline: 'You don’t visit the wellness. You move through it.',
       body: [
         'Experiences are where wellbeing steps outside — into the volcano, the waterfalls, the forest, the cacao estates and the sea.',
-        'Saint Lucia’s landscape does real physiological work: mineral-rich mud and volcano-heated springs, magnesium drawn in on a mountain trail, cool freshwater after heat, slow sensory time beneath the canopy.',
+        'Saint Lucia’s landscape changes how a journey feels: mineral-rich mud and volcano-heated springs, mountain trails, cool freshwater after heat, slow sensory time beneath the canopy.',
         'None of it is a fixed catalogue. Experiences are coordinated by local partners and paced by your advisor — chosen for your energy, mobility and stage in the journey.'
       ],
       closing: 'The villages are the themes. The properties are the basecamps.',
@@ -243,7 +262,7 @@ module.exports = {
       type: 'credibility',
       id: 'partners',
       label: 'Destination partners',
-      eyebrow: 'In collaboration with',
+      eyebrow: SITE.partnersLabel,
       partners: SITE.partners
     },
 

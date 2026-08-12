@@ -99,7 +99,23 @@ const SITE = {
   briefingUrl: 'https://luma.com/s9th4gfr',
 
   /* Institutional partners. Limited to relationships already stated publicly
-     on the Foundations page — nothing added without confirmation. */
+     on the Foundations page — nothing added without confirmation.
+
+     THE LABEL IS A CLAIM, AND IT IS DELIBERATELY WEAK.
+     This read "In collaboration with" on three pages. That wording was
+     inherited from the Foundations page, where it describes an advisor
+     training relationship — but on a consumer destination site, over two
+     named institutions, it reads as a formal endorsement of this product.
+     Neither organisation has approved that representation. "In conversation
+     with" is what is actually true: the relationships exist, and nothing is
+     being claimed about joint delivery or endorsement.
+
+     Kept here as one token rather than typed into each page, so if either
+     relationship is formalised in writing the word changes in exactly one
+     place. Strengthening it is a factual claim — only on Duncan's word.
+     The categories stay clean: research inclusion ≠ participation ≠
+     partnership ≠ endorsement. */
+  partnersLabel: 'In conversation with',
   partners: ['Saint Lucia Tourism Authority', 'Wellness Tourism Association']
 };
 

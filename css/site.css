@@ -986,6 +986,20 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   color: var(--ivory-ink);
 }
 .capture-note { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); margin: 0; }
+/* Sits below the input, one step quieter than the note above it. Fine print
+   that has to be readable — it is a consent statement, so it stays at 0.74rem
+   rather than shrinking to the 0.68rem the eye expects of a disclaimer, and
+   keeps `--muted` rather than fading further. */
+.capture-consent {
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+  /* No max-width. `.capture` is already clamped to 520px, and giving this a
+     tighter measure than the note above it left the block visibly ragged —
+     two paragraphs in the same card wrapping at different widths. */
+}
 .capture-status { font-family: var(--sans); font-size: 0.86rem; margin: 0; }
 .capture-status[data-state="ok"] { color: var(--v-ocean, var(--teal)); }
 .capture-status[data-state="error"] { color: var(--movement, #A33F28); }

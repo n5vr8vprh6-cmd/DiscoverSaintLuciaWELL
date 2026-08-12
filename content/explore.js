@@ -78,10 +78,17 @@ module.exports = {
       skin: 'sand',
       flip: true,
       eyebrow: 'Wellness across the whole island',
-      /* Same change as home.js and the brochure — see the note there. */
+      /* Same change as home.js and the brochure — see the note there, for both
+         the headline and the body sentence.
+
+         The line that follows stays. "The island has long known this as
+         natural healing" is a statement about what Saint Lucians have long
+         held, not a claim that the site is making about physiology — and now
+         that the sentence above it no longer asserts a mechanism, it reads as
+         the heritage note it always was. */
       headline: 'You don’t visit the wellness. You move through it.',
       body: [
-        'Saint Lucia’s landscape does real physiological work: mineral-rich mud and volcano-heated springs, magnesium drawn in on a mountain trail, cool freshwater after heat, slow sensory time beneath the canopy.',
+        'Saint Lucia’s landscape changes how a journey feels: mineral-rich mud and volcano-heated springs, mountain trails, cool freshwater after heat, slow sensory time beneath the canopy.',
         'The island has long known this as natural healing.'
       ],
       closing: 'What Saint Lucia WELL adds is sequence — the order things happen in, and the pacing between them.',

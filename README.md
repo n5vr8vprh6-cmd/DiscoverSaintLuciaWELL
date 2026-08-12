@@ -350,6 +350,31 @@ finished rename look incomplete. Search with
 - Images we do not have render as **labelled art-direction placeholders**
   (`lib/components.js` → `figure()`), carrying the Midjourney direction. A
   placeholder always reads as a placeholder.
+- **No physiological claims** (2026-08-12). The campus passage used to open
+  "Saint Lucia's landscape does real physiological work" and offer "magnesium
+  drawn in on a mountain trail" as its evidence. That is not a soft claim that
+  needed hedging — walking does not take up magnesium, so it was false, and the
+  framing invited a clinical evidence burden this site cannot meet. It now reads
+  "changes how a journey feels", keeps every sensory particular, and claims
+  nothing about the body. It lived on **three surfaces** — `content/home.js`,
+  `content/explore.js` and the brochure's `content/copy.js` — and they move
+  together. The heritage line on /explore stays: what Saint Lucians have long
+  held is a fact about tradition, not a mechanism we are asserting.
+- **The partner label is one token.** `SITE.partnersLabel` in `content/site.js`,
+  used by the homepage, /about and /advisors. It reads **"In conversation with"**,
+  not "in collaboration with": neither the Saint Lucia Tourism Authority nor the
+  Wellness Tourism Association has approved being represented as a collaborator
+  on this consumer initiative. The Foundations page carries the same softened
+  wording in both its copies. Strengthening it is a factual claim — only on
+  Duncan's word, and it changes in one place. Keep the categories clean:
+  research inclusion ≠ participation ≠ partnership ≠ endorsement.
+- **The Finder states what it does with an address.** `.capture-consent` in
+  `js/journey.js` — use, non-sharing, removal. It deliberately does not link to
+  /privacy, because that page does not exist and a consent line pointing at a
+  404 is worse than none. See the TODO at `CAPTURE_ENDPOINT`: wiring the ESP,
+  writing the policy, linking it, and being able to honour a removal request are
+  one change, not four. Today the form sends nothing, which is what makes the
+  current wording true.
 
 ## Status
 
@@ -665,6 +690,11 @@ served for one visit, which is the only honest number.
   a domain that does not serve the site.
 - ESP endpoint — `CAPTURE_ENDPOINT` in `js/journey.js`. Until it is set the form
   validates and says plainly that nothing was sent.
+- **Privacy, Terms and Accessibility pages.** All three are `pending: true` and
+  render as plain text. This is the blocker on the ESP above, not a separate
+  nicety: the Finder is the one place the site asks for personal data, and the
+  moment it actually transmits, the policy has to exist and the consent line has
+  to link to it. Sequence them together.
 - GTM container — `GTM_ID` in `js/analytics.js`. Empty means events queue on
   `dataLayer` but no network request is made.
 - New photography — see the image list in the plan. Property photography must

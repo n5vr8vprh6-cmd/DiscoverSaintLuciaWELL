@@ -151,7 +151,7 @@ module.exports = {
       type: 'credibility',
       id: 'partners',
       label: 'Partners',
-      eyebrow: 'In collaboration with',
+      eyebrow: SITE.partnersLabel,
       partners: SITE.partners
     },
 

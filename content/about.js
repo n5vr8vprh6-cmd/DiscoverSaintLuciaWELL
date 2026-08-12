@@ -139,7 +139,7 @@ module.exports = {
       type: 'credibility',
       id: 'partners',
       label: 'Partners',
-      eyebrow: 'In collaboration with',
+      eyebrow: SITE.partnersLabel,
       partners: SITE.partners,
       /* Sits directly under the partner logos, which makes any overstatement
          here read as an endorsement by the named partners. The properties are
