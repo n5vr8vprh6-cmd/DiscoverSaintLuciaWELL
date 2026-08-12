@@ -589,9 +589,54 @@ band almost exactly. Only the new hero needed generating.
 
 Output is 0.77 MB mp4 / 0.42 MB webm at 1280x716.
 
+### The Foundations compression pass (2026-08-12)
+
+`/advisors/foundations` carried 20.2 MB of assets, four to five times any other
+page. `tools/compress-foundations.py` re-encodes them to what the layout
+actually paints — **run it once, against originals**, since it rewrites in place
+and a second run is generation loss for no saving.
+
+Measured in real headless Chrome, serving `dist/` and counting the bytes the
+browser pulled: **7.91 MB → 3.22 MB** for a visit. On disk, 20.2 → 14.0 MB.
+
+Every target came from the painted size at 1280px / dpr 2, not a hopeful
+fraction. Nothing was re-cut or re-timed: all four loops are finished
+cinemagraphs, so a lower-bitrate re-encode preserves the loop exactly and there
+is no seam to re-verify.
+
+Three findings worth keeping:
+
+- **VP9 lost to H.264 on three of the four loops** — and because the `<source>`
+  order put webm first, the browser was downloading the *larger* file. Hero
+  4132 vs 2772 KB, seacliff 1480 vs 796, sulphur 196 vs 160; only dawn won
+  (260 vs 344). Those three webm files are gone. Measure VP9 per file; never
+  assume it is smaller.
+- **`poster` is an asset attribute and it was missing from `absolutise()`.**
+  All four cinemagraph posters were still 404ing after the fix that was
+  supposed to have solved exactly this. The build now throws on any surviving
+  relative asset path, so the next missed attribute fails the build instead of
+  shipping silently.
+- **Posters now point at the `.webp`,** not the `.jpg`. The `<picture>` above
+  each cinemagraph already fetches the webp, so the poster is a cache hit
+  instead of a second, larger download of the identical frame — 0.71 MB saved
+  for nothing. The `.jpg` stays as the `<picture>` fallback.
+
+The hero mp4 is 1913 KB of the 3222, encoded at crf 33 rather than 30. It
+measures 33.0 dB PSNR against the original and is indistinguishable side by
+side — soft, misty, slow-moving footage with no hard edges is exactly what
+compresses well. crf 30 cost 857 KB more for no visible gain.
+
+**How the payload was measured, since it is easy to get wrong.**
+`--virtual-time-budget` *hangs forever* on a page with autoplaying video —
+virtual time does not advance for media. Use wall-clock (`--timeout`) instead.
+The measuring server is `tools/`-adjacent scratch, not committed; it logs bytes
+served for one visit, which is the only honest number.
+
 ### Open items
 
-- Hosting target (no deploy config exists yet)
+- Custom domain. GitHub → Vercel is live and auto-deploys on push to `main`;
+  `discoversaintluciawell.com` is not connected yet, so canonical URLs point at
+  a domain that does not serve the site.
 - ESP endpoint — `CAPTURE_ENDPOINT` in `js/journey.js`. Until it is set the form
   validates and says plainly that nothing was sent.
 - GTM container — `GTM_ID` in `js/analytics.js`. Empty means events queue on

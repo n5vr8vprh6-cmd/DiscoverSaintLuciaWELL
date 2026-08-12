@@ -58,11 +58,17 @@ function extractDialog(html) {
    Rewriting here rather than in the source keeps index.src.html working as a
    standalone document, and rather than in vercel.json because turning
    trailing slashes back on would break the canonical URLs on all nine pages
-   to fix one. */
+   to fix one.
+
+   `poster` is in this list for a reason: it is easy to forget because it is the
+   only asset-bearing attribute here that is not src/href/srcset, and the four
+   cinemagraph posters were still 404ing after the first pass at this fix. If a
+   new asset attribute ever appears in the source, add it here — the guard below
+   is what catches the omission. */
 const BASE = '/advisors/foundations/';
 function absolutise(html) {
   return html.replace(
-    /\b(src|href|srcset)="(?!\/|https?:|data:|mailto:|#)((?:assets|css|js)\/)/g,
+    /\b(src|href|srcset|poster)="(?!\/|https?:|data:|mailto:|#)((?:assets|css|js)\/)/g,
     (_m, attr, dir) => `${attr}="${BASE}${dir}`
   ).replace(
     /\bsrcset="([^"]+)"/g,
@@ -72,6 +78,17 @@ function absolutise(html) {
 
 const src = fs.readFileSync(SRC, 'utf8');
 const body = absolutise(extractMain(src) + '\n\n' + extractDialog(src));
+
+/* Nothing relative may survive. A missed attribute does not throw and does not
+   look wrong in the markup — it 404s silently in the browser, which is how the
+   four cinemagraph posters shipped broken. Fail the build instead. */
+const leaked = [...body.matchAll(/\b([a-z-]+)="((?:assets|css|js)\/[^"]*)"/g)];
+if (leaked.length) {
+  throw new Error(
+    'advisor-foundations: relative asset path survived absolutise() — add the ' +
+    `attribute to its regex:\n  ${leaked.map(m => `${m[1]}="${m[2]}"`).join('\n  ')}`
+  );
+}
 
 /* Local anchors — these are the section ids that actually exist in the source.
    Verified against it at build time below, so a renamed section fails the build
