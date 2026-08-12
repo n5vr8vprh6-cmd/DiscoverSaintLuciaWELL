@@ -45,8 +45,33 @@ function extractDialog(html) {
   return m ? m[0] : '';
 }
 
+/* Make the standalone page's relative asset paths absolute.
+
+   index.src.html was authored as its own site, sitting at a directory root,
+   so it refers to `assets/hero-pitons.jpg` and friends relatively. Here the
+   page is served at /advisors/foundations — with NO trailing slash, because
+   vercel.json sets `trailingSlash: false` to match the canonical tags. A
+   browser resolves a relative path against the parent of a slashless URL, so
+   every one of those 38 references was resolving to /advisors/assets/… and
+   404ing. Every image and both cinemagraphs were missing on the live page.
+
+   Rewriting here rather than in the source keeps index.src.html working as a
+   standalone document, and rather than in vercel.json because turning
+   trailing slashes back on would break the canonical URLs on all nine pages
+   to fix one. */
+const BASE = '/advisors/foundations/';
+function absolutise(html) {
+  return html.replace(
+    /\b(src|href|srcset)="(?!\/|https?:|data:|mailto:|#)((?:assets|css|js)\/)/g,
+    (_m, attr, dir) => `${attr}="${BASE}${dir}`
+  ).replace(
+    /\bsrcset="([^"]+)"/g,
+    (m, set) => `srcset="${set.replace(/(^|,\s*)((?:assets|css|js)\/)/g, `$1${BASE}$2`)}"`
+  );
+}
+
 const src = fs.readFileSync(SRC, 'utf8');
-const body = extractMain(src) + '\n\n' + extractDialog(src);
+const body = absolutise(extractMain(src) + '\n\n' + extractDialog(src));
 
 /* Local anchors — these are the section ids that actually exist in the source.
    Verified against it at build time below, so a renamed section fails the build
