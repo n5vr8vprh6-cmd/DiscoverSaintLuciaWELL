@@ -1320,27 +1320,48 @@ html[data-finder="app"] .result-villages {
   border: 1px solid var(--hairline-l);
   border-radius: 3px;
 }
-/* The recommendation has to be legible as one at a glance. A thin rule and the
-   words "Closest match" were not enough — all three cards read as equals with
-   a caption. The lead now carries its village accent as a full edge, a warmer
-   card, real elevation, and the rank set in the accent rather than in muted
-   grey. The other two are unchanged, so the difference is additive. */
+/* THE RECOMMENDATION HAS TO WIN AT A GLANCE.
+   The first attempt was too polite to work: a 45%-alpha accent border and a
+   background 3% off the others. Measured side by side the lead was
+   `srgb .958 .951 .920` against `.984 .973 .945` — a difference you can prove
+   but cannot see, so all three cards read as equals with a caption.
+
+   Now the accent is used at full strength in three places: a solid edge, a
+   filled label, and real elevation. The runners-up are pushed back rather than
+   left alone, because ranking is a comparison — making one louder does half
+   the job. */
 .result-card--lead {
-  border-color: color-mix(in srgb, var(--v) 45%, var(--hairline-l));
-  background: color-mix(in srgb, var(--v) 4%, var(--paper));
-  box-shadow: 0 20px 46px -28px color-mix(in srgb, var(--v) 60%, var(--ink));
+  border: 1.5px solid var(--v);
+  background: color-mix(in srgb, var(--v) 8%, var(--paper));
+  box-shadow: 0 22px 50px -24px color-mix(in srgb, var(--v) 75%, var(--ink));
 }
 .result-card--lead::before {
   content: "";
   display: block;
-  height: 5px;
+  height: 6px;
   background: var(--v);
 }
+/* The rank stops being a caption and becomes a badge — reversed out of the
+   village's own accent, so it reads before any of the words around it. */
 .result-card--lead .result-rank {
-  color: var(--v-ink, var(--gold-deep));
+  display: inline-block;
+  background: var(--v);
+  color: var(--paper);
   font-weight: 600;
+  letter-spacing: 0.16em;
+  padding: 0.34rem 0.7rem;
+  border-radius: 2px;
 }
-.result-card--lead .village-rule { background: var(--v); }
+/* The hairline under the rank was separating a label from a heading. With a
+   filled badge doing that job it is one line too many. */
+.result-card--lead .village-rule { display: none; }
+
+/* And the other two step back: no shadow, a softer edge, and the card sits a
+   shade into the ground rather than on top of it. */
+.result-card:not(.result-card--lead) {
+  background: color-mix(in srgb, var(--ink) 2%, var(--paper));
+  border-color: color-mix(in srgb, var(--ink) 8%, transparent);
+}
 .result-card-body { padding: clamp(1.1rem, 2vw, 1.5rem); }
 /* One aspect ratio across all three. The lead card briefly had a taller frame,
    which pushed its text far below the other two and made the row read as
@@ -1354,6 +1375,35 @@ html[data-finder="app"] .result-eclipse {
   border-top: 1px solid var(--hairline-l);
   padding-top: clamp(2rem, 4vw, 3rem);
   margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+
+/* Copy left, the Eclipse mark right. The block's right half was dark nothing;
+   the mark fills it with the identity of the thing being offered rather than
+   with decoration. Below the breakpoint it drops away entirely — stacked under
+   the copy it would just be a logo taking up a screen of phone. */
+html[data-finder="app"] .result-eclipse {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+html[data-finder="app"] .result-eclipse-mark { display: none; }
+@media (min-width: 900px) {
+  html[data-finder="app"] .result-eclipse {
+    grid-template-columns: 1fr minmax(10rem, 15rem);
+  }
+  html[data-finder="app"] .result-eclipse-mark {
+    display: block;
+    justify-self: center;
+    width: 100%;
+    /* It is a mark, not an illustration — it should register as the Eclipse
+       sign without competing with the heading next to it. */
+    opacity: 0.9;
+  }
+  html[data-finder="app"] .result-eclipse-mark img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
 }
 
 /* Reduced motion: the wash still changes colour — it carries meaning — but

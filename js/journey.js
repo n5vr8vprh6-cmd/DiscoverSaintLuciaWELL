@@ -338,15 +338,29 @@
       return '<li><h5>' + esc(x.title) + '</h5><p>' + esc(x.note) + '</p></li>';
     }).join('');
 
+    /* The copy filled about half the block and the rest was dark nothing. The
+       Eclipse mark is the right thing to put there: it is the identity of the
+       product being offered, it is already drawn for a dark ground (it is the
+       `--sign` treatment on /eclipse), and it costs one small asset we have
+       already built. Decorative alt is empty — the heading beside it names the
+       thing, so a screen reader announcing the logo twice would be noise. */
     var eclipseBlock = wantsEclipse
       ? '<div class="result-eclipse">' +
-          '<p class="eyebrow eyebrow--copper">One more to consider</p>' +
-          '<h4>Eclipse — when rest alone is no longer enough</h4>' +
-          '<p>A curated recovery journey through Saint Lucia, designed by practitioners and health professionals. ' +
-          'It is sequenced rather than assembled: rainforest before deeper reflection, movement before release, ' +
-          'restoration after intensity. Guided entry before arrival, and integration after you return home.</p>' +
-          '<div class="section-cta section-cta--left">' +
-            '<a class="btn btn--copper" href="/eclipse">Discover Eclipse</a>' +
+          '<div class="result-eclipse-copy">' +
+            '<p class="eyebrow eyebrow--copper">One more to consider</p>' +
+            '<h4>Eclipse — when rest alone is no longer enough</h4>' +
+            '<p>A curated recovery journey through Saint Lucia, designed by practitioners and health professionals. ' +
+            'It is sequenced rather than assembled: rainforest before deeper reflection, movement before release, ' +
+            'restoration after intensity. Guided entry before arrival, and integration after you return home.</p>' +
+            '<div class="section-cta section-cta--left">' +
+              '<a class="btn btn--copper" href="/eclipse">Discover Eclipse</a>' +
+            '</div>' +
+          '</div>' +
+          '<div class="result-eclipse-mark" aria-hidden="true">' +
+            '<picture>' +
+              '<source srcset="/assets/eclipse/eclipse-mark-440.webp" type="image/webp">' +
+              '<img src="/assets/eclipse/eclipse-mark-440.png" alt="" width="440" height="440" loading="lazy" decoding="async">' +
+            '</picture>' +
           '</div>' +
         '</div>'
       : '';
