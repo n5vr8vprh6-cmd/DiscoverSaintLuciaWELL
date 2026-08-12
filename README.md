@@ -28,6 +28,20 @@ hand; `vercel deploy --prod` exists as an escape hatch, not the normal path.
 Currently served at `discover-saint-lucia-well.vercel.app` with no custom domain
 attached yet.
 
+**A push can silently fail to deploy.** Seen once (2026-08-12): the commit
+reached GitHub, the repo was still connected, no deployment was created, and
+nothing errored anywhere — the webhook delivery was simply dropped. Fifteen
+minutes of polling looked identical to a slow build. If a push has not deployed
+in about two minutes, the diagnosis is `git ls-remote origin main` (is the
+commit on GitHub?) plus `vercel ls` (is there a new deployment?). If GitHub has
+it and Vercel does not, push an **empty commit** — that re-fires the webhook and
+costs nothing. Do not reach for `vercel deploy --prod`: it uploads local files
+and quietly takes the deploy out of the GitHub pipeline.
+
+Also note `vercel inspect` reports deployment ages in UTC against local time, so
+a deployment made minutes ago reads as several hours old. Trust the timestamp,
+not the "[9h ago]".
+
 `dist/` is **gitignored** — it is a build artifact, and committing it would put
 generated output under review next to its own source. Vercel rebuilds it from
 `build.js` on every push, which is also what keeps the repo honest: if the build
