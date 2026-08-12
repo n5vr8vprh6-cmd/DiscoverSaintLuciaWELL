@@ -596,8 +596,15 @@ page. `tools/compress-foundations.py` re-encodes them to what the layout
 actually paints — **run it once, against originals**, since it rewrites in place
 and a second run is generation loss for no saving.
 
-Measured in real headless Chrome, serving `dist/` and counting the bytes the
-browser pulled: **7.91 MB → 3.22 MB** for a visit. On disk, 20.2 → 14.0 MB.
+Measured in real headless Chrome — the commit before and the commit after both
+built, served, and loaded at 1280x900, counting the bytes actually pulled:
+**5.91 MB → 3.22 MB, 46% off.** Images 1664 → 1174 KB, video 4181 → 1913 KB.
+On disk, 20.2 → 14.0 MB.
+
+Both figures are the *initial view*: the three below-the-fold loops only fetch
+once scrolled to, which adds roughly another 1 MB. Compare like with like — an
+estimate assembled by reading the markup is not this number, and the first one
+of those attempted here was 2 MB out.
 
 Every target came from the painted size at 1280px / dpr 2, not a hopeful
 fraction. Nothing was re-cut or re-timed: all four loops are finished
