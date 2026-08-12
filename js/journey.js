@@ -394,11 +394,15 @@
       '<ul class="village-grid result-villages">' + villageCards + '</ul>' +
       (expItems ? '<div class="result-block"><h4>Experiences inside them</h4><ul class="result-exp">' + expItems + '</ul></div>' : '') +
       eclipseBlock +
-      '<div class="result-actions">' +
-        '<a class="btn btn--gold" href="/about#contact">Speak with an advisor</a>' +
+      /* The primary action is filled in after the advisor lookup resolves —
+         see `wireShare()`. It renders as the unattributed CTA first so the
+         result is complete and actionable even if the lookup never answers. */
+      '<div class="result-actions" data-share-actions>' +
+        '<a class="btn btn--gold" href="/about#contact" data-share-primary>Speak with a Saint Lucia WELL Advisor</a>' +
         '<a class="btn btn--ghost" href="/explore#villages">Explore all six villages</a>' +
         '<button type="button" class="btn btn--ghost" data-finder-restart>Start again</button>' +
       '</div>' +
+      '<div class="share-panel" id="share-panel" hidden></div>' +
       '<form class="capture" id="finder-capture" novalidate>' +
         '<label for="finder-email">Not ready to talk to anyone yet?</label>' +
         '<p class="capture-note">We can send this result and a short introduction to the island. One email, no series.</p>' +
@@ -462,13 +466,220 @@
       window.scrollTo(0, 0);
       wash();
       wireResult();
+      wireShare();
     }, instant);
+
+    /* Count the completion — a number and a timestamp, never the answers.
+       Skipped on `instant`, which means a restored shared link: someone
+       reading a friend's result has not completed anything. */
+    if (!instant) countCompletion();
 
     /* Shareable and returnable without us storing anything. */
     try {
       var hash = '#r=' + [answers.intention, answers.companions, answers.pace, answers.recognition].join('-');
       history.replaceState(null, '', location.pathname + hash);
     } catch (e) { /* non-fatal */ }
+  }
+
+  /* ── Sharing a Journey with an advisor ────────────────────────────────────
+     The Finder stays anonymous. Nothing above this point has sent anything
+     about the visitor anywhere. This is the one place a person can choose to
+     become known, and it only happens on a deliberate click followed by a
+     deliberate consent.
+
+     The result is fully useful without it. If the lookup fails, if the network
+     is down, if the backend does not exist yet — the unattributed CTA is
+     already rendered and the page is complete. */
+  var SHARE_CONSENT =
+    'I understand my name, email and Journey will be sent to this advisor so ' +
+    'they can contact me about planning a trip.';
+
+  function attribution() {
+    try { return (window.dslwAttribution && window.dslwAttribution()) || {}; }
+    catch (e) { return {}; }
+  }
+
+  function shareForm(advisorName) {
+    var who = advisorName ? esc(advisorName) : 'a Saint Lucia WELL Advisor';
+    return '' +
+      '<form class="share-form" id="share-form" novalidate>' +
+        '<h4 class="share-title">Share your Journey with ' + who + '</h4>' +
+        '<p class="share-note">They will see what your Journey pointed toward, so the ' +
+          'first conversation can start from what you actually need.</p>' +
+        '<div class="share-grid">' +
+          '<label>First name<input name="firstName" autocomplete="given-name" required></label>' +
+          '<label>Last name<input name="lastName" autocomplete="family-name" required></label>' +
+          '<label>Email<input type="email" name="email" autocomplete="email" required></label>' +
+          '<label>Phone <span class="share-opt">optional</span>' +
+            '<input type="tel" name="phone" autocomplete="tel"></label>' +
+          '<label class="share-wide">When are you thinking of travelling?' +
+            '<select name="timing">' +
+              '<option value="">Not sure yet</option>' +
+              '<option>Within 3 months</option>' +
+              '<option>3–6 months</option>' +
+              '<option>6–12 months</option>' +
+              '<option>More than a year away</option>' +
+            '</select></label>' +
+          '<label class="share-wide">Anything you would like them to know? ' +
+            '<span class="share-opt">optional</span>' +
+            '<textarea name="context" rows="3"></textarea></label>' +
+        '</div>' +
+        /* Not visible, not reachable by keyboard, not announced. Anything that
+           fills it is not a person. */
+        '<div class="share-hp" aria-hidden="true">' +
+          '<label>Company<input name="company" tabindex="-1" autocomplete="off"></label>' +
+        '</div>' +
+        '<label class="share-consent">' +
+          '<input type="checkbox" name="consent" required>' +
+          '<span>' + esc(SHARE_CONSENT) + ' See the <a href="/privacy">privacy page</a>.</span>' +
+        '</label>' +
+        '<div class="share-actions">' +
+          '<button class="btn btn--gold" type="submit">Share my Journey</button>' +
+          '<button class="btn btn--ghost" type="button" data-share-cancel>Not now</button>' +
+        '</div>' +
+        '<p class="share-status" role="status" aria-live="polite"></p>' +
+      '</form>';
+  }
+
+  function wireShare() {
+    var panel = document.getElementById('share-panel');
+    var primary = resultEl.querySelector('[data-share-primary]');
+    if (!panel || !primary) return;
+
+    var attr = attribution();
+    var advisorName = null;
+
+    function openShare(e) {
+      if (e) e.preventDefault();
+      panel.innerHTML = shareForm(advisorName);
+      panel.hidden = false;
+      var form = document.getElementById('share-form');
+      var first = form.querySelector('input[name="firstName"]');
+      if (first) first.focus();
+      form.querySelector('[data-share-cancel]').addEventListener('click', function () {
+        panel.hidden = true;
+        panel.innerHTML = '';
+        primary.focus();
+      });
+      form.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        submitShare(form, advisorName);
+      });
+      track('share_opened', { attributed: !!advisorName });
+    }
+
+    /* Only an attributed visitor gets the share flow. Without an advisor there
+       is nobody to send it to, so the CTA stays a link to the contact page —
+       which is a real destination, not a dead end. */
+    if (!attr.advisor) return;
+
+    fetch('/api/advisor?slug=' + encodeURIComponent(attr.advisor))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.advisor || !d.advisor.firstName) return;
+        advisorName = d.advisor.firstName;
+        primary.textContent = 'Share my WELL Journey with ' + advisorName;
+        primary.setAttribute('href', '#share-panel');
+        primary.addEventListener('click', openShare);
+      })
+      .catch(function () { /* unattributed CTA stands */ });
+  }
+
+  function submitShare(form, advisorName) {
+    var status = form.querySelector('.share-status');
+    var button = form.querySelector('button[type="submit"]');
+    var get = function (n) {
+      var el = form.querySelector('[name="' + n + '"]');
+      return el ? el.value.trim() : '';
+    };
+
+    if (!get('firstName') || !get('lastName')) {
+      return fail(status, 'Please add your first and last name.');
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(get('email'))) {
+      return fail(status, 'That email address does not look right — could you check it?');
+    }
+    if (!form.querySelector('[name="consent"]').checked) {
+      return fail(status, 'Please confirm you are happy for this to be sent.');
+    }
+
+    button.disabled = true;
+    status.removeAttribute('data-state');
+    status.textContent = 'Sending…';
+
+    var attr = attribution();
+    fetch('/api/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: get('firstName'), lastName: get('lastName'),
+        email: get('email'), phone: get('phone'),
+        timing: get('timing'), context: get('context'),
+        company: get('company'),                       /* honeypot */
+        consent: true, consentText: SHARE_CONSENT,
+        advisor: attr.advisor || null,
+        source: attr.source || null,
+        session: sessionId(),
+        answers: answers,
+        villages: score().map(function (v) { return v.name; })
+      })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { ok: r.ok, d: d }; });
+    }).then(function (res) {
+      if (!res.ok) throw new Error((res.d && res.d.error) || 'failed');
+      track('journey_shared', { attributed: !!advisorName });
+      form.innerHTML =
+        '<h4 class="share-title">Sent.</h4>' +
+        '<p class="share-note">' +
+          (advisorName ? esc(advisorName) + ' has your Journey' : 'Your Journey is on its way') +
+          ' and can help you explore how it might come to life in Saint Lucia. ' +
+          'Your result stays on this page — the link in your address bar will bring you back to it.</p>';
+    }).catch(function (err) {
+      button.disabled = false;
+      fail(status, String(err.message) === 'rate_limited'
+        ? 'That has been sent a few times already. Please try again a little later.'
+        : 'Something went wrong sending that. Please try again, or email concierge@discoversaintluciawell.com.');
+    });
+  }
+
+  function fail(status, message) {
+    status.setAttribute('data-state', 'error');
+    status.textContent = message;
+  }
+
+  /* Fire and forget, and only when there is an advisor to attribute it to.
+     `keepalive` so it survives the visitor immediately navigating away, and
+     every failure is swallowed — a counter must never be visible to anyone. */
+  function countCompletion() {
+    var attr = attribution();
+    if (!attr.advisor) return;
+    try {
+      fetch('/api/visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          kind: 'finder_complete',
+          advisor: attr.advisor,
+          session: sessionId()
+        })
+      }).catch(function () {});
+    } catch (e) { /* nothing here is worth an error */ }
+  }
+
+  /* A random, browser-scoped id so a visit and a completion can be joined into
+     a funnel. It identifies a browsing session, not a person, and it is
+     regenerated the moment the tab closes. */
+  function sessionId() {
+    try {
+      var k = 'dslw.sid';
+      var v = sessionStorage.getItem(k);
+      if (!v) {
+        v = (String(Math.random()) + String(Date.now())).replace(/0\./g, '');
+        sessionStorage.setItem(k, v);
+      }
+      return v;
+    } catch (e) { return ''; }
   }
 
   function wireResult() {

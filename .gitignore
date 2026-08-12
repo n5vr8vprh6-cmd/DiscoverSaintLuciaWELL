@@ -22,4 +22,6 @@ _shot-*.html
 Thumbs.db
 .DS_Store
 
-.vercel
+# Local secrets — never committed. See .env.example and db/SETUP.md
+.env
+.env.local

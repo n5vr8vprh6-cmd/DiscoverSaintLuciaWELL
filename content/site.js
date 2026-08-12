@@ -10,8 +10,12 @@
         2027 concepts weakens credibility. Eclipse gets a direct nav item.
      2. No undeveloped journey families or WELL Pass in navigation.
 
-   Footer entries carrying `pending: true` render as plain text, not links —
-   the page does not exist yet and we do not ship 404s or invent a policy.
+   Privacy, Terms and Accessibility are real pages as of 2026-08-12 and are
+   linked normally. They previously carried `pending: true`, which renders an
+   entry as plain text rather than a link — the mechanism still exists in
+   lib/layouts.js `linkOrText()` and is the right way to list something that
+   does not exist yet. We do not ship 404s, and we did not invent a policy
+   before there was one to describe.
    ========================================================================== */
 'use strict';
 
@@ -76,9 +80,9 @@ const SITE = {
   /* Utility row. Sweepstakes Rules appears ONLY while a campaign is active
      (brief §4) — it stays out of the array until there is one. */
   utility: [
-    { label: 'Privacy',       href: '/privacy',       pending: true },
-    { label: 'Terms',         href: '/terms',         pending: true },
-    { label: 'Accessibility', href: '/accessibility', pending: true }
+    { label: 'Privacy',       href: '/privacy' },
+    { label: 'Terms',         href: '/terms' },
+    { label: 'Accessibility', href: '/accessibility' }
   ],
 
   /* ── Advisor-surface chrome ─────────────────────────────────────────────
@@ -88,8 +92,8 @@ const SITE = {
     exit: { label: 'Back to Travel Advisor Hub', href: '/advisors' },
     utility: [
       { label: 'Discover Saint Lucia WELL', href: '/' },
-      { label: 'Privacy', href: '/privacy', pending: true },
-      { label: 'Terms',   href: '/terms',   pending: true },
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms',   href: '/terms' },
       { label: 'Contact', href: '/about#contact' }
     ]
   },

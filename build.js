@@ -33,7 +33,10 @@ const PAGES = [
   require('./content/advisors.js'),
   require('./content/advisor-intro.js'),
   require('./content/advisor-immersion.js'),
-  require('./content/advisor-foundations.js')
+  require('./content/advisor-foundations.js'),
+  require('./content/privacy.js'),
+  require('./content/terms.js'),
+  require('./content/accessibility.js')
 ];
 
 /* ── fs helpers ─────────────────────────────────────────────────────────── */

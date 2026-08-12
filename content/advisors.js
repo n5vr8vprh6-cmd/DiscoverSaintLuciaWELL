@@ -112,8 +112,17 @@ module.exports = {
         {
           key: 'activate',
           title: 'Activate',
-          text: 'Campaign tools and attributable distribution — referral links, QR codes and creative — available after the required training.',
-          status: 'Available after training'
+          /* Was "available after the required training". That gate is being
+             removed on purpose: the strategy is now that market response
+             creates the motivation to learn, not the other way round — an
+             advisor should be able to put the campaign in front of ten people
+             and let real interest decide whether they want Foundations.
+
+             The rung still carries no CTA, because the campaign tools do not
+             exist yet. "In development" is the honest status; anything warmer
+             would advertise a button that goes nowhere. */
+          text: 'Campaign tools and attributable distribution — referral links, QR codes and creative — so you can put the destination in front of your own audience and see who responds.',
+          status: 'In development'
         },
         {
           key: 'current',

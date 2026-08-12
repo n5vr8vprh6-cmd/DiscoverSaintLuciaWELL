@@ -85,6 +85,46 @@
     decorate();
   }
 
+  /* ── Tell the server an advisor's link was used ───────────────────────────
+     Once per browsing session, and only when there is an advisor to credit.
+     This is the whole of the server-side attribution: which advisor, which
+     channel, a random session id, the landing path and the referrer. No IP is
+     stored, nothing identifies the visitor, and the response is ignored.
+
+     Guarded by a sessionStorage flag rather than fired on every page, so a
+     visitor reading six pages produces one visit rather than six. */
+  (function pingVisit() {
+    if (!stored.advisor) return;
+    var FLAG = 'dslw.visited';
+    try { if (sessionStorage.getItem(FLAG)) return; } catch (e) { return; }
+
+    var sid;
+    try {
+      sid = sessionStorage.getItem('dslw.sid');
+      if (!sid) {
+        sid = (String(Math.random()) + String(Date.now())).replace(/0\./g, '');
+        sessionStorage.setItem('dslw.sid', sid);
+      }
+      sessionStorage.setItem(FLAG, '1');
+    } catch (e) { return; }
+
+    try {
+      fetch('/api/visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          kind: 'visit',
+          advisor: stored.advisor,
+          source: stored.utm_medium || stored.utm_source || stored.src || 'direct',
+          session: sid,
+          path: stored.landing,
+          referrer: stored.referrer
+        })
+      }).catch(function () {});
+    } catch (e) { /* attribution must never break a page */ }
+  })();
+
   /* Exposed so analytics.js can attach it to every event, and so the Journey
      Finder can include it when a result is handed to an advisor. */
   window.dslwAttribution = function () {

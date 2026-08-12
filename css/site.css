@@ -2975,3 +2975,135 @@ body[data-motion="ready"] .day-track.settled > li .day-body > * {
   opacity: 1;
   transform: none;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PROSE — privacy, terms, accessibility
+   --------------------------------------------------------------------------
+   Documents, not compositions. Someone arrives wanting one fact and should be
+   able to scan for it: a strict measure, headings that are findable, and no
+   reveal choreography. These pages deliberately carry none of the site's
+   motion — a privacy policy that fades in as you scroll is the wrong idea.
+   ══════════════════════════════════════════════════════════════════════════ */
+.prose { max-width: var(--measure); }
+.prose h2 {
+  font-size: var(--fs-h3);
+  margin: clamp(2.25rem, 4vw, 3rem) 0 0.6em;
+  scroll-margin-top: 6rem;      /* in-page links must clear the sticky header */
+}
+.prose h2:first-child { margin-top: 0; }
+.prose p { color: var(--muted); }
+.prose p strong { color: var(--ivory-ink); font-weight: 600; }
+.prose a { color: var(--gold-deep); text-underline-offset: 3px; }
+
+.prose-list { margin: 0 0 1.1em; padding-left: 1.1rem; list-style: disc; }
+.prose-list li { color: var(--muted); margin-bottom: 0.4em; }
+
+/* Term/definition pairs — "what we collect" reads far better as a two-column
+   table than as another bulleted list. Stacks on narrow screens. */
+.prose-rows { margin: 0 0 1.4em; display: grid; gap: 0.9rem; }
+.prose-rows > div {
+  display: grid;
+  gap: 0.15rem 1.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--hairline-l);
+}
+@media (min-width: 620px) {
+  .prose-rows > div { grid-template-columns: 12rem 1fr; }
+}
+.prose-rows dt {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.prose-rows dd { margin: 0; color: var(--muted); }
+
+.prose-updated {
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--hairline-l);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SHARE PANEL — handing a Journey to an advisor
+   --------------------------------------------------------------------------
+   The one place on this site that asks for a name. It sits inside the result
+   rather than replacing it, so the thing the visitor came for stays on screen
+   while they decide.
+   ══════════════════════════════════════════════════════════════════════════ */
+.share-panel { margin-top: clamp(1.5rem, 3vw, 2.25rem); }
+.share-form {
+  background: var(--paper);
+  border: 1px solid var(--hairline-l);
+  border-left: 3px solid var(--gold-deep);
+  border-radius: 2px;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  max-width: 46rem;
+}
+.share-title { font-size: var(--fs-h4); margin: 0 0 0.4em; }
+.share-note { color: var(--muted); font-size: var(--fs-small); margin: 0 0 1.4em; max-width: 52ch; }
+
+.share-grid { display: grid; gap: 0.9rem; }
+@media (min-width: 640px) { .share-grid { grid-template-columns: 1fr 1fr; } }
+.share-grid .share-wide { grid-column: 1 / -1; }
+
+.share-grid label {
+  display: grid;
+  gap: 0.3rem;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.share-opt { font-weight: 400; color: var(--muted); letter-spacing: 0; }
+.share-grid input,
+.share-grid select,
+.share-grid textarea {
+  font: inherit;
+  font-weight: 400;
+  font-family: var(--serif);
+  font-size: 1rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  background: var(--paper-2);
+  color: var(--ivory-ink);
+  width: 100%;
+  min-height: 44px;
+}
+.share-grid textarea { resize: vertical; }
+.share-grid :is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* The honeypot. Removed from the layout and from the accessibility tree, but
+   still a real field a script will happily fill in. */
+.share-hp {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.share-consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.6rem;
+  align-items: start;
+  margin: 1.3rem 0 0;
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.share-consent input { margin-top: 0.2rem; width: 1rem; height: 1rem; }
+.share-consent a { color: var(--gold-deep); }
+
+.share-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.4rem; }
+.share-status { font-family: var(--sans); font-size: 0.82rem; margin: 0.9rem 0 0; }
+.share-status[data-state="error"] { color: var(--movement, #A33F28); }
