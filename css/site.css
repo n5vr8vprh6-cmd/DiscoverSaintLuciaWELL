@@ -829,6 +829,10 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   font-size: var(--fs-small);
   color: var(--muted);
   max-width: 52ch;
+  /* `pretty`, not `balance`: it only pulls back the last line, which is the
+     actual complaint ("Nothing else / changes."). `balance` re-flows every line
+     to equal length and leaves short help text visibly ragged. */
+  text-wrap: pretty;
 }
 
 /* Two, three or five options should not all stack in one column on a wide
@@ -840,10 +844,20 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   .finder-opts--4 { grid-template-columns: 1fr 1fr; }
   /* Five stacked cards plus a headline and the actions do not fit a laptop
      viewport, and a question that scrolls is not one decision on one screen.
-     Two columns, last card spanning, keeps the whole choice visible. */
+
+     The fifth card does NOT span the row. It did, and a full-width block among
+     four half-width ones reads as recommended — Reconnect was being given
+     visual weight the scoring does not give it. It sits in the left column and
+     the last cell stays empty; an uneven grid is the honest shape of five
+     options. */
   .finder-opts--5 { grid-template-columns: 1fr 1fr; }
-  .finder-opts--5 > li:last-child { grid-column: 1 / -1; }
 }
+
+/* Every card the same height. The `li` stretches to the grid row but the
+   bordered box is the `label` inside it, so a short answer like "Gentle" drew
+   a visibly smaller box than its neighbours. */
+.finder-opts > li { display: grid; }
+.finder-opts label { height: 100%; }
 .finder-opts input {
   position: absolute;
   opacity: 0;
@@ -941,31 +955,66 @@ html[data-finder="app"] #top,
 html[data-finder="app"] #other-ways,
 html[data-finder="app"] #begin { display: none; }
 
-/* No page scroll — the shell owns the viewport and each state fits inside it.
+/* THE PAGE SCROLLS. IT MUST NOT BE LOCKED.
+   This block used to set `overflow: hidden` on html and body, on the theory
+   that the shell owned the viewport and every state fit inside it. Two of the
+   three states do. The RESULT DOES NOT — measured at 1280x860 it is 2247px
+   tall in a 704px viewport — and the lock made everything past the first
+   screen unreachable: the experiences, Eclipse, the advisor CTA and the entire
+   email capture.
+
+   The inner `overflow-y: auto` did not save it either, and the reason is worth
+   keeping. `min-height: 100dvh` lets the section GROW to fit its content
+   instead of constraining it, so `.wrap` grew with it (clientHeight 2173 =
+   scrollHeight 2173) and never overflowed — an auto-scroll container with
+   nothing to scroll.
+
+   So: no lock, no nested scroller. The section keeps `min-height: 100dvh`, so
+   a question still fills exactly one screen and has nothing to scroll, while
+   the result is simply taller than the viewport and the page scrolls the way
+   pages do. Fewer moving parts than a flex column wrapping a scroll container,
+   which is what broke.
+
    100dvh, never 100vh: on iOS the address bar makes vh taller than what is
    actually visible, so the Continue button lands under the chrome. */
-html[data-finder="app"], html[data-finder="app"] body {
-  height: 100%;
-  overflow: hidden;
-}
+/* Anything scrolled into view has to clear the sticky bar, or it lands
+   underneath it. Covers focus(), in-page anchors and back-forward restore. */
+html[data-finder="app"] { scroll-padding-top: 6rem; }
 html[data-finder="app"] .finder-section {
   position: relative;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   padding: 0;
-  overflow: hidden;
 }
 html[data-finder="app"] .finder-section > .wrap {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow-y: auto;          /* the result is longer than a screen; questions are not */
-  -webkit-overflow-scrolling: touch;
 }
 /* The section head is page furniture — the tool bar says where you are. */
 html[data-finder="app"] .finder-section > .wrap > .section-head { display: none; }
+
+/* THE GROUND GOES DEEPER SO THE CARD CAN LIFT OFF IT.
+   The tool used to be paper on paper, which is why it still read as a page.
+   The shell now sits on a deeper ground and each state is a raised card, so
+   the thing being decided is visibly an object rather than a column of text.
+   Launch, questions and result all use the same card, so the three states read
+   as one surface rather than three screens. */
+html[data-finder="app"] .finder-section {
+  background: color-mix(in srgb, var(--ink) 5%, var(--paper-2));
+}
+html[data-finder="app"] .finder-card {
+  background: var(--paper);
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  box-shadow: 0 18px 48px -34px var(--ink);
+  padding: clamp(1.6rem, 3.4vw, 3rem);
+  margin-inline: auto;
+  width: 100%;
+  max-width: 62rem;
+}
 
 html[data-finder="app"] .finder-app {
   flex: 1;
@@ -973,6 +1022,12 @@ html[data-finder="app"] .finder-app {
   flex-direction: column;
   justify-content: center;
   padding-block: clamp(1.5rem, 4vh, 3rem);
+}
+/* The result is read rather than decided on, so it starts at the top — and it
+   needs air under the sticky bar, which the section's `padding: 0` removed. */
+html[data-finder="app"] .finder-app:has(.finder-result:not([hidden])) {
+  justify-content: flex-start;
+  padding-top: clamp(2rem, 5vh, 3.5rem);
 }
 /* Wider than the 760px reading measure: this is a control surface, not a
    column of prose, and the extra width is what lets the option cards sit two
@@ -984,10 +1039,8 @@ html[data-finder="app"] .finder-q legend { margin-bottom: 1.5rem; }
 html[data-finder="app"] .finder-q-n { margin-bottom: 0.6rem; }
 html[data-finder="app"] .finder-q-text { font-size: clamp(1.9rem, 3.6vw, 3rem); }
 html[data-finder="app"] .finder-actions { margin-top: 1.8rem; }
-/* The result is read, not decided on, so it sits at the top and scrolls. */
-html[data-finder="app"] .finder-app:has(.finder-result:not([hidden])) {
-  justify-content: flex-start;
-}
+/* The form is the card, so it must not also carry the narrower form measure. */
+html[data-finder="app"] .finder-form.finder-card { max-width: 62rem; }
 
 /* — the wash —
    The environmental response, in one element. Its colour is set to the
@@ -1008,8 +1061,11 @@ html:not([data-finder="app"]) .finder-wash { display: none; }
 
 /* — tool bar — */
 .finder-bar {
-  position: relative;
-  z-index: 2;
+  /* Sticky, now that the page scrolls: on a long result the step rail and the
+     way out must not scroll away with the content. */
+  position: sticky;
+  top: 0;
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: clamp(1rem, 4vw, 2.5rem);
@@ -1083,11 +1139,22 @@ html:not([data-finder="app"]) .finder-wash { display: none; }
   color: var(--muted);
   max-width: 40rem;
   margin-inline: auto;
+  text-wrap: pretty;
 }
 .finder-launch-actions { margin: clamp(1.8rem, 4vh, 2.6rem) 0 1.1rem; }
 .finder-launch-alt { font-family: var(--sans); font-size: 0.84rem; color: var(--muted); }
 .finder-launch-alt a { color: var(--gold-deep); }
-.finder-privacy { font-family: var(--sans); font-size: 0.78rem; color: var(--muted); }
+/* `margin-inline: auto` is the load-bearing part. chrome.css styles
+   .finder-privacy alongside .section-footnote and .cta-note, which hands it
+   `max-width: var(--measure)` and `margin: 2rem 0 0` — so inside the centred
+   launch block it sat left of everything above it (measured centre 481 against
+   the block's 627). The max-width is fine; the missing auto margin was not. */
+.finder-privacy {
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-inline: auto;
+}
 
 /* — shaping —
    Four beats settling. The sequence times the transition; it is not a
@@ -1121,6 +1188,65 @@ html:not([data-finder="app"]) .finder-wash { display: none; }
   to   { opacity: 0.55; transform: none; }
 }
 
+/* — the result head —
+   Copy left, the Compass ring right. Two columns only where there is room for
+   the ring to be legible; below that it drops under the copy. */
+html[data-finder="app"] .result-head {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  /* `start`, not `center`. The ring is taller than the copy beside it, so
+     centring lifted its top edge above the head and slid RESTORE — the 12
+     o'clock direction — underneath the sticky tool bar. */
+  align-items: start;
+  max-width: none;
+}
+@media (min-width: 900px) {
+  html[data-finder="app"] .result-head { grid-template-columns: 1fr 19rem; }
+}
+html[data-finder="app"] .result-head-copy { max-width: var(--measure); }
+html[data-finder="app"] .result-head { margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
+
+/* THE RING IS DRAWN FOR A DARK GROUND. IT SITS ON PAPER HERE.
+   .compass-label is `fill: var(--paper)` and .compass-ring strokes
+   --hairline-d, both tuned for section--ink on the homepage. Dropped onto the
+   result card unchanged, the labels are paper on paper — an empty circle. */
+.result-compass-figure { margin-inline: auto; max-width: 22rem; width: 100%; }
+
+/* NO ENTRANCE ANIMATION HERE.
+   The homepage compass draws itself as you scroll to it: rings stroke on,
+   labels fade in on a stagger driven by --i, ticks scale up. All of that is
+   gated on body[data-motion="ready"] and only settles once .is-drawn runs its
+   keyframes. On the result the compass is not being scrolled to — it is part
+   of an answer the visitor is already reading — so it must arrive finished.
+   Without these it appears as a bare centre mark and a half-drawn arc. */
+body[data-motion="ready"] .result-compass-figure .compass-ring,
+body[data-motion="ready"] .result-compass-figure .compass.is-drawn .compass-ring {
+  stroke-dashoffset: 0;
+  animation: none;
+}
+body[data-motion="ready"] .result-compass-figure .compass-ring--inner {
+  stroke-dasharray: 3 7;
+}
+body[data-motion="ready"] .result-compass-figure .compass-label,
+body[data-motion="ready"] .result-compass-figure .compass-center {
+  opacity: 1;
+  animation: none;
+}
+body[data-motion="ready"] .result-compass-figure .compass-tick {
+  opacity: .75;
+  transform: none;
+  animation: none;
+}
+.result-compass-figure .compass-label { fill: var(--ink); font-size: 24px; }
+.result-compass-figure .compass-ring { stroke: var(--hairline-l); }
+.result-compass-figure .compass-center { fill: var(--muted); }
+.result-compass-figure .compass.is-probed .compass-center { fill: var(--muted); }
+/* Lit directions take gold; the rest recede rather than disappear — a person
+   should still be able to read the whole compass they were measured against. */
+.result-compass-figure .compass.is-probed .compass-point:not(.is-active) .compass-label { fill-opacity: .34; }
+.result-compass-figure .compass-point.is-active .compass-label { fill: var(--gold-deep); fill-opacity: 1; }
+.result-compass-figure .compass-hit { pointer-events: none; }
+
 /* — the Compass readout —
    Directions named, never scored. See the note in js/journey.js for why there
    are no dots here. */
@@ -1148,6 +1274,76 @@ html:not([data-finder="app"]) .finder-wash { display: none; }
   border: 1px solid var(--hairline-l);
   border-radius: 999px;
   padding: 0.32rem 0.8rem;
+}
+/* Where the ring is showing, the chips say the same thing twice — and its own
+   label sits at the centre of the diagram, so the heading above them is a
+   third copy. Both are hidden from sight and kept in the accessibility tree,
+   because an SVG of eight positioned words cannot be read as a list. */
+@media (min-width: 900px) {
+  html[data-finder="app"] .result-compass-list,
+  html[data-finder="app"] .result-compass-label {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  html[data-finder="app"] .result-compass { margin-top: 0; }
+}
+
+/* — result cards —
+   The closest match is the recommendation and reads like one: its accent runs
+   the full top edge, the card is lifted, and the runners-up sit back. */
+html[data-finder="app"] .result-villages {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+}
+@media (min-width: 860px) {
+  html[data-finder="app"] .result-villages { grid-template-columns: repeat(3, 1fr); }
+}
+.result-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--paper);
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+}
+/* The recommendation has to be legible as one at a glance. A thin rule and the
+   words "Closest match" were not enough — all three cards read as equals with
+   a caption. The lead now carries its village accent as a full edge, a warmer
+   card, real elevation, and the rank set in the accent rather than in muted
+   grey. The other two are unchanged, so the difference is additive. */
+.result-card--lead {
+  border-color: color-mix(in srgb, var(--v) 45%, var(--hairline-l));
+  background: color-mix(in srgb, var(--v) 4%, var(--paper));
+  box-shadow: 0 20px 46px -28px color-mix(in srgb, var(--v) 60%, var(--ink));
+}
+.result-card--lead::before {
+  content: "";
+  display: block;
+  height: 5px;
+  background: var(--v);
+}
+.result-card--lead .result-rank {
+  color: var(--v-ink, var(--gold-deep));
+  font-weight: 600;
+}
+.result-card--lead .village-rule { background: var(--v); }
+.result-card-body { padding: clamp(1.1rem, 2vw, 1.5rem); }
+/* One aspect ratio across all three. The lead card briefly had a taller frame,
+   which pushed its text far below the other two and made the row read as
+   broken rather than ranked. The accent edge and the lift do the ranking. */
+.result-media { aspect-ratio: 16 / 10; overflow: hidden; background: var(--paper-2); }
+.result-media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Rhythm through the result, so it reads as passages rather than one wall. */
+html[data-finder="app"] .result-block,
+html[data-finder="app"] .result-eclipse {
+  border-top: 1px solid var(--hairline-l);
+  padding-top: clamp(2rem, 4vw, 3rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
 }
 
 /* Reduced motion: the wash still changes colour — it carries meaning — but

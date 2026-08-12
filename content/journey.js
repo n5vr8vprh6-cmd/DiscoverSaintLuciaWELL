@@ -25,6 +25,19 @@
 
 const { VILLAGES, EXPERIENCES } = require('./villages.js');
 
+/* The eight Compass directions, taken from the homepage's own Compass section
+   rather than retyped here. The result screen shows the same ring the visitor
+   met on the way in, and deriving it means the two can never disagree about
+   what the eight directions are or what order they sit in. Throwing here is
+   deliberate: a silent fallback would ship a compass missing a direction. */
+const COMPASS_POINTS = (() => {
+  const section = require('./home.js').sections.find((s) => s.type === 'compass');
+  if (!section || !section.points || section.points.length !== 8) {
+    throw new Error('journey: could not read the eight Compass directions from home.js');
+  }
+  return section.points.map((p) => (typeof p === 'string' ? p : p.label));
+})();
+
 const QUESTIONS = [
   {
     id: 'intention',
@@ -94,7 +107,14 @@ module.exports = {
     villages: VILLAGES.map((v) => ({
       key: v.key, name: v.name, short: v.short, color: v.color, ink: v.ink,
       subline: v.subline, body: v.body, themes: v.themes.slice(0, 4),
-      anchors: v.anchors.map((a) => a.name)
+      anchors: v.anchors.map((a) => a.name),
+      /* Trimmed to what the result card renders. The village photography is
+         already built and sized (content/properties-media.js, attached in
+         villages.js); this only adds a few strings to the payload, and only
+         the three matched images are ever fetched. */
+      image: v.image
+        ? { base: v.image.base, widths: v.image.widths, alt: v.image.alt }
+        : null
     })),
     experiences: EXPERIENCES
   },
@@ -159,6 +179,9 @@ module.exports = {
       /* STATE 5. Beats that settle as the result renders — the reveal covers the
          work rather than a timer pretending there is some. */
       shapingBeats: ['Intention', 'Place', 'Pace', 'Journey'],
+
+      compassPoints: COMPASS_POINTS,
+      compassCentre: 'YOUR COMPASS',
 
       staticIntro: 'Saint Lucia WELL organizes the island into six wellness villages — six ways of understanding what each part of the island contributes to a journey. Below is each one, with what it is best suited to. To have a journey shaped around you, speak with a Saint Lucia WELL Advisor.',
       advisorCta: { label: 'Speak with an advisor', href: '/about#contact' },

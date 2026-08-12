@@ -277,6 +277,34 @@ built first and the reveal covers it, it is skipped entirely under
 `prefers-reduced-motion`, and it never runs on a restored `#r=` link, because
 someone opening a friend's result has answered nothing.
 
+**The page scrolls. Do not lock it again.** App mode originally set
+`overflow: hidden` on `html, body`, reasoning that the shell owned the viewport.
+Two of the three states fit; the result does not — 2247px in a 704px viewport —
+and the lock made the experiences, Eclipse, the advisor CTA and the whole email
+capture unreachable. The inner `overflow-y: auto` did not save it either:
+`min-height: 100dvh` lets the section *grow* to fit content, so the scroll
+container grew with it and never overflowed. The section keeps `min-height`, the
+page scrolls normally, and `.finder-bar` is `position: sticky`. A question still
+fills exactly one screen because it is shorter than the viewport.
+
+Two consequences of the sticky bar, both already handled: anything scrolled into
+view needs `scroll-padding-top` or it lands underneath it, and `resultEl.focus()`
+must pass `preventScroll` — a bare focus scrolled the result into view and
+parked its heading and the top of the Compass under the bar.
+
+**Verify scrolling at a real viewport.** This shipped broken because the result
+was only ever captured in a 2000px-tall window, where everything fit. And note
+`html { scroll-behavior: smooth }` (site.css): a test that calls `scrollTo` and
+measures immediately reads `scrollY: 0` and looks like a scroll failure. Pass
+`behavior: 'instant'`.
+
+**The Compass on the result needs its entrance animation disabled.** The
+homepage ring draws itself on scroll — rings stroke on, labels fade in on a
+stagger, all gated behind `.compass.is-drawn`. Dropped into a result the visitor
+is already reading, it must arrive finished, or it appears as a bare centre mark
+and a half-drawn arc. It also has to be recoloured: the labels are `--paper`,
+which is invisible on the result card.
+
 **Known wart:** steps do not push history, so browser Back at question 3 leaves
 the tool entirely. Tolerable when this was a page; more jarring now it presents
 as software. Roughly fifteen lines to fix and the first thing to do next.

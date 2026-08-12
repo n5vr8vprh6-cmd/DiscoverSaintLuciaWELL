@@ -294,18 +294,43 @@
       villages: matched.map(function (v) { return v.key; }).join(',')
     });
 
+    /* The photograph. Villages already carry built, correctly-sized imagery;
+       only the three matched ones are ever requested. `loading="lazy"` on the
+       two runners-up because on a laptop they are below the fold. */
+    function photo(v, eager) {
+      if (!v.image || !v.image.base || !v.image.widths) return '';
+      var set = v.image.widths.map(function (w) {
+        return v.image.base + '-' + w + '.jpg ' + w + 'w';
+      }).join(', ');
+      return '<div class="result-media">' +
+        '<img src="' + esc(v.image.base) + '-' + v.image.widths[0] + '.jpg"' +
+        ' srcset="' + esc(set) + '"' +
+        ' sizes="(max-width: 860px) 100vw, 33vw"' +
+        ' alt="' + esc(v.image.alt || '') + '"' +
+        ' loading="' + (eager ? 'eager' : 'lazy') + '" decoding="async">' +
+      '</div>';
+    }
+
+    /* The first card is the recommendation and now looks like one. It used to
+       be identical to the other two apart from the words "Closest match",
+       which made the ranking something you had to read rather than see. */
     var villageCards = matched.map(function (v, i) {
-      return '<li class="village-card" style="--v:' + esc(v.color) + ';--v-ink:' + esc(v.ink) + '">' +
-        '<span class="result-rank">' + (i === 0 ? 'Closest match' : 'Also for you') + '</span>' +
-        '<span class="village-rule" aria-hidden="true"></span>' +
-        '<h4 class="village-card-title">' + esc(v.name) + '</h4>' +
-        '<p class="village-subline">' + esc(v.subline) + '</p>' +
-        '<p class="village-body">' + esc(v.body) + '</p>' +
-        '<ul class="chip-list">' + v.themes.slice(0, 3).map(function (t) {
-          return '<li>' + esc(t) + '</li>';
-        }).join('') + '</ul>' +
-        '<p class="result-anchors"><b>Places in this village</b>' +
-          esc(v.anchors.join(' · ')) + '</p>' +
+      var lead = i === 0;
+      return '<li class="village-card result-card' + (lead ? ' result-card--lead' : '') +
+          '" style="--v:' + esc(v.color) + ';--v-ink:' + esc(v.ink) + '">' +
+        photo(v, lead) +
+        '<div class="result-card-body">' +
+          '<span class="result-rank">' + (lead ? 'Closest match' : 'Also for you') + '</span>' +
+          '<span class="village-rule" aria-hidden="true"></span>' +
+          '<h4 class="village-card-title">' + esc(v.name) + '</h4>' +
+          '<p class="village-subline">' + esc(v.subline) + '</p>' +
+          '<p class="village-body">' + esc(v.body) + '</p>' +
+          '<ul class="chip-list">' + v.themes.slice(0, 3).map(function (t) {
+            return '<li>' + esc(t) + '</li>';
+          }).join('') + '</ul>' +
+          '<p class="result-anchors"><b>Places in this village</b>' +
+            esc(v.anchors.join(' · ')) + '</p>' +
+        '</div>' +
       '</li>';
     }).join('');
 
@@ -326,6 +351,9 @@
         '</div>'
       : '';
 
+    /* The chips stay as the text version of the same fact — they are what a
+       screen reader reads and what shows if the ring is missing. The ring
+       itself is moved in below, beside the heading. */
     var compassBlock = directions.length
       ? '<div class="result-compass">' +
           '<p class="result-compass-label">Your Compass</p>' +
@@ -341,10 +369,13 @@
        belongs to; the loose line goes. */
     var html =
       '<div class="result-head">' +
-        '<h3>Your Saint Lucia begins here.</h3>' +
-        '<p class="lead">Three villages answer what you named. They are a starting point, not a package — ' +
-        'an advisor will shape the sequence around your time, your energy and who you are traveling with.</p>' +
-        compassBlock +
+        '<div class="result-head-copy">' +
+          '<h3>Your Saint Lucia begins here.</h3>' +
+          '<p class="lead">Three villages answer what you named. They are a starting point, not a package — ' +
+          'an advisor will shape the sequence around your time, your energy and who you are traveling with.</p>' +
+          compassBlock +
+        '</div>' +
+        '<div class="result-head-figure" data-compass-slot></div>' +
       '</div>' +
       '<ul class="village-grid result-villages">' + villageCards + '</ul>' +
       (expItems ? '<div class="result-block"><h4>Experiences inside them</h4><ul class="result-exp">' + expItems + '</ul></div>' : '') +
@@ -377,15 +408,44 @@
     /* The markup is built before the transition starts, so the pause covers
        work that is genuinely finished rather than standing in for work that
        has not begun. */
+    /* Move the build-time compass into the result and take its bearing.
+
+       `is-drawn` is not optional: under body[data-motion="ready"] the labels
+       start at opacity 0 and only the drawn state animates them in, so without
+       it the ring arrives as an empty circle. `is-probed` is the existing
+       hover mechanism — it dims the directions that are not active, which is
+       what makes the lit ones read as chosen rather than merely brighter. */
+    function placeCompass() {
+      var fig = document.getElementById('finder-compass');
+      var slot = resultEl.querySelector('[data-compass-slot]');
+      if (!fig || !slot || !directions.length) return;
+      slot.appendChild(fig);
+      fig.hidden = false;
+      var svg = fig.querySelector('.compass');
+      if (!svg) return;
+      svg.classList.add('is-drawn', 'is-probed');
+      [].forEach.call(svg.querySelectorAll('.compass-point'), function (g) {
+        var label = g.querySelector('.compass-label');
+        var name = label ? label.textContent.trim() : '';
+        g.classList.toggle('is-active', directions.indexOf(name) !== -1);
+      });
+    }
+
     shaping(function () {
       resultEl.innerHTML = html;
+      placeCompass();
       if (launchEl) launchEl.hidden = true;
       formEl.hidden = true;
       resultEl.hidden = false;
       /* The step rail has nothing left to point at once the questions are
          done, and leaving "Fit" lit implies there is more to come. */
       if (stepsEl) stepsEl.hidden = true;
-      resultEl.focus();
+      /* `preventScroll`, then go to the top ourselves. A bare focus() scrolls
+         the result into view, which on a sticky-header layout parks the
+         heading and the top of the Compass underneath the bar. A result should
+         begin at its beginning. */
+      resultEl.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
       wash();
       wireResult();
     }, instant);
