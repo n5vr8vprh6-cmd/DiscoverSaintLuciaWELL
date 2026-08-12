@@ -1060,18 +1060,22 @@ html[data-finder="app"] .finder-form.finder-card { max-width: 62rem; }
 html:not([data-finder="app"]) .finder-wash { display: none; }
 
 /* — tool bar — */
+/* The strip: full-bleed background and rule, no horizontal padding of its own.
+   Everything inside is positioned by .wrap, exactly as the body is. */
 .finder-bar {
   /* Sticky, now that the page scrolls: on a long result the step rail and the
      way out must not scroll away with the content. */
   position: sticky;
   top: 0;
   z-index: 3;
+  padding-block: 0.9rem;
+  border-bottom: 1px solid var(--hairline-l);
+  background: var(--paper);
+}
+.finder-bar-inner {
   display: flex;
   align-items: center;
   gap: clamp(1rem, 4vw, 2.5rem);
-  padding: 0.9rem clamp(1.1rem, 4vw, 2.4rem);
-  border-bottom: 1px solid var(--hairline-l);
-  background: var(--paper);
 }
 .finder-bar-brand {
   font-family: var(--sans);
@@ -1364,7 +1368,9 @@ html[data-finder="app"] .result-eclipse {
 }
 
 @media (max-width: 640px) {
-  .finder-bar { gap: 0.75rem; padding-inline: 1.1rem; }
+  /* Gap belongs to the inner row now, and the horizontal inset comes from
+     .wrap's gutter — the same one the content below uses. */
+  .finder-bar-inner { gap: 0.75rem; }
   .finder-bar-brand { display: none; }   /* the rail is what matters on a phone */
   .finder-rail { gap: 0.5rem; }
   .finder-rail li { font-size: 0.6rem; letter-spacing: 0.12em; }
