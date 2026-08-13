@@ -63,9 +63,33 @@ module.exports = async function handler(req, res) {
     });
     if (error) {
       const m = String(error.message || '').toLowerCase();
+      const code = String(error.code || '');
+      const status = Number(error.status || 0);
+
       if (m.includes('password')) return json(res, 400, { error: 'password_weak' });
-      /* Anything else is reported as success-shaped: see above. */
-      return json(res, 200, { ok: true, verify: true });
+
+      /* ONLY the already-registered case is answered success-shaped. An earlier
+         version masked every error that way, which meant a genuine failure —
+         Supabase's built-in email hitting its send limit — looked to the person
+         registering exactly like success, and they waited for a verification
+         email that was never sent. Non-disclosure is worth protecting; silently
+         swallowing outages is not. */
+      if (code === 'user_already_exists' || m.includes('already registered')) {
+        return json(res, 200, { ok: true, verify: true });
+      }
+
+      /* The failure we actually hit in testing, and the one most likely in a
+         beta: Supabase's built-in mailer allows only a few messages an hour.
+         Configuring custom SMTP (Resend, which this project already uses) is
+         the fix; until then the person needs to be told to try again rather
+         than left waiting. */
+      if (status === 429 || code === 'over_email_send_rate_limit') {
+        console.error('register blocked: verification email rate limit — configure custom SMTP in Supabase');
+        return json(res, 503, { error: 'email_unavailable' });
+      }
+
+      console.error('register failed', error);
+      return json(res, 500, { error: 'register_failed' });
     }
 
     const user = data && data.user;
