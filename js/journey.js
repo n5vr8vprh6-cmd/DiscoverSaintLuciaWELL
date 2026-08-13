@@ -528,12 +528,19 @@
           '<label>Phone <span class="share-opt">optional</span>' +
             '<input type="tel" name="phone" autocomplete="tel"></label>' +
           '<label class="share-wide">When are you thinking of travelling?' +
+            /* The option VALUE is the normalised travel window the Hub sorts
+               by; the option TEXT is what the consumer reads and what the
+               advisor sees quoted back. Both are sent. "Within the next
+               month" exists because an advisor needs to know the difference
+               between six weeks away and six days away, and the old buckets
+               could not express it. */
             '<select name="timing">' +
               '<option value="">Not sure yet</option>' +
-              '<option>Within 3 months</option>' +
-              '<option>3–6 months</option>' +
-              '<option>6–12 months</option>' +
-              '<option>More than a year away</option>' +
+              '<option value="30d">Within the next month</option>' +
+              '<option value="31-90d">1–3 months</option>' +
+              '<option value="3-6mo">3–6 months</option>' +
+              '<option value="6-12mo">6–12 months</option>' +
+              '<option value="12mo+">More than a year away</option>' +
             '</select></label>' +
           '<label class="share-wide">Anything you would like them to know? ' +
             '<span class="share-opt">optional</span>' +
@@ -624,6 +631,13 @@
     status.removeAttribute('data-state');
     status.textContent = 'Sending…';
 
+    /* The select's value is the normalised window; its label is what they read.
+       Sending both means the advisor sees the sentence the consumer chose, and
+       the Hub sorts on something it defined rather than on prose. */
+    var timingEl = form.querySelector('[name="timing"]');
+    var timingLabel = timingEl && timingEl.selectedIndex > 0
+      ? timingEl.options[timingEl.selectedIndex].text : '';
+
     var attr = attribution();
     fetch('/api/share', {
       method: 'POST',
@@ -631,7 +645,8 @@
       body: JSON.stringify({
         firstName: get('firstName'), lastName: get('lastName'),
         email: get('email'), phone: get('phone'),
-        timing: get('timing'), context: get('context'),
+        timing: timingLabel, travelWindow: get('timing'),
+        context: get('context'),
         company: get('company'),                       /* honeypot */
         consent: true, consentText: shareConsent(advisorName),
         advisor: attr.advisor || null,
