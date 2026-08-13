@@ -1,0 +1,631 @@
+/* ============================================================================
+   THE ADVISOR HUB
+   ----------------------------------------------------------------------------
+   V2 §15: "do not design a generic SaaS dashboard, design the private advisor
+   extension of Discover Saint Lucia WELL."
+
+   So this sheet inherits everything that carries the brand — tokens, the three
+   type roles, .wrap, .btn, .eyebrow — and departs from the consumer sheet only
+   where a working surface genuinely differs from an editorial one:
+
+     · tighter rhythm. --section-y caps at 11rem, which is right for a brochure
+       and absurd above a list of five people waiting for a phone call;
+     · sans-serif for anything scanned. Libre Caslon is for reading, and an
+       advisor checking a pipeline is not reading;
+     · cards that mean something. A card here is a container with an edge
+       because these really are separate objects, not decoration.
+
+   It is a light surface throughout. The consumer site earns its dark sections
+   with photography; a workspace at 8am does not.
+   ========================================================================== */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PAGE
+   ══════════════════════════════════════════════════════════════════════════ */
+body {
+  background: var(--paper);
+  color: var(--ivory-ink);
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  /* Footer to the bottom on a short page — an empty state should not leave the
+     footer floating mid-screen. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* `render()` supplies the `<main id="main">` wrapper (lib/page.js), so a Hub
+   body must NOT open a second one — nested <main> is invalid, and the flex
+   sizing below would land on the wrapper rather than on the content. The
+   sticky footer is therefore keyed to #main, and .hub-main is a plain div
+   inside it. */
+#main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-main {
+  flex: 1 0 auto;
+  padding-block: clamp(1.75rem, 4vw, 3rem) clamp(3.5rem, 7vw, 5.5rem);
+}
+
+.wrap--narrow { max-width: 56rem; }
+
+.hub-main h1 {
+  font-family: var(--serif-display);
+  font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+  line-height: 1.14;
+  /* Descender clearance. The same clipping that had to be fixed across the
+     consumer headlines applies here — "Journeys" has a y in it. */
+  padding-bottom: 0.08em;
+  margin: 0 0 0.35em;
+}
+
+.hub-main h2 {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 1.1rem;
+}
+
+.hub-head { margin-bottom: clamp(1.75rem, 4vw, 2.5rem); }
+.hub-lead { font-size: var(--fs-lead); line-height: 1.6; color: var(--muted); max-width: 46ch; }
+.hub-hint { font-size: var(--fs-small); color: var(--muted); margin: 0.6rem 0 0; }
+.hub-hint a { color: inherit; }
+
+.hub-back { margin: 0 0 1.25rem; font-size: var(--fs-small); }
+.hub-back a { color: var(--muted); text-decoration: none; }
+.hub-back a:hover { color: var(--ivory-ink); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE BAR
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-bar {
+  background: var(--ink);
+  color: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.hub-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  min-height: 62px;
+  padding-block: 0.6rem;
+}
+.hub-bar .wordmark { margin: 0; font-size: 0.95rem; }
+.hub-bar a { color: inherit; }
+.hub-bar-context {
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--mist);
+}
+
+.hub-nav {
+  display: flex;
+  gap: 1.5rem;
+  margin-inline-start: auto;
+  font-size: var(--fs-small);
+}
+.hub-nav a {
+  text-decoration: none;
+  color: var(--mist);
+  padding-block: 0.35rem;
+  border-bottom: 2px solid transparent;
+}
+.hub-nav a:hover { color: var(--paper); }
+.hub-nav a[aria-current] { color: var(--paper); border-bottom-color: var(--gold); }
+
+/* ── Account menu ─────────────────────────────────────────────────────────
+   A <details> rather than a scripted dropdown: it opens, closes, traps nothing
+   and works before js/hub.js has loaded. */
+.hub-account { position: relative; }
+.hub-account summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+  padding: 0.3rem;
+  border-radius: 2px;
+}
+.hub-account summary::-webkit-details-marker { display: none; }
+.hub-account summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.hub-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: var(--paper);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.hub-account-name { font-size: var(--fs-small); color: var(--mist); }
+.hub-account-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  min-width: 15rem;
+  /* A closed <details> still contributes this panel's width to the document's
+     scroll width in Chrome, which is enough on its own to make a 380px page
+     scroll sideways. Capping it against the viewport means the menu can never
+     be the reason the page is wider than the screen. */
+  max-width: calc(100vw - 1.5rem);
+  background: var(--paper);
+  color: var(--ivory-ink);
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  box-shadow: 0 12px 32px rgba(18, 48, 47, 0.18);
+  padding: 0.4rem;
+}
+.hub-account-menu a,
+.hub-account-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  font-size: var(--fs-small);
+  color: inherit;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.hub-account-menu a:hover,
+.hub-account-menu button:hover { background: var(--paper-2); }
+.hub-account-menu form { margin: 0; border-top: 1px solid var(--hairline-l); padding-top: 0.25rem; }
+
+/* ── The bar on a narrow screen ───────────────────────────────────────────
+   Wordmark + two nav items + the account control come to roughly 447px of
+   content against 340px of usable width at 380px, so something has to give.
+   Rather than dropping the wordmark — the one element that says which product
+   this is — the bar wraps: brand and account on the first row, navigation on
+   the second. Nothing is hidden and nothing is truncated. */
+@media (max-width: 620px) {
+  .hub-bar-inner { flex-wrap: wrap; row-gap: 0.25rem; padding-block: 0.5rem 0.15rem; }
+  .hub-bar .brand-lockup { min-width: 0; }
+  .hub-bar .brand-words b { font-size: 0.82rem; }
+  .hub-account { margin-inline-start: auto; }
+  .hub-account-name { display: none; }
+  .hub-nav {
+    order: 3;
+    flex-basis: 100%;
+    margin-inline-start: 0;
+    gap: 1.35rem;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CARDS, SECTIONS
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-section { margin-bottom: clamp(2.25rem, 5vw, 3.5rem); }
+
+.hub-card {
+  background: #fff;
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  padding: clamp(1.25rem, 3vw, 1.9rem);
+  margin-bottom: 1.25rem;
+}
+.hub-card > :last-child { margin-bottom: 0; }
+.hub-card p { margin: 0 0 0.9em; max-width: 62ch; }
+
+.hub-greeting { margin-bottom: clamp(1.5rem, 3.5vw, 2.25rem); }
+
+.hub-notice,
+.hub-flash {
+  border-left: 3px solid var(--gold);
+  background: var(--paper-2);
+  padding: 0.85rem 1.1rem;
+  font-size: var(--fs-small);
+  margin: 1rem 0 0;
+  max-width: 58ch;
+}
+.hub-flash { margin-bottom: 1.5rem; }
+.hub-flash--bad { border-left-color: var(--v-movement); }
+
+/* ── Next best action ─────────────────────────────────────────────────────
+   The one thing the Hub is confident enough to recommend. It gets the ink
+   block because it is the only element on the page allowed to be loud. */
+.hub-nba {
+  background: var(--ink);
+  color: var(--paper);
+  padding: clamp(1.5rem, 4vw, 2.4rem);
+  border-radius: 3px;
+  margin-bottom: clamp(2.25rem, 5vw, 3.5rem);
+}
+.hub-nba h2 {
+  font-family: var(--serif-display);
+  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--paper);
+  padding-bottom: 0.06em;
+  margin: 0 0 0.5em;
+}
+.hub-nba p { color: var(--mist); max-width: 54ch; margin: 0 0 1.5em; }
+.hub-nba .eyebrow { color: var(--gold); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FUNNEL + LINK
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-funnel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1px;
+  background: var(--hairline-l);
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.hub-stat {
+  background: #fff;
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.hub-stat-n {
+  font-family: var(--serif-display);
+  font-size: 2.1rem;
+  line-height: 1;
+  color: var(--teal);
+}
+.hub-stat-label { font-size: var(--fs-small); font-weight: 600; }
+.hub-stat-note { font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+
+.hub-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+.hub-link-row input {
+  flex: 1 1 18rem;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--fs-small);
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  background: var(--paper-2);
+  color: inherit;
+}
+.hub-field-label {
+  display: block;
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.hub-qr {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.hub-qr svg { border: 1px solid var(--hairline-l); border-radius: 2px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   JOURNEY LISTS
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--hairline-l);
+}
+.hub-views a {
+  padding: 0.6rem 0.9rem;
+  font-size: var(--fs-small);
+  text-decoration: none;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.hub-views a:hover { color: var(--ivory-ink); }
+.hub-views a.is-current { color: var(--ivory-ink); font-weight: 600; border-bottom-color: var(--gold-deep); }
+
+.hub-journeys { list-style: none; margin: 0; padding: 0; }
+.hub-journey + .hub-journey { border-top: 1px solid var(--hairline-l); }
+.hub-journey a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.2rem 1.5rem;
+  align-items: baseline;
+  padding: 1rem 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+.hub-journey a:hover { background: var(--paper-2); }
+.hub-journey-name { font-weight: 600; font-size: 1.05rem; }
+.hub-journey-meta {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+.hub-journey-villages { font-size: var(--fs-small); color: var(--muted); }
+
+.hub-group { margin-bottom: 2rem; }
+.hub-group-head { display: flex; align-items: center; gap: 0.75rem; }
+.hub-group-n { font-size: var(--fs-small); color: var(--muted); }
+
+.hub-more { font-size: var(--fs-small); margin: 1rem 0 0; }
+
+/* ── Stage chips ──────────────────────────────────────────────────────────
+   Colour is a hint, never the only signal — the label is always present, so
+   these read correctly in greyscale and to anyone who does not distinguish
+   the hues. */
+.hub-stage {
+  display: inline-block;
+  padding: 0.2em 0.65em;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--paper-2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.hub-stage[data-stage="new"]       { background: #FBEBD1; color: #7A5411; }
+.hub-stage[data-stage="contacted"] { background: #DCEBEB; color: var(--v-ocean-ink); }
+.hub-stage[data-stage="discovery"] { background: #E3EADF; color: var(--v-rainforest-ink); }
+.hub-stage[data-stage="planning"]  { background: #DEE9E9; color: var(--v-longevity-ink); }
+.hub-stage[data-stage="booked"]    { background: var(--teal); color: var(--paper); }
+.hub-stage[data-stage="closed"]    { background: var(--paper-2); color: var(--muted); }
+
+/* ── Empty states ─────────────────────────────────────────────────────── */
+.hub-empty {
+  border: 1px dashed var(--hairline-l);
+  border-radius: 3px;
+  padding: clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  background: var(--paper-2);
+}
+.hub-empty h3 {
+  font-family: var(--serif-display);
+  font-size: 1.35rem;
+  padding-bottom: 0.06em;
+  margin: 0 0 0.5em;
+}
+.hub-empty p { color: var(--muted); max-width: 46ch; margin: 0 auto 1.5em; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   JOURNEY DETAIL
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-detail-head { margin-bottom: clamp(1.75rem, 4vw, 2.5rem); }
+.hub-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.25rem 0 0.75rem; }
+.hub-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  margin: 0;
+}
+
+.hub-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .hub-detail-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* The briefing is the one place in the Hub that is read rather than scanned,
+   so it gets the reading face and a reading measure. */
+.hub-card--brief p {
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.68;
+  max-width: 58ch;
+}
+
+.hub-quote { margin: 1.5rem 0; }
+.hub-quote blockquote {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--gold);
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+.hub-quote figcaption {
+  margin-top: 0.5rem;
+  padding-left: 1rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.hub-eclipse {
+  margin-top: 1.5rem;
+  background: var(--eclipse-midnight);
+  color: var(--eclipse-sand);
+  padding: 1.1rem 1.25rem;
+  border-radius: 3px;
+}
+.hub-eclipse .eyebrow { color: var(--eclipse-copper-l); margin-bottom: 0.7em; }
+.hub-eclipse p { font-family: var(--serif); margin: 0; max-width: 56ch; }
+
+.hub-prompts { margin: 0; padding: 0; list-style: none; }
+.hub-prompts li {
+  padding: 0.75rem 0 0.75rem 1.5rem;
+  position: relative;
+  max-width: 58ch;
+}
+.hub-prompts li + li { border-top: 1px solid var(--hairline-l); }
+.hub-prompts li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 1.45em;
+  width: 0.6rem; height: 1px;
+  background: var(--gold-deep);
+}
+
+.hub-villages { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.hub-villages li { font-size: var(--fs-small); }
+
+.hub-answers { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; }
+.hub-answers dt { font-size: 0.8rem; color: var(--muted); }
+.hub-answers dd { margin: 0; font-size: var(--fs-small); font-weight: 600; }
+
+/* ── Stage control + notes ────────────────────────────────────────────── */
+.hub-stages { display: grid; gap: 0.15rem; margin-bottom: 1rem; }
+.hub-stage-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 2px;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+.hub-stage-opt:hover { background: var(--paper-2); }
+.hub-stage-opt input { accent-color: var(--teal); }
+.hub-stage-opt:focus-within { outline: 2px solid var(--gold-deep); outline-offset: 1px; }
+
+.hub-note-form { margin-bottom: 1.5rem; }
+.hub-notes { list-style: none; margin: 0; padding: 0; }
+.hub-notes li { padding: 0.9rem 0; border-top: 1px solid var(--hairline-l); }
+.hub-notes p { margin: 0 0 0.3rem; white-space: pre-wrap; font-size: var(--fs-small); }
+.hub-note-when { font-size: 0.78rem; color: var(--muted); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FORMS
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-auth {
+  flex: 1 0 auto;
+  display: grid;
+  place-items: center;
+  padding: clamp(2rem, 6vw, 4.5rem) var(--gutter);
+}
+.hub-auth-card {
+  width: 100%;
+  max-width: 30rem;
+  background: #fff;
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+.hub-auth-card h1 {
+  font-family: var(--serif-display);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  line-height: 1.15;
+  padding-bottom: 0.08em;
+  margin: 0 0 0.4em;
+}
+.hub-auth-card .hub-lead { font-size: var(--fs-body); margin-bottom: 1.75rem; }
+.hub-auth-alt { font-size: var(--fs-small); color: var(--muted); margin: 1.5rem 0 0; }
+.hub-auth-alt a { color: var(--gold-deep); }
+
+.hub-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.hub-field { display: block; }
+.hub-field--wide { grid-column: 1 / -1; }
+.hub-field input,
+.hub-field textarea {
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-body);
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  background: var(--paper);
+  color: inherit;
+}
+.hub-field textarea { resize: vertical; line-height: 1.55; }
+.hub-field input:focus-visible,
+.hub-field textarea:focus-visible {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 1px;
+  background: #fff;
+}
+.hub-opt { text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+/* The honeypot. Off-screen rather than display:none, because some bots skip
+   fields they can tell are hidden. Also hidden from assistive technology, so
+   nobody using a screen reader is asked for a company name that does not
+   exist. */
+.hub-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px; height: 1px;
+  overflow: hidden;
+}
+
+.hub-form-status { font-size: var(--fs-small); color: var(--muted); margin: 0.9rem 0 0; min-height: 1.4em; }
+.hub-form-status[data-state="bad"] { color: #9A3B21; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-foot {
+  flex-shrink: 0;
+  border-top: 1px solid var(--hairline-l);
+  background: var(--paper-2);
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+.hub-foot-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-block: 1.5rem;
+}
+.hub-foot nav { display: flex; gap: 1.25rem; }
+.hub-foot a { color: inherit; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHONE
+   The Hub's real first screen. An advisor opens a notification on a phone;
+   §22 makes 380px a pass/fail width rather than a nice-to-have.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 620px) {
+  .hub-journey a {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+  .hub-journey-meta {
+    grid-column: 1;
+    grid-row: auto;
+    justify-content: flex-start;
+  }
+  .hub-actions .btn { flex: 1 1 100%; justify-content: center; }
+  .hub-stat-n { font-size: 1.8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

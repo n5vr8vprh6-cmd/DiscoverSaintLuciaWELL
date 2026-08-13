@@ -114,13 +114,20 @@ async function advisorFor(req, res) {
 
 /* Guard for Hub pages. Redirects rather than 401s, because these are documents
    a person is looking at, not API calls. `next` round-trips them back to the
-   page they wanted after signing in. */
-async function requireAdvisor(req, res) {
+   page they wanted after signing in.
+
+   THE CALLER PASSES ITS OWN PATH, and it matters. `req.url` here is the
+   REWRITTEN url — `/api/hub/journey?id=…`, not `/hub/journeys/…` — which
+   safeNext() correctly refuses, so relying on it would drop every signed-out
+   advisor on Home. That breaks the single most important journey in the
+   product: the deep link in a notification email, followed on a phone,
+   by someone whose session has expired. */
+async function requireAdvisor(req, res, next) {
   const advisor = await advisorFor(req, res);
   if (advisor) return advisor;
-  const next = encodeURIComponent(req.url || '/hub');
+  const target = safeNext(next || req.url || '/hub');
   res.statusCode = 302;
-  res.setHeader('Location', `/hub/login?next=${next}`);
+  res.setHeader('Location', `/hub/login?next=${encodeURIComponent(target)}`);
   res.end();
   return null;
 }
@@ -135,10 +142,21 @@ async function requireAdvisorJson(req, res) {
 /* Where a `next` parameter may send someone. An open redirect here would let a
    phishing link bounce off our domain, so only same-origin Hub paths pass. */
 function safeNext(value) {
-  const v = String(value || '');
-  if (!v.startsWith('/hub')) return '/hub';
-  if (v.startsWith('//') || v.includes('://')) return '/hub';
-  return v;
+  const raw = String(value || '');
+  if (raw.startsWith('//') || raw.includes('://') || raw.includes('\\')) return '/hub';
+
+  /* Normalise BEFORE testing the prefix. `/hub/../admin` passes any prefix
+     check and then resolves to `/admin` in the browser, which would let a
+     crafted login link steer someone anywhere on the site. Parsing against a
+     dummy origin collapses the traversal so the test sees the real path. */
+  let url;
+  try { url = new URL(raw, 'https://x'); } catch (e) { return '/hub'; }
+
+  const path = url.pathname + url.search + url.hash;
+  /* `/hub`, `/hub/…`, `/hub?…` — but not `/hubsomethingelse`, so the prefix
+     test cannot be widened by adding a route that merely starts the same way. */
+  if (!/^\/hub($|[/?#])/.test(path)) return '/hub';
+  return path;
 }
 
 module.exports = {

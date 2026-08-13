@@ -82,16 +82,26 @@ const SITE = {
   utility: [
     { label: 'Privacy',       href: '/privacy' },
     { label: 'Terms',         href: '/terms' },
-    { label: 'Accessibility', href: '/accessibility' }
+    { label: 'Accessibility', href: '/accessibility' },
+    /* The ONLY route to the Hub from a consumer page, and deliberately down
+       here. V2 §3 asks for an account affordance; V1.2 §12 and this repo's
+       standing decision keep the professional surfaces out of the consumer
+       nav. A utility link satisfies both: an advisor who is looking will find
+       it, and a holidaymaker never has to wonder what it is. */
+    { label: 'Advisor sign in', href: '/hub' }
   ],
 
   /* ── Advisor-surface chrome ─────────────────────────────────────────────
      Conversion-layout pages replace the global footer with this restrained
      product footer (brief §8). Foundations overrides `program` with its own. */
   advisorFooter: {
-    exit: { label: 'Back to Travel Advisor Hub', href: '/advisors' },
+    /* Renamed. "Travel Advisor Hub" now means the authenticated workspace at
+       /hub; leaving that label on a link to the public gateway would send an
+       advisor looking for their Journeys to a marketing page. */
+    exit: { label: 'Back to advisor overview', href: '/advisors' },
     utility: [
       { label: 'Discover Saint Lucia WELL', href: '/' },
+      { label: 'Advisor Hub', href: '/hub' },
       { label: 'Privacy', href: '/privacy' },
       { label: 'Terms',   href: '/terms' },
       { label: 'Contact', href: '/about#contact' }
