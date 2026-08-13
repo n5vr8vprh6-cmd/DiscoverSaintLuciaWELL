@@ -97,21 +97,34 @@ address, only a salted hash of one, used to stop the public share endpoint being
 hammered. Without this, rate limiting is skipped rather than falling back to a
 guessable hash.
 
-## 6 · Put all five into Vercel
+## 6 · Put all five into Vercel — automated
 
-Vercel → the project → **Settings** → **Environment Variables**. Add each one
-for **Production** and **Preview**:
+A local `.env` has already been created for you, with `SUPABASE_URL`,
+`NOTIFY_FROM` and a generated `IP_HASH_SALT` filled in. Two blanks remain:
+`SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY`.
 
+Open `.env`, paste those two in, save, then run:
+
+```bash
+node tools/push-env.js
 ```
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-RESEND_API_KEY
-NOTIFY_FROM
-IP_HASH_SALT
-```
 
-Then **Deployments** → the latest one → **Redeploy**. Environment variables are
-read per request, but a redeploy is the simplest way to be certain.
+It pushes all five to Production and Preview and prints **names only** — the
+values go from the file down a pipe into the Vercel CLI and are never displayed,
+logged, or passed as command arguments. Re-running is safe; add `--force` to
+replace values already set.
+
+`.env` is gitignored, so it cannot be committed.
+
+**Please don't paste either key into a chat window** — not to me, not to
+anything else. Transcripts persist, and the service-role key bypasses every
+row-level-security policy on your database. The file is the right place for it.
+
+Then redeploy:
+
+```bash
+vercel redeploy
+```
 
 ---
 
