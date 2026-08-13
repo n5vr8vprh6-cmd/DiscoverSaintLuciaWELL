@@ -16,6 +16,7 @@
 'use strict';
 
 const { db, json, str, body, methodGuard } = require('./_lib/core.js');
+const { resolveAdvisor } = require('./_lib/advisors.js');
 
 const SOURCES = ['email', 'social', 'event', 'referral', 'partner', 'direct', 'other'];
 
@@ -26,22 +27,22 @@ module.exports = async function handler(req, res) {
   if (!b) return json(res, 400, { error: 'bad_body' });
 
   const kind = str(b.kind, 24) === 'finder_complete' ? 'finder_complete' : 'visit';
-  const slug = str(b.advisor, 120);
+  const ref = str(b.advisor, 120);
   const sessionId = str(b.session, 64);
 
-  /* An advisor slug is the only thing that makes these events worth writing.
-     Unattributed traffic is already counted by the host; duplicating it here
-     would be a second analytics system for no gain. */
-  if (!slug) return json(res, 204, {});
+  /* An advisor reference is the only thing that makes these events worth
+     writing. Unattributed traffic is already counted by the host; duplicating
+     it here would be a second analytics system for no gain. */
+  if (!ref) return json(res, 204, {});
 
   const supabase = db();
   if (!supabase) return json(res, 204, {});
 
   try {
-    const { data: advisor } = await supabase
-      .from('advisors').select('id').eq('slug', slug).maybeSingle();
-    /* Unknown slug: accept and drop. A typo in a printed QR code should not
-       produce an error the visitor could ever notice. */
+    /* Either a public code or a legacy slug — see _lib/advisors.js. */
+    const advisor = await resolveAdvisor(supabase, ref, 'id');
+    /* Unknown reference: accept and drop. A typo in a printed QR code should
+       not produce an error the visitor could ever notice. */
     if (!advisor) return json(res, 204, {});
 
     if (kind === 'finder_complete') {
