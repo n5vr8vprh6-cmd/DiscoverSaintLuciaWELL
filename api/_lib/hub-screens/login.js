@@ -1,8 +1,8 @@
 /* GET /hub/login — sign in. Already-signed-in advisors are sent onward. */
 'use strict';
-const { advisorFor, safeNext } = require('../_lib/auth.js');
-const { hubPage } = require('../_lib/hub-render.js');
-const { authForm } = require('../_lib/hub-forms.js');
+const { advisorFor, safeNext } = require('../auth.js');
+const { hubPage } = require('../hub-render.js');
+const { authForm } = require('../hub-forms.js');
 
 module.exports = async function handler(req, res) {
   const next = safeNext((req.query || {}).next);

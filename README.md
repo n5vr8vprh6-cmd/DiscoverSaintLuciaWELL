@@ -25,8 +25,26 @@ node build.js
 connected to that repo. **A push to `main` deploys.** There is nothing to run by
 hand; `vercel deploy --prod` exists as an escape hatch, not the normal path.
 
-Currently served at `discover-saint-lucia-well.vercel.app` with no custom domain
-attached yet.
+Served at `discoversaintluciawell.com` (which 308s to the `www` host) as well as
+`discover-saint-lucia-well.vercel.app`.
+
+**TWELVE SERVERLESS FUNCTIONS, MAXIMUM.** The Hobby plan caps a deployment at
+twelve, and every non-underscored `.js` under `api/` is one. Going over is a
+nasty failure mode because it is not a build error: the build log is completely
+green, ends with `Build Completed`, and then `Deploying outputs…` fails with
+
+    No more than 12 Serverless Functions can be added to a Deployment
+    on the Hobby plan.
+
+`vercel ls` shows `● Error` and neither `vercel inspect` nor `inspect --logs`
+prints the reason — the only way I found to see it was `vercel deploy` (a
+preview, not `--prod`), which prints it on stderr. It cost a failed production
+deploy on the Hub push.
+
+The count today is ten: four public endpoints, five auth endpoints, and the Hub
+router. **The Hub is one function, not eight** — see below. If a feature needs
+several new endpoints, route them through one function rather than adding files,
+or the deploy will fail after a build that looked perfect.
 
 **A push can silently fail to deploy.** Seen once (2026-08-12): the commit
 reached GitHub, the repo was still connected, no deployment was created, and
@@ -119,7 +137,8 @@ silently shipping the wrong one.
 | `css/hub.css` | Advisor Hub. Replaces `site.css` on Hub pages, keeps tokens + chrome. |
 | `advisors/foundations/` | The moved Foundations page + its own css/js/assets |
 | `api/_lib/` | Shared server code: db client, auth/sessions, Hub render + data + briefing |
-| `api/hub/` | The authenticated Hub screens (see **The Advisor Hub**) |
+| `api/hub/index.js` | The Hub's ONE serverless function — a router (see below) |
+| `api/_lib/hub-screens/` | The Hub screens themselves. Underscored, so not deployed as functions. |
 | `api/well.js` | `/well/<code>` — the opaque campaign link |
 | `db/migrations/` | Additive SQL. Never edit an applied migration; add another. |
 | `tools/` | Test suites and one-off scripts. `node tools/<name>.js`. |
@@ -372,12 +391,20 @@ functions through the site's own renderer** — `render(page, body)` in
 
 | Route | Function | Notes |
 |---|---|---|
-| `/hub` | `api/hub/index.js` | Needs-attention list, funnel, next best action |
-| `/hub/journeys` | `api/hub/journeys.js` | Four server-side views; default is Needs Attention |
-| `/hub/journeys/:id` | `api/hub/journey.js` | GET renders; POST sets stage / adds a note, then 303 |
-| `/hub/account` | `api/hub/account.js` | Profile only — never status, code, slug or auth id |
-| `/hub/login` · `register` · `forgot` · `reset` | `api/hub/*.js` | Signed-out screens; the POST targets live in `api/auth/` |
+| `/hub` | `hub-screens/home.js` | Needs-attention list, funnel, next best action |
+| `/hub/journeys` | `hub-screens/journeys.js` | Four server-side views; default is Needs Attention |
+| `/hub/journeys/:id` | `hub-screens/journey.js` | GET renders; POST sets stage / adds a note, then 303 |
+| `/hub/account` | `hub-screens/account.js` | Profile only — never status, code, slug or auth id |
+| `/hub/login` · `register` · `forgot` · `reset` | `hub-screens/*.js` | Signed-out screens; the POST targets live in `api/auth/` |
 | `/well/:code` | `api/well.js` | Opaque campaign link (above) |
+
+**All eight screens are ONE serverless function.** `api/hub/index.js` is a
+router; the screens live in `api/_lib/hub-screens/`, where the leading
+underscore keeps the directory out of Vercel's function detection. The `screen`
+parameter is set by the rewrites in `vercel.json` and matched against a fixed
+table, so a hand-typed `/api/hub?screen=…` can only reach a screen that already
+has a public route. Adding a screen is a file, a line in `SCREENS`, and a
+rewrite — the function count stays at one.
 
 Things worth knowing before changing any of it:
 

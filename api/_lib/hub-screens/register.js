@@ -1,8 +1,8 @@
 /* GET /hub/register — create an advisor account. */
 'use strict';
-const { advisorFor } = require('../_lib/auth.js');
-const { hubPage } = require('../_lib/hub-render.js');
-const { authForm } = require('../_lib/hub-forms.js');
+const { advisorFor } = require('../auth.js');
+const { hubPage } = require('../hub-render.js');
+const { authForm } = require('../hub-forms.js');
 
 module.exports = async function handler(req, res) {
   const advisor = await advisorFor(req, res);

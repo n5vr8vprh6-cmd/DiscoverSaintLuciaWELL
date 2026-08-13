@@ -12,10 +12,10 @@
    ========================================================================== */
 'use strict';
 
-const { requireAdvisor } = require('../_lib/auth.js');
-const { db, str, body: parseBody } = require('../_lib/core.js');
-const { hubPage, esc, pageHead } = require('../_lib/hub-render.js');
-const { field } = require('../_lib/hub-forms.js');
+const { requireAdvisor } = require('../auth.js');
+const { db, str, body: parseBody } = require('../core.js');
+const { hubPage, esc, pageHead } = require('../hub-render.js');
+const { field } = require('../hub-forms.js');
 
 module.exports = async function handler(req, res) {
   const advisor = await requireAdvisor(req, res, '/hub/account');

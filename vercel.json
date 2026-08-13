@@ -75,35 +75,35 @@
   "rewrites": [
     {
       "source": "/hub",
-      "destination": "/api/hub/index"
+      "destination": "/api/hub?screen=home"
     },
     {
       "source": "/hub/login",
-      "destination": "/api/hub/login"
+      "destination": "/api/hub?screen=login"
     },
     {
       "source": "/hub/register",
-      "destination": "/api/hub/register"
+      "destination": "/api/hub?screen=register"
     },
     {
       "source": "/hub/forgot",
-      "destination": "/api/hub/forgot"
+      "destination": "/api/hub?screen=forgot"
     },
     {
       "source": "/hub/reset",
-      "destination": "/api/hub/reset"
+      "destination": "/api/hub?screen=reset"
     },
     {
       "source": "/hub/account",
-      "destination": "/api/hub/account"
+      "destination": "/api/hub?screen=account"
     },
     {
       "source": "/hub/journeys",
-      "destination": "/api/hub/journeys"
+      "destination": "/api/hub?screen=journeys"
     },
     {
       "source": "/hub/journeys/:id",
-      "destination": "/api/hub/journey?id=:id"
+      "destination": "/api/hub?screen=journey&id=:id"
     },
     {
       "source": "/well/:code",

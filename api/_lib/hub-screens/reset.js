@@ -3,8 +3,8 @@
    server. js/hub.js reads it client-side and posts it; this page only renders
    the form. */
 'use strict';
-const { hubPage } = require('../_lib/hub-render.js');
-const { authForm } = require('../_lib/hub-forms.js');
+const { hubPage } = require('../hub-render.js');
+const { authForm } = require('../hub-forms.js');
 
 module.exports = async function handler(req, res) {
   hubPage(res, {

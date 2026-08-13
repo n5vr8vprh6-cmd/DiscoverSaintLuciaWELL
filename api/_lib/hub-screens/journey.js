@@ -16,13 +16,13 @@
    ========================================================================== */
 'use strict';
 
-const { requireAdvisor } = require('../_lib/auth.js');
-const { str, body } = require('../_lib/core.js');
+const { requireAdvisor } = require('../auth.js');
+const { str, body } = require('../core.js');
 const {
   hubPage, esc, emptyState, STAGES, STAGE_LABEL, WINDOW_LABEL, since
-} = require('../_lib/hub-render.js');
-const { journeyById, notesFor, setStage, addNote } = require('../_lib/hub-data.js');
-const { brief, fullName, answerLabel } = require('../_lib/hub-brief.js');
+} = require('../hub-render.js');
+const { journeyById, notesFor, setStage, addNote } = require('../hub-data.js');
+const { brief, fullName, answerLabel } = require('../hub-brief.js');
 
 module.exports = async function handler(req, res) {
   /* The id is read BEFORE the guard so that a signed-out advisor arriving from

@@ -10,12 +10,12 @@
    ========================================================================== */
 'use strict';
 
-const { requireAdvisor } = require('../_lib/auth.js');
+const { requireAdvisor } = require('../auth.js');
 const {
   hubPage, esc, pageHead, emptyState,
   STAGES, STAGE_LABEL, WINDOW_LABEL, WINDOW_ORDER, since
-} = require('../_lib/hub-render.js');
-const { journeysFor, needsAttention } = require('../_lib/hub-data.js');
+} = require('../hub-render.js');
+const { journeysFor, needsAttention } = require('../hub-data.js');
 
 const VIEWS = [
   { id: 'attention', label: 'Needs attention' },
