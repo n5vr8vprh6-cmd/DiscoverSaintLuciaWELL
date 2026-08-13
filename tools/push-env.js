@@ -40,6 +40,11 @@ const SPAWN = { shell: WIN };
 const REQUIRED = [
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
+  /* New in V2. Phase 1 genuinely did not need this — the browser never spoke
+     to Supabase. Auth changes that: the anon key is what exchanges an email and
+     password for a session. It is safe to expose in principle, but it still
+     lives server-side here because the browser talks only to our endpoints. */
+  'SUPABASE_ANON_KEY',
   'RESEND_API_KEY',
   'NOTIFY_FROM',
   'IP_HASH_SALT'
