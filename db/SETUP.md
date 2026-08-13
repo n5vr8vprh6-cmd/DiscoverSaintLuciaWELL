@@ -153,20 +153,32 @@ vercel redeploy
 
 ## Adding real advisors
 
-**Table Editor** → `advisors` → **Insert row**. One per advisor:
+**Advisors now register themselves** at `/hub/register`. That creates the
+`advisors` row, links it to a Supabase Auth user, and generates the campaign
+code. You do not create rows by hand any more.
 
-- `slug` — what appears in their campaign link, e.g. `diana-lee`. Keep it
-  readable; it goes in emails and on printed QR codes.
-- `first_name`, `last_name`, `email` — the email receives the notifications.
-- `business`, `market` — optional.
-- `status` — `active`.
+What you *do* is decide who receives Journeys. A new registration lands with
+`status = 'pending'`: they get the Hub and their link immediately, but
+consumers are not offered the option to share with them until you set
+`status` to `'active'` in the Table Editor. That gate is the whole of the
+vetting story — registration is open, routing another person's contact details
+to a stranger is not.
 
-Their campaign link is then
-`https://discoversaintluciawell.com/?advisor=diana-lee`.
+**Do not set `slug` on new advisors.** It is the V1.2 identifier and is kept
+only so links already in circulation keep working. Campaign links are now the
+opaque `public_code`, which a trigger generates on insert
+(`db/migrations/003-public-code-trigger.sql`):
 
-For a beta cohort this is the right amount of tooling. Six rows do not justify
-an admin screen, and the brief is explicit about not building marketing
-software.
+```
+https://discoversaintluciawell.com/well/8K4PX7
+```
+
+The advisor can copy it, or generate a QR code for it, from their own Hub —
+nobody needs to hand it to them.
+
+For a beta cohort this is the right amount of tooling. A `status` column and the
+Table Editor do not justify an admin screen, and the brief is explicit about not
+building marketing software.
 
 ---
 

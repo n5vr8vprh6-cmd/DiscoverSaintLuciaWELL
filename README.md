@@ -116,7 +116,13 @@ silently shipping the wrong one.
 | `css/tokens.css` | **The single brand-token source.** Loaded by every page. |
 | `css/chrome.css` | Headers, footers, buttons. Loaded by every page. |
 | `css/site.css` | Consumer page components. NOT loaded by Foundations. |
+| `css/hub.css` | Advisor Hub. Replaces `site.css` on Hub pages, keeps tokens + chrome. |
 | `advisors/foundations/` | The moved Foundations page + its own css/js/assets |
+| `api/_lib/` | Shared server code: db client, auth/sessions, Hub render + data + briefing |
+| `api/hub/` | The authenticated Hub screens (see **The Advisor Hub**) |
+| `api/well.js` | `/well/<code>` — the opaque campaign link |
+| `db/migrations/` | Additive SQL. Never edit an applied migration; add another. |
+| `tools/` | Test suites and one-off scripts. `node tools/<name>.js`. |
 
 ## Design system
 
@@ -341,6 +347,112 @@ one domain.
 **Script order is load-bearing:** `attribution.js` must load before
 `analytics.js`, which fires `page_view` at parse time and reads
 `window.dslwAttribution`.
+
+### Two identifiers, both resolved, forever
+
+V2 §6 forbids an advisor's name in a consumer URL, so links are now minted as
+opaque codes — `/well/8K4PX7`. V1.2 minted readable slugs — `?advisor=diana-lee`
+— and some may be in circulation. `api/_lib/advisors.js` resolves **either**,
+and always will: a QR code on a printed card cannot be recalled, and an advisor
+whose link quietly stopped attributing would never find out.
+
+`/well/<code>` is a 302, not a page. It resolves the code, then hands the
+visitor to the consumer site at `/?advisor=<code>` so the existing attribution
+path does the work — one implementation, not two that can disagree. An unknown
+or paused code still lands them on the site, unattributed, because they came to
+read about Saint Lucia and should not be punished for someone else's typo.
+
+## The Advisor Hub
+
+`/hub` is the authenticated advisor workspace: Home, the Journeys pipeline, the
+Journey briefing, and account settings. It is **server-rendered from serverless
+functions through the site's own renderer** — `render(page, body)` in
+`lib/page.js` is a pure function, so the Hub is the fourth layout in
+`lib/layouts.js` rather than a second application wearing a similar coat.
+
+| Route | Function | Notes |
+|---|---|---|
+| `/hub` | `api/hub/index.js` | Needs-attention list, funnel, next best action |
+| `/hub/journeys` | `api/hub/journeys.js` | Four server-side views; default is Needs Attention |
+| `/hub/journeys/:id` | `api/hub/journey.js` | GET renders; POST sets stage / adds a note, then 303 |
+| `/hub/account` | `api/hub/account.js` | Profile only — never status, code, slug or auth id |
+| `/hub/login` · `register` · `forgot` · `reset` | `api/hub/*.js` | Signed-out screens; the POST targets live in `api/auth/` |
+| `/well/:code` | `api/well.js` | Opaque campaign link (above) |
+
+Things worth knowing before changing any of it:
+
+- **Every Hub page is `noindex`, `Cache-Control: private, no-store`.** A Journey
+  detail page carries a real person's name, email and travel plans.
+- **Reads are scoped twice.** RLS is the guarantee, but every query in
+  `api/_lib/hub-data.js` also carries `advisor_id` in its `WHERE` clause, so a
+  read that forgets its scope returns nothing rather than relying on the
+  database to save it. Asking for another advisor's Journey renders "not here",
+  worded identically to a Journey that does not exist, so ids cannot be probed.
+- **The briefing is deterministic.** `api/_lib/hub-brief.js` is fixed copy keyed
+  to answers the consumer actually selected — no generation, no inference. The
+  `recognition: yes` wording says they *recognised a description*, never that
+  they are burnt out; that would be a diagnosis, from a quiz, about someone the
+  advisor has not yet spoken to.
+- **Forms work before JavaScript does.** The auth screens post over fetch for
+  inline errors; the stage and note forms are plain POST/redirect/GET. The
+  endpoints answer in error codes and the sentences live in `js/hub.js` — one
+  place, so `invalid_credentials` stays one message for both "no such account"
+  and "wrong password".
+- **`vercel.json` needs `functions.includeFiles: "{css,js}/**"`.** `v()` in
+  `lib/page.js` reads asset files to compute cache-bust hashes, which Vercel
+  cannot trace; without it, Hub pages silently degrade to `?v=0` while static
+  pages carry real hashes.
+
+### `js/hub.js` contains a QR encoder, and that is deliberate
+
+About 120 lines of it, rather than a CDN script, because the page it runs on
+displays another person's contact details. The trade is only worth it if the
+encoder is correct, and "it looks like a QR code" is not evidence — a wrong mask
+or a transposed format bit produces something that looks perfect and scans as
+nothing. `tools/qr-test.js` proves four things: the function patterns and both
+copies of the format information match a reference encoder; an independently
+written reader (validated against that reference's own output first) round-trips
+our matrix back to the input; and the codeword stream syndrome-checks clean by
+Horner evaluation, a different algorithm from the division the encoder uses.
+
+**Do not "fix" it by diffing against `segno`.** That test cannot pass. segno's
+`write_padding_bits` does `[0] * (8 - length % 8)` with no guard for an already
+aligned stream, and a byte-mode stream is 4 + 8 + 8n + 4 bits — always aligned —
+so segno emits one spurious `0x00` codeword every time. Harmless (a decoder
+reads the length and stops) but it means the two matrices diverge from the first
+pad codeword onward. Ours follows ISO/IEC 18004 §7.4.10.
+
+The encoder stops at version 5. Version 6-L is the first that splits the payload
+across two blocks, and interleaving them is real machinery for a case we do not
+have — a WELL link is ~45 characters and version 5 holds 106. Longer payloads
+throw, and the caller says so rather than drawing something unscannable.
+
+### Looking at the Hub
+
+`node tools/hub-preview.js` renders every screen with obviously-fake fixture
+data into `dist/_hub-preview/` (gitignored), so layout can be iterated without a
+deploy, a database or a session.
+
+## Tests
+
+There is no framework. Each suite is a script that prints PASS/FAIL and exits
+non-zero. Run the offline four before pushing; the two that talk to the live
+system after.
+
+| Command | Needs | What it holds down |
+|---|---|---|
+| `node tools/regress.js` | built `dist/` | The V1.2 acceptance suite — consent, guards, no secrets in `dist` |
+| `node tools/hub-test.js` | nothing | Reference resolution, travel windows, attention ranking, the briefing, `safeNext` |
+| `node tools/qr-test.js` | `py` + `segno` | The QR encoder (see above) |
+| `node tools/check-migration.js` | `.env` | That `002`/`003` landed and preserved what was already there |
+| `node tools/rls-test.js` | `.env` | Cross-advisor denial, proved by planting a row and failing to read it |
+| `node tools/auth-test.js [url]` | deployed site | The auth lifecycle end to end, then cleans up after itself |
+
+**`rls-test.js` exists because of a false pass.** An earlier check called the
+table read "denied" on a `200`, but PostgREST returns `200 []` when RLS filters
+everything out — indistinguishable from a wide-open table with no rows. The
+suite now plants a row with the service role and then tries to read it back with
+the restricted key, which is the only version of the question worth asking.
 
 ## Asset versioning
 
@@ -675,6 +787,15 @@ passed**:
    barely scrimmed. Fixed with a centred scrim plus glyph-level text shadow;
    measured 10.4 / 5.7 / 6.5 under the actual glyphs.
 
+**Headless Chrome cannot render narrower than about 500 CSS px on this machine.**
+Windows enforces a minimum window width, so `--window-size=380,…` lays the page
+out at ~500 and *crops* the screenshot to 380. The result looks exactly like a
+horizontal-overflow bug: text cut off at the right edge, a two-column grid where
+one column belongs. It cost an hour during the Hub build. For anything below
+~500px, resize the preview pane and measure — `documentElement.scrollWidth`
+against `clientWidth`, plus a sweep for elements whose `right` exceeds the
+viewport — and use headless only for how it looks at 500 and up.
+
 **The audit lesson worth keeping:** a computed-style contrast check answers
 "what colour is the CSS background," not "what is actually behind these words."
 It has now produced false passes twice on this project — once through gradients,
@@ -777,11 +898,18 @@ served for one visit, which is the only honest number.
   a domain that does not serve the site.
 - ESP endpoint — `CAPTURE_ENDPOINT` in `js/journey.js`. Until it is set the form
   validates and says plainly that nothing was sent.
-- **Privacy, Terms and Accessibility pages.** All three are `pending: true` and
-  render as plain text. This is the blocker on the ESP above, not a separate
-  nicety: the Finder is the one place the site asks for personal data, and the
-  moment it actually transmits, the policy has to exist and the consent line has
-  to link to it. Sequence them together.
+- **Duncan's privacy review, before the beta takes real consumer data.** The
+  pages are written and live; the review of them is not done. The Hub raises the
+  stakes — a Journey detail page shows a real person's name, email, phone and
+  what they said about their own wellbeing to whichever advisor holds the link.
+- **Supabase custom SMTP.** Failing on Supabase's side; Resend itself is proven
+  fine (`tools/smtp-test.js` gets `235 Authentication successful`). Email
+  confirmation is currently switched OFF as a result, so registration signs the
+  advisor straight in.
+- **`status = 'pending'` is the only vetting.** Registration is open; receiving
+  Journeys is not, until the row is set to `active` by hand. If that gate is
+  ever removed, the privacy policy's promise that data goes to "an independent
+  travel advisor" needs re-reading first.
 - GTM container — `GTM_ID` in `js/analytics.js`. Empty means events queue on
   `dataLayer` but no network request is made.
 - New photography — see the image list in the plan. Property photography must
