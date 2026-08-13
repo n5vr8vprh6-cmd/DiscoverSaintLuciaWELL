@@ -38,7 +38,7 @@ const H = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'applic
    names used by the verification run. */
 const TEST_EMAILS = ['rate1@example.com', 'rate2@example.com', 'rate3@example.com',
                      'rate4@example.com', 'rate5@example.com', 'rate6@example.com'];
-const TEST_SESSIONS = ['verify-001'];
+const TEST_SESSIONS = ['verify-001', 'regress', 'baseline'];
 
 function mask(s) {
   if (!s) return '';
