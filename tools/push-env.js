@@ -25,6 +25,18 @@ const ENV_FILE = path.join(ROOT, '.env');
 const FORCE = process.argv.includes('--force');
 const TARGETS = ['production', 'preview'];
 
+/* On Windows the Vercel CLI is a .cmd shim, and since the CVE-2024-27980 fix
+   Node refuses to execFile one without a shell — it throws EINVAL, which reads
+   exactly like "not installed" if you are not expecting it.
+
+   So Windows gets `shell: true`. That is safe here specifically because the
+   ARGUMENTS are literals we control — variable names and the words
+   "production"/"preview" — and the SECRETS never appear among them. They
+   arrive on stdin, which no shell ever sees. */
+const WIN = process.platform === 'win32';
+const VERCEL = WIN ? 'vercel.cmd' : 'vercel';
+const SPAWN = { shell: WIN };
+
 const REQUIRED = [
   'SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
@@ -60,7 +72,7 @@ if (missing.length) {
 /* What already exists, so a re-run is safe rather than duplicating. */
 let existing = '';
 try {
-  existing = execFileSync('vercel', ['env', 'ls'], { cwd: ROOT, encoding: 'utf8' });
+  existing = execFileSync(VERCEL, ['env', 'ls'], Object.assign({ cwd: ROOT, encoding: 'utf8' }, SPAWN));
 } catch (e) {
   console.error('Could not reach Vercel. Is the CLI logged in and the project linked?');
   process.exit(1);
@@ -81,11 +93,11 @@ for (const key of REQUIRED) {
       if (FORCE) args.push('--force');
       /* The value arrives on stdin. It is never an argument, so it cannot
          appear in a process list or a shell history. */
-      execFileSync('vercel', args, {
+      execFileSync(VERCEL, args, Object.assign({
         cwd: ROOT,
         input: values[key],
         stdio: ['pipe', 'ignore', 'pipe']
-      });
+      }, SPAWN));
       console.log(`  added  ${key} (${target})`);
       added++;
     } catch (e) {
