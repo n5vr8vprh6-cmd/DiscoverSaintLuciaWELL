@@ -3107,3 +3107,17 @@ body[data-motion="ready"] .day-track.settled > li .day-body > * {
 .share-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.4rem; }
 .share-status { font-family: var(--sans); font-size: 0.82rem; margin: 0.9rem 0 0; }
 .share-status[data-state="error"] { color: var(--movement, #A33F28); }
+
+/* The sensitive-data reminder under the free-text field. Guide §A and §I both
+   ask for it exactly here — the one place on the site where a person could
+   volunteer something they should not. */
+.share-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.45;
+  color: var(--muted);
+}

@@ -13,12 +13,16 @@
    physiological claims out of the copy (see the truth-discipline section of the
    README), stated once in the place a reader would look for it.
 
-   Same two placeholders as /privacy, same reason.
+   Operator and governing law come from the Privacy Policy + Implementation
+   Guide (12 August 2026): Empowerment Human Performance Ltd., Ontario, Canada.
+   These replaced `[ … ]` placeholders — the site's marker for a fact nobody
+   had confirmed. Naming the wrong controller is not a cosmetic error, which is
+   why they were never guessed.
    ========================================================================== */
 'use strict';
 
-const ENTITY = '[ legal entity to confirm ]';
-const JURISDICTION = '[ jurisdiction to confirm ]';
+const ENTITY = 'Empowerment Human Performance Ltd.';
+const ADDRESS = '540-5 Hanna Avenue, Toronto, Ontario M6K 0B3, Canada';
 
 module.exports = {
   key: 'terms',
@@ -108,7 +112,9 @@ module.exports = {
         {
           title: 'Who we are',
           body: [
-            `Discover Saint Lucia WELL is operated by ${ENTITY}, ${JURISDICTION}. These terms are governed by the law of that jurisdiction. Questions: <a href="mailto:concierge@discoversaintluciawell.com">concierge@discoversaintluciawell.com</a>.`
+            `Discover Saint Lucia WELL is operated by ${ENTITY}, ${ADDRESS}.`,
+            'These terms are governed by the laws of the Province of Ontario and the federal laws of Canada applicable there.',
+            'Questions: <a href="mailto:concierge@discoversaintluciawell.com">concierge@discoversaintluciawell.com</a>.'
           ]
         }
       ]

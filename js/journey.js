@@ -490,9 +490,24 @@
      The result is fully useful without it. If the lookup fails, if the network
      is down, if the backend does not exist yet — the unattributed CTA is
      already rendered and the page is complete. */
-  var SHARE_CONSENT =
-    'I understand my name, email and Journey will be sent to this advisor so ' +
-    'they can contact me about planning a trip.';
+  /* The wording is from the Privacy & Consent Implementation Guide §B, and it
+     is deliberately specific where my first attempt was vague. It names the
+     advisor, says plainly that they are independent and handle the information
+     under their own practices, and states that sharing is not a marketing
+     opt-in. Consent that does not say who receives the data is not consent.
+
+     Built per advisor rather than held as a constant, because the name is part
+     of what is being agreed to — and the exact string is stored with the record
+     (`consent_text`), so we can always show what a given person actually saw. */
+  function shareConsent(advisorName) {
+    var who = advisorName || 'a participating Saint Lucia WELL advisor';
+    return 'By choosing “Share my Journey,” you agree that Discover Saint Lucia ' +
+      'WELL may share your contact information, Journey Finder result and the ' +
+      'travel details you provide with ' + who + ' so they can contact you about ' +
+      'planning your Saint Lucia journey. Your advisor is an independent travel ' +
+      'professional and handles information they receive under their own privacy ' +
+      'practices. Sharing your Journey does not subscribe you to marketing emails.';
+  }
 
   function attribution() {
     try { return (window.dslwAttribution && window.dslwAttribution()) || {}; }
@@ -522,7 +537,9 @@
             '</select></label>' +
           '<label class="share-wide">Anything you would like them to know? ' +
             '<span class="share-opt">optional</span>' +
-            '<textarea name="context" rows="3"></textarea></label>' +
+            '<textarea name="context" rows="3"></textarea>' +
+            '<span class="share-hint">Please don’t include medical or other sensitive ' +
+              'information that isn’t needed for travel planning.</span></label>' +
         '</div>' +
         /* Not visible, not reachable by keyboard, not announced. Anything that
            fills it is not a person. */
@@ -531,7 +548,7 @@
         '</div>' +
         '<label class="share-consent">' +
           '<input type="checkbox" name="consent" required>' +
-          '<span>' + esc(SHARE_CONSENT) + ' See the <a href="/privacy">privacy page</a>.</span>' +
+          '<span>' + esc(shareConsent(advisorName)) + ' See the <a href="/privacy">privacy page</a>.</span>' +
         '</label>' +
         '<div class="share-actions">' +
           '<button class="btn btn--gold" type="submit">Share my Journey</button>' +
@@ -616,7 +633,7 @@
         email: get('email'), phone: get('phone'),
         timing: get('timing'), context: get('context'),
         company: get('company'),                       /* honeypot */
-        consent: true, consentText: SHARE_CONSENT,
+        consent: true, consentText: shareConsent(advisorName),
         advisor: attr.advisor || null,
         source: attr.source || null,
         session: sessionId(),

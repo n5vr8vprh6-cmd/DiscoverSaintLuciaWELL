@@ -163,7 +163,7 @@ module.exports = {
          "nothing is stored" was about to become wrong. This is precise about
          what it covers — the answers — and the email consent line on the result
          speaks for itself separately. */
-      privacy: 'Your answers stay in your browser. No account needed.',
+      privacy: 'Your answers are used to create your result. You do not need to give your name or email to complete the Finder.',
 
       altPrefix: 'Not ready?',
       altLabel: 'Explore Saint Lucia WELL instead',
