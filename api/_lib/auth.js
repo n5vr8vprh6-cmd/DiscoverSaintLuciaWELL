@@ -149,7 +149,11 @@ async function advisorFor(req, res) {
   if (!supabase) return null;
   const { data } = await supabase
     .from('advisors')
-    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url')
+    /* An explicit column list, not select('*'). A column missing from this
+       string is `undefined` on every Hub page — which for `role` would mean
+       every admin check silently denying everyone, with nothing in the logs to
+       explain it. Add columns here when a screen needs them. */
+    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at')
     .eq('auth_user_id', user.id)
     .maybeSingle();
   if (!data) return null;
@@ -190,6 +194,39 @@ async function requireAdvisor(req, res, next) {
   return null;
 }
 
+/* ── Staff ────────────────────────────────────────────────────────────────
+   One place decides who is staff, for the same reason advisorFor() is the one
+   place that decides who you are.
+
+   A signed-in advisor who is NOT an admin is sent to their own Hub rather than
+   to a login screen — they are not unauthenticated, they are simply not staff,
+   and bouncing them to a sign-in form they have already passed would be a lie
+   about what went wrong.
+
+   `role` comes from the advisors row via the service role. It never comes from
+   the session, and never from the `dslw_who` cookie, which is readable and
+   editable by anyone with a browser console. */
+async function requireAdmin(req, res, next) {
+  const advisor = await advisorFor(req, res);
+
+  if (!advisor) {
+    const target = safeNext(next || '/hub');
+    res.statusCode = 302;
+    res.setHeader('Location', `/hub/login?next=${encodeURIComponent(target)}`);
+    res.end();
+    return null;
+  }
+
+  if (advisor.role !== 'admin') {
+    res.statusCode = 302;
+    res.setHeader('Location', '/hub');
+    res.end();
+    return null;
+  }
+
+  return advisor;
+}
+
 /* Same guard for JSON endpoints, which should get a status rather than HTML. */
 async function requireAdvisorJson(req, res) {
   const advisor = await advisorFor(req, res);
@@ -219,6 +256,6 @@ function safeNext(value) {
 
 module.exports = {
   anonClient, parseCookies, setSession, setWho, clearSession,
-  userFor, advisorFor, requireAdvisor, requireAdvisorJson, safeNext,
+  userFor, advisorFor, requireAdvisor, requireAdmin, requireAdvisorJson, safeNext,
   COOKIE, REFRESH, WHO
 };

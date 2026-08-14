@@ -32,7 +32,15 @@ const SCREENS = {
   login:    () => require('../_lib/hub-screens/login.js'),
   register: () => require('../_lib/hub-screens/register.js'),
   forgot:   () => require('../_lib/hub-screens/forgot.js'),
-  reset:    () => require('../_lib/hub-screens/reset.js')
+  reset:    () => require('../_lib/hub-screens/reset.js'),
+
+  /* Admin. These are ordinary screens in every respect except that their guard
+     is requireAdmin rather than requireAdvisor — there is no route-level auth
+     here, so each screen's own guard is the only thing protecting it. */
+  admin:          () => require('../_lib/hub-screens/admin.js'),
+  adminAdvisors:  () => require('../_lib/hub-screens/admin-advisors.js'),
+  adminAdvisor:   () => require('../_lib/hub-screens/admin-advisor.js'),
+  adminAudit:     () => require('../_lib/hub-screens/admin-audit.js')
 };
 
 module.exports = async function handler(req, res) {

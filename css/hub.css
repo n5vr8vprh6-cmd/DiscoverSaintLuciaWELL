@@ -295,6 +295,35 @@ body {
 .hub-stage[data-stage="booked"]    { background: var(--teal); color: var(--paper); }
 .hub-stage[data-stage="closed"]    { background: var(--paper-2); color: var(--muted); }
 
+/* ── Admin tags ───────────────────────────────────────────────────────────
+   A second, quieter badge alongside .hub-stage. Stage says where something is
+   in a process; a tag says what kind of thing it is. Attribute-driven, like
+   .hub-stage, so a new kind is a selector rather than a new class. */
+.hub-tag {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border-radius: 2px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.1em;
+  background: var(--paper-2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.hub-tag[data-tag="admin"]   { background: var(--ink); color: var(--gold); }
+.hub-tag[data-tag="test"]    { background: #EDE4F1; color: #5B3A6B; }
+.hub-tag[data-tag="locked"]  { background: #F6DFD9; color: #8A3B23; }
+.hub-tag[data-tag="waiting"] { background: #FBEBD1; color: #7A5411; }
+
+/* Each action is its own <form> so it can POST a single named action without
+   JavaScript. Stacked, full width, so two adjacent buttons are never mistaken
+   for one control with two halves. */
+.hub-action { margin: 0 0 0.5rem; }
+.hub-action:last-child { margin-bottom: 0; }
+.hub-action .btn { width: 100%; justify-content: center; }
+
 /* ── Empty states ─────────────────────────────────────────────────────── */
 .hub-empty {
   border: 1px dashed var(--hairline-l);

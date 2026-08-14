@@ -106,6 +106,22 @@
       "destination": "/api/hub?screen=journey&id=:id"
     },
     {
+      "source": "/hub/admin",
+      "destination": "/api/hub?screen=admin"
+    },
+    {
+      "source": "/hub/admin/advisors",
+      "destination": "/api/hub?screen=adminAdvisors"
+    },
+    {
+      "source": "/hub/admin/advisors/:id",
+      "destination": "/api/hub?screen=adminAdvisor&id=:id"
+    },
+    {
+      "source": "/hub/admin/audit",
+      "destination": "/api/hub?screen=adminAudit"
+    },
+    {
       "source": "/well/:code",
       "destination": "/api/well?code=:code"
     }

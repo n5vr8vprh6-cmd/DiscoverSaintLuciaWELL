@@ -110,6 +110,32 @@ async function get(q) {
   const n = await get('advisor_notes?select=id&limit=1');
   check('advisor_notes table exists', !n.error, n.error || '');
 
+  /* ── 004: the admin console ──────────────────────────────────────────── */
+  const adm = await get('advisors?select=id,role,is_master,approved_at,registration_note,locked_at&limit=200');
+  if (adm.error) {
+    ['advisors has role', 'advisors has is_master', 'advisors has registration_note',
+     'exactly one master admin', 'at least one admin exists',
+     'admin_audit table exists'].forEach((t) => skip(t, '004-admin.sql has not been run'));
+  } else {
+    check('advisors has role', adm.rows.every((r) => 'role' in r));
+    check('advisors has is_master', adm.rows.every((r) => 'is_master' in r));
+    check('advisors has registration_note', adm.rows.every((r) => 'registration_note' in r));
+
+    const masters = adm.rows.filter((r) => r.is_master);
+    const admins = adm.rows.filter((r) => r.role === 'admin');
+    /* Not "at most one" — the unique index guarantees that. This asserts the
+       bootstrap actually happened, because a console nobody can reach is the
+       likelier failure than two masters. */
+    check('exactly one master admin', masters.length === 1, masters.length + ' found');
+    check('at least one admin exists', admins.length >= 1, admins.length + ' found');
+    check('the master is an admin',
+      masters.length === 1 && masters[0].role === 'admin',
+      masters.length ? 'master role=' + masters[0].role : 'no master');
+
+    const au = await get('admin_audit?select=id&limit=1');
+    check('admin_audit table exists', !au.error, au.error || '');
+  }
+
   /* ── The anon key must still be able to read nothing at all ─────────── */
   const anonProbe = await fetch(URL + '/rest/v1/journey_shares?select=id&limit=1', {
     headers: { apikey: 'anon-probe-not-a-real-key' }
