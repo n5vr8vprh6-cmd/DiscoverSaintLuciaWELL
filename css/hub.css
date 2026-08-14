@@ -316,6 +316,36 @@ body {
 .hub-tag[data-tag="test"]    { background: #EDE4F1; color: #5B3A6B; }
 .hub-tag[data-tag="locked"]  { background: #F6DFD9; color: #8A3B23; }
 .hub-tag[data-tag="waiting"] { background: #FBEBD1; color: #7A5411; }
+.hub-tag[data-tag="create"]  { background: #DFEDE2; color: #2C5A38; }
+.hub-tag[data-tag="skip"]    { background: var(--paper-2); color: var(--muted); }
+
+/* ── The danger zone ──────────────────────────────────────────────────────
+   Deliberately not styled as an alarm. A red-bordered box shouting DANGER is
+   something people learn to click past; a card that reads slightly differently
+   from its neighbours and makes you type a code is one they actually read. */
+.hub-danger { border-color: rgba(138, 59, 35, 0.35); }
+.hub-danger h2 { color: #8A3B23; }
+.hub-danger form + form,
+.hub-danger .hub-erase { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--hairline-l); }
+.hub-danger .btn { width: 100%; justify-content: center; margin-top: 0.75rem; }
+
+/* Selects are not otherwise used in the Hub, so this is the whole of their
+   styling — matched to .hub-field input so a form does not look assembled from
+   two different kits. */
+.hub-field select {
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-body);
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  background: var(--paper);
+  color: inherit;
+}
+.hub-field select:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 1px; }
+
+.hub-file { display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem; }
+.hub-confirm { margin-top: 1.5rem; }
 
 /* Each action is its own <form> so it can POST a single named action without
    JavaScript. Stacked, full width, so two adjacent buttons are never mistaken

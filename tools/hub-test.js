@@ -116,6 +116,48 @@ check('safeNext refuses a protocol-relative URL', safeNext('//evil.test') === '/
 check('safeNext collapses traversal out of the Hub', safeNext('/hub/../admin') === '/hub');
 check('safeNext refuses a path that merely starts with /hub', safeNext('/hubsomething') === '/hub');
 
+/* ── CSV ──────────────────────────────────────────────────────────────────
+   The case that breaks naive parsers is the whole reason this file exists: a
+   split(',') turns `"Smith, Jane"` into two fields, and the failure is not an
+   error — it is an advisor created with the wrong surname and somebody else's
+   email address, then sent a login link. */
+const { parse, toObjects } = require('../api/_lib/csv.js');
+
+const one = (text) => parse(text)[0];
+
+check('a quoted field containing a comma stays one field',
+  JSON.stringify(one('"Smith, Jane",jane@example.com')) === JSON.stringify(['Smith, Jane', 'jane@example.com']),
+  JSON.stringify(one('"Smith, Jane",jane@example.com')));
+
+check('an escaped quote survives',
+  one('"She said ""yes""",x')[0] === 'She said "yes"',
+  JSON.stringify(one('"She said ""yes""",x')));
+
+check('a quoted field containing a newline stays one field',
+  parse('a,"line one\nline two",c').length === 1 &&
+  parse('a,"line one\nline two",c')[0][1] === 'line one\nline two');
+
+check('CRLF line endings parse as one row each', parse('a,b\r\nc,d\r\n').length === 2);
+check('a trailing newline does not invent a row', parse('a,b\nc,d\n').length === 2);
+check('a file with no trailing newline keeps its last row', parse('a,b\nc,d').length === 2);
+check('blank lines are dropped', parse('a,b\n\n\nc,d\n').length === 2);
+check('empty fields are preserved', JSON.stringify(parse('a,,c')[0]) === JSON.stringify(['a', '', 'c']));
+
+/* Excel writes a BOM. Without stripping it the first header never matches. */
+const bom = toObjects('﻿email,first\nx@example.com,Jo');
+check('a UTF-8 BOM does not corrupt the first header',
+  bom.headers[0] === 'email' && bom.rows[0].email === 'x@example.com',
+  JSON.stringify(bom.headers));
+
+const obj = toObjects(
+  'First Name,Last Name,Email,Host agency\nJo,"Park, Jr.",jo@example.com,Fora',
+  { firstname: 'firstName', lastname: 'lastName', hostagency: 'hostAgency' });
+check('headers normalise across spacing and case',
+  JSON.stringify(obj.headers) === JSON.stringify(['firstName', 'lastName', 'email', 'hostAgency']),
+  JSON.stringify(obj.headers));
+check('a comma inside a quoted name survives to the object',
+  obj.rows[0].lastName === 'Park, Jr.', obj.rows[0].lastName);
+
 /* ── since() ─────────────────────────────────────────────────────────────── */
 check('since() reads as today for a fresh share', since(day(0)) === 'today');
 check('since() reads as yesterday at one day', since(day(1)) === 'yesterday');

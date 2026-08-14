@@ -40,7 +40,9 @@ const SCREENS = {
   admin:          () => require('../_lib/hub-screens/admin.js'),
   adminAdvisors:  () => require('../_lib/hub-screens/admin-advisors.js'),
   adminAdvisor:   () => require('../_lib/hub-screens/admin-advisor.js'),
-  adminAudit:     () => require('../_lib/hub-screens/admin-audit.js')
+  adminAudit:     () => require('../_lib/hub-screens/admin-audit.js'),
+  adminNew:       () => require('../_lib/hub-screens/admin-new.js'),
+  adminImport:    () => require('../_lib/hub-screens/admin-import.js')
 };
 
 module.exports = async function handler(req, res) {

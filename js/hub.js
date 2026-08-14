@@ -127,6 +127,36 @@
     history.replaceState(null, '', location.pathname + location.search);
   })();
 
+  /* ── 1b. CSV chosen from disk ────────────────────────────────────────────
+     Read in the browser and dropped into the textarea, so the import screen
+     never has to parse a multipart upload and the file itself is never sent
+     anywhere — only the text the admin can see in the box before submitting.
+
+     Without this the file input simply does nothing and the textarea still
+     works, which is why the label says "…or choose a .csv file" rather than
+     presenting it as the primary route. */
+  document.addEventListener('change', function (e) {
+    var input = e.target;
+    if (!input.hasAttribute || !input.hasAttribute('data-csv-file')) return;
+    var file = input.files && input.files[0];
+    var box = document.getElementById('csv');
+    if (!file || !box) return;
+
+    var reader = new FileReader();
+    reader.onload = function () {
+      box.value = String(reader.result || '');
+      /* Nudge the eye to the thing that just changed — the box is below the
+         file input and a silent fill looks like nothing happened. */
+      box.focus();
+      box.setSelectionRange(0, 0);
+    };
+    reader.onerror = function () {
+      box.value = '';
+      alert('That file could not be read. You can paste its contents instead.');
+    };
+    reader.readAsText(file);
+  });
+
   /* ── 2. Copy ────────────────────────────────────────────────────────────── */
   document.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-copy]');

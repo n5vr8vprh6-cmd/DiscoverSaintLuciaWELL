@@ -30,6 +30,8 @@ module.exports = async function handler(req, res) {
   const admin = await requireAdmin(req, res, `/hub/admin/advisors?view=${view}`);
   if (!admin) return;
 
+  const done = String(url.searchParams.get('done') || '').slice(0, 40);
+
   const all = await allAdvisors();
   const counts = {
     pending: all.filter((a) => a.status === 'pending').length,
@@ -46,6 +48,13 @@ module.exports = async function handler(req, res) {
 
     ${pageHead('Advisors', counts.all === 1 ? '1 advisor' : `${counts.all} advisors`,
       'Everyone with an account, whatever state it is in.')}
+
+    ${done ? `<p class="hub-flash">${esc(DONE[done] || done)}</p>` : ''}
+
+    <div class="hub-actions">
+      <a class="btn btn--gold btn--sm" href="/hub/admin/advisors/new">Add an advisor</a>
+      <a class="btn btn--ghost btn--sm" href="/hub/admin/import">Import a CSV</a>
+    </div>
 
     <nav class="hub-views" aria-label="View">
       ${VIEWS.map((v) => `<a href="/hub/admin/advisors?view=${v.id}"${v.id === view
@@ -94,6 +103,10 @@ function row(a) {
     </a>
   </li>`;
 }
+
+const DONE = {
+  deleted: 'That advisor has been deleted.'
+};
 
 /* Reuse the Journey stage palette rather than inventing a second colour
    language for the same idea of "where in a process is this". */

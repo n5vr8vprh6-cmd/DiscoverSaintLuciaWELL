@@ -29,6 +29,8 @@ const {
 } = require('../admin-data.js');
 const { setLocked, recoveryLink, isLocked } = require('../auth-admin.js');
 const { journeysFor, funnelFor } = require('../hub-data.js');
+const { deleteAdvisor, deletionImpact, setRole, sendInvite } = require('../admin-people.js');
+const { allAdvisors } = require('../admin-data.js');
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
@@ -44,20 +46,24 @@ module.exports = async function handler(req, res) {
   if (req.method === 'POST') {
     const result = await act(admin, id, parseBody(req) || {});
     res.statusCode = 303;
-    res.setHeader('Location',
-      `/hub/admin/advisors/${encodeURIComponent(id)}?done=${encodeURIComponent(result)}`);
+    /* A successful delete has nowhere to go back to. */
+    res.setHeader('Location', result === 'deleted'
+      ? '/hub/admin/advisors?done=deleted'
+      : `/hub/admin/advisors/${encodeURIComponent(id)}?done=${encodeURIComponent(result)}`);
     return res.end();
   }
 
   const advisor = await advisorById(id);
   if (!advisor) return notFound(res, admin);
 
-  const [journeys, funnel, history, locked] = await Promise.all([
+  const [journeys, funnel, history, locked, everyone] = await Promise.all([
     journeysFor(advisor.id, { limit: 50 }),
     funnelFor(advisor.id),
     auditLog({ advisorId: advisor.id, limit: 20 }),
-    isLocked(advisor.auth_user_id)
+    isLocked(advisor.auth_user_id),
+    allAdvisors()
   ]);
+  const adminCount = everyone.filter((a) => a.role === 'admin').length;
 
   const done = str(url.searchParams.get('done'), 80);
   const name = `${advisor.first_name || ''} ${advisor.last_name || ''}`.trim() || '(no name)';
@@ -182,7 +188,25 @@ module.exports = async function handler(req, res) {
           <h2>Password</h2>
           <p class="hub-hint">Sends them a link to choose a new one. You never see or set it.</p>
           ${action('reset', 'Send a reset link')}
-        </section>`}
+        </section>
+
+        <section class="hub-card">
+          <h2>Role</h2>
+          ${advisor.is_master ? `
+            <p class="hub-hint">The master admin's role cannot be changed.</p>
+          ` : advisor.role === 'admin' ? `
+            <p class="hub-hint">An admin sees every advisor and every Journey in the system.</p>
+            ${adminCount <= 1
+              ? '<p class="hub-hint">This is the only admin left. Promote somebody else before removing it.</p>'
+              : action('demote', 'Remove admin')}
+          ` : `
+            <p class="hub-hint">Admins see every advisor and every Journey in the system, including
+              consumers' contact details. Give it sparingly.</p>
+            ${action('promote', 'Make an admin')}
+          `}
+        </section>
+
+        ${dangerZone(advisor, journeys.length, everyone)}`}
       </aside>
     </div>
 
@@ -191,6 +215,92 @@ module.exports = async function handler(req, res) {
 
   hubPage(res, { path: '/hub/admin', title: name, advisor: admin, body });
 };
+
+/* ── Deletion ─────────────────────────────────────────────────────────────
+   The one irreversible control, so it is the one that argues with you.
+
+   If the advisor holds Journeys, deleting them would set `advisor_id` to null
+   on real people's contact details and wellbeing answers — the foreign keys are
+   ON DELETE SET NULL — leaving that data in the table with nobody responsible
+   for it. So the screen refuses to offer a plain delete, and makes the choice
+   explicit instead: move the Journeys to somebody, or destroy them.
+
+   Both paths require typing the advisor's public code. Not because typing is a
+   security control, but because it forces a second look at WHICH account is
+   about to go. */
+function dangerZone(advisor, journeyCount, everyone) {
+  if (advisor.is_master) {
+    return `<section class="hub-card">
+      <h2>Deletion</h2>
+      <p class="hub-hint">The master admin cannot be deleted. The database refuses it, not just
+        this screen — so no script or SQL editor can do it either.</p>
+    </section>`;
+  }
+
+  const others = everyone
+    .filter((a) => a.id !== advisor.id && a.status === 'active')
+    .map((a) => `<option value="${esc(a.id)}">${esc(a.first_name + ' ' + a.last_name)} — ${esc(a.email)}</option>`)
+    .join('');
+
+  const confirmField = `<label class="hub-field hub-field--wide">
+      <span class="hub-field-label">Type ${esc(advisor.public_code)} to confirm</span>
+      <input name="confirm" autocomplete="off" placeholder="${esc(advisor.public_code)}" required>
+    </label>`;
+
+  if (!journeyCount) {
+    return `<section class="hub-card hub-danger">
+      <h2>Delete</h2>
+      <p class="hub-hint">Removes the advisor and their sign-in. They hold no Journeys, so nothing
+        belonging to a consumer is affected. This cannot be undone.</p>
+      <form method="POST">
+        <input type="hidden" name="action" value="delete">
+        ${confirmField}
+        <button class="btn btn--ghost btn--sm" type="submit">Delete this advisor</button>
+      </form>
+    </section>`;
+  }
+
+  return `<section class="hub-card hub-danger">
+    <h2>Delete</h2>
+    <p class="hub-hint"><strong>They hold ${journeyCount} ${journeyCount === 1 ? 'Journey' : 'Journeys'}.</strong>
+      Each one is a real person who agreed to share their details with this advisor by name.
+      Deleting the account would leave that data with nobody responsible for it, so you have to
+      say what happens to it.</p>
+
+    <p class="hub-hint">Pausing or locking is usually the right answer instead — both are above,
+      and neither touches the Journeys.</p>
+
+    <form method="POST">
+      <input type="hidden" name="action" value="delete">
+      <input type="hidden" name="disposition" value="transfer">
+      <label class="hub-field hub-field--wide">
+        <span class="hub-field-label">Move their Journeys to</span>
+        <select name="transferTo" required>
+          <option value="">Choose an advisor…</option>
+          ${others}
+        </select>
+        <span class="hub-hint">A transfer discloses those consumers' details to another advisor.
+          It is recorded separately in the audit log.</span>
+      </label>
+      ${confirmField}
+      <button class="btn btn--ghost btn--sm" type="submit">Transfer, then delete</button>
+    </form>
+
+    <form method="POST" class="hub-erase">
+      <input type="hidden" name="action" value="delete">
+      <input type="hidden" name="disposition" value="erase">
+      <p class="hub-hint"><strong>Or erase them.</strong> This destroys ${journeyCount}
+        ${journeyCount === 1 ? 'Journey' : 'Journeys'} and the consent record attached to each.
+        There is no way to get them back.</p>
+      <label class="hub-stage-opt">
+        <input type="checkbox" name="understood" value="yes" required>
+        <span>I understand this destroys consent evidence</span>
+      </label>
+      ${confirmField}
+      <button class="btn btn--ghost btn--sm" type="submit">Erase the Journeys and delete</button>
+    </form>
+  </section>`;
+}
 
 /* ── The actions ─────────────────────────────────────────────────────────── */
 async function act(admin, id, form) {
@@ -250,6 +360,39 @@ async function act(admin, id, form) {
       await audit(admin, 'reset_sent', { subject: target });
       return 'reset_sent';
     }
+    case 'promote':
+    case 'demote': {
+      const r = await setRole(admin, id, what === 'promote' ? 'admin' : 'advisor');
+      if (!r.ok) return r.error;
+      return what === 'promote' ? 'promoted' : 'demoted';
+    }
+
+    case 'delete': {
+      /* The typed code is checked against the row we just read, not against
+         anything the form supplied — a stale page cannot authorise the deletion
+         of an account other than the one it was showing. */
+      if (str(form.confirm, 20).toUpperCase() !== String(target.public_code || '').toUpperCase()) {
+        return 'confirm_mismatch';
+      }
+
+      const disposition = str(form.disposition, 20) || 'refuse';
+      if (disposition === 'erase' && str(form.understood, 8) !== 'yes') return 'not_understood';
+
+      /* Re-read the impact at the moment of deletion. The preview may be
+         minutes old, and a Journey could have arrived since — in which case a
+         plain delete would silently orphan it. */
+      const impact = await deletionImpact(id);
+      if (!impact) return 'not_found';
+      if (impact.journeys > 0 && disposition === 'refuse') return 'has_journeys';
+
+      const r = await deleteAdvisor(admin, id, {
+        disposition,
+        transferTo: str(form.transferTo, 64)
+      });
+      if (!r.ok) return r.error;
+      return 'deleted';
+    }
+
     default:
       return 'unknown_action';
   }
@@ -318,8 +461,18 @@ const DONE_MESSAGE = {
   locked: 'Locked. They cannot sign in.',
   unlocked: 'Unlocked. They can sign in again.',
   reset_sent: 'Reset link sent.',
+  created_invited: 'Account created, and they have been emailed a link to set a password.',
+  created_quiet: 'Account created. They have not been emailed — send a reset link when you are ready.',
+  promoted: 'They are now an admin.',
+  demoted: 'They are no longer an admin.',
   refused_self: 'That action is not available on your own account.',
-  refused_master: 'The master admin cannot be locked.',
+  refused_master: 'Not available on the master admin.',
+  refused_last_admin: 'That would leave nobody with admin access. Promote somebody else first.',
+  confirm_mismatch: 'The code did not match, so nothing was deleted.',
+  not_understood: 'Erasing Journeys needs the confirmation box ticked.',
+  has_journeys: 'They hold Journeys. Choose what happens to those first.',
+  transfer_target_required: 'Choose an advisor to move the Journeys to.',
+  transfer_target_missing: 'That advisor no longer exists.',
   redirect_unconfigured: 'Not sent — Supabase has no redirect URL configured for /hub/reset, ' +
     'so the link would land on the wrong domain. Add it under Authentication → URL Configuration.',
   email_failed: 'The link was generated but the email did not send.',

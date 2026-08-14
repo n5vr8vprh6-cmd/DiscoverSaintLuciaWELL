@@ -114,8 +114,16 @@
       "destination": "/api/hub?screen=adminAdvisors"
     },
     {
+      "source": "/hub/admin/advisors/new",
+      "destination": "/api/hub?screen=adminNew"
+    },
+    {
       "source": "/hub/admin/advisors/:id",
       "destination": "/api/hub?screen=adminAdvisor&id=:id"
+    },
+    {
+      "source": "/hub/admin/import",
+      "destination": "/api/hub?screen=adminImport"
     },
     {
       "source": "/hub/admin/audit",

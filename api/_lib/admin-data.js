@@ -154,7 +154,8 @@ async function auditLog({ limit = 100, advisorId } = {}) {
 async function audit(admin, action, { subject, share, detail } = {}) {
   const supabase = db();
   if (!supabase) return;
-  const { error } = await supabase.from('admin_audit').insert({
+
+  const row = {
     admin_id: admin ? admin.id : null,
     admin_email: admin ? admin.email : null,
     action,
@@ -164,11 +165,43 @@ async function audit(admin, action, { subject, share, detail } = {}) {
       ? `${subject.first_name || ''} ${subject.last_name || ''}`.trim() + ` <${subject.email}>`
       : null,
     detail: detail || {}
-  });
+  };
+
+  const { error } = await supabase.from('admin_audit').insert(row);
+  if (!error) return;
+
+  /* ── THE DELETION AUDIT WOULD OTHERWISE NEVER BE WRITTEN ────────────────
+     `subject_advisor_id` and `subject_share_id` carry foreign keys, and the
+     audit for a deletion is written after the row it refers to is gone — so the
+     insert fails with 23503 and the single most consequential action in this
+     console goes unrecorded. Caught by a round-trip test rather than by
+     reading, because it only shows up on the one path that destroys something.
+
+     The ids are the disposable part. `subject_label` and `admin_email` are
+     stored verbatim precisely so a row still reads sensibly once the accounts
+     are gone, so on a foreign-key violation the entry is rewritten without the
+     ids rather than lost.
+
+     db/migrations/005-audit-fk.sql removes those constraints, which is the
+     real fix; this keeps the trail complete either way, before or after it is
+     applied. */
+  if (String(error.code) === '23503') {
+    const { error: second } = await supabase.from('admin_audit').insert(
+      Object.assign({}, row, {
+        subject_advisor_id: null,
+        subject_share_id: null,
+        detail: Object.assign({}, row.detail, { subject_deleted: true })
+      })
+    );
+    if (!second) return;
+    console.error('AUDIT WRITE FAILED (retry)', action, second);
+    return;
+  }
+
   /* An audit failure must not swallow the action that was already taken, but it
      must be loud in the logs — a silent gap in an audit trail is worse than a
      noisy one. */
-  if (error) console.error('AUDIT WRITE FAILED', action, error);
+  console.error('AUDIT WRITE FAILED', action, error);
 }
 
 /* Status changes. `patch` is built by the caller so this stays one code path
@@ -198,7 +231,17 @@ const ACTION_LABEL = {
   unpause:    'Un-paused',
   lock:       'Locked',
   unlock:     'Unlocked',
-  reset_sent: 'Sent a reset link'
+  reset_sent: 'Sent a reset link',
+  create:     'Created the account',
+  promote:    'Made an admin',
+  demote:     'Removed admin',
+  /* The three destructive ones. `transfer` and `erase` are recorded separately
+     from `delete` rather than folded into its detail, because moving real
+     people's contact details to another advisor, and destroying consent
+     evidence, are each events in their own right. */
+  transfer:   'Transferred their Journeys',
+  erase:      'Erased their Journeys',
+  delete:     'Deleted the account'
 };
 
 module.exports = {
