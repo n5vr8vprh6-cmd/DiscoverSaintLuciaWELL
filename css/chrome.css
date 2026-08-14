@@ -342,6 +342,90 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   cursor: pointer;
 }
 
+/* ── The signed-in account control ────────────────────────────────────────
+   Beside the primary CTA, never instead of it. Rendered server-side on Hub
+   pages and injected by js/site.js on static ones, from the same markup —
+   which is why this lives in chrome.css, loaded by every page, rather than in
+   either surface's own sheet.
+
+   The slot is always present and always empty for a signed-out visitor, so it
+   costs one empty div and no layout.
+
+   A <details> rather than a scripted menu: it opens, closes and is keyboard
+   reachable before any JavaScript runs. */
+.nav-acct:empty { display: none; }
+
+.acct { position: relative; }
+.acct summary {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0.25rem;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 2px;
+}
+.acct summary::-webkit-details-marker { display: none; }
+.acct summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+
+.acct-avatar {
+  display: grid;
+  place-items: center;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.acct-name {
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.acct-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  min-width: 13rem;
+  /* Never the reason the page scrolls sideways — the lesson from the Hub bar
+     at 380px, where a closed panel still contributed its width. */
+  max-width: calc(100vw - 1.5rem);
+  z-index: 60;
+  background: var(--paper);
+  color: var(--ivory-ink);
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  box-shadow: 0 12px 32px rgba(18, 48, 47, 0.18);
+  padding: 0.35rem;
+}
+.acct-menu a,
+.acct-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--sans);
+  font-size: 0.86rem;
+  color: inherit;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.acct-menu a:hover,
+.acct-menu button:hover { background: var(--paper-2); }
+.acct-menu form { margin: 0; border-top: 1px solid var(--hairline-l); padding-top: 0.25rem; }
+
+/* Hub band: the same component as the /advisors context strip, so the Hub
+   reads as part of the site rather than as a second product. */
+.hub-context .eyebrow { color: var(--gold); }
+
 
 /* ══════════════════════════════════════════════════════════════════════════
    PROFESSIONAL CONTEXT BAND (/advisors)

@@ -19,6 +19,66 @@
   var hero = document.querySelector('.hero.dark');
   if (hero) body.setAttribute('data-hero', 'dark');
 
+  /* ── The signed-in profile control ──────────────────────────────────────
+     Consumer pages are static files on a CDN, so they cannot know who is
+     reading them. Rather than have every visitor pay for a session probe to
+     learn something almost none of them need, a signed-in advisor carries a
+     readable cookie holding a first name and two initials — nothing else, and
+     nothing that grants anything. See WHO in api/_lib/auth.js.
+
+     A VISITOR WITH NO COOKIE CAUSES NO REQUEST AND NO DOM CHANGE. That is the
+     whole design: a traveller who has never signed in should never learn this
+     exists.
+
+     Hub pages render this server-side instead (lib/layouts.js profileControl),
+     so the slot arrives already filled and this leaves it alone. Keep the two
+     shapes in step — they share CSS. */
+  (function profile() {
+    var slot = document.querySelector('[data-acct-slot]');
+    if (!slot || slot.children.length) return;      /* absent, or already server-rendered */
+
+    var raw = null;
+    try {
+      var m = document.cookie.match(/(?:^|;\s*)dslw_who=([^;]*)/);
+      if (!m) return;                               /* not signed in — stop, silently */
+      raw = JSON.parse(decodeURIComponent(m[1]));
+    } catch (e) { return; }
+    if (!raw || !raw.n) return;
+
+    var el = document.createElement('details');
+    el.className = 'acct';
+    /* textContent for the name, never innerHTML: this value round-trips
+       through a cookie the user can edit, so it is treated as hostile even
+       though it came from us. */
+    el.innerHTML =
+      '<summary aria-label="Your account">' +
+        '<span class="acct-avatar" aria-hidden="true"></span>' +
+        '<span class="acct-name"></span>' +
+      '</summary>' +
+      '<div class="acct-menu">' +
+        '<a href="/hub">Your Hub</a>' +
+        '<a href="/hub/journeys">Journeys</a>' +
+        '<a href="/hub/account">Account settings</a>' +
+        '<form method="POST" action="/api/auth/logout" data-signout>' +
+          '<button type="submit">Sign out</button>' +
+        '</form>' +
+      '</div>';
+    el.querySelector('.acct-avatar').textContent = String(raw.i || '').slice(0, 2);
+    el.querySelector('.acct-name').textContent = String(raw.n).slice(0, 40);
+    slot.appendChild(el);
+  })();
+
+  /* Sign out from anywhere on the site. The endpoint also answers a plain form
+     post with a redirect, so this only removes the page reload. */
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form.hasAttribute || !form.hasAttribute('data-signout')) return;
+    e.preventDefault();
+    fetch('/api/auth/logout', { method: 'POST' })
+      .then(function () { location.assign('/'); })
+      .catch(function () { location.assign('/'); });
+  });
+
   /* ── Mobile navigation ──────────────────────────────────────────────────── */
   function wireToggle(toggleSel, panelSel) {
     var toggle = document.querySelector(toggleSel);

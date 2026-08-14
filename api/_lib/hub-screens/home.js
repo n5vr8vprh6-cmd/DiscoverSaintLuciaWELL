@@ -27,7 +27,8 @@ module.exports = async function handler(req, res) {
   <div class="wrap">
 
     <div class="hub-greeting">
-      <p class="eyebrow">Travel Advisor Hub</p>
+      <!-- No eyebrow. The context band directly above already says "Travel
+           Advisor Hub"; repeating it under the band reads as a mistake. -->
       <h1>${esc(greeting())}, ${esc(advisor.first_name)}.</h1>
       ${advisor.status !== 'active' ? `
       <p class="hub-notice">

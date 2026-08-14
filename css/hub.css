@@ -20,6 +20,26 @@
    ========================================================================== */
 
 /* ══════════════════════════════════════════════════════════════════════════
+   RESET
+   --------------------------------------------------------------------------
+   chrome.css carries only box-sizing, focus and the skip link, and expects
+   every page sheet to bring its own reset — site.css has one, and this sheet
+   needs the same one now that the Hub uses the site's header and footer.
+
+   Without `a { color: inherit }` the wordmark and the whole primary nav render
+   in default browser blue on Hub pages. It was invisible while the Hub had a
+   bespoke bar carrying its own `.hub-bar a` rule; deleting that bar took the
+   colour with it.
+   ══════════════════════════════════════════════════════════════════════════ */
+a { color: inherit; }
+p { margin: 0 0 1.1em; }
+p:last-child { margin-bottom: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+img, picture, video, svg { max-width: 100%; display: block; }
+img, video { height: auto; }
+::selection { background: var(--gold); color: var(--ink); }
+
+/* ══════════════════════════════════════════════════════════════════════════
    PAGE
    ══════════════════════════════════════════════════════════════════════════ */
 body {
@@ -81,130 +101,6 @@ body {
 .hub-back { margin: 0 0 1.25rem; font-size: var(--fs-small); }
 .hub-back a { color: var(--muted); text-decoration: none; }
 .hub-back a:hover { color: var(--ivory-ink); }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   THE BAR
-   ══════════════════════════════════════════════════════════════════════════ */
-.hub-bar {
-  background: var(--ink);
-  color: var(--paper);
-  position: sticky;
-  top: 0;
-  z-index: 40;
-}
-.hub-bar-inner {
-  display: flex;
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2.5rem);
-  min-height: 62px;
-  padding-block: 0.6rem;
-}
-.hub-bar .wordmark { margin: 0; font-size: 0.95rem; }
-.hub-bar a { color: inherit; }
-.hub-bar-context {
-  font-size: var(--fs-label);
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--mist);
-}
-
-.hub-nav {
-  display: flex;
-  gap: 1.5rem;
-  margin-inline-start: auto;
-  font-size: var(--fs-small);
-}
-.hub-nav a {
-  text-decoration: none;
-  color: var(--mist);
-  padding-block: 0.35rem;
-  border-bottom: 2px solid transparent;
-}
-.hub-nav a:hover { color: var(--paper); }
-.hub-nav a[aria-current] { color: var(--paper); border-bottom-color: var(--gold); }
-
-/* ── Account menu ─────────────────────────────────────────────────────────
-   A <details> rather than a scripted dropdown: it opens, closes, traps nothing
-   and works before js/hub.js has loaded. */
-.hub-account { position: relative; }
-.hub-account summary {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  list-style: none;
-  padding: 0.3rem;
-  border-radius: 2px;
-}
-.hub-account summary::-webkit-details-marker { display: none; }
-.hub-account summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-.hub-avatar {
-  display: grid;
-  place-items: center;
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: var(--teal);
-  color: var(--paper);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.hub-account-name { font-size: var(--fs-small); color: var(--mist); }
-.hub-account-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 0.5rem);
-  min-width: 15rem;
-  /* A closed <details> still contributes this panel's width to the document's
-     scroll width in Chrome, which is enough on its own to make a 380px page
-     scroll sideways. Capping it against the viewport means the menu can never
-     be the reason the page is wider than the screen. */
-  max-width: calc(100vw - 1.5rem);
-  background: var(--paper);
-  color: var(--ivory-ink);
-  border: 1px solid var(--hairline-l);
-  border-radius: 2px;
-  box-shadow: 0 12px 32px rgba(18, 48, 47, 0.18);
-  padding: 0.4rem;
-}
-.hub-account-menu a,
-.hub-account-menu button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.6rem 0.75rem;
-  font: inherit;
-  font-size: var(--fs-small);
-  color: inherit;
-  text-decoration: none;
-  background: none;
-  border: 0;
-  cursor: pointer;
-  border-radius: 2px;
-}
-.hub-account-menu a:hover,
-.hub-account-menu button:hover { background: var(--paper-2); }
-.hub-account-menu form { margin: 0; border-top: 1px solid var(--hairline-l); padding-top: 0.25rem; }
-
-/* ── The bar on a narrow screen ───────────────────────────────────────────
-   Wordmark + two nav items + the account control come to roughly 447px of
-   content against 340px of usable width at 380px, so something has to give.
-   Rather than dropping the wordmark — the one element that says which product
-   this is — the bar wraps: brand and account on the first row, navigation on
-   the second. Nothing is hidden and nothing is truncated. */
-@media (max-width: 620px) {
-  .hub-bar-inner { flex-wrap: wrap; row-gap: 0.25rem; padding-block: 0.5rem 0.15rem; }
-  .hub-bar .brand-lockup { min-width: 0; }
-  .hub-bar .brand-words b { font-size: 0.82rem; }
-  .hub-account { margin-inline-start: auto; }
-  .hub-account-name { display: none; }
-  .hub-nav {
-    order: 3;
-    flex-basis: 100%;
-    margin-inline-start: 0;
-    gap: 1.35rem;
-  }
-}
 
 /* ══════════════════════════════════════════════════════════════════════════
    CARDS, SECTIONS
@@ -586,26 +482,6 @@ body {
 
 .hub-form-status { font-size: var(--fs-small); color: var(--muted); margin: 0.9rem 0 0; min-height: 1.4em; }
 .hub-form-status[data-state="bad"] { color: #9A3B21; }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   FOOTER
-   ══════════════════════════════════════════════════════════════════════════ */
-.hub-foot {
-  flex-shrink: 0;
-  border-top: 1px solid var(--hairline-l);
-  background: var(--paper-2);
-  font-size: var(--fs-small);
-  color: var(--muted);
-}
-.hub-foot-inner {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.75rem 1.5rem;
-  padding-block: 1.5rem;
-}
-.hub-foot nav { display: flex; gap: 1.25rem; }
-.hub-foot a { color: inherit; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    PHONE

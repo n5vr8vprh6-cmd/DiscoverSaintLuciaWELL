@@ -395,7 +395,11 @@
   /* ── 4. Sign out ────────────────────────────────────────────────────────── */
   document.addEventListener('submit', function (e) {
     var form = e.target;
-    if (!form.hasAttribute('data-hub-logout')) return;
+    /* `data-signout` — the same attribute js/site.js uses, because the control
+       is now the same component on both surfaces (lib/layouts.js
+       profileControl). Renaming it here without renaming it there would leave
+       sign-out working on consumer pages and silently navigating on Hub ones. */
+    if (!form.hasAttribute('data-signout')) return;
     e.preventDefault();
     fetch('/api/auth/logout', { method: 'POST' })
       .then(function () { location.assign('/'); })

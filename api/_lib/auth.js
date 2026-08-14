@@ -27,6 +27,20 @@ const { db, json } = require('./core.js');
 const COOKIE = 'dslw_session';
 const REFRESH = 'dslw_refresh';
 
+/* ── The one cookie JavaScript is allowed to read ─────────────────────────
+   `dslw_who` exists so the static consumer pages can show a signed-in advisor
+   their profile control without asking the server who they are.
+
+   IT IS NOT HttpOnly, AND THAT IS THE POINT. It therefore contains nothing
+   that could be used to act as anybody: a first name and two initials, both of
+   which are already printed on the screen the moment it is used. No token, no
+   email, no id.
+
+   NOTHING SERVER-SIDE MAY EVER TRUST IT. It is display state, set by us and
+   editable by anyone with a browser console. Every decision about who you are
+   still comes from the HttpOnly session through advisorFor(). */
+const WHO = 'dslw_who';
+
 function anonClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
@@ -64,10 +78,40 @@ function setSession(res, session) {
   ]);
 }
 
+/* Appends to Set-Cookie rather than replacing it: setSession() may already have
+   written the session pair on this response, and res.setHeader would discard
+   them. */
+function appendCookie(res, value) {
+  const existing = res.getHeader('Set-Cookie');
+  const list = existing ? (Array.isArray(existing) ? existing.slice() : [existing]) : [];
+  list.push(value);
+  res.setHeader('Set-Cookie', list);
+}
+
+/* Display state for the signed-in header. Deliberately readable — see WHO. */
+function setWho(res, advisor) {
+  const secure = process.env.NODE_ENV !== 'development';
+  const initials = ((advisor.first_name || '?')[0] + ((advisor.last_name || '')[0] || '')).toUpperCase();
+  const value = encodeURIComponent(JSON.stringify({
+    n: String(advisor.first_name || '').slice(0, 40),
+    i: initials
+  }));
+  appendCookie(res, [
+    `${WHO}=${value}`,
+    'Path=/', 'SameSite=Lax',
+    secure ? 'Secure' : '',
+    `Max-Age=${60 * 60 * 24 * 30}`
+  ].filter(Boolean).join('; '));
+}
+
 function clearSession(res) {
   const secure = process.env.NODE_ENV !== 'development';
-  const kill = (n) => `${n}=; Path=/; HttpOnly; SameSite=Lax; ${secure ? 'Secure; ' : ''}Max-Age=0`;
-  res.setHeader('Set-Cookie', [kill(COOKIE), kill(REFRESH)]);
+  const kill = (n, httpOnly) =>
+    `${n}=; Path=/; ${httpOnly ? 'HttpOnly; ' : ''}SameSite=Lax; ${secure ? 'Secure; ' : ''}Max-Age=0`;
+  /* The hint cookie goes with them. Leaving it behind would show a profile
+     control to someone who has just signed out — harmless in terms of access,
+     but it would look broken, which is its own kind of wrong. */
+  res.setHeader('Set-Cookie', [kill(COOKIE, true), kill(REFRESH, true), kill(WHO, false)]);
 }
 
 /* ── Who is this request? ────────────────────────────────────────────────── */
@@ -109,6 +153,20 @@ async function advisorFor(req, res) {
     .eq('auth_user_id', user.id)
     .maybeSingle();
   if (!data) return null;
+
+  /* Refresh the display cookie here rather than at sign-in, because this is the
+     only place that has actually read the advisor row. Setting it at login
+     would mean a name changed in account settings stayed stale in the header
+     until the next sign-in; setting it here means it corrects itself on the
+     next Hub page. Only written when it would change, so an ordinary page load
+     does not carry a redundant Set-Cookie. */
+  if (res) {
+    const initials = ((data.first_name || '?')[0] + ((data.last_name || '')[0] || '')).toUpperCase();
+    let current = null;
+    try { current = JSON.parse(parseCookies(req)[WHO] || 'null'); } catch (e) { current = null; }
+    if (!current || current.n !== data.first_name || current.i !== initials) setWho(res, data);
+  }
+
   return Object.assign({ authUserId: user.id, authEmail: user.email }, data);
 }
 
@@ -160,7 +218,7 @@ function safeNext(value) {
 }
 
 module.exports = {
-  anonClient, parseCookies, setSession, clearSession,
+  anonClient, parseCookies, setSession, setWho, clearSession,
   userFor, advisorFor, requireAdvisor, requireAdvisorJson, safeNext,
-  COOKIE, REFRESH
+  COOKIE, REFRESH, WHO
 };

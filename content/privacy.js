@@ -171,6 +171,12 @@ module.exports = {
           id: 'cookies',
           body: [
             'We use or may use cookies, pixels, local storage, and similar technologies to operate the website, remember preferences, understand usage, measure campaigns, improve performance, and support advertising or audience measurement.',
+            /* Named specifically because they are the only cookies this site
+               sets by default, they are set for advisors rather than for
+               travellers, and one of them is deliberately readable by the
+               page. Describing analytics cookies while staying silent about
+               the ones actually in use would be the wrong way round. */
+            'If you hold an advisor account, signing in sets cookies that are strictly necessary for that account: a session cookie that keeps you signed in, which is not readable by page scripts, and a small display cookie holding only your first name and initials so the site can show your account menu. Signing out clears both. Browsing the site without an advisor account sets neither.',
             'Our analytics and advertising technologies include services provided by Google, Vercel, and Meta. Depending on configuration, these technologies may receive device, browser, usage, campaign, cookie, IP-address, or similar information.',
             'Where applicable law requires consent before non-essential analytics or advertising technologies are used, we intend to obtain that consent through an appropriate consent mechanism. You should be able to change or withdraw applicable cookie choices. Browser controls and recognized privacy signals may also apply depending on jurisdiction and our technical configuration.',
             'Because advertising and analytics configurations can change, the live cookie/consent implementation should accurately reflect which technologies are active at the time you visit.'

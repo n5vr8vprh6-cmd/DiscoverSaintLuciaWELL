@@ -21,5 +21,23 @@ module.exports = async function handler(req, res) {
     } catch (e) { /* best effort — the cookie clear below is what matters */ }
   }
   clearSession(res);
+
+  /* The sign-out control is a real <form> so it works without JavaScript. A
+     plain form post navigates, and answering it with `{"ok":true}` would put
+     raw JSON on the screen — so a browser navigation gets a redirect and a
+     fetch gets the JSON it asked for.
+
+     Sec-Fetch-Mode tells them apart: browsers send `navigate` for a form
+     submission and `cors`/`same-origin` for fetch. Accept is the fallback for
+     anything that does not send it. */
+  const mode = String(req.headers['sec-fetch-mode'] || '');
+  const wantsHtml = mode === 'navigate' ||
+    (!mode && String(req.headers.accept || '').includes('text/html'));
+
+  if (wantsHtml) {
+    res.statusCode = 303;
+    res.setHeader('Location', '/');
+    return res.end();
+  }
   return json(res, 200, { ok: true });
 };
