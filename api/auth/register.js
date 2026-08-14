@@ -102,7 +102,7 @@ module.exports = async function handler(req, res) {
         .from('advisors').select('id').eq('auth_user_id', user.id).maybeSingle();
 
       if (!existing.data) {
-        const slug = await uniqueSlug(supabase, first, last);
+        const slug = await uniqueSlug(supabase);
         const { error: insErr } = await supabase.from('advisors').insert({
           auth_user_id: user.id,
           slug,
@@ -132,16 +132,31 @@ module.exports = async function handler(req, res) {
   }
 };
 
-/* The slug is now internal — public links use the opaque code — but it stays
-   unique because deployed V1.2 links resolve through it. */
-async function uniqueSlug(supabase, first, last) {
-  const base = (first + '-' + last).toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'advisor';
-  for (let n = 0; n < 40; n++) {
-    const candidate = n ? `${base}-${n + 1}` : base;
+/* ── The internal slug ────────────────────────────────────────────────────
+   RANDOM, NOT DERIVED FROM THE NAME.
+
+   The column only still exists because deployed V1.2 links resolve through it,
+   and public links have used the opaque `public_code` since V2. But it was
+   being minted as `first-last`, which quietly reintroduced exactly what V2 §6
+   forbids: a guessable, name-bearing identifier that resolves. Anyone could
+   try /well/jane-smith and learn whether that advisor exists here — and every
+   advisor's identifier was predictable from their name alone.
+
+   Nothing generates a link from the slug, so it has no reason to be readable.
+   64 bits of randomness makes it unguessable and collisions negligible; the
+   retry loop is there because "negligible" is not "impossible", and a
+   duplicate would fail the unique constraint at insert time. */
+async function uniqueSlug(supabase) {
+  const crypto = require('crypto');
+  for (let n = 0; n < 5; n++) {
+    /* Leading letter so the value is never mistaken for a number, and a fixed
+       prefix so these are recognisable as generated rather than legacy. */
+    const candidate = 'adv-' + crypto.randomBytes(8).toString('hex');
     const { data } = await supabase.from('advisors').select('id').eq('slug', candidate).maybeSingle();
     if (!data) return candidate;
   }
-  return base + '-' + Date.now().toString(36);
+  /* Five collisions on a 64-bit value means something is wrong with the RNG,
+     not with luck. Fall through to something certainly unique rather than
+     failing the registration. */
+  return 'adv-' + crypto.randomBytes(8).toString('hex') + '-' + Date.now().toString(36);
 }

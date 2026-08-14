@@ -88,7 +88,17 @@ const post = async (p, payload) => {
     check('advisor starts PENDING, so no Journeys route to them yet',
       adv[0].status === 'pending', 'status=' + adv[0].status);
     check('advisor got an opaque public_code', /^[0-9A-HJKMNP-TV-Z]{8}$/.test(adv[0].public_code || ''));
-    check('advisor got a unique internal slug', !!adv[0].slug);
+    /* The slug must be RANDOM, not derived from the name. It resolves publicly
+       (legacy V1.2 links depend on that), so a name-derived slug would hand
+       back the guessable identifier the opaque public_code exists to remove.
+       The original check here only asserted the slug was non-empty, which is
+       exactly why `first-last` slugs shipped unnoticed. */
+    const slug = adv[0].slug || '';
+    check('advisor got an internal slug', !!slug);
+    check('the slug is random, not derived from the name',
+      /^adv-[0-9a-f]{16}$/.test(slug), 'slug=' + slug);
+    check('the slug leaks neither first nor last name',
+      !/auth/i.test(slug) && !/test/i.test(slug), 'slug=' + slug);
   }
 
   /* ── Registering the same address again must not disclose it ───────────── */

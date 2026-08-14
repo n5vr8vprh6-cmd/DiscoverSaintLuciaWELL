@@ -375,6 +375,20 @@ opaque codes — `/well/8K4PX7`. V1.2 minted readable slugs — `?advisor=diana-
 and always will: a QR code on a printed card cannot be recalled, and an advisor
 whose link quietly stopped attributing would never find out.
 
+**The slug is now random too, and that is the point.** Registration originally
+minted it as `first-last`, which quietly put back exactly what the opaque code
+removes: because the slug still resolves, anyone could try `/well/jane-smith`
+and learn whether that advisor exists here, and every advisor's identifier was
+predictable from their name. New registrations get `adv-<16 hex>`. Nothing
+generates a link from the slug, so it has no reason to be readable.
+
+Two things follow. Existing readable slugs must be **rotated, not just left
+alone** — the fix is worthless to advisors who already have one; `test-advisor`
+is the deliberate exception, kept because `db/SETUP.md` documents it as the
+legacy-link fixture. And `tools/auth-test.js` now asserts the slug matches the
+random format and contains neither name: the old check only asserted it was
+non-empty, which is precisely why name-derived slugs shipped unnoticed.
+
 `/well/<code>` is a 302, not a page. It resolves the code, then hands the
 visitor to the consumer site at `/?advisor=<code>` so the existing attribution
 path does the work — one implementation, not two that can disagree. An unknown
