@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
       email,
       password,
       options: {
-        emailRedirectTo: (process.env.SITE_ORIGIN || 'https://discoversaintluciawell.com') + '/hub/login',
+        emailRedirectTo: (process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com') + '/hub/login',
         data: { first_name: first, last_name: last }
       }
     });

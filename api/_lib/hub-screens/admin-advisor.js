@@ -30,7 +30,7 @@ const {
 const { setLocked, recoveryLink, isLocked } = require('../auth-admin.js');
 const { journeysFor, funnelFor } = require('../hub-data.js');
 
-const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://discoversaintluciawell.com';
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
 module.exports = async function handler(req, res) {
   const url = new URL(req.url, 'https://x');

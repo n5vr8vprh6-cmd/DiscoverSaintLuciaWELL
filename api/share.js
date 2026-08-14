@@ -36,7 +36,7 @@ const RATE_LIMIT = { max: 5, windowMinutes: 60 };
 
 /* Absolute, because this goes in an email. Overridable so a preview deploy
    links to itself rather than sending a tester to production. */
-const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://discoversaintluciawell.com';
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
 module.exports = async function handler(req, res) {
   if (!methodGuard(req, res, 'POST')) return;

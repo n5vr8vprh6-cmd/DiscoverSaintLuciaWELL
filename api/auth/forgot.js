@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
 
   const auth = anonClient();
   if (auth) {
-    const origin = process.env.SITE_ORIGIN || 'https://discoversaintluciawell.com';
+    const origin = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
     try {
       await auth.auth.resetPasswordForEmail(email, { redirectTo: origin + '/hub/reset' });
     } catch (e) {
