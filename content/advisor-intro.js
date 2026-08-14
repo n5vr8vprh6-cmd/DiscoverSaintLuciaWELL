@@ -125,7 +125,9 @@ module.exports = {
       headline: 'Save your seat.',
       lead: 'Complimentary, live, and the honest starting point for the whole pathway.',
       primaryOverride: { label: 'Save my seat', href: SITE.briefingUrl },
-      secondary: { label: 'Back to the advisor hub', href: '/advisors' },
+      /* "Advisor Hub" means the authenticated workspace at /hub. This link
+         goes to the public overview, so it says so. */
+      secondary: { label: 'Back to advisor overview', href: '/advisors' },
       img: {
         base: '/assets/cta/cta-dawn', widths: [771], w: 771, h: 330,
         src: '/assets/cta/cta-dawn-771.jpg', alt: ''

@@ -61,6 +61,7 @@ const SITE = {
       title: 'Travel Advisors',
       links: [
         { label: 'Advisor Overview',            href: '/advisors' },
+        { label: 'Travel Advisor Hub',          href: '/advisors/hub' },
         { label: 'Complimentary Briefing',      href: '/advisors/intro' },
         { label: 'Well Destination Foundations',href: '/advisors/foundations' },
         { label: 'Saint Lucia WELL Immersion',  href: '/advisors/immersion' }
@@ -83,11 +84,15 @@ const SITE = {
     { label: 'Privacy',       href: '/privacy' },
     { label: 'Terms',         href: '/terms' },
     { label: 'Accessibility', href: '/accessibility' },
-    /* The ONLY route to the Hub from a consumer page, and deliberately down
-       here. V2 §3 asks for an account affordance; V1.2 §12 and this repo's
-       standing decision keep the professional surfaces out of the consumer
-       nav. A utility link satisfies both: an advisor who is looking will find
-       it, and a holidaymaker never has to wonder what it is. */
+    /* Two Hub routes exist in this footer and they do different jobs. The
+       "Travel Advisor Hub" entry in the Travel Advisors column above explains
+       what it is, for someone deciding. This one is for someone who has already
+       decided and just wants the sign-in screen, which is why it stays in the
+       utility row and says "sign in" rather than naming the product.
+
+       Neither is in the primary consumer nav. V2 §3 asks for an account
+       affordance; V1.2 §12 and this repo's standing decision keep professional
+       surfaces out of the nav a holidaymaker reads. */
     { label: 'Advisor sign in', href: '/hub' }
   ],
 

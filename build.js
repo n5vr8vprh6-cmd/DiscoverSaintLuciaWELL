@@ -31,6 +31,7 @@ const PAGES = [
   require('./content/eclipse.js'),
   require('./content/about.js'),
   require('./content/advisors.js'),
+  require('./content/advisor-hub.js'),
   require('./content/advisor-intro.js'),
   require('./content/advisor-immersion.js'),
   require('./content/advisor-foundations.js'),
@@ -77,6 +78,29 @@ function buildPage(page) {
   }
 
   const html = render(page, body);
+
+  /* THE LITERAL STRING "undefined" MUST NEVER REACH A PAGE.
+     A renderer reading a field a page did not supply produces `esc(undefined)`
+     → the word "undefined", rendered at full size and full confidence. It
+     shipped once from the pathway renderer and looked exactly like design until
+     someone read it. Cheap to catch here, and it fails the build rather than
+     the reader.
+
+     It matches text between tags only, so an attribute value like
+     data-x="undefined" is ignored. It does NOT distinguish a stray token from
+     the word used deliberately in copy — if a page ever needs to say
+     "undefined" in a sentence, this will stop the build and the sentence should
+     be rephrased. That trade is worth it: the word appears in prose roughly
+     never, and appears as a bug more than once. */
+  const stray = html.match(/>[^<]*\bundefined\b[^<]*</i);
+  if (stray) {
+    throw new Error(
+      `Page "${page.path}" renders the literal string "undefined":\n` +
+      `  …${stray[0].slice(0, 120).replace(/\s+/g, ' ')}…\n` +
+      '  A section is reading a field it was not given.'
+    );
+  }
+
   const out = outPathFor(page.path);
   mkdirp(path.dirname(out));
   fs.writeFileSync(out, html, 'utf8');

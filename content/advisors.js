@@ -37,7 +37,11 @@ module.exports = {
       { label: 'The pathway',  href: '#pathway' },
       { label: 'Briefing',     href: '/advisors/intro' },
       { label: 'Foundations',  href: '/advisors/foundations' },
-      { label: 'Immersion',    href: '/advisors/immersion' }
+      { label: 'Immersion',    href: '/advisors/immersion' },
+      /* Last, deliberately. This band is how an advisor orients on arrival, and
+         the Hub is the one item here that a returning advisor — rather than a
+         prospective one — is looking for. */
+      { label: 'Your Hub',     href: '/advisors/hub' }
     ]
   },
 
@@ -112,17 +116,18 @@ module.exports = {
         {
           key: 'activate',
           title: 'Activate',
-          /* Was "available after the required training". That gate is being
-             removed on purpose: the strategy is now that market response
-             creates the motivation to learn, not the other way round — an
-             advisor should be able to put the campaign in front of ten people
-             and let real interest decide whether they want Foundations.
+          /* This rung is now live, and it is the one the whole strategy rests
+             on: market response creates the motivation to learn, not the other
+             way round — an advisor should be able to put the destination in
+             front of ten people and let real interest decide whether they want
+             Foundations. It sat at "In development" only because there was
+             nothing to link to.
 
-             The rung still carries no CTA, because the campaign tools do not
-             exist yet. "In development" is the honest status; anything warmer
-             would advertise a button that goes nowhere. */
-          text: 'Campaign tools and attributable distribution — referral links, QR codes and creative — so you can put the destination in front of your own audience and see who responds.',
-          status: 'In development'
+             The Travel Advisor Hub is that thing. The referral link and the QR
+             code exist and work; creative does not, so this text no longer
+             promises it. Say what shipped, not what was planned. */
+          text: 'Your own WELL link and QR code, and a Hub where the Journeys people share with you arrive — so you can put the destination in front of your own audience and see who responds.',
+          cta: { label: 'Open your Hub', href: '/advisors/hub' }
         },
         {
           key: 'current',
@@ -131,7 +136,10 @@ module.exports = {
           status: 'Ongoing'
         }
       ],
-      footnote: 'Steps four and five are described as they are being built. Nothing on this page is bookable that does not yet exist.'
+      /* Was "Steps four and five are described as they are being built."
+         Five shipped; only four has not. The sentence has to keep pace with
+         what is true, or the page's honesty becomes decorative. */
+      footnote: 'Step four is described as it is being built. Nothing on this page is bookable that does not yet exist.'
     },
 
     /* ── WHAT THE ISLAND GIVES YOU TO SELL ──────────────────────────────── */

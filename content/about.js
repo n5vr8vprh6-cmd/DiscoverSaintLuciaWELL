@@ -163,7 +163,11 @@ module.exports = {
         {
           title: 'Travel advisors',
           text: 'The professional pathway — a complimentary briefing, the Foundations programme, and the Saint Lucia WELL Immersion.',
-          label: 'Visit the advisor hub',
+          /* Was "Visit the advisor hub", which pointed here, at the public
+             overview. "Advisor Hub" now means the authenticated workspace at
+             /hub — the term of art content/privacy.js already uses — so this
+             label had to stop competing for it. */
+          label: 'See the advisor pathway',
           href: '/advisors'
         },
         {
