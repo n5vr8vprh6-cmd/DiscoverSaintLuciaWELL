@@ -38,6 +38,18 @@ module.exports = async function handler(req, res) {
   const password = typeof b.password === 'string' ? b.password : '';
   const business = str(b.business, 160);
 
+  /* Optional, and the only reason they exist is that an admin has to decide
+     whether this is a real travel advisor. `registrationNote` is the fast path:
+     "Toronto workshop, June" is someone already known, and the approval queue
+     shows it inline for exactly that.
+
+     Capped like everything else that arrives from a keyboard. The note is the
+     longest because it is prose, and it is rendered escaped wherever it is
+     shown. */
+  const hostAgency = str(b.hostAgency, 160);
+  const website = str(b.website, 300);
+  const registrationNote = str(b.registrationNote, 600);
+
   if (!first || !last) return json(res, 400, { error: 'name_required' });
   if (!looksLikeEmail(email)) return json(res, 400, { error: 'email_invalid' });
   /* A floor, not a policy. Supabase enforces its own minimum; this exists so
@@ -110,6 +122,9 @@ module.exports = async function handler(req, res) {
           last_name: last,
           email,
           business: business || null,
+          host_agency: hostAgency || null,
+          website: website || null,
+          registration_note: registrationNote || null,
           status: 'pending',
           onboarding_state: 'profile'
         });

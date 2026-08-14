@@ -1,4 +1,23 @@
-/* GET /hub/register — create an advisor account. */
+/* ============================================================================
+   GET /hub/register — create an advisor account
+   ----------------------------------------------------------------------------
+   THE THREE OPTIONAL FIELDS EXIST TO MAKE APPROVAL POSSIBLE, and they earn their
+   place on a form that should otherwise be as short as it can be.
+
+   An admin looking at the pending queue has to answer one question: is this a
+   real travel advisor? Name and email cannot answer it. Host agency and website
+   usually can.
+
+   "Have we met?" is the one that matters most, and it is not there for
+   completeness — it is the fast path. Someone who writes "Toronto workshop,
+   June" is a person Duncan already knows, and can be approved on sight instead
+   of waiting for a conversation. It surfaces directly in the approval queue for
+   that reason.
+
+   All three are optional, and the form says so. Registration is open; making
+   someone justify themselves before they can even see the product would be a
+   different decision from the one that was taken.
+   ========================================================================== */
 'use strict';
 const { advisorFor } = require('../auth.js');
 const { hubPage } = require('../hub-render.js');
@@ -24,7 +43,13 @@ module.exports = async function handler(req, res) {
         { name: 'lastName', label: 'Last name', autocomplete: 'family-name' },
         { name: 'email', label: 'Email', type: 'email', autocomplete: 'email', wide: true },
         { name: 'business', label: 'Business or agency', autocomplete: 'organization',
-          required: false, optional: true, wide: true },
+          required: false, optional: true },
+        { name: 'hostAgency', label: 'Host agency', required: false, optional: true },
+        { name: 'website', label: 'Website', type: 'url', autocomplete: 'url',
+          required: false, optional: true, wide: true, hint: 'Include https://' },
+        { name: 'registrationNote', label: 'Have we met?', required: false, optional: true,
+          wide: true,
+          hint: 'A workshop, a webinar, someone who suggested us — anything that helps us place you. It speeds this up.' },
         { name: 'password', label: 'Password', type: 'password', autocomplete: 'new-password',
           minlength: 10, wide: true, hint: 'At least 10 characters.' }
       ],
