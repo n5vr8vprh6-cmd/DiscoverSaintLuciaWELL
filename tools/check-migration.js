@@ -43,7 +43,7 @@ async function get(q) {
 
 (async () => {
   /* ── The new columns exist ────────────────────────────────────────────── */
-  const a = await get('advisors?select=id,slug,public_code,auth_user_id,onboarding_state,status&limit=50');
+  const a = await get('advisors?select=id,slug,public_code,auth_user_id,onboarding_state,status,first_name,last_name&limit=200');
   if (a.error) {
     console.error('  advisors query failed — has 002-hub.sql been run?\n  ' + a.error);
     process.exit(1);
@@ -60,10 +60,23 @@ async function get(q) {
     a.rows.map((r) => r.public_code).join(','));
   check('codes are unique',
     new Set(a.rows.map((r) => r.public_code)).size === a.rows.length);
+  /* THIS CHECKED THE WRONG FIELD, AND SO COULD NOT FAIL.
+     It used to compare the code against tokens of the SLUG, which was a
+     reasonable proxy back when slugs were name-derived (`diana-lee`). Slugs are
+     now random hex (`adv-<16 hex>`), and a random hex string is never a
+     substring of an 8-character code — so from the moment slugs were
+     randomised this assertion passed vacuously while claiming to protect V2 §6.
+
+     It now compares against the actual first and last name, which is what the
+     name of the check says and what the rule is about: no advisor's name in a
+     public URL. Surfaced by seeding fixtures whose slug prefix happened to
+     collide with their code prefix. */
   check('codes do not contain the advisor name',
     a.rows.every((r) => {
       const c = (r.public_code || '').toLowerCase();
-      return !(r.slug || '').toLowerCase().split('-').some((part) => part.length > 2 && c.includes(part));
+      return ![r.first_name, r.last_name]
+        .filter(Boolean)
+        .some((part) => part.length > 2 && c.includes(part.toLowerCase()));
     }));
 
   /* ── Journey shares gained the pipeline without losing consent ───────── */

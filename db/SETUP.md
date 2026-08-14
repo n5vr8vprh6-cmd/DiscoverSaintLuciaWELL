@@ -192,6 +192,22 @@ https://discoversaintluciawell.com/well/8K4PX7
 The advisor can copy it, or generate a QR code for it, from their own Hub —
 nobody needs to hand it to them.
 
+### Test advisors
+
+Ten synthetic advisors can be created and removed at will:
+
+```bash
+node tools/seed-advisors.js          # create
+node tools/seed-advisors.js --list   # what is seeded
+node tools/seed-advisors.js --purge  # remove all of it
+```
+
+You can tell them apart at a glance: their WELL links read `/well/SEED####`.
+They use `@example.com` addresses, which cannot receive mail, and most of them
+are `pending`, so they are never offered to a real consumer. `--purge` removes
+the advisors, their Supabase auth users, their Journeys and their attribution
+rows, and refuses to touch anything that is not unmistakably seeded.
+
 For a beta cohort this is the right amount of tooling. A `status` column and the
 Table Editor do not justify an admin screen, and the brief is explicit about not
 building marketing software.

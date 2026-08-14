@@ -488,6 +488,39 @@ system after.
 | `node tools/check-migration.js` | `.env` | That `002`/`003` landed and preserved what was already there |
 | `node tools/rls-test.js` | `.env` | Cross-advisor denial, proved by planting a row and failing to read it |
 | `node tools/auth-test.js [url]` | deployed site | The auth lifecycle end to end, then cleans up after itself |
+| `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
+
+### The seeded fixture set
+
+`node tools/seed-advisors.js` creates ten test advisors — six pending, three
+active, one paused — with synthetic Journeys spread across the pipeline. It is
+what makes the admin console buildable: an approval queue with something in it,
+a dashboard with something to count, and every status badge represented. Each
+fixture exists to exercise something specific (a very long business name, an
+apostrophe in a surname, an accented name, an advisor whose Journeys are all
+stuck at `new`), not to pad a table.
+
+It writes to the LIVE database, because there is no separate project. Three
+things make that acceptable, and all three are load-bearing:
+
+- **No endpoint lists all advisors.** `api/_lib/advisors.js` resolves one only
+  by an explicit code or slug the visitor arrived with, so a seeded advisor is
+  invisible to real consumers unless someone uses its specific link.
+- **`status` is stated on every fixture.** The schema default is `active`, and
+  an active advisor is an address real consumer details route to. A fixture that
+  merely omitted `status` would become a live delivery target with an
+  undeliverable address; the tool refuses to insert a row without one.
+- **Three independent markers**, all required before anything is deleted:
+  `seed-…@example.com`, a `seed-<16 hex>` slug, and a `SEED####` public code —
+  the last being visible in the WELL link itself, so `/well/SEEDK1N0` is
+  recognisable at a glance.
+
+`--purge` removes advisors, their auth users, their Journeys and their
+attribution rows. **Children go first**: `journey_shares`, `campaign_visits` and
+`finder_completions` are all `on delete set null`, so deleting the advisor first
+would orphan them rather than remove them. The purge re-checks all three markers
+on every row and aborts the whole run if any row fails, rather than trusting the
+query filter.
 
 **`rls-test.js` exists because of a false pass.** An earlier check called the
 table read "denied" on a `200`, but PostgREST returns `200 []` when RLS filters
