@@ -12,6 +12,20 @@
    Run:  node tools/regress.js                    against production
          node tools/regress.js http://localhost:3000
 
+   ATTRIBUTION CHECKS NEED A REAL ADVISOR REFERENCE, and they now say so rather
+   than quietly passing without one. Pass a code or slug:
+
+         node tools/regress.js --advisor=8K4PX7
+         TEST_ADVISOR=8K4PX7 node tools/regress.js
+
+   Why this is not hardcoded any more: the suite used to name a seeded
+   `test-advisor` row. When that row is deleted, two of the three attribution
+   assertions go on PASSING — /api/visit answers 204 for an unknown advisor by
+   design, so they would be exercising the unknown-advisor path while claiming
+   to prove attribution. A green suite that has stopped testing the thing is
+   worse than a red one. Without a reference they are reported as SKIP and the
+   summary says so.
+
    NOT COVERED HERE, ON PURPOSE: the browser-side guarantees — that an
    unattributed Finder completion makes zero network calls, and that the no-JS
    page still renders the six-village explainer. Those need a real browser and
@@ -20,7 +34,14 @@
    ========================================================================== */
 'use strict';
 
-const BASE = (process.argv[2] || 'https://discoversaintluciawell.com').replace(/\/$/, '');
+const args = process.argv.slice(2);
+const BASE = (args.find((a) => !a.startsWith('--')) || 'https://discoversaintluciawell.com')
+  .replace(/\/$/, '');
+
+/* A code or legacy slug for an ACTIVE advisor. Absent means the attribution
+   checks skip rather than pass vacuously — see the header. */
+const ADVISOR = (args.find((a) => a.startsWith('--advisor=')) || '').split('=')[1] ||
+  process.env.TEST_ADVISOR || '';
 
 const ROUTES = ['/', '/journey', '/explore', '/eclipse', '/about', '/advisors',
   '/advisors/intro', '/advisors/immersion', '/advisors/foundations',
@@ -28,6 +49,10 @@ const ROUTES = ['/', '/journey', '/explore', '/eclipse', '/about', '/advisors',
 
 const results = [];
 const check = (name, pass, detail) => results.push({ name, pass, detail: detail || '' });
+/* A skipped check is neither a pass nor a failure. It must be visible in the
+   output and counted separately, or "31/31 passed" starts meaning less than it
+   appears to. */
+const skip = (name, why) => results.push({ name, skipped: true, detail: why || '' });
 
 async function json(path, init) {
   const res = await fetch(BASE + path, init);
@@ -52,10 +77,15 @@ const post = (path, payload) => json(path, {
   }
 
   /* ── Advisor resolution ────────────────────────────────────────────────── */
-  let r = await json('/api/advisor?slug=test-advisor');
-  check('advisor lookup resolves a name',
-    r.status === 200 && r.body && r.body.advisor && r.body.advisor.firstName,
-    JSON.stringify(r.body));
+  let r;
+  if (ADVISOR) {
+    r = await json('/api/advisor?slug=' + encodeURIComponent(ADVISOR));
+    check('advisor lookup resolves a name',
+      r.status === 200 && r.body && r.body.advisor && r.body.advisor.firstName,
+      JSON.stringify(r.body));
+  } else {
+    skip('advisor lookup resolves a name', 'no --advisor=<code> given');
+  }
 
   r = await json('/api/advisor?slug=definitely-not-a-real-slug');
   check('unknown slug -> null, not an error',
@@ -90,11 +120,20 @@ const post = (path, payload) => json(path, {
   check('share rejects GET -> 405', r.status === 405);
 
   /* ── Attribution pings accept and stay silent ──────────────────────────── */
-  r = await post('/api/visit', { kind: 'visit', advisor: 'test-advisor', session: 'regress' });
-  check('visit ping -> 204', r.status === 204);
+  /* These two answer 204 whether or not the advisor exists — that is deliberate
+     (a stale QR code must never show a visitor an error). It also means they
+     prove nothing about attribution unless the reference is real, which is why
+     they skip rather than run when none was supplied. */
+  if (ADVISOR) {
+    r = await post('/api/visit', { kind: 'visit', advisor: ADVISOR, session: 'regress' });
+    check('visit ping -> 204', r.status === 204);
 
-  r = await post('/api/visit', { kind: 'finder_complete', advisor: 'test-advisor', session: 'regress' });
-  check('completion ping -> 204', r.status === 204);
+    r = await post('/api/visit', { kind: 'finder_complete', advisor: ADVISOR, session: 'regress' });
+    check('completion ping -> 204', r.status === 204);
+  } else {
+    skip('visit ping -> 204', 'no --advisor=<code> given');
+    skip('completion ping -> 204', 'no --advisor=<code> given');
+  }
 
   r = await post('/api/visit', { kind: 'visit', advisor: 'no-such-advisor' });
   check('unknown advisor -> 204, never an error', r.status === 204);
@@ -124,9 +163,18 @@ const post = (path, payload) => json(path, {
   check('share consent states advisor independence',
     finderJs.includes('independent travel'));
 
-  const failed = results.filter((x) => !x.pass);
+  const failed = results.filter((x) => !x.skipped && !x.pass);
+  const skipped = results.filter((x) => x.skipped);
+  const ran = results.length - skipped.length;
+
   results.forEach((x) => console.log(
-    `  ${x.pass ? 'PASS' : 'FAIL'}  ${x.name}${x.detail && !x.pass ? '   ' + x.detail : ''}`));
-  console.log(`\n  ${results.length - failed.length}/${results.length} passed\n`);
+    `  ${x.skipped ? 'SKIP' : x.pass ? 'PASS' : 'FAIL'}  ${x.name}` +
+    `${x.detail && !x.pass ? '   ' + x.detail : ''}`));
+
+  console.log(`\n  ${ran - failed.length}/${ran} passed`);
+  if (skipped.length) {
+    console.log(`  ${skipped.length} skipped — pass --advisor=<code> to run the attribution checks`);
+  }
+  console.log('');
   process.exit(failed.length ? 1 : 0);
 })();

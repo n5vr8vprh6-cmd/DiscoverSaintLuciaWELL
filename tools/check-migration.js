@@ -29,6 +29,11 @@ const H = { apikey: KEY, Authorization: 'Bearer ' + KEY };
 
 const results = [];
 const check = (name, pass, detail) => results.push({ name, pass, detail: detail || '' });
+/* Assertions of the form rows.every(...) are TRUE ON AN EMPTY TABLE. Once the
+   seeded test data was deleted, five checks below went on reporting PASS while
+   examining nothing. A check that cannot fail is not a check, so an empty set
+   is reported as SKIP and counted apart from the passes. */
+const skip = (name, why) => results.push({ name, skipped: true, detail: why || '' });
 
 async function get(q) {
   const res = await fetch(URL + '/rest/v1/' + q, { headers: H });
@@ -64,7 +69,15 @@ async function get(q) {
   /* ── Journey shares gained the pipeline without losing consent ───────── */
   const s = await get('journey_shares?select=id,stage,travel_window,timing,consent_text,advisor_id&limit=200');
   if (s.error) { check('journey_shares readable', false, s.error); }
-  else {
+  else if (!s.rows.length) {
+    const why = 'journey_shares is empty — nothing to inspect';
+    ['journey_shares has stage',
+     'journey_shares has travel_window',
+     'every share defaults to stage=new or later',
+     'consent evidence preserved on every share',
+     'advisor ownership preserved',
+     'legacy "Within 3 months" never mapped to <=30 days'].forEach((n) => skip(n, why));
+  } else {
     check('journey_shares has stage', s.rows.every((r) => 'stage' in r));
     check('journey_shares has travel_window', s.rows.every((r) => 'travel_window' in r));
     check('every share defaults to stage=new or later',
@@ -91,9 +104,16 @@ async function get(q) {
   check('a bad key cannot read journey_shares', anonProbe.status === 401 || anonProbe.status === 403,
     'HTTP ' + anonProbe.status);
 
-  const failed = results.filter((r) => !r.pass);
+  const failed = results.filter((r) => !r.skipped && !r.pass);
+  const skipped = results.filter((r) => r.skipped);
+  const ran = results.length - skipped.length;
+
   results.forEach((r) => console.log(
-    `  ${r.pass ? 'PASS' : 'FAIL'}  ${r.name}${r.detail && !r.pass ? '   ' + r.detail : ''}`));
-  console.log(`\n  ${results.length - failed.length}/${results.length} passed\n`);
+    `  ${r.skipped ? 'SKIP' : r.pass ? 'PASS' : 'FAIL'}  ${r.name}` +
+    `${r.detail && !r.pass ? '   ' + r.detail : ''}`));
+
+  console.log(`\n  ${ran - failed.length}/${ran} passed`);
+  if (skipped.length) console.log(`  ${skipped.length} skipped — no rows to inspect`);
+  console.log('');
   process.exit(failed.length ? 1 : 0);
 })().catch((e) => { console.error('  ' + e.message); process.exit(1); });

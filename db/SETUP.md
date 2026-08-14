@@ -34,14 +34,16 @@ Budget about 30 minutes. Steps 1–3 are Supabase, 4 is Resend, 5 is Vercel.
 1. In the left sidebar, open **SQL Editor** → **New query**.
 2. Open [`db/schema.sql`](schema.sql) from this repo, copy the whole file, and
    paste it in.
-3. **Before you run it**, look at the very last statement. It creates a
-   `test-advisor` row so you can test the loop end to end, and the advisor
-   notification will go to whatever email is there. Change it if you want it
-   somewhere other than `duncan.so@phinklife.org`.
-4. Click **Run**. You should see "Success. No rows returned."
-5. Open **Table Editor** in the sidebar. You should now see four tables:
-   `advisors` (with one row), `campaign_visits`, `finder_completions` and
+3. Click **Run**. You should see "Success. No rows returned."
+4. Open **Table Editor** in the sidebar. You should now see four tables:
+   `advisors` (empty), `campaign_visits`, `finder_completions` and
    `journey_shares`.
+
+   No advisor is seeded. An earlier version of this file created one, which was
+   a mistake twice over: a row inserted here has no `auth_user_id`, so it can
+   receive Journeys but can never sign in to read them; and an `active` advisor
+   is an address real consumer contact details get routed to, which is not
+   something a schema file should switch on by default.
 
 > **You will notice the tables look locked.** That is deliberate. The schema
 > turns on row-level security with no policies, which denies everything to the
@@ -130,26 +132,40 @@ vercel redeploy
 
 ## Testing the whole loop
 
-1. Visit `https://discoversaintluciawell.com/?advisor=test-advisor`
+First register an advisor at `/hub/register` and set its `status` to `active`
+in the Table Editor — an advisor cannot receive Journeys until you do. Then take
+its `public_code` from the same row (or from the advisor's own Hub) and:
+
+1. Visit `https://discoversaintluciawell.com/well/<public_code>`. You should
+   land on the homepage with `?advisor=<public_code>` in the address bar.
 2. Click around, then open the Journey Finder and complete it.
-3. The result's main button should read **"Share my WELL Journey with Test"**.
+3. The result's main button should read **"Share my WELL Journey with &lt;name&gt;"**.
    If it still says "Speak with a Saint Lucia WELL Advisor", the advisor lookup
    is not resolving — see troubleshooting below.
-4. Share it, filling in the form.
-5. Check the inbox on the seeded advisor row. The email should name the person,
-   their timing, what their Journey pointed toward, and reply to *them*.
-6. In Supabase **Table Editor**, you should now see one row in
+4. Share it, filling in the form. Use an `@example.com` address so
+   `node tools/db.js --purge-test` can clean it up afterwards.
+5. Check the advisor's inbox. The email should name the person, their timing,
+   and carry a link straight to the Journey in the Hub — replying goes to
+   *them*, not to us.
+6. Open the Hub. The Journey should be there, at stage **New**.
+7. In Supabase **Table Editor**, you should now see one row in
    `campaign_visits`, one in `finder_completions`, and one in `journey_shares`
    with `notified_at` filled in.
+
+The same loop, without a browser:
+
+```bash
+node tools/regress.js --advisor=<public_code>
+```
 
 ### If something doesn't work
 
 | Symptom | Almost always |
 |---|---|
-| Button still says "Speak with a Saint Lucia WELL Advisor" | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` wrong or missing, or the advisor row's `status` is not `active`. Check `/api/advisor?slug=test-advisor` in a browser — it should return a first name, not `null`. |
+| Button still says "Speak with a Saint Lucia WELL Advisor" | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` wrong or missing, or the advisor row's `status` is not `active`. Check `/api/advisor?slug=<public_code>` in a browser — it should return a first name, not `null`. |
 | Share says it worked, no email | Resend domain not verified yet, or `NOTIFY_FROM` is on a domain Resend doesn't hold. The share is still saved — check `journey_shares`; `notified_at` will be empty. |
 | Share returns an error | Open the Vercel deployment's **Logs** and look at `/api/share`. |
-| Rows appear with `advisor_id` empty | The link didn't carry `?advisor=`, or the slug doesn't match a row. |
+| Rows appear with `advisor_id` empty | The link didn't carry `?advisor=`, the code doesn't match a row, or that advisor's `status` is not `active`. |
 
 ## Adding real advisors
 

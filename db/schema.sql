@@ -123,8 +123,20 @@ alter table campaign_visits    enable row level security;
 alter table finder_completions enable row level security;
 alter table journey_shares     enable row level security;
 
--- ── A first advisor, for testing the loop end to end ──────────────────────
--- Change the email to one Duncan can actually receive before running.
-insert into advisors (slug, first_name, last_name, email, business, status)
-values ('test-advisor', 'Test', 'Advisor', 'duncan.so@phinklife.org', 'Internal testing', 'active')
-on conflict (slug) do nothing;
+-- ── No seeded advisor ─────────────────────────────────────────────────────
+-- This file used to insert a `test-advisor` row so the loop could be tested
+-- before anyone had registered. That row is gone, and the seed with it, for
+-- two reasons.
+--
+-- It could not sign in. Rows created here have no `auth_user_id`, so a seeded
+-- advisor can receive Journeys but can never open the Hub to read them — an
+-- account in a state no real advisor can be in, which makes it a poor thing to
+-- test against.
+--
+-- And an `active` advisor is not an inert fixture: it is an address that real
+-- consumer contact details get routed to. A seed that ships one by default is
+-- a seed that quietly opts a database into receiving personal data.
+--
+-- Advisors register themselves at /hub/register (see db/SETUP.md). To exercise
+-- attribution against a deployment, pass a real code to the suite:
+--     node tools/regress.js --advisor=<public_code>
