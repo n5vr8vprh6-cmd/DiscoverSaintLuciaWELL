@@ -112,18 +112,38 @@ $$;
 revoke all on function purge_expired() from public, anon, authenticated;
 
 -- ── Scheduling ───────────────────────────────────────────────────────────────
--- pg_cron if it is available, and a clear notice if it is not, rather than a
--- migration that appears to succeed while scheduling nothing. Verify what this
--- printed: an unscheduled purge is a retention policy that never runs.
+-- pg_cron if it is available. WRAPPED IN AN EXCEPTION HANDLER, because in the
+-- Supabase SQL editor the whole script is one transaction: an error scheduling
+-- the job would roll back purge_expired() itself, and the migration would report
+-- failure by silently not existing.
+--
+-- Scheduling is the part most likely to fail (the extension may be unavailable,
+-- or cron may live in a schema this role cannot reach), and it is also the least
+-- important part — the function is what matters, and tools/retention.js can call
+-- it. So a scheduling problem is a warning to act on, never a reason to lose the
+-- function.
+--
+-- READ WHAT THIS PRINTS. An unscheduled purge is a retention policy that never
+-- runs, and §12 of the privacy policy is only true while it does.
 do $$
 begin
   if exists (select 1 from pg_available_extensions where name = 'pg_cron') then
-    create extension if not exists pg_cron;
-    perform cron.unschedule('dslw-retention')
-      where exists (select 1 from cron.job where jobname = 'dslw-retention');
-    perform cron.schedule('dslw-retention', '17 3 * * *', 'select purge_expired();');
-    raise notice 'RETENTION SCHEDULED: daily at 03:17 UTC as job dslw-retention.';
+    begin
+      create extension if not exists pg_cron;
+      perform cron.unschedule('dslw-retention')
+        where exists (select 1 from cron.job where jobname = 'dslw-retention');
+      perform cron.schedule('dslw-retention', '17 3 * * *', 'select purge_expired();');
+      raise notice 'RETENTION SCHEDULED: daily at 03:17 UTC as job dslw-retention.';
+    exception when others then
+      raise warning 'pg_cron is available but scheduling FAILED (%). purge_expired() exists and is unaffected — schedule tools/retention.js instead, or the retention policy never runs.', sqlerrm;
+    end;
   else
-    raise notice 'PG_CRON NOT AVAILABLE — purge_expired() exists but NOTHING WILL CALL IT. Run tools/retention.js on a schedule, or the retention policy is words only.';
+    raise warning 'PG_CRON NOT AVAILABLE — purge_expired() exists but NOTHING WILL CALL IT. Run tools/retention.js on a schedule, or the retention policy is words only.';
   end if;
 end $$;
+
+-- One glance at the output answers "did this work".
+select
+  exists (select 1 from pg_proc where proname = 'purge_expired')    as has_purge,
+  exists (select 1 from pg_proc where proname = 'retention_months') as has_limit,
+  retention_months('journey_shares')                                as months;

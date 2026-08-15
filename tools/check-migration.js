@@ -136,6 +136,49 @@ async function get(q) {
     check('admin_audit table exists', !au.error, au.error || '');
   }
 
+  /* ── 006 · retention ───────────────────────────────────────────────────
+     The migration only REPORTS on itself now, because a check that raises
+     inside the SQL editor's single transaction rolls back the change it was
+     checking — which is how 006 and 007 both appeared not to have been run at
+     all. The assertion belongs here, where failing is a red test. */
+  const months = await fetch(URL + '/rest/v1/rpc/retention_months', {
+    method: 'POST', headers: H, body: JSON.stringify({ what: 'journey_shares' })
+  });
+  const has006 = months.ok;
+  if (!has006) {
+    check('006 · retention is in force', false,
+      'purge_expired() / retention_months() missing — nothing expires and §12 is not true');
+  } else {
+    const n = await months.json();
+    check('006 · retention limit is set', n === 24, 'got ' + n);
+
+    /* The purge writing to admin_audit on EVERY run is what makes a dead
+       scheduler visible. Asserted rather than assumed: without it, a stopped
+       job and a healthy one look identical. */
+    const sweeps = await get('admin_audit?select=created_at,detail&action=eq.retention_purge&order=created_at.desc&limit=1');
+    check('006 · the purge records its runs', !sweeps.error, sweeps.error || '');
+    if (!sweeps.error && !sweeps.data.length) {
+      check('006 · a sweep has run', true, 'none yet — expected until the first scheduled run');
+    }
+  }
+
+  /* ── 007 · the undertaking ─────────────────────────────────────────────── */
+  const und = await get('advisors?select=id,undertaking_version,undertaking_at&limit=100');
+  if (und.error) {
+    check('007 · undertaking columns exist', false,
+      'not applied — registration fails closed and every advisor is gated');
+  } else {
+    check('007 · undertaking columns exist', true);
+
+    /* THE ONE THAT MUST NEVER FLIP. Stamping existing advisors as having
+       accepted would be one UPDATE and a forgery. */
+    const stamped = und.data.filter((a) => a.undertaking_version);
+    const total = und.data.length;
+    check('007 · acceptances are real, not backfilled',
+      stamped.length === 0 || stamped.length < total,
+      stamped.length + '/' + total + ' stamped — all of them at once means a backfill');
+  }
+
   /* ── The anon key must still be able to read nothing at all ─────────── */
   const anonProbe = await fetch(URL + '/rest/v1/journey_shares?select=id&limit=1', {
     headers: { apikey: 'anon-probe-not-a-real-key' }

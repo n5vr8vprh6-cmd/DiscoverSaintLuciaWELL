@@ -39,8 +39,15 @@ grant update (
   website, socials, bio, market, photo_url
 ) on advisors to authenticated;
 
--- Sanity: this should return zero rows. If an advisor can update
--- undertaking_at, the acceptance record is self-certified and worthless.
+-- ── Reporting, NOT asserting ────────────────────────────────────────────────
+-- This block used to RAISE EXCEPTION when a sensitive column was writable. In
+-- the Supabase SQL editor the whole script is one transaction, so raising here
+-- rolled back the ALTER TABLEs above it — and the migration reported failure by
+-- silently not existing, which reads exactly like "I forgot to run it".
+--
+-- A check that can undo the change it is checking is worse than no check. So it
+-- reports, and the real assertion lives in tools/check-migration.js where a
+-- failure is a red test rather than a vanished migration.
 do $$
 declare
   leaked text;
@@ -53,7 +60,16 @@ begin
      and column_name in ('undertaking_version', 'undertaking_at', 'role', 'is_master', 'status');
 
   if leaked is not null then
-    raise exception 'SENSITIVE COLUMNS ARE ADVISOR-WRITABLE: %', leaked;
+    raise warning 'SENSITIVE COLUMNS ARE ADVISOR-WRITABLE: % — the acceptance record would be self-certified. Fix the grants before trusting it.', leaked;
+  else
+    raise notice 'Column grants verified: advisors cannot write their own undertaking, role or status.';
   end if;
-  raise notice 'Column grants verified: advisors cannot write their own undertaking, role or status.';
 end $$;
+
+-- Confirms the two columns are really here, in the same breath as the notice
+-- above, so one glance at the output answers "did this work".
+select
+  count(*) filter (where column_name = 'undertaking_version') as has_version,
+  count(*) filter (where column_name = 'undertaking_at')      as has_at
+from information_schema.columns
+where table_name = 'advisors';
