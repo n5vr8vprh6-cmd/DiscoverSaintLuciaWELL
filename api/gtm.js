@@ -316,3 +316,13 @@ module.exports = async function handler(req, res) {
     return json(res, 500, { error: 'unexpected' });
   }
 };
+
+/* Exported so tools/gtm-plan-test.js drives the REAL handlers rather than
+   hand-inserting rows and reading them back. The first version of that test
+   asserted that the database can hold two columns — which was never in doubt —
+   and would have stayed green with actionRevert regenerating from scratch.
+
+   Each action takes its advisor as a parameter, so a test supplies one
+   directly; the auth that normally produces it is covered in auth-test.js.
+   Assigned AFTER module.exports is set, or it is overwritten by it. */
+module.exports.ACTIONS = ACTIONS;

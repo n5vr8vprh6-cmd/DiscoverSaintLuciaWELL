@@ -289,69 +289,189 @@ let cleanup = [];
      'revert returns the canonical text exactly', 'the refresh gate refuses a second plan',
      'and never refuses a Foundations advisor'].forEach((n) => skipped(n, 'needs migration 012'));
   } else {
-    const { data: seed } = await db.from('advisors')
+    /* ORDER BY is not decoration. Row order is unspecified without it, so
+       `limit(2)` returns an arbitrary pair and the suite passes or fails by
+       luck — the exact flake that took an afternoon out of sweepstakes-test.
+       Status is filtered too: a paused advisor is a different fixture. */
+    const { data: seeds } = await db.from('advisors')
       .select('id, public_code, foundations_at').like('public_code', 'SEED%')
-      .eq('status', 'active').limit(1).single();
+      .eq('status', 'active').order('public_code').limit(2);
+
+    if (!seeds || seeds.length < 2) {
+      skipped('handler assertions', 'need two active SEED advisors, found ' + (seeds ? seeds.length : 0));
+      throw Object.assign(new Error('skip'), { soft: true });
+    }
+    const seed = seeds[0];
+    /* A REAL second advisor. The first version of this test used a made-up
+       UUID, so removing the ownership scope tripped a foreign-key error rather
+       than the assertion — it went red for the wrong reason, which is only one
+       step better than staying green for the wrong reason. With a real advisor
+       the test proves the thing that matters: whether somebody else's campaign
+       can be reached at all. */
+    const strangerRow = seeds[1];
 
     ok('the tables exist', true);
+    ok('two distinct fixtures', seed.id !== strangerRow.id,
+      seed.public_code + ' vs ' + strangerRow.public_code);
 
-    const { data: plan } = await db.from('gtm_plan').insert({
-      advisor_id: seed.id, rung_at_generation: 'registered',
-      skeleton: G.normaliseSkeleton(JSON.parse(G.STUB_SKELETON)), status: 'ready', model: 'test'
+    /* ── Drive the REAL handlers ────────────────────────────────────────────
+       Everything below calls the exported action functions from api/gtm.js.
+       Inserting rows by hand and reading them back would assert that Postgres
+       can store two columns, which was never the question — and would stay
+       green with actionRevert regenerating from scratch, which is the actual
+       thing worth proving. */
+    const { ACTIONS } = require('../api/gtm.js');
+    const fakeRes = () => {
+      const r = { code: 0, payload: null, headers: {} };
+      r.setHeader = (k, v) => { r.headers[k] = v; };
+      r.status = (c) => { r.code = c; return r; };
+      r.send = (s) => { r.payload = JSON.parse(s); return r; };
+      return r;
+    };
+    const call = async (action, advisor, form) => {
+      const res = fakeRes();
+      await ACTIONS[action]({ method: 'POST', url: '/api/gtm' }, res, advisor, db, form || {});
+      return res;
+    };
+
+    const before = seed.foundations_at;
+    /* Start registered and with no plans, so the gate below is measured from a
+       known state rather than from whatever the last run left behind. */
+    await db.from('advisors').update({ foundations_at: null }).eq('id', seed.id);
+    await db.from('gtm_plan').delete().eq('advisor_id', seed.id);
+    const advisor = Object.assign({}, seed, { foundations_at: null, immersion_at: null });
+
+    /* ── The plan, through actionPlan ──────────────────────────────────────*/
+    const p1 = await call('plan', advisor);
+    ok('actionPlan returns 200 and a plan', p1.code === 200 && p1.payload.ok,
+      p1.code + ' ' + JSON.stringify(p1.payload).slice(0, 120));
+    const planId = p1.payload.plan && p1.payload.plan.id;
+    if (planId) cleanup.push(planId);
+    ok('it freezes the rung it was generated under',
+      p1.payload.plan.rung_at_generation === 'registered');
+    ok('and reports which actions still need copy',
+      Array.isArray(p1.payload.pending) && p1.payload.pending.length > 0,
+      'the client cannot ask for assets it has not been told about');
+
+    /* ── THE GATE, both halves, through the real handler ───────────────────*/
+    const p2 = await call('plan', advisor);
+    ok('a registered advisor is REFUSED a second plan',
+      p2.code === 403 && p2.payload.error === 'refresh_locked',
+      p2.code + ' ' + JSON.stringify(p2.payload).slice(0, 80));
+
+    const promoted = Object.assign({}, advisor, { foundations_at: new Date().toISOString() });
+    const p3 = await call('plan', promoted);
+    ok('and a Foundations advisor is NOT',
+      p3.code === 200 && p3.payload.ok,
+      'both halves, or the gate is indistinguishable from one that never fires');
+    if (p3.payload.plan) cleanup.push(p3.payload.plan.id);
+    /* Guarded. An unguarded read here crashes the whole run when the assertion
+       above fails, and a crash reports less than a failure does — it hides
+       every assertion that would have run after it. */
+    ok('their plan records the higher rung',
+      Boolean(p3.payload.plan) && p3.payload.plan.rung_at_generation === 'foundations',
+      p3.payload.plan ? p3.payload.plan.rung_at_generation : 'no plan returned');
+
+    /* ── An asset, through actionAsset ─────────────────────────────────────*/
+    const a1 = await call('asset', advisor, { plan_id: planId, week: 1, position: 0 });
+    ok('actionAsset generates and stores one', a1.code === 200 && a1.payload.ok,
+      a1.code + ' ' + JSON.stringify(a1.payload).slice(0, 120));
+    const assetId = a1.payload.asset && a1.payload.asset.id;
+    const generated = a1.payload.asset && a1.payload.asset.body;
+
+    ok('the link token is substituted on the way OUT',
+      /\/well\//.test(generated) && !/\{\{WELL_LINK\}\}/.test(generated),
+      'the advisor must get a real link, not a token');
+    const { data: stored } = await db.from('gtm_asset').select('body').eq('id', assetId).single();
+    ok('but the STORED text keeps the token',
+      /\{\{WELL_LINK\}\}/.test(stored.body),
+      'so a changed public_code does not leave a month of copy pointing nowhere');
+
+    ok('asking again returns the cached asset rather than paying twice',
+      (await call('asset', advisor, { plan_id: planId, week: 1, position: 0 })).payload.cached === true,
+      'a client retrying a timeout is the normal case, not the odd one');
+
+    /* Somebody else's plan id must not resolve, even with a valid session. */
+    const { data: other } = await db.from('gtm_plan').insert({
+      advisor_id: seed.id, rung_at_generation: 'registered', status: 'ready',
+      skeleton: G.normaliseSkeleton(JSON.parse(G.STUB_SKELETON))
     }).select('id').single();
-    cleanup.push(plan.id);
+    cleanup.push(other.id);
+    const stranger = Object.assign({}, strangerRow, { foundations_at: null, immersion_at: null });
+    const intrusion = await call('asset', stranger, { plan_id: other.id, week: 1, position: 0 });
+    ok('a real advisor cannot reach a plan belonging to someone else',
+      intrusion.code === 404,
+      'scoped in the query itself, so a guessed id returns nothing — got ' + intrusion.code);
+    /* The consequence, stated directly: nothing was written under their name. */
+    const { count: leaked } = await db.from('gtm_asset')
+      .select('id', { count: 'exact', head: true }).eq('advisor_id', stranger.id);
+    ok('and nothing was written under their id', (leaked || 0) === 0, String(leaked));
 
-    /* Three assets: two good, one failed. The question is whether the failure
-       takes anything with it. */
-    await db.from('gtm_asset').insert([
-      { plan_id: plan.id, advisor_id: seed.id, channel: 'instagram', week: 1, position: 0,
-        body: 'First caption.', canonical_body: 'First caption.', status: 'ready' },
-      { plan_id: plan.id, advisor_id: seed.id, channel: 'direct', week: 1, position: 1,
-        status: 'failed', error: 'timeout' },
-      { plan_id: plan.id, advisor_id: seed.id, channel: 'newsletter', week: 2, position: 0,
-        body: 'An email.', canonical_body: 'An email.', status: 'ready' }
-    ]);
+    /* ── FAILURE ISOLATION, by causing a real failure ──────────────────────*/
+    const savedStubMode = process.env.OPENAI_STUB;
+    const savedRealKey = process.env.OPENAI_API_KEY;
+    delete process.env.OPENAI_STUB;
+    delete process.env.OPENAI_API_KEY;
+    const bad = await call('asset', advisor, { plan_id: planId, week: 1, position: 1 });
+    if (savedStubMode) process.env.OPENAI_STUB = savedStubMode;
+    process.env.OPENAI_API_KEY = savedRealKey;
 
-    /* Counted from the database, not from the code under test. */
-    const { data: survivors } = await db.from('gtm_asset')
-      .select('status').eq('plan_id', plan.id);
-    ok('a failed asset leaves the others intact',
-      survivors.filter((a) => a.status === 'ready').length === 2 &&
-      survivors.filter((a) => a.status === 'failed').length === 1,
-      JSON.stringify(survivors.map((s) => s.status)));
+    ok('a failing asset returns an error, not a crash',
+      bad.code === 502 && bad.payload.error === 'not_configured', bad.code + '');
 
-    const { data: stillReady } = await db.from('gtm_plan')
-      .select('status').eq('id', plan.id).single();
-    ok('and the plan is still ready', stillReady.status === 'ready',
+    /* Counted from the database, not from the handler that just claimed it. */
+    const { data: after } = await db.from('gtm_asset').select('status, week, position').eq('plan_id', planId);
+    ok('it is recorded as failed',
+      after.some((a) => a.week === 1 && a.position === 1 && a.status === 'failed'));
+    ok('the earlier asset is UNTOUCHED',
+      after.some((a) => a.week === 1 && a.position === 0 && a.status === 'ready'),
+      'one caption failing must not take the others with it');
+    const { data: planAfter } = await db.from('gtm_plan').select('status').eq('id', planId).single();
+    ok('and the plan is still ready', planAfter.status === 'ready',
       'one caption failing must not condemn the month');
 
-    /* Revert: edit, revert, compare to the ORIGINAL string, not to whatever
-       canonical_body currently holds — which is the thing under test. */
-    const original = 'First caption.';
-    const { data: edited } = await db.from('gtm_asset')
-      .update({ body: 'I rewrote this and now I regret it.' })
-      .eq('plan_id', plan.id).eq('week', 1).eq('position', 0).select('id, body, canonical_body').single();
-    ok('an edit changes body', edited.body !== original);
-    ok('and does NOT touch canonical_body', edited.canonical_body === original,
-      'if an edit overwrites the canonical text there is nothing to revert to');
+    /* ── EDIT then REVERT, through the real handlers ───────────────────────*/
+    const e1 = await call('edit', advisor, { asset_id: assetId, body: 'I rewrote this and now I regret it.' });
+    ok('actionEdit stores the advisor\'s own words', e1.code === 200 &&
+      /now I regret it/.test(e1.payload.asset.body));
+    ok('and marks it as edited', e1.payload.asset.edited === true);
 
-    const { data: reverted } = await db.from('gtm_asset')
-      .update({ body: edited.canonical_body }).eq('id', edited.id).select('body').single();
-    ok('revert returns the canonical text EXACTLY', reverted.body === original,
-      'a regeneration would return different text, which is not a revert');
+    const { data: afterEdit } = await db.from('gtm_asset')
+      .select('body, canonical_body').eq('id', assetId).single();
+    ok('the edit does NOT touch canonical_body',
+      afterEdit.canonical_body === stored.body,
+      'if an edit overwrites the canonical text there is nothing left to revert to');
 
-    /* The gate, both halves. */
-    const before = seed.foundations_at;
-    await db.from('advisors').update({ foundations_at: null }).eq('id', seed.id);
-    const { data: reg } = await db.from('advisors').select('foundations_at, immersion_at').eq('id', seed.id).single();
-    const { mayRefresh } = require('../api/_lib/gtm.js');
-    ok('a registered advisor with a plan may not refresh', mayRefresh(reg) === false);
+    const r1 = await call('revert', advisor, { asset_id: assetId });
+    ok('actionRevert returns 200', r1.code === 200 && r1.payload.ok);
+    const { data: afterRevert } = await db.from('gtm_asset').select('body').eq('id', assetId).single();
+    ok('and restores the canonical text EXACTLY, byte for byte',
+      afterRevert.body === stored.body,
+      'a regeneration would return different text, which is not a revert at all');
+    ok('the reverted asset no longer reads as edited', r1.payload.asset.edited === false);
 
-    await db.from('advisors').update({ foundations_at: new Date().toISOString() }).eq('id', seed.id);
-    const { data: fnd } = await db.from('advisors').select('foundations_at, immersion_at').eq('id', seed.id).single();
-    ok('and a Foundations advisor may — repeatedly', mayRefresh(fnd) === true,
-      'both halves, or the gate is indistinguishable from a broken one');
+    /* A stranger must not be able to revert somebody else's asset. */
+    ok('a stranger cannot revert an asset they do not own',
+      (await call('revert', stranger, { asset_id: assetId })).code === 404);
 
+    /* The claims checker runs on EDITED text, not just generated text — the
+       one place an advisor can introduce a health claim by hand. */
+    const bad2 = await call('edit', advisor, {
+      asset_id: assetId, body: 'Ten days in Saint Lucia reduces burnout and lowers your cortisol.'
+    });
+    ok('an edit containing a health claim is flagged high',
+      bad2.payload.asset.severity === 'high', String(bad2.payload.asset.severity));
+    ok('and is not copyable', bad2.payload.asset.copyable === false,
+      'the checker must run on what the advisor typed, not only on what we generated');
+
+    const good = await call('edit', advisor, {
+      asset_id: assetId, body: 'Six villages, one island. Unhurried days if you want them.'
+    });
+    ok('while safe copy the advisor wrote is left alone',
+      good.payload.asset.severity !== 'high' && good.payload.asset.copyable === true,
+      'a checker that cries wolf teaches advisors to click past the one that mattered');
+
+    await call('revert', advisor, { asset_id: assetId });
     await db.from('advisors').update({ foundations_at: before }).eq('id', seed.id);
   }
 
@@ -362,6 +482,13 @@ let cleanup = [];
   process.exit(fail ? 1 : 0);
 })().catch(async (e) => {
   for (const id of cleanup) await db.from('gtm_plan').delete().eq('id', id);
+  /* A missing fixture is a skip, not a crash — the suite still reports what it
+     did manage to prove. Anything else is a real crash and says so loudly. */
+  if (e && e.soft) {
+    console.log('\n  ' + '─'.repeat(60));
+    console.log(`  ${pass} passed, ${fail} failed, ${skip} skipped\n`);
+    process.exit(fail ? 1 : 0);
+  }
   console.error('\n  CRASHED — ' + (e && e.message || e) + '\n');
   process.exit(1);
 });

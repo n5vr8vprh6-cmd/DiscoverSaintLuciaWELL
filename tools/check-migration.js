@@ -196,6 +196,28 @@ async function get(q) {
       ' timestamp(s) shared by several advisors');
   }
 
+  /* ── 011 / 012 · the campaign tables ───────────────────────────────────── */
+  const prof = await get('gtm_profile?select=id&limit=1');
+  check('011 · gtm_profile exists', !prof.error,
+    prof.error ? 'not applied — /hub/campaign cannot save an intake' : '');
+
+  const gplan = await get('gtm_plan?select=id&limit=1');
+  if (gplan.error) {
+    check('012 · gtm_plan exists', false, 'not applied — no plan can be generated');
+    check('012 · gtm_asset carries canonical_body', false, 'needs 012');
+  } else {
+    check('012 · gtm_plan exists', true);
+
+    /* canonical_body is what makes revert a column read. Without the column the
+       only way "back" is a regeneration, which returns different text — so an
+       advisor who reverted would land on copy they had never seen. Asked for by
+       name rather than with select=*, because a missing column is exactly what
+       this is looking for and select=* would happily return rows without it. */
+    const canon = await get('gtm_asset?select=id,canonical_body,severity&limit=1');
+    check('012 · gtm_asset carries canonical_body', !canon.error,
+      canon.error ? 'the column is missing — revert would have to regenerate' : '');
+  }
+
   /* ── The anon key must still be able to read nothing at all ─────────── */
   const anonProbe = await fetch(URL + '/rest/v1/journey_shares?select=id&limit=1', {
     headers: { apikey: 'anon-probe-not-a-real-key' }
