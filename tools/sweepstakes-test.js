@@ -91,10 +91,19 @@ async function cleanup() {
   }
 
   try {
+    /* ACTIVE, and ordered. Without the status filter this picked whichever two
+       rows Postgres returned first, which is unspecified without an ORDER BY —
+       so it intermittently chose a PENDING advisor, activeAdvisor() returned
+       null in api/share.js, and the end-to-end entry silently never happened.
+       It passed for days on the luck of row ordering. A test that depends on
+       unspecified ordering is worse than no test, because it teaches you to
+       distrust a real failure. */
     const { data: advisors } = await db.from('advisors')
-      .select('id, public_code').like('public_code', 'SEED%').limit(2);
+      .select('id, public_code').like('public_code', 'SEED%')
+      .eq('status', 'active').order('public_code').limit(2);
     if (!advisors || advisors.length < 2) {
-      skipped('everything', 'needs two seeded advisors — run tools/seed-advisors.js');
+      skipped('everything',
+        'needs two ACTIVE seeded advisors — approve two, or run tools/seed-advisors.js');
       throw new Error('__skip__');
     }
     A = advisors[0]; B = advisors[1];
