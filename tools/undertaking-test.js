@@ -136,12 +136,28 @@ const skipped = (n, w) => { skip++; console.log('  – ' + n + '  (' + w + ')');
   } else {
     ok('the columns exist', true);
 
-    /* THE ONE THAT MATTERS MOST. Stamping the eleven existing advisors as
-       having accepted would be one UPDATE and a lie: they have never seen the
-       document. They are gated at next sign-in instead. */
-    const stamped = advisors.filter((a) => a.undertaking_version);
-    ok('existing advisors were NOT backfilled', stamped.length === 0,
-      stamped.length + ' advisors are recorded as having accepted a document they never saw');
+    /* THE ONE THAT MATTERS MOST, rewritten after it failed for the right
+       reason: it demanded that NOBODY had accepted, which was true the day it
+       was written and false the moment Duncan signed in and accepted — the
+       feature working as designed turned the check red.
+
+       The real invariant is not "nobody accepted", it is "nobody was stamped
+       in bulk". A backfill is one UPDATE, so it writes the SAME timestamp to
+       every row it touches; genuine acceptances happen one person at a time,
+       seconds or weeks apart. Two identical undertaking_at values is the
+       signature of the thing this guards against, and it stays meaningful for
+       as long as the table exists. */
+    const stamped = advisors.filter((a) => a.undertaking_at);
+    const bySecond = stamped.reduce((acc, a) => {
+      const k = new Date(a.undertaking_at).toISOString().slice(0, 19);
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+    const collisions = Object.keys(bySecond).filter((k) => bySecond[k] > 1);
+    ok('acceptances were made one at a time, not backfilled in bulk',
+      collisions.length === 0,
+      collisions.length + ' timestamp(s) shared by several advisors — the signature of one UPDATE');
+    console.log('    (' + stamped.length + ' of ' + advisors.length + ' have accepted so far)');
 
     /* Round-trip on a seeded fixture, then put it back. */
     const seed = advisors.find((a) => /^SEED/.test(a.public_code || ''));

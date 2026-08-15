@@ -25,6 +25,11 @@ const {
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
+/* How many finished draws stay in view before the rest go behind a disclosure.
+   Four is enough to see the recent ones at a glance without the page turning
+   into an archive — an advisor runs a few campaigns a year, not a few a week. */
+const CLOSED_SHOWN = 4;
+
 module.exports = async function handler(req, res) {
   const advisor = await requireAdvisor(req, res, '/hub/sweepstakes');
   if (!advisor) return;
@@ -49,6 +54,20 @@ module.exports = async function handler(req, res) {
   const draws = await listFor(advisor.id);
   const code = advisor.public_code || advisor.slug;
 
+  /* An open draw and a closed one are different objects with different jobs.
+     You open this page to copy a live link, or to reach a finished draw's
+     entrants — never to press Copy on a campaign that is over. So they are
+     rendered differently rather than sorted into one uniform list. */
+  const open = draws.filter((d) => d.status === OPEN);
+  const closed = draws.filter((d) => d.status !== OPEN);
+  /* Collapse only when it earns its place. Hiding ONE row behind a disclosure
+     costs more vertical space than the row it saves and makes somebody click to
+     see nothing much — so the archive appears only once at least two would go
+     into it. */
+  const archive = closed.length > CLOSED_SHOWN + 1;
+  const recent = archive ? closed.slice(0, CLOSED_SHOWN) : closed;
+  const older = archive ? closed.slice(CLOSED_SHOWN) : [];
+
   const body = `<div class="hub-main">
   <div class="wrap">
 
@@ -58,32 +77,36 @@ module.exports = async function handler(req, res) {
     ${done ? `<p class="hub-flash${/failed|required|has_entries|not_found|readonly/.test(done) ? ' hub-flash--bad' : ''}">${
       esc(DONE_MESSAGE[done] || done)}</p>` : ''}
 
-    <section class="hub-card">
-      <h2>Start a draw</h2>
-      <p class="hub-hint">Give it a name only you will see, and you get a link. Anyone who
-        completes the Journey Finder through that link and shares it with you is recorded as an
-        entrant, and told so.</p>
-      <form method="POST" class="hub-search">
-        <input type="hidden" name="action" value="create">
-        <label class="hub-field hub-field--wide">
-          <span class="hub-field-label">What are you calling it?</span>
-          <input name="name" maxlength="${NAME_MAX}" autocomplete="off"
-                 placeholder="Spring giveaway, October event…" required>
-        </label>
-        <button class="btn btn--gold btn--sm" type="submit">Create the link</button>
-      </form>
-      <p class="hub-hint"><strong>The draw is yours.</strong> Its rules, who may enter, the prize
-        and picking the winner are all yours to set and to run — Discover Saint Lucia WELL is not
-        the sponsor and takes no part in it. Entrants are told that in the words they agree to
-        when they share.</p>
-    </section>
-
-    ${draws.length
-      ? draws.map((d) => card(d, code)).join('')
-      : emptyState('No draws yet.',
+    ${open.length
+      ? open.map((d) => card(d, code)).join('')
+      : (closed.length ? '' : emptyState('No draws yet.',
           'Create one when you are running a promotion. Your ordinary WELL link keeps working ' +
           'exactly as it does now.',
-          { label: 'Your WELL link', href: '/hub#well-link' })}
+          { label: 'Your WELL link', href: '/hub#well-link' }))}
+
+    ${!open.length && closed.length
+      ? `<section class="hub-card"><p class="hub-hint">Nothing running at the moment. Your
+          finished draws are below, and your ordinary WELL link keeps working as it always
+          does.</p></section>`
+      : ''}
+
+    ${/* Creating is a deliberate act. With draws on the page it must not sit
+          above the link somebody came to copy — but with none, it IS the page,
+          so it stays open. */''}
+    ${createForm(draws.length > 0)}
+
+    ${closed.length ? `
+    <section class="hub-section">
+      <h2>Finished draws</h2>
+      <ul class="hub-journeys">${recent.map(row).join('')}</ul>
+      ${older.length ? `
+      <details class="hub-archive">
+        <summary>Show all ${closed.length} finished draws</summary>
+        <ul class="hub-journeys">${older.map(row).join('')}</ul>
+      </details>` : ''}
+      <p class="hub-hint">Their links still work and still credit you — they simply stop counting
+        entries. Open one to export its entrants.</p>
+    </section>` : ''}
 
   </div>
 </div>`;
@@ -142,6 +165,51 @@ function card(d, advisorCode) {
       </form>
     </details>
   </section>`;
+}
+
+/* ── A finished draw ──────────────────────────────────────────────────────
+   Deliberately NOT a card. Copy and QR are meaningless on a campaign that is
+   over, and a row of controls nobody will press is what buried the live draw
+   in the first place. One line, one destination: the entrants.
+
+   Built from .hub-journey, the same list the Journeys screen uses, so it needs
+   no new CSS and reads as something already familiar. */
+function row(d) {
+  return `<li class="hub-journey">
+    <a href="/hub/sweepstakes/${esc(d.id)}">
+      <span class="hub-journey-name">${esc(d.name)}</span>
+      <span class="hub-journey-meta">
+        <span>${d.entries} ${d.entries === 1 ? 'entrant' : 'entrants'}</span>
+        <span>Closed ${esc(since(d.closed_at || d.created_at))}</span>
+      </span>
+    </a>
+  </li>`;
+}
+
+/* Open when there is nothing else on the page, because then it IS the page.
+   Collapsed once draws exist, so the link somebody came to copy is what they
+   see first. */
+function createForm(collapse) {
+  const inner = `<p class="hub-hint">Give it a name only you will see, and you get a link. Anyone
+        who completes the Journey Finder through that link and shares it with you is recorded as
+        an entrant, and told so.</p>
+      <form method="POST" class="hub-search">
+        <input type="hidden" name="action" value="create">
+        <label class="hub-field hub-field--wide">
+          <span class="hub-field-label">What are you calling it?</span>
+          <input name="name" maxlength="${NAME_MAX}" autocomplete="off"
+                 placeholder="Spring giveaway, October event…" required>
+        </label>
+        <button class="btn btn--gold btn--sm" type="submit">Create the link</button>
+      </form>
+      <p class="hub-hint"><strong>The draw is yours.</strong> Its rules, who may enter, the prize
+        and picking the winner are all yours to set and to run — Discover Saint Lucia WELL is not
+        the sponsor and takes no part in it. Entrants are told that in the words they agree to
+        when they share.</p>`;
+
+  return collapse
+    ? `<details class="hub-card hub-create"><summary>Start another draw</summary>${inner}</details>`
+    : `<section class="hub-card"><h2>Start a draw</h2>${inner}</section>`;
 }
 
 const form = (id, action, label) => `<form method="POST" class="hub-action">

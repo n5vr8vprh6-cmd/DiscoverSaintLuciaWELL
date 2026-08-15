@@ -95,7 +95,25 @@ async function listFor(advisorId) {
     return acc;
   }, {});
 
-  return (draws.data || []).map((d) => Object.assign({}, d, { entries: tally[d.id] || 0 }));
+  /* ── Open first, then most-recently-closed ───────────────────────────────
+     Sorted here rather than in the query because "open before closed, and then
+     by a DIFFERENT date column" is not one ORDER BY, and the rows are already
+     in hand — an advisor has a handful of campaigns, not thousands.
+
+     Open draws are what the page is for: you came to copy a link. Closed ones
+     are an archive, and the useful order for an archive is what finished most
+     recently. Falling back to created_at guards a row closed before closed_at
+     existed, which would otherwise sort as if it were the oldest. */
+  const when = (d) => new Date(d.closed_at || d.created_at).getTime();
+
+  return (draws.data || [])
+    .map((d) => Object.assign({}, d, { entries: tally[d.id] || 0 }))
+    .sort((a, b) => {
+      const aOpen = a.status === OPEN, bOpen = b.status === OPEN;
+      if (aOpen !== bOpen) return aOpen ? -1 : 1;
+      if (aOpen) return new Date(b.created_at) - new Date(a.created_at);
+      return when(b) - when(a);
+    });
 }
 
 /* One draw, scoped. Returns null rather than throwing when it belongs to

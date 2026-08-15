@@ -170,6 +170,42 @@ async function cleanup() {
     const mine = listed.find((d) => d.id === draw.id);
     ok('the list counts entries', mine && mine.entries === 2, mine ? String(mine.entries) : 'missing');
 
+    /* ── Ordering ─────────────────────────────────────────────────────────
+       The page's whole job is that a live draw is the first thing you see.
+       Sorted in listFor() rather than the query, because "open before closed,
+       then by a DIFFERENT date column" is not one ORDER BY. */
+    console.log('\n  Order on the page');
+    const o1 = await S.create(A.id, 'Order fixture ONE');   made.push(o1.sweepstakes.id);
+    const o2 = await S.create(A.id, 'Order fixture TWO');   made.push(o2.sweepstakes.id);
+    const o3 = await S.create(A.id, 'Order fixture THREE'); made.push(o3.sweepstakes.id);
+
+    /* CLOSE THE NEWEST ONE FIRST, so close order and creation order genuinely
+       disagree. The first version of this closed ONE then THREE, which gives
+       THREE → ONE under BOTH sorts — it passed while the code sorted closed
+       draws by created_at, which is the exact bug it claimed to catch.
+
+       Closing THREE first and ONE second makes them differ:
+         by closed_at desc  → ONE, THREE   (what we want)
+         by created_at desc → THREE, ONE   (the bug)
+       Verified by sabotage: swapping the comparator now turns this red. */
+    await S.setStatus(A.id, o3.sweepstakes.id, 'closed');
+    await new Promise((r) => setTimeout(r, 1100));
+    await S.setStatus(A.id, o1.sweepstakes.id, 'closed');
+
+    const ordered = (await S.listFor(A.id)).filter((d) => /^Order fixture/.test(d.name));
+    const names = ordered.map((d) => d.name.replace('Order fixture ', ''));
+    ok('open draws come first', names[0] === 'TWO', names.join(' → '));
+    ok('then the most recently CLOSED', names[1] === 'ONE' && names[2] === 'THREE',
+      names.join(' → ') + ' — expected TWO → ONE → THREE (close order, not creation order)');
+
+    /* Proven able to fail: reopen the last-closed one and it must jump to the
+       top. Without this, a passing order could be creation order by luck. */
+    await S.setStatus(A.id, o1.sweepstakes.id, 'open');
+    const re = (await S.listFor(A.id)).filter((d) => /^Order fixture/.test(d.name))
+      .map((d) => d.name.replace('Order fixture ', ''));
+    ok('reopening moves it back among the open ones',
+      re.indexOf('ONE') < re.indexOf('THREE'), re.join(' → '));
+
     /* ── The consent record ───────────────────────────────────────────────── */
     console.log('\n  What the entrant agreed to');
     const { data: rec } = await db.from('journey_shares')

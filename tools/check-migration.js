@@ -178,13 +178,22 @@ async function get(q) {
   } else {
     check('007 · undertaking columns exist', true);
 
-    /* THE ONE THAT MUST NEVER FLIP. Stamping existing advisors as having
-       accepted would be one UPDATE and a forgery. */
-    const stamped = und.rows.filter((a) => a.undertaking_version);
-    const total = und.rows.length;
-    check('007 · acceptances are real, not backfilled',
-      stamped.length === 0 || stamped.length < total,
-      stamped.length + '/' + total + ' stamped — all of them at once means a backfill');
+    /* THE ONE THAT MUST NEVER FLIP. A backfill is one UPDATE, so it writes the
+       same timestamp to every row it touches; genuine acceptances arrive one
+       person at a time. Checking for shared timestamps stays meaningful once
+       every advisor has legitimately accepted, which a count-based check does
+       not — see tools/undertaking-test.js, where the count version went red the
+       day the feature was first used properly. */
+    const stamped = und.rows.filter((a) => a.undertaking_at);
+    const seen = {};
+    stamped.forEach((a) => {
+      const k = new Date(a.undertaking_at).toISOString().slice(0, 19);
+      seen[k] = (seen[k] || 0) + 1;
+    });
+    const shared = Object.keys(seen).filter((k) => seen[k] > 1);
+    check('007 · acceptances are real, not backfilled', shared.length === 0,
+      stamped.length + '/' + und.rows.length + ' accepted; ' + shared.length +
+      ' timestamp(s) shared by several advisors');
   }
 
   /* ── The anon key must still be able to read nothing at all ─────────── */

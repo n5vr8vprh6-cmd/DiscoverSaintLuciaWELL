@@ -604,6 +604,33 @@ body {
 
 .hub-funnel--tight { margin: 1rem 0 1.25rem; }
 
+/* A finished draw is a row, not a card — see the row() comment in the screen.
+   The list itself is .hub-journeys, reused wholesale from the Journeys screen. */
+.hub-archive { margin-top: 0.25rem; }
+.hub-archive summary {
+  cursor: pointer;
+  padding: 0.75rem 0;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  border-top: 1px solid var(--hairline-l);
+}
+.hub-archive summary:hover { color: var(--ivory-ink); }
+
+/* The create form once draws exist: a card that happens to be collapsed, so it
+   sits in the same rhythm as the cards above it rather than reading as a
+   different kind of thing. */
+.hub-create > summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+}
+.hub-create > summary:hover { color: var(--ivory-ink); }
+.hub-create[open] > summary { margin-bottom: 1.1rem; }
+
 @media (max-width: 620px) {
   .hub-sweeps-head { flex-direction: column; gap: 0.5rem; }
   .hub-link-row .btn { flex: 1 1 auto; justify-content: center; }
