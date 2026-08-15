@@ -130,6 +130,10 @@
       "destination": "/api/hub?screen=adminAudit"
     },
     {
+      "source": "/hub/admin/subject",
+      "destination": "/api/hub?screen=adminSubject"
+    },
+    {
       "source": "/hub/viewas/exit",
       "destination": "/api/hub?screen=viewasExit"
     },

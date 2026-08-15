@@ -14,9 +14,9 @@
 'use strict';
 
 const { requireAdmin } = require('../auth.js');
-const { hubPage, esc, pageHead, emptyState, STAGE_LABEL, STAGES } = require('../hub-render.js');
+const { hubPage, esc, pageHead, emptyState, since, STAGE_LABEL, STAGES } = require('../hub-render.js');
 const {
-  allAdvisors, funnelAll, pipelineAll, auditLog, STALE_HOURS, ACTION_LABEL
+  allAdvisors, funnelAll, pipelineAll, auditLog, retentionStatus, STALE_HOURS, ACTION_LABEL
 } = require('../admin-data.js');
 
 /* Below this, a percentage is a story about three people. */
@@ -26,8 +26,8 @@ module.exports = async function handler(req, res) {
   const admin = await requireAdmin(req, res, '/hub/admin');
   if (!admin) return;
 
-  const [advisors, funnel, pipeline, recent] = await Promise.all([
-    allAdvisors(), funnelAll(), pipelineAll(), auditLog({ limit: 6 })
+  const [advisors, funnel, pipeline, recent, retention] = await Promise.all([
+    allAdvisors(), funnelAll(), pipelineAll(), auditLog({ limit: 6 }), retentionStatus()
   ]);
 
   const pending = advisors.filter((a) => a.status === 'pending');
@@ -101,6 +101,30 @@ module.exports = async function handler(req, res) {
         ? `${Math.round((funnel.completions / funnel.visits) * 100)}% of visits finish the Finder, and ` +
           `${funnel.completions ? Math.round((funnel.shares / funnel.completions) * 100) : 0}% of those are shared.`
         : `Not enough traffic yet to quote a rate honestly — percentages need about ${RATE_THRESHOLD} visits before they mean anything.`}</p>
+    </section>
+
+    <section class="hub-section">
+      <h2>Data we hold</h2>
+      <p class="hub-hint">Somebody writes in asking what you have about them, or asks you to
+        delete it. The Privacy Policy promises an answer within 30 days.</p>
+      <p class="hub-more"><a href="/hub/admin/subject">Answer a privacy request →</a></p>
+
+      ${retention.months === null ? `
+      <p class="hub-hint hub-hint--bad">Retention is not configured — migration 006 has not been
+        applied, so nothing expires and §12 of the policy is not true yet.</p>`
+      : `
+      <p class="hub-hint${retention.overdue ? ' hub-hint--bad' : ''}">
+        Journeys are kept ${retention.months} months, then deleted automatically.
+        ${retention.oldest
+          ? `The oldest is <strong>${Math.floor(retention.oldestDays / 30.44)} months</strong> old.`
+          : 'There are none held.'}
+        ${retention.overdue
+          ? ' <strong>That is past the limit, so the purge is not running.</strong> Check the pg_cron job — until it is fixed, the retention promise is words.'
+          : ''}
+        ${!retention.scheduled
+          ? ' <strong>No purge has ever run.</strong> Expected right after the migration; a problem if it persists past tomorrow.'
+          : ` Last swept ${esc(since(retention.lastRun))}.`}
+      </p>`}
     </section>
 
     <section class="hub-section">

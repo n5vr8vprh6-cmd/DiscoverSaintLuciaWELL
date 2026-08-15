@@ -43,6 +43,7 @@ const SCREENS = {
   adminAudit:     () => require('../_lib/hub-screens/admin-audit.js'),
   adminNew:       () => require('../_lib/hub-screens/admin-new.js'),
   adminImport:    () => require('../_lib/hub-screens/admin-import.js'),
+  adminSubject:   () => require('../_lib/hub-screens/admin-subject.js'),
   /* Unguarded on purpose — see the file. */
   viewasExit:     () => require('../_lib/hub-screens/viewas-exit.js')
 };

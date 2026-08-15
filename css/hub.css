@@ -564,6 +564,51 @@ body {
   .hub-stat-n { font-size: 1.8rem; }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   PRIVACY REQUESTS
+   Three small additions for /hub/admin/subject. The screen is otherwise built
+   from cards, fields and the danger zone that already exist — a rights request
+   is administrative work like any other, and giving it its own visual language
+   would suggest it is exceptional rather than routine.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* A warning that is a sentence rather than a banner. Used where something the
+   policy promises has stopped being true — a dead retention job, an incomplete
+   erasure — so it must read as unmistakably wrong without shouting on a screen
+   that is fine 364 days a year. */
+.hub-hint--bad {
+  color: #8A3B23;
+  border-left: 2px solid rgba(138, 59, 35, 0.4);
+  padding-left: 0.7rem;
+}
+
+.hub-search { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.75rem; }
+.hub-search .hub-field { flex: 1 1 22rem; margin: 0; }
+.hub-search .btn { flex: 0 0 auto; }
+
+/* The consent wording, collapsed by default. It is the most important thing on
+   the screen when somebody asks "what did I agree to" and clutter the rest of
+   the time, which is exactly what <details> is for. */
+.hub-consent { margin-top: 1rem; font-size: var(--fs-small); }
+.hub-consent summary {
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0.35rem 0;
+}
+.hub-consent summary:hover { color: var(--ivory-ink); }
+.hub-consent p {
+  margin: 0.5rem 0 0;
+  padding: 0.85rem 1rem;
+  background: var(--hairline-l);
+  border-left: 2px solid var(--gold);
+  color: var(--ivory-ink);
+  line-height: 1.6;
+}
+
+@media (max-width: 620px) {
+  .hub-search .btn { width: 100%; justify-content: center; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

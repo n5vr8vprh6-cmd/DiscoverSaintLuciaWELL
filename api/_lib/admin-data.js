@@ -132,6 +132,59 @@ async function pipelineAll() {
   };
 }
 
+/* ── Is the retention policy actually running? ────────────────────────────
+   §12 promises Journeys stop being kept after RETENTION_MONTHS. The way that
+   promise breaks is not an error — it is a scheduled job that quietly stops,
+   after which nothing alerts and every test still passes.
+
+   So this returns two independent signals, and they fail differently. `lastRun`
+   goes stale if pg_cron dies. `oldestDays` climbs past the limit if the purge
+   stops working for any reason at all, including one nobody has thought of.
+   The dashboard shows the second in plain type: a number that grows past 730 on
+   a screen Duncan opens anyway is an assertion that can fail in public.
+
+   The number lives in the DATABASE (retention_months(), 006-retention.sql) and
+   is read from there rather than repeated here, so the figure on the dashboard
+   cannot drift away from the one the purge actually uses. */
+async function retentionStatus() {
+  const supabase = db();
+  const nil = { months: null, limitDays: null, oldest: null, oldestDays: 0, overdue: false, lastRun: null, scheduled: false };
+  if (!supabase) return nil;
+
+  const [oldest, run, months] = await Promise.all([
+    /* Booked Journeys are excluded from the purge, so they must be excluded
+       from the measurement too — otherwise a legitimately-kept transaction
+       record ages past the limit and reports a failure that is not one. */
+    supabase.from('journey_shares').select('created_at, stage')
+      .neq('stage', 'booked').order('created_at', { ascending: true }).limit(1),
+    supabase.from('admin_audit').select('created_at, detail')
+      .eq('action', 'retention_purge').order('created_at', { ascending: false }).limit(1),
+    supabase.rpc('retention_months', { what: 'journey_shares' })
+  ]);
+
+  /* Migration 006 not applied yet: say so rather than reporting a healthy zero. */
+  if (months.error) return nil;
+
+  const m = months.data;
+  const limitDays = Math.round(m * 30.44);
+  const row = (oldest.data || [])[0];
+  const oldestDays = row ? Math.floor((Date.now() - new Date(row.created_at)) / 864e5) : 0;
+  const last = (run.data || [])[0] || null;
+
+  return {
+    months: m,
+    limitDays,
+    oldest: row ? row.created_at : null,
+    oldestDays,
+    overdue: oldestDays > limitDays,
+    lastRun: last ? last.created_at : null,
+    /* A purge that has never run at all is the state right after the migration
+       lands, and also the state if scheduling silently failed. They look the
+       same from here, which is why the migration prints a notice. */
+    scheduled: !!last
+  };
+}
+
 async function auditLog({ limit = 100, advisorId } = {}) {
   const supabase = db();
   if (!supabase) return [];
@@ -247,10 +300,19 @@ const ACTION_LABEL = {
      are different acts and only the second discloses anything. */
   view_as_start:  'Started viewing their Hub',
   view_as_reveal: 'Revealed a consumer’s details',
-  view_as_end:    'Stopped viewing their Hub'
+  view_as_end:    'Stopped viewing their Hub',
+  /* Privacy requests. These three carry NO name and NO email — only a
+     reproducible key, see api/_lib/subject-data.js. An erasure record that
+     preserves the address it erased is a copy of the thing it destroyed. */
+  subject_export:  'Exported what we hold about someone',
+  subject_correct: 'Corrected someone’s details on request',
+  subject_erase:   'Erased everything held about someone',
+  /* Written by the database itself, on every run, including the runs that
+     removed nothing — see db/migrations/006-retention.sql. */
+  retention_purge: 'Retention sweep'
 };
 
 module.exports = {
-  allAdvisors, advisorById, funnelAll, pipelineAll, auditLog,
+  allAdvisors, advisorById, funnelAll, pipelineAll, auditLog, retentionStatus,
   audit, updateAdvisor, STALE_HOURS, ACTION_LABEL
 };
