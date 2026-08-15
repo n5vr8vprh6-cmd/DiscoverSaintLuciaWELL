@@ -89,7 +89,8 @@ function row(a) {
     <a href="/hub/admin/advisors/${esc(a.id)}">
       <span class="hub-journey-name">${esc(name)}${
         a.role === 'admin' ? ' <span class="hub-tag" data-tag="admin">Admin</span>' : ''}${
-        a.isTest ? ' <span class="hub-tag" data-tag="test">Test</span>' : ''}</span>
+        a.isTest ? ' <span class="hub-tag" data-tag="test">Test</span>' : ''}${
+        a.is_house ? ' <span class="hub-tag" data-tag="house">Lead pool</span>' : ''}</span>
       <span class="hub-journey-meta">
         ${a.waiting ? `<span class="hub-tag" data-tag="waiting">${a.waiting} waiting</span>` : ''}
         ${a.locked_at ? '<span class="hub-tag" data-tag="locked">Locked</span>' : ''}

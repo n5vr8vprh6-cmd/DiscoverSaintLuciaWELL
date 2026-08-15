@@ -25,7 +25,7 @@ const { requireAdmin, setViewAs, VIEWAS_MINUTES } = require('../auth.js');
 const { str, body: parseBody } = require('../core.js');
 const { hubPage, esc, emptyState, since } = require('../hub-render.js');
 const {
-  advisorById, auditLog, audit, updateAdvisor, ACTION_LABEL
+  advisorById, auditLog, audit, updateAdvisor, setHouse, ACTION_LABEL
 } = require('../admin-data.js');
 const { setLocked, recoveryLink, isLocked } = require('../auth-admin.js');
 const { journeysFor, funnelFor } = require('../hub-data.js');
@@ -107,6 +107,7 @@ module.exports = async function handler(req, res) {
         ${locked ? '<span class="hub-tag" data-tag="locked">Locked out</span>' : ''}
         ${advisor.role === 'admin' ? '<span class="hub-tag" data-tag="admin">Admin</span>' : ''}
         ${advisor.is_master ? '<span class="hub-tag" data-tag="admin">Master</span>' : ''}
+        ${advisor.is_house ? '<span class="hub-tag" data-tag="house">Lead pool</span>' : ''}
         ${/^SEED/.test(advisor.public_code || '') ? '<span class="hub-tag" data-tag="test">Test</span>' : ''}
       </p>
       <div class="hub-actions">
@@ -189,11 +190,37 @@ module.exports = async function handler(req, res) {
       </div>
 
       <aside class="hub-detail-side">
+        ${/* Rendered for EVERY account including your own. The account most
+              likely to hold the pool is the one you are signed into, and
+              unlike the controls below it grants nothing and locks nobody
+              out. */''}
+        <section class="hub-card">
+          <h2>The lead pool</h2>
+          ${advisor.is_house ? `
+            <p class="hub-hint">Journeys shared without an advisor referral come here. They are
+              also exempt from the Advisor Data Undertaking, because the team working the pool
+              are staff rather than independent professionals.</p>
+            ${action('unhouse', 'Stop receiving the pool')}
+            <p class="hub-hint">Stopping means unreferred Journeys are stored with nobody
+              responsible for them, exactly as they were before the pool existed — visible on the
+              dashboard as unassigned. Better to move it to another account than to leave it off.</p>
+          ` : advisor.status === 'active' ? `
+            <p class="hub-hint">Make this the account that receives Journeys shared without a
+              referral. There can only be one, so this moves it here from wherever it is now.</p>
+            ${action('house', 'Make this the lead pool')}
+          ` : `
+            <p class="hub-hint">Only an active advisor can hold the pool — a paused one would
+              look configured and quietly receive nothing.</p>
+          `}
+        </section>
+
+
         ${isSelf ? `
         <section class="hub-card">
           <h2>This is you</h2>
-          <p class="hub-hint">Actions that would lock you out of your own console are not offered
-            here. Change your own details in <a href="/hub/account">account settings</a>.</p>
+          <p class="hub-hint">Approval, access, role and deletion are not offered on your own
+            account — they are the ones with no recovery path short of SQL. Change your own
+            details in <a href="/hub/account">account settings</a>.</p>
         </section>` : `
         <section class="hub-card">
           <h2>Approval</h2>
@@ -357,8 +384,14 @@ async function act(admin, id, form) {
 
   /* An admin cannot act on their own account here. Approving yourself is
      meaningless; locking yourself out of the console is a footgun with no
-     recovery path short of SQL. */
-  if (target.id === admin.id) return 'refused_self';
+     recovery path short of SQL.
+
+     THE LEAD POOL IS THE EXCEPTION, and it has to be: the most likely account
+     to hold the pool is the one the person configuring it is signed into. It
+     is also the safe kind of self-action — it grants no access, removes none,
+     and is reversible from the same screen. */
+  const SELF_ALLOWED = ['house', 'unhouse'];
+  if (target.id === admin.id && SELF_ALLOWED.indexOf(what) === -1) return 'refused_self';
 
   switch (what) {
     case 'approve': {
@@ -410,6 +443,14 @@ async function act(admin, id, form) {
       if (!sent) return 'email_failed';
       await audit(admin, 'reset_sent', { subject: target });
       return 'reset_sent';
+    }
+    case 'house':
+    case 'unhouse': {
+      const on = what === 'house';
+      const r = await setHouse(on ? id : null);
+      if (!r.ok) return r.error;
+      await audit(admin, on ? 'house_set' : 'house_cleared', { subject: target });
+      return on ? 'house_set' : 'house_cleared';
     }
     case 'promote':
     case 'demote': {
@@ -516,6 +557,9 @@ const DONE_MESSAGE = {
   created_quiet: 'Account created. They have not been emailed — send a reset link when you are ready.',
   promoted: 'They are now an admin.',
   demoted: 'They are no longer an admin.',
+  house_set: 'This account now receives Journeys shared without a referral.',
+  house_cleared: 'The lead pool is switched off. Unreferred Journeys will be stored with nobody responsible for them.',
+  must_be_active: 'Only an active advisor can hold the lead pool.',
   refused_self: 'That action is not available on your own account.',
   refused_master: 'Not available on the master admin.',
   refused_last_admin: 'That would leave nobody with admin access. Promote somebody else first.',

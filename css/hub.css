@@ -622,6 +622,13 @@ body {
    special colour — only the one tag that marks an entrant apart from an
    ordinary Journey.
    ══════════════════════════════════════════════════════════════════════════ */
+/* The lead pool. Teal rather than gold: it is a statement of fact about an
+   account, not something needing attention. */
+.hub-tag[data-tag="house"] {
+  background: rgba(0, 166, 168, 0.14);
+  color: var(--teal-deep, #00706F);
+}
+
 .hub-tag[data-tag="draw"] {
   background: rgba(217, 160, 60, 0.14);
   color: var(--gold-deep);

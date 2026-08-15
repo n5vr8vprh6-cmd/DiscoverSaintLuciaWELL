@@ -39,7 +39,7 @@ async function allAdvisors() {
   const [advisors, shares, visits, comps] = await Promise.all([
     supabase.from('advisors')
       .select('id, first_name, last_name, email, business, host_agency, website, market, ' +
-              'public_code, slug, status, role, is_master, approved_at, locked_at, ' +
+              'public_code, slug, status, role, is_master, is_house, approved_at, locked_at, ' +
               'registration_note, created_at')
       .order('created_at', { ascending: false }),
     supabase.from('journey_shares').select('advisor_id, stage, created_at'),
@@ -83,7 +83,7 @@ async function advisorById(id) {
   const { data, error } = await supabase
     .from('advisors')
     .select('id, first_name, last_name, email, business, host_agency, phone, website, market, ' +
-            'public_code, slug, status, role, is_master, approved_at, approved_by, locked_at, ' +
+            'public_code, slug, status, role, is_master, is_house, approved_at, approved_by, locked_at, ' +
             'registration_note, onboarding_state, auth_user_id, created_at')
     .eq('id', id)
     .maybeSingle();
@@ -257,6 +257,51 @@ async function audit(admin, action, { subject, share, detail } = {}) {
   console.error('AUDIT WRITE FAILED', action, error);
 }
 
+/* ── Move the lead pool ───────────────────────────────────────────────────
+   The house account receives every Journey shared without a referral, and
+   advisors_one_house (010) permits exactly one — so this CLEARS THE OLD ONE
+   FIRST and then sets the new. The other order fails on the unique index.
+
+   The gap between the two writes is the only moment there is no house account,
+   and an unreferred share landing in it is stored unattributed exactly as it
+   was before the feature existed. Recoverable, and visible on the dashboard as
+   an unassigned Journey. */
+async function setHouse(id) {
+  const supabase = db();
+  if (!supabase) return { ok: false, error: 'not_configured' };
+
+  /* ── ELIGIBILITY BEFORE ANYTHING IS CLEARED ────────────────────────────
+     The first version cleared the old pool and then tried to set the new one,
+     so pointing it at a pending advisor refused the move AND left the pool
+     switched off — a refusal that changed something. Caught by running it,
+     not by reading it.
+
+     Checked first now, so a refusal is genuinely a no-op. Active is required
+     because houseAdvisor() filters on it: a paused pool would look configured
+     in the console and quietly route nothing. */
+  if (id) {
+    const { data: target } = await supabase
+      .from('advisors').select('id, status').eq('id', id).maybeSingle();
+    if (!target) return { ok: false, error: 'not_found' };
+    if (target.status !== 'active') return { ok: false, error: 'must_be_active' };
+  }
+
+  const clear = await supabase.from('advisors').update({ is_house: false }).eq('is_house', true);
+  if (clear.error) { console.error('setHouse clear', clear.error); return { ok: false, error: 'failed' }; }
+
+  if (!id) return { ok: true, cleared: true };
+
+  /* The only remaining gap is between these two writes, and it is a moment
+     wide. An unreferred share landing in it is stored unattributed exactly as
+     it was before the pool existed, and shows on the dashboard as unassigned. */
+  const { data, error } = await supabase.from('advisors')
+    .update({ is_house: true }).eq('id', id)
+    .select('id').maybeSingle();
+  if (error) { console.error('setHouse set', error); return { ok: false, error: 'failed' }; }
+  if (!data) return { ok: false, error: 'not_found' };
+  return { ok: true };
+}
+
 /* Status changes. `patch` is built by the caller so this stays one code path
    for approve, pause and un-pause rather than three near-identical ones. */
 async function updateAdvisor(id, patch) {
@@ -312,10 +357,12 @@ const ACTION_LABEL = {
   retention_purge: 'Retention sweep',
   /* The pool handing a traveller to an advisor. A disclosure of somebody's
      contact details to a third party, which is exactly what this table is for. */
-  introduced:      'Introduced a traveller to them'
+  introduced:      'Introduced a traveller to them',
+  house_set:       'Made them the lead pool',
+  house_cleared:   'Removed the lead pool'
 };
 
 module.exports = {
   allAdvisors, advisorById, funnelAll, pipelineAll, auditLog, retentionStatus,
-  audit, updateAdvisor, STALE_HOURS, ACTION_LABEL
+  audit, updateAdvisor, setHouse, STALE_HOURS, ACTION_LABEL
 };
