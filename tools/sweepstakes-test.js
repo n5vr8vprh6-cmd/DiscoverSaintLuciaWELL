@@ -43,7 +43,11 @@ const ok = (n, c, d) => { if (c) { pass++; console.log('  ✓ ' + n); } else { f
 const skipped = (n, w) => { skip++; console.log('  – ' + n + '  (' + w + ')'); };
 
 const STAMP = Date.now();
-const EMAIL = `seed-sweeps-${STAMP}@example.com`;
+/* One prefix for every fixture address, so cleanup is a single pattern and any
+   test can invent a distinct entrant without adding a delete of its own. */
+const PREFIX = `seed-sweeps-${STAMP}`;
+const EMAIL = `${PREFIX}-a@example.com`;
+const who = (tag) => `${PREFIX}-${tag}@example.com`;
 const CONSENT = 'Fixture consent. You are also entering a prize draw run by them. ' +
   'That draw is theirs — its rules, eligibility and prize are set by them, not by ' +
   'Discover Saint Lucia WELL, which is not the sponsor.';
@@ -51,6 +55,10 @@ const CONSENT = 'Fixture consent. You are also entering a prize draw run by them
 let A = null, B = null;      /* two advisors */
 const made = [];             /* sweepstakes ids to clean up */
 
+/* `extra` may override consumer_email. Since 009 there is a unique index on
+   (sweepstakes_id, lower(consumer_email)), so two entrants on the same draw
+   MUST be two different people — the first version of this used one address
+   twice and the constraint rightly refused it. */
 async function share(advisorId, sweepsId, extra) {
   const { data, error } = await db.from('journey_shares').insert(Object.assign({
     advisor_id: advisorId,
@@ -65,7 +73,7 @@ async function share(advisorId, sweepsId, extra) {
 }
 
 async function cleanup() {
-  await db.from('journey_shares').delete().eq('consumer_email', EMAIL);
+  await db.from('journey_shares').delete().like('consumer_email', PREFIX + '%');
   if (made.length) await db.from('sweepstakes').delete().in('id', made);
 }
 
@@ -148,8 +156,8 @@ async function cleanup() {
 
     /* ── Entrants ─────────────────────────────────────────────────────────── */
     console.log('\n  Entrants');
-    const e1 = await share(A.id, draw.id);
-    const e2 = await share(A.id, draw.id);
+    const e1 = await share(A.id, draw.id, { consumer_email: who('e1') });
+    const e2 = await share(A.id, draw.id, { consumer_email: who('e2') });
     await share(A.id, null);                    /* same advisor, not an entry  */
     await share(B.id, null);                    /* another advisor entirely    */
 
@@ -213,7 +221,7 @@ async function cleanup() {
     console.log('\n  One entry per email');
     const dupDraw = (await S.create(A.id, 'Duplicate fixture')).sweepstakes;
     made.push(dupDraw.id);
-    const DUP = `seed-dup-${STAMP}@example.com`;
+    const DUP = who('dup');
 
     ok('nobody has entered a fresh draw',
       (await S.alreadyEntered(db, dupDraw.id, DUP)) === false);
@@ -278,7 +286,7 @@ async function cleanup() {
       handler({ method: 'POST', headers: {}, body: payload }, res);
     });
 
-    const E2E = `seed-e2e-${STAMP}@example.com`;
+    const E2E = who('e2e');
     const payload = {
       firstName: 'Twice', lastName: 'Over', email: E2E, consent: true,
       consentText: CONSENT, advisor: A.public_code, sweeps: dupDraw.code,
@@ -305,8 +313,7 @@ async function cleanup() {
     ok('and the export has one row per person',
       toObjects(S.toCsv(await S.entrantsFor(A.id, dupDraw.id))).rows.length === 2);
 
-    await db.from('journey_shares').delete().eq('consumer_email', E2E);
-    await db.from('journey_shares').delete().eq('consumer_email', DUP);
+    /* Left for cleanup(), which now matches the whole prefix. */
 
     /* ── The consent record ───────────────────────────────────────────────── */
     console.log('\n  What the entrant agreed to');
@@ -326,10 +333,16 @@ async function cleanup() {
     const csv = S.toCsv(entrants);
     const out = toObjects(csv);
     ok('round-trips through the CSV parser', out.rows.length === 2, out.rows.length + ' rows');
+    /* The two entrants are distinct people now that 009 forbids one address
+       entering twice, so the export is checked against BOTH of them rather
+       than against a single shared fixture address. */
+    const expected = [who('e1'), who('e2')].sort();
     ok('carries the contact details a draw needs',
-      out.rows[0].email === EMAIL && !!out.rows[0].firstname,
+      out.rows.every((r) => !!r.firstname && !!r.email),
       JSON.stringify(out.headers));
-    ok('carries nobody else', out.rows.every((r) => r.email === EMAIL));
+    ok('carries exactly the entrants and nobody else',
+      JSON.stringify(out.rows.map((r) => r.email).sort()) === JSON.stringify(expected),
+      out.rows.map((r) => r.email).join(', '));
     ok('starts with a BOM so Excel reads it as UTF-8', csv.charCodeAt(0) === 0xFEFF);
 
     /* A comma in a name is the classic break, and the file that breaks is the
