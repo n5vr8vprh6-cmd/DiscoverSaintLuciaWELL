@@ -583,6 +583,39 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   THE INTRODUCTION
+   Picking a person and reading an email — so it is a list of people and a
+   preview of an email, and nothing else competes for attention.
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-advisor-picks { display: grid; gap: 0.5rem; margin: 0 0 1.5rem; }
+
+.hub-pick {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.hub-pick:hover { background: var(--paper-2); }
+.hub-pick:focus-within { outline: 2px solid var(--gold-deep); outline-offset: 1px; }
+.hub-pick input { accent-color: var(--teal); width: 1.15rem; height: 1.15rem; flex: 0 0 auto; margin-top: 0.15rem; }
+.hub-pick-body { display: flex; flex-direction: column; gap: 0.15rem; font-size: var(--fs-small); }
+.hub-pick-body strong { font-size: 1rem; }
+.hub-pick-market { color: var(--muted); }
+
+/* The email as it will arrive. Inset and on paper so it reads as a preview of
+   something else rather than as more of this page. */
+.hub-mail-preview {
+  background: var(--paper-2);
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+.hub-mail-preview p { max-width: none; }
+
+/* ══════════════════════════════════════════════════════════════════════════
    PRIZE DRAWS
    Built from the cards, stats and link rows that already exist. A draw is an
    ordinary thing an advisor does, not a mode the Hub enters, so it gets no

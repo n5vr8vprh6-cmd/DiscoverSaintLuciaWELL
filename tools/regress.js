@@ -91,8 +91,23 @@ const post = (path, payload) => json(path, {
   check('unknown slug -> null, not an error',
     r.status === 200 && r.body && r.body.advisor === null, JSON.stringify(r.body));
 
+  /* Deliberately no longer a 400. With no slug the endpoint answers with the
+     CENTRAL POOL — brief §8's third rung — so a visitor who arrived without a
+     referral has somewhere to send their Journey instead of a link to the
+     contact form. This assertion used to read `status === 400` and caught the
+     change honestly when the contract moved, which is what it is for.
+
+     It must never carry the house account's name, email or code: the page only
+     needs to know a destination exists, and who staffs it is not something a
+     public endpoint should volunteer. */
   r = await json('/api/advisor');
-  check('missing slug -> 400', r.status === 400);
+  check('missing slug -> the central pool, or null when none is configured',
+    r.status === 200 && r.body &&
+    (r.body.advisor === null || r.body.advisor.house === true),
+    JSON.stringify(r.body));
+  check('and it never names the house account',
+    r.status === 200 && !/first|name|email|code/i.test(JSON.stringify(r.body || {})),
+    JSON.stringify(r.body));
 
   /* ── Share guards. Each of these must reject BEFORE anything is stored. ── */
   const base = { firstName: 'Regress', lastName: 'Suite', email: 'regress@example.com',

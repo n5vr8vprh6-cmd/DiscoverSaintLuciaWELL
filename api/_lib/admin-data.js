@@ -309,7 +309,10 @@ const ACTION_LABEL = {
   subject_erase:   'Erased everything held about someone',
   /* Written by the database itself, on every run, including the runs that
      removed nothing — see db/migrations/006-retention.sql. */
-  retention_purge: 'Retention sweep'
+  retention_purge: 'Retention sweep',
+  /* The pool handing a traveller to an advisor. A disclosure of somebody's
+     contact details to a third party, which is exactly what this table is for. */
+  introduced:      'Introduced a traveller to them'
 };
 
 module.exports = {

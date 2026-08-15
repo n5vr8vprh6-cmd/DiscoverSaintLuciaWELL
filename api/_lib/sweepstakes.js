@@ -107,17 +107,26 @@ async function listFor(advisorId) {
       .order('created_at', { ascending: false }),
     /* Counted in one pass rather than a query per draw. An advisor has a
        handful of campaigns, not thousands, and the alternative is N round
-       trips for a number shown in a list. */
+       trips for a number shown in a list.
+
+       NOT filtered by advisor_id, for the same reason entrantsFor() is not:
+       a Journey handed to another advisor is still an entry in the draw it
+       entered. Filtering here while entrantsFor() does not would be worse than
+       either choice alone — the list would say four entrants and the page
+       behind it would show five. The rows are narrowed to this advisor's own
+       draws by the tally below, which only counts ids it recognises. */
     supabase.from('journey_shares')
       .select('sweepstakes_id')
-      .eq('advisor_id', advisorId)
       .not('sweepstakes_id', 'is', null)
   ]);
 
   if (draws.error) { console.error('listFor', draws.error); return []; }
 
+  /* Only this advisor's own draws are counted, so pulling every entry row
+     above discloses nothing about anybody else's campaigns. */
+  const mine = new Set((draws.data || []).map((d) => d.id));
   const tally = (entries.data || []).reduce((acc, r) => {
-    acc[r.sweepstakes_id] = (acc[r.sweepstakes_id] || 0) + 1;
+    if (mine.has(r.sweepstakes_id)) acc[r.sweepstakes_id] = (acc[r.sweepstakes_id] || 0) + 1;
     return acc;
   }, {});
 
@@ -162,13 +171,24 @@ async function byId(advisorId, id) {
 async function entrantsFor(advisorId, sweepsId) {
   const supabase = db();
   if (!supabase || !advisorId || !sweepsId) return [];
+
+  /* ── THE GUARD IS ON THE DRAW, NOT ON THE ENTRY ───────────────────────
+     This used to filter entries by advisor_id as well, which reads like
+     defence in depth and is actually a bug: a Journey handed to another
+     advisor — which the house account now does routinely — would silently
+     vanish from the entrant list of a draw it genuinely entered, and the
+     advisor running the draw would never know their pool had shrunk.
+
+     Entering a draw is a fact about a moment. It does not stop being true
+     because the Journey later moved. So ownership is checked once, on the
+     DRAW, and entries are then listed by what they actually are. */
+  const own = await byId(advisorId, sweepsId);
+  if (!own) return [];
+
   const { data, error } = await supabase
     .from('journey_shares')
     .select('id, consumer_first, consumer_last, consumer_email, consumer_phone, ' +
             'timing, travel_window, villages, stage, created_at')
-    /* BOTH filters. The advisor scope is not redundant: without it, a guessed
-       sweepstakes id would return somebody else's entrants. */
-    .eq('advisor_id', advisorId)
     .eq('sweepstakes_id', sweepsId)
     .order('created_at', { ascending: true });
   if (error) { console.error('entrantsFor', error); return []; }

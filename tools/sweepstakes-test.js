@@ -368,6 +368,32 @@ async function cleanup() {
     ok('another advisor cannot delete yours', (await S.remove(B.id, draw.id)).error !== undefined);
     ok('renaming is scoped too', (await S.rename(B.id, draw.id, 'hijacked')).error === 'not_found');
 
+    /* ── A moved Journey stays in the draw it entered ─────────────────────
+       The house account hands pooled Journeys to advisors, so a share changing
+       hands is now routine rather than exotic. Entering a draw is a fact about
+       a moment; it does not stop being true because the Journey later moved,
+       and the advisor running the draw must not watch their pool quietly
+       shrink. */
+    console.log('\n  A moved Journey');
+    const moveDraw = (await S.create(A.id, 'Move fixture')).sweepstakes;
+    made.push(moveDraw.id);
+    const moved = await share(A.id, moveDraw.id, { consumer_email: who('moved') });
+
+    ok('it is in the draw to start with',
+      (await S.entrantsFor(A.id, moveDraw.id)).length === 1);
+
+    await db.from('journey_shares').update({ advisor_id: B.id }).eq('id', moved.id);
+
+    ok('and STILL in it after being handed to another advisor',
+      (await S.entrantsFor(A.id, moveDraw.id)).length === 1,
+      'the draw owner would watch their entrant pool shrink for no reason they could see');
+    const movedCount = (await S.listFor(A.id)).find((d) => d.id === moveDraw.id);
+    ok('and the list count agrees with the list', movedCount && movedCount.entries === 1,
+      'the summary said ' + (movedCount && movedCount.entries) + ' while the page behind it shows 1');
+    ok('but another advisor still cannot open the draw',
+      (await S.byId(B.id, moveDraw.id)) === null,
+      'the ownership guard moved to the draw — it must not have been dropped');
+
     /* ── Deleting a draw must not delete its people ───────────────────────── */
     console.log('\n  Deleting a finished campaign');
     const doomed = await S.create(A.id, 'To be deleted');

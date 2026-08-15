@@ -111,6 +111,14 @@ module.exports = async function handler(req, res) {
       <p class="eyebrow">Shared ${esc(since(j.created_at))}${j.travel_window
         ? ' · ' + esc(WINDOW_LABEL[j.travel_window] || j.travel_window) : ''}</p>
       <h1>${esc(name)}</h1>
+      ${/* The pool's way out. Shown only to the house account, because only the
+             pool holds Journeys that nobody has been matched to yet. */''}
+      ${advisor.is_house && !advisor.viewingAs ? `
+      <div class="hub-notice">
+        <strong>This one came in without a referral.</strong> They are waiting on us to find
+        them an advisor — <a href="/hub/journeys/${esc(id)}/introduce">write the introduction</a>.
+      </div>` : ''}
+
       <div class="hub-actions">
         ${j.consumer_email
           ? `<a class="btn btn--gold" href="mailto:${esc(j.consumer_email)}?subject=${

@@ -102,6 +102,10 @@
       "destination": "/api/hub?screen=journeys"
     },
     {
+      "source": "/hub/journeys/:id/introduce",
+      "destination": "/api/hub?screen=introduce&id=:id"
+    },
+    {
       "source": "/hub/journeys/:id",
       "destination": "/api/hub?screen=journey&id=:id"
     },
