@@ -50,6 +50,32 @@ async function resolveForEntry(supabase, code, advisorId) {
   return data;
 }
 
+/* ── Have they entered this one already? ─────────────────────────────────
+   One entry per email per draw. Sharing again is fine and the advisor still
+   receives it; it is simply not a second ticket.
+
+   THIS CHECK IS NOT THE GUARANTEE. Two submissions arriving close together can
+   both pass it before either insert lands — a check-then-act race, easily
+   produced by a double-click. The unique index in 009-one-entry.sql is what
+   actually holds, and api/share.js retries without the flag when it fires.
+   This exists so the ordinary case never reaches the constraint at all, and so
+   the person can be told they are already in rather than told nothing.
+
+   Returns true on a database error as well, deliberately: if we cannot tell,
+   the safe answer is "do not add another entry" — an unentered share is a
+   recoverable disappointment, a duplicate ticket is a rigged draw. */
+async function alreadyEntered(supabase, sweepsId, email) {
+  const who = String(email || '').trim().toLowerCase();
+  if (!supabase || !sweepsId || !who) return false;
+  const { count, error } = await supabase
+    .from('journey_shares')
+    .select('id', { count: 'exact', head: true })
+    .eq('sweepstakes_id', sweepsId)
+    .eq('consumer_email', who);
+  if (error) { console.error('alreadyEntered', error); return true; }
+  return (count || 0) > 0;
+}
+
 /* Used by api/well.js, which needs to know only whether the second path
    segment is a real draw belonging to this advisor — including a CLOSED one,
    because a closed draw's link still has to work as an ordinary advisor link
@@ -249,7 +275,7 @@ function toCsv(rows) {
 
 module.exports = {
   OPEN, CLOSED, NAME_MAX,
-  resolveForEntry, resolveForLink,
+  resolveForEntry, resolveForLink, alreadyEntered,
   listFor, byId, entrantsFor,
   create, rename, setStatus, remove,
   toCsv

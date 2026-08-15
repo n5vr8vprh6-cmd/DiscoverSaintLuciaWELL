@@ -531,6 +531,27 @@ from the fact that a code was in the link. If the draw closed while they were
 filling in the form, they are told they shared and nothing about a draw they are
 not in. That is the one lie this feature could tell.
 
+### One entry per email, per draw
+
+Sharing twice stays allowed — a traveller may rethink their answers and the
+advisor should receive both. A second *ticket* is not, or the advisor draws from
+a pool one person has weighted. First share wins, matching how advisor
+attribution already works; the second is recorded in full and simply carries no
+`sweepstakes_id`.
+
+`alreadyEntered()` checks before the write, but **the unique index in
+`009-one-entry.sql` is the actual guarantee** — the check is check-then-act and a
+double-click can race it. The index is partial (`where sweepstakes_id is not
+null`) so ordinary shares stay unconstrained; capping those would mean one share
+per person ever.
+
+**A constraint violation must never cost somebody their share.** `api/share.js`
+retries once with the flag dropped on `23505`, because throwing would return 500
+and tell a real person their submission failed when the truth is that it
+succeeded the first time. They are told *"You are already in this draw"* instead
+— repeating "your entry is counted" would imply a second ticket, and saying
+nothing would read as a failure.
+
 ### Two behaviours that look like bugs and are not
 
 **A closed draw's link still works.** It attributes to the advisor as an ordinary

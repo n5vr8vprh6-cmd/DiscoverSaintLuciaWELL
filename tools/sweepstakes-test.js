@@ -206,6 +206,108 @@ async function cleanup() {
     ok('reopening moves it back among the open ones',
       re.indexOf('ONE') < re.indexOf('THREE'), re.join(' → '));
 
+    /* ── One entry per email, per draw ────────────────────────────────────
+       Sharing twice stays allowed — a traveller may rethink their answers and
+       the advisor should get both. A second TICKET is what must not happen, or
+       the advisor draws from a pool one person has weighted. */
+    console.log('\n  One entry per email');
+    const dupDraw = (await S.create(A.id, 'Duplicate fixture')).sweepstakes;
+    made.push(dupDraw.id);
+    const DUP = `seed-dup-${STAMP}@example.com`;
+
+    ok('nobody has entered a fresh draw',
+      (await S.alreadyEntered(db, dupDraw.id, DUP)) === false);
+
+    await share(A.id, dupDraw.id, { consumer_email: DUP });
+    ok('after one entry, the same address is recognised',
+      (await S.alreadyEntered(db, dupDraw.id, DUP)) === true);
+    ok('CASE and whitespace do not open a second entry',
+      (await S.alreadyEntered(db, dupDraw.id, '  ' + DUP.toUpperCase() + '  ')) === true,
+      'Ann@Example.com would get a second ticket');
+    ok('a different address has not entered',
+      (await S.alreadyEntered(db, dupDraw.id, 'someone-else@example.com')) === false);
+
+    /* Draws are independent: entering one must not lock somebody out of
+       another, including another run by the same advisor. */
+    const otherDraw = (await S.create(A.id, 'Other fixture')).sweepstakes;
+    made.push(otherDraw.id);
+    ok('entering one draw does not block another',
+      (await S.alreadyEntered(db, otherDraw.id, DUP)) === false);
+
+    /* ── THE INDEX IS THE ACTUAL GUARANTEE ────────────────────────────────
+       alreadyEntered() is a check-then-act and can be raced by two submissions
+       arriving together — a double-click is enough. Only the unique index in
+       009-one-entry.sql actually holds, so it is proven against the database
+       directly rather than through the interface that is supposed to respect
+       it. Same discipline as the master-admin trigger. */
+    const dupRow = {
+      advisor_id: A.id, sweepstakes_id: dupDraw.id,
+      answers: {}, villages: [], consumer_first: 'Dup', consumer_last: 'Fixture',
+      consumer_email: DUP, consent_text: CONSENT
+    };
+    const raw = await db.from('journey_shares').insert(dupRow).select('id').single();
+    if (!raw.error) {
+      /* It went in, so 009 is not applied. Clean up the row we just made and
+         say so plainly rather than passing a check that proved nothing. */
+      await db.from('journey_shares').delete().eq('id', raw.data.id);
+      skipped('the database REFUSES a duplicate entry',
+        'migration 009 not applied — only the application check is holding');
+    } else {
+      ok('the database REFUSES a duplicate entry, not just the app',
+        String(raw.error.code) === '23505', 'got ' + raw.error.code);
+
+      /* And it must constrain ENTRIES only. Ordinary shares with no draw are
+         the overwhelming majority and must stay unconstrained — a partial
+         index is the difference between one entry per draw and one share per
+         person, ever. */
+      const a1 = await db.from('journey_shares').insert(
+        Object.assign({}, dupRow, { sweepstakes_id: null })).select('id').single();
+      const a2 = await db.from('journey_shares').insert(
+        Object.assign({}, dupRow, { sweepstakes_id: null })).select('id').single();
+      ok('but allows two ordinary shares from the same person',
+        !a1.error && !a2.error,
+        'the index is not partial — it would cap non-entrants too');
+    }
+
+    /* ── End to end through the real handler ──────────────────────────────── */
+    const handler = require('../api/share.js');
+    const post = (payload) => new Promise((resolve) => {
+      const res = { _c: 200, setHeader() {}, status(c) { this._c = c; return this; },
+        send(b) { resolve({ code: this._c, body: JSON.parse(b || '{}') }); },
+        end(b) { resolve({ code: this._c, body: JSON.parse(b || '{}') }); } };
+      handler({ method: 'POST', headers: {}, body: payload }, res);
+    });
+
+    const E2E = `seed-e2e-${STAMP}@example.com`;
+    const payload = {
+      firstName: 'Twice', lastName: 'Over', email: E2E, consent: true,
+      consentText: CONSENT, advisor: A.public_code, sweeps: dupDraw.code,
+      answers: {}, villages: []
+    };
+
+    const first = await post(payload);
+    const second = await post(payload);
+    ok('the first submission enters', first.body.entered === true, JSON.stringify(first.body));
+    ok('the second submission still SUCCEEDS', second.body.ok === true,
+      'a repeat entrant would be told their share failed');
+    ok('but does not enter again', second.body.entered === false);
+    ok('and says so, rather than silently doing nothing',
+      second.body.alreadyEntered === true);
+
+    const { data: e2eRows } = await db.from('journey_shares')
+      .select('sweepstakes_id').eq('consumer_email', E2E);
+    ok('both shares were kept', e2eRows.length === 2, e2eRows.length + ' rows');
+    ok('exactly one is an entry', e2eRows.filter((r) => r.sweepstakes_id).length === 1);
+
+    const counted = (await S.listFor(A.id)).find((d) => d.id === dupDraw.id);
+    ok('the entrant count is not inflated by the repeat', counted.entries === 2,
+      'expected 2 (one fixture + one e2e), got ' + counted.entries);
+    ok('and the export has one row per person',
+      toObjects(S.toCsv(await S.entrantsFor(A.id, dupDraw.id))).rows.length === 2);
+
+    await db.from('journey_shares').delete().eq('consumer_email', E2E);
+    await db.from('journey_shares').delete().eq('consumer_email', DUP);
+
     /* ── The consent record ───────────────────────────────────────────────── */
     console.log('\n  What the entrant agreed to');
     const { data: rec } = await db.from('journey_shares')

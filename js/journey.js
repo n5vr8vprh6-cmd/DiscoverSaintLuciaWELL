@@ -688,6 +688,7 @@
          easy: the page already knows a draw code was in the link. It is not
          allowed to answer from that. */
       var entered = !!(res.d && res.d.entered);
+      var already = !!(res.d && res.d.alreadyEntered);
       track('journey_shared', { attributed: !!advisorName, entered: entered });
       form.innerHTML =
         '<h4 class="share-title">Sent.</h4>' +
@@ -699,7 +700,14 @@
           ? '<p class="share-note share-entered"><strong>Your entry is counted.</strong> ' +
             esc(advisorName || 'Your advisor') + ' will be in touch about the draw — ' +
             'it is theirs to run, so any questions about it go to them.</p>'
-          : '');
+          /* Said plainly rather than repeating "your entry is counted", which
+             would imply a second ticket, or saying nothing, which would read as
+             a failure. It also removes the reason to keep resubmitting. */
+          : already
+            ? '<p class="share-note share-entered"><strong>You are already in this draw.</strong> ' +
+              'It is one entry per person, so this does not add another — but ' +
+              esc(advisorName || 'your advisor') + ' has this Journey too.</p>'
+            : '');
     }).catch(function (err) {
       button.disabled = false;
       fail(status, String(err.message) === 'rate_limited'

@@ -28,7 +28,7 @@ const {
   db, json, str, esc, looksLikeEmail, ipHash, body, methodGuard
 } = require('./_lib/core.js');
 const { activeAdvisor } = require('./_lib/advisors.js');
-const { resolveForEntry } = require('./_lib/sweepstakes.js');
+const { resolveForEntry, alreadyEntered } = require('./_lib/sweepstakes.js');
 const { track } = require('./_lib/encharge.js');
 
 /* Deliberately generous. A real person sharing a Journey submits once; this
@@ -123,28 +123,57 @@ module.exports = async function handler(req, res) {
       ? await resolveForEntry(supabase, sweepsRef, advisor.id)
       : null;
 
-    const { data: share, error } = await supabase
-      .from('journey_shares')
-      .insert({
-        advisor_id: advisor ? advisor.id : null,
-        sweepstakes_id: draw ? draw.id : null,
-        answers,
-        villages,
-        consumer_first: first,
-        consumer_last: last,
-        consumer_email: email,
-        consumer_phone: phone || null,
-        timing: timing || null,
-        travel_window: travelWindow,
-        context: context || null,
-        consent_text: consentText,
-        source,
-        session_id: sessionId || null,
-        ip_hash: hash
-      })
-      .select('id')
-      .single();
+    /* ── ONE ENTRY PER EMAIL, PER DRAW ────────────────────────────────────
+       Sharing twice is allowed and the advisor receives both — a traveller may
+       genuinely rethink their answers. A second TICKET is not, or an advisor
+       drawing a winner is picking from a pool one person has weighted.
+
+       First share wins, matching how advisor attribution already works here.
+       The second is recorded in full and simply carries no draw. */
+    const repeat = draw ? await alreadyEntered(supabase, draw.id, email) : false;
+
+    const row = {
+      advisor_id: advisor ? advisor.id : null,
+      sweepstakes_id: (draw && !repeat) ? draw.id : null,
+      answers,
+      villages,
+      consumer_first: first,
+      consumer_last: last,
+      consumer_email: email,
+      consumer_phone: phone || null,
+      timing: timing || null,
+      travel_window: travelWindow,
+      context: context || null,
+      consent_text: consentText,
+      source,
+      session_id: sessionId || null,
+      ip_hash: hash
+    };
+
+    let { data: share, error } = await supabase
+      .from('journey_shares').insert(row).select('id').single();
+
+    /* ── A DUPLICATE ENTRY MUST NOT COST SOMEBODY THEIR SHARE ─────────────
+       The unique index in 009-one-entry.sql is what actually guarantees one
+       entry per email, because the check above can be raced by two submissions
+       arriving together — a double-click is enough.
+
+       When it fires we are in exactly the situation the check would have
+       caught: they are already entered. Throwing here would return 500 and
+       tell a real person their submission failed, when the truth is that it
+       succeeded the first time. So the flag is dropped and the row is written
+       again as an ordinary share. */
+    let racedDuplicate = false;
+    if (error && String(error.code) === '23505') {
+      racedDuplicate = true;
+      ({ data: share, error } = await supabase
+        .from('journey_shares')
+        .insert(Object.assign({}, row, { sweepstakes_id: null }))
+        .select('id').single());
+    }
     if (error) throw error;
+
+    const entered = !!(draw && !repeat && !racedDuplicate);
 
     /* The record is safe. Email is best-effort from here: if it fails the
        share is still captured and recoverable, so the consumer is never told
@@ -184,7 +213,13 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    return json(res, 200, { ok: true, notified, entered: !!draw });
+    /* Three distinct outcomes, because the page renders three different
+       sentences. Saying "your entry is counted" to somebody entering twice
+       would imply a second ticket; saying nothing would read as a failure. */
+    return json(res, 200, {
+      ok: true, notified, entered,
+      alreadyEntered: !!(draw && !entered)
+    });
   } catch (e) {
     console.error('share failed', e);
     return json(res, 500, { error: 'share_failed' });
