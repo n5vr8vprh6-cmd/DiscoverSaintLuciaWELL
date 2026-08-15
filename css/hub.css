@@ -583,6 +583,42 @@ body {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   MY CAMPAIGN
+   The prompt is a block to be taken away, not a field to be filled — so it
+   reads as something quoted rather than something asked for.
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-prompt {
+  flex: 1 1 100%;
+  width: 100%;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--hairline-l);
+  border-left: 2px solid var(--gold);
+  border-radius: 2px;
+  background: var(--paper-2);
+  color: var(--ivory-ink);
+  resize: vertical;
+}
+
+/* Textareas in the intake match the inputs beside them — without this they
+   inherit the browser's monospace and the form looks assembled from two kits. */
+.hub-field textarea {
+  width: 100%;
+  font: inherit;
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+  background: var(--paper-2);
+  color: inherit;
+  resize: vertical;
+}
+.hub-field textarea::placeholder { color: var(--muted); opacity: 0.75; }
+
+/* ══════════════════════════════════════════════════════════════════════════
    THE INTRODUCTION
    Picking a person and reading an email — so it is a list of people and a
    preview of an email, and nothing else competes for attention.

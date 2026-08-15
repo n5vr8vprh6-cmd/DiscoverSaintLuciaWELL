@@ -30,6 +30,7 @@ const SCREENS = {
   journey:  () => require('../_lib/hub-screens/journey.js'),
   introduce: () => require('../_lib/hub-screens/introduce.js'),
   account:  () => require('../_lib/hub-screens/account.js'),
+  campaign: () => require('../_lib/hub-screens/campaign.js'),
   sweepstakes:       () => require('../_lib/hub-screens/sweepstakes.js'),
   sweepstakesDetail: () => require('../_lib/hub-screens/sweepstakes-detail.js'),
   login:    () => require('../_lib/hub-screens/login.js'),

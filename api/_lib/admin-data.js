@@ -40,6 +40,7 @@ async function allAdvisors() {
     supabase.from('advisors')
       .select('id, first_name, last_name, email, business, host_agency, website, market, ' +
               'public_code, slug, status, role, is_master, is_house, approved_at, locked_at, ' +
+              'foundations_at, immersion_at, ' +
               'registration_note, created_at')
       .order('created_at', { ascending: false }),
     supabase.from('journey_shares').select('advisor_id, stage, created_at'),
@@ -84,6 +85,7 @@ async function advisorById(id) {
     .from('advisors')
     .select('id, first_name, last_name, email, business, host_agency, phone, website, market, ' +
             'public_code, slug, status, role, is_master, is_house, approved_at, approved_by, locked_at, ' +
+            'foundations_at, immersion_at, ' +
             'registration_note, onboarding_state, auth_user_id, created_at')
     .eq('id', id)
     .maybeSingle();
@@ -302,6 +304,36 @@ async function setHouse(id) {
   return { ok: true };
 }
 
+/* ── Training dates ───────────────────────────────────────────────────────
+   Enrolment happens off-platform, so an admin records it. These two dates
+   decide what an advisor may CLAIM in campaign copy and whether they may
+   regenerate a plan — one fact, two consequences.
+
+   Recording a date is a factual assertion about a qualification, which is why
+   it is an admin action and never something an advisor can set: 011-gtm.sql
+   keeps both columns out of the advisor column grant. */
+async function setTraining(id, which, on) {
+  const supabase = db();
+  if (!supabase) return { ok: false, error: 'not_configured' };
+  if (which !== 'foundations_at' && which !== 'immersion_at') {
+    return { ok: false, error: 'unknown_field' };
+  }
+  const patch = {};
+  patch[which] = on ? new Date().toISOString() : null;
+  /* Immersion without Foundations would be a rung the ladder cannot express,
+     so clearing Foundations clears Immersion with it. */
+  if (which === 'foundations_at' && !on) patch.immersion_at = null;
+
+  const { data, error } = await supabase.from('advisors')
+    .update(patch).eq('id', id).select('id').maybeSingle();
+  if (error) {
+    console.error('setTraining — is migration 011 applied?', error);
+    return { ok: false, error: 'failed' };
+  }
+  if (!data) return { ok: false, error: 'not_found' };
+  return { ok: true };
+}
+
 /* Status changes. `patch` is built by the caller so this stays one code path
    for approve, pause and un-pause rather than three near-identical ones. */
 async function updateAdvisor(id, patch) {
@@ -359,10 +391,16 @@ const ACTION_LABEL = {
      contact details to a third party, which is exactly what this table is for. */
   introduced:      'Introduced a traveller to them',
   house_set:       'Made them the lead pool',
-  house_cleared:   'Removed the lead pool'
+  house_cleared:   'Removed the lead pool',
+  /* Recording training is a factual claim about a qualification, so it is
+     recorded like every other one. */
+  foundations_set:   'Recorded Foundations as complete',
+  foundations_clear: 'Removed the Foundations record',
+  immersion_set:     'Recorded Immersion as complete',
+  immersion_clear:   'Removed the Immersion record'
 };
 
 module.exports = {
   allAdvisors, advisorById, funnelAll, pipelineAll, auditLog, retentionStatus,
-  audit, updateAdvisor, setHouse, STALE_HOURS, ACTION_LABEL
+  audit, updateAdvisor, setHouse, setTraining, STALE_HOURS, ACTION_LABEL
 };

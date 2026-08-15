@@ -25,7 +25,7 @@ const { requireAdmin, setViewAs, VIEWAS_MINUTES } = require('../auth.js');
 const { str, body: parseBody } = require('../core.js');
 const { hubPage, esc, emptyState, since } = require('../hub-render.js');
 const {
-  advisorById, auditLog, audit, updateAdvisor, setHouse, ACTION_LABEL
+  advisorById, auditLog, audit, updateAdvisor, setHouse, setTraining, ACTION_LABEL
 } = require('../admin-data.js');
 const { setLocked, recoveryLink, isLocked } = require('../auth-admin.js');
 const { journeysFor, funnelFor } = require('../hub-data.js');
@@ -215,6 +215,32 @@ module.exports = async function handler(req, res) {
         </section>
 
 
+        ${/* Also outside the isSelf branch: recording your own training is a
+              fact about you, not an access grant, and you are as likely to
+              have done Foundations as anybody. */''}
+        <section class="hub-card">
+          <h2>Training</h2>
+          <p class="hub-hint">What an advisor may claim in campaign copy, and whether they can
+            regenerate a plan. Recording a date asserts they completed it — enrolment happens off
+            this platform, so it is recorded here rather than inferred.</p>
+          <dl class="hub-answers">
+            ${field('Foundations', advisor.foundations_at
+              ? new Date(advisor.foundations_at).toISOString().slice(0, 10) : 'not recorded')}
+            ${field('Immersion', advisor.immersion_at
+              ? new Date(advisor.immersion_at).toISOString().slice(0, 10) : 'not recorded')}
+          </dl>
+          <div class="hub-actions">
+            ${action(advisor.foundations_at ? 'foundations_clear' : 'foundations_set',
+              advisor.foundations_at ? 'Remove Foundations' : 'Record Foundations')}
+            ${advisor.foundations_at
+              ? action(advisor.immersion_at ? 'immersion_clear' : 'immersion_set',
+                  advisor.immersion_at ? 'Remove Immersion' : 'Record Immersion')
+              : ''}
+          </div>
+          ${!advisor.foundations_at ? `<p class="hub-hint">Immersion is offered once Foundations is
+            recorded — the claims ladder has no rung for one without the other.</p>` : ''}
+        </section>
+
         ${isSelf ? `
         <section class="hub-card">
           <h2>This is you</h2>
@@ -390,7 +416,8 @@ async function act(admin, id, form) {
      to hold the pool is the one the person configuring it is signed into. It
      is also the safe kind of self-action — it grants no access, removes none,
      and is reversible from the same screen. */
-  const SELF_ALLOWED = ['house', 'unhouse'];
+  const SELF_ALLOWED = ['house', 'unhouse', 'foundations_set', 'foundations_clear',
+                        'immersion_set', 'immersion_clear'];
   if (target.id === admin.id && SELF_ALLOWED.indexOf(what) === -1) return 'refused_self';
 
   switch (what) {
@@ -451,6 +478,17 @@ async function act(admin, id, form) {
       if (!r.ok) return r.error;
       await audit(admin, on ? 'house_set' : 'house_cleared', { subject: target });
       return on ? 'house_set' : 'house_cleared';
+    }
+    case 'foundations_set':
+    case 'foundations_clear':
+    case 'immersion_set':
+    case 'immersion_clear': {
+      const on = /_set$/.test(what);
+      const col = /^foundations/.test(what) ? 'foundations_at' : 'immersion_at';
+      const r = await setTraining(id, col, on);
+      if (!r.ok) return r.error;
+      await audit(admin, what, { subject: target });
+      return what;
     }
     case 'promote':
     case 'demote': {
@@ -557,6 +595,11 @@ const DONE_MESSAGE = {
   created_quiet: 'Account created. They have not been emailed — send a reset link when you are ready.',
   promoted: 'They are now an admin.',
   demoted: 'They are no longer an admin.',
+  foundations_set: 'Recorded. They may now describe themselves as trained in the method, and can regenerate their campaign plan.',
+  foundations_clear: 'Removed. They drop back to what a registered advisor may claim, and to a single plan.',
+  immersion_set: 'Recorded. They may now say they have experienced the destination first-hand.',
+  immersion_clear: 'Removed.',
+  unknown_field: 'That is not a training record.',
   house_set: 'This account now receives Journeys shared without a referral.',
   house_cleared: 'The lead pool is switched off. Unreferred Journeys will be stored with nobody responsible for them.',
   must_be_active: 'Only an active advisor can hold the lead pool.',

@@ -110,6 +110,10 @@
       "destination": "/api/hub?screen=journey&id=:id"
     },
     {
+      "source": "/hub/campaign",
+      "destination": "/api/hub?screen=campaign"
+    },
+    {
       "source": "/hub/sweepstakes",
       "destination": "/api/hub?screen=sweepstakes"
     },
