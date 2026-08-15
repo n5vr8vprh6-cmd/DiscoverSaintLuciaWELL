@@ -31,6 +31,24 @@
    rather than inaccurate, so it stands. §7's rule is the one to keep in view if
    that changes: the policy must reflect the scripts actually deployed.
 
+   THE 14 AUGUST 2026 REVIEW closed the gap in the other direction: sections
+   that promised more than the software could do.
+
+     ·5  now names the Advisor Data Undertaking, because until that document
+          existed the one point where personal data left this system was the
+          one point covered by no agreement at all.
+     ·7  states that typefaces are self-hosted, and §10 no longer lists Google
+          Fonts — the fonts moved onto this server, so the disclosure was
+          removed rather than reworded.
+     ·12 states 24 months instead of “as long as reasonably necessary”. That
+          sentence was true of the intent and false of the software for two
+          months; 006-retention.sql is what made it a fact.
+     ·14 describes what actually happens when somebody asks, now that
+          /hub/admin/subject can answer.
+
+   Each of those was written AFTER the code that makes it true, deliberately.
+   A policy is allowed to describe what the software does and nothing else.
+
    NOT LEGAL ADVICE, AND NOT A SUBSTITUTE FOR THE REVIEW DUNCAN HAS PLANNED.
    ========================================================================== */
 'use strict';
@@ -164,6 +182,11 @@ module.exports = {
             '<strong>Sharing a Journey is optional. Completing the Journey Finder does not automatically send your answers or contact information to a travel advisor.</strong>',
             'If you select an option such as <em>Share My WELL Journey with [Advisor]</em>, you direct us to disclose the information identified at that point — which may include your name, contact information, Journey result, relevant Journey Finder responses, travel timing, and additional context you submit — to that independent advisor so they can contact you about travel planning.',
             'A participating advisor may operate independently or through a host agency or other travel business. Once the advisor receives your information, their own privacy practices and legal responsibilities may apply. We encourage you to review the advisor’s privacy information when available.',
+            /* Added 14 August 2026. The advisor is still independent — nothing
+               above changes — but they are no longer bound by nothing, and a
+               consumer deciding whether to press the button is entitled to know
+               what was asked of the person receiving their details. */
+            'Before an advisor can receive a Journey, they must accept our <a href="/advisors/data-undertaking">Advisor Data Undertaking</a>. Among other things it requires them to use your information to plan the travel you asked about, not to add you to marketing lists without asking you separately, to keep it secure, to delete it on request and tell us they have, and to report any exposure of it to us within 72 hours. This does not make them our employee or our agent, and it does not replace their own legal obligations.',
             'Sharing a Journey with an advisor does not, by itself, subscribe you to Discover Saint Lucia WELL marketing communications.'
           ]
         },
@@ -190,6 +213,12 @@ module.exports = {
                the ones actually in use would be the wrong way round. */
             'If you hold an advisor account, signing in sets cookies that are strictly necessary for that account: a session cookie that keeps you signed in, which is not readable by page scripts, and a small display cookie holding only your first name and initials so the site can show your account menu. Signing out clears both. Browsing the site without an advisor account sets neither.',
             'Our analytics and advertising technologies include services provided by Google, Vercel, and Meta. Depending on configuration, these technologies may receive device, browser, usage, campaign, cookie, IP-address, or similar information.',
+            /* Added because it is the honest counterpart to removing Google
+               Fonts from §10: the typefaces used to be fetched from Google on
+               every page load, which disclosed an IP address before anybody had
+               consented to anything. They are served from this site now, and
+               saying so is worth more than silently deleting the disclosure. */
+            'The typefaces used on this site are served from our own servers rather than from a font provider, so displaying a page does not, by itself, disclose your IP address to a third party.',
             'Where applicable law requires consent before non-essential analytics or advertising technologies are used, we intend to obtain that consent through an appropriate consent mechanism. You should be able to change or withdraw applicable cookie choices. Browser controls and recognized privacy signals may also apply depending on jurisdiction and our technical configuration.',
             'Because advertising and analytics configurations can change, the live cookie/consent implementation should accurately reflect which technologies are active at the time you visit.'
           ]
@@ -223,7 +252,7 @@ module.exports = {
             '<strong>Supabase</strong> for authentication, database, and related infrastructure.',
             '<strong>Resend</strong> for transactional email, including the notification sent to an advisor when you choose to share your Journey.',
             '<strong>Encharge</strong> for email marketing and communications.',
-            '<strong>Google, Vercel, and Meta</strong> for analytics, measurement, performance, and/or advertising technologies, depending on configuration and consent. Google Fonts serves the typefaces used on this site and receives your IP address when a page loads.',
+            '<strong>Google, Vercel, and Meta</strong> for analytics, measurement, performance, and/or advertising technologies, depending on configuration and consent.',
             '<strong>jsDelivr</strong> serves animation libraries used on the Well Destination Foundations page and receives your IP address when that page loads.',
             '<strong>Stripe and ThriveCart</strong> for checkout, payment, and transaction-related services.',
             '<strong>OpenAI and Anthropic (Claude)</strong> for AI-enabled processing where used.',
@@ -252,6 +281,14 @@ module.exports = {
           body: [
             'We retain personal information only for as long as reasonably necessary for the purposes described in this Policy, including providing services, maintaining appropriate business and transaction records, complying with legal obligations, resolving disputes, preventing fraud, and enforcing agreements.',
             'Retention periods vary by category. For example, anonymous or pseudonymous analytics may be retained according to platform settings; account and Journey records may be retained while an advisor relationship or travel-planning purpose remains active and for an appropriate period afterward; transaction records may be retained for tax, accounting, and legal requirements.',
+            /* Added 14 August 2026, when db/migrations/006-retention.sql made
+               this true. It said "only as long as reasonably necessary" for two
+               months while nothing expired at all — a promise the software did
+               not keep. A specific number is worth stating only because there
+               is now a scheduled job enforcing it and a figure on the admin
+               dashboard that climbs into view if that job stops. */
+            '<strong>A shared WELL Journey is deleted automatically 24 months after it was shared</strong>, together with any notes the advisor recorded against it, unless it has become a booking — in which case it is a transaction record and is kept for the purposes described above. You do not need to ask for this to happen, and you may ask for it sooner.',
+            'Deletion here does not reach a copy already sent to your advisor by email. Where you ask us to erase your information, we will delete what we hold and ask your advisor to delete their copy, which their Advisor Data Undertaking requires them to do.',
             'When information is no longer required, we will take reasonable steps to delete, destroy, anonymize, or otherwise de-identify it, subject to legal and technical limitations.'
           ]
         },
@@ -301,7 +338,15 @@ module.exports = {
           ]
         },
         {
-          body: [`To exercise a privacy right, email ${MAILTO}. We may need to verify your identity and may request information reasonably necessary to process the request.`]
+          body: [
+            `To exercise a privacy right, email ${MAILTO}. We may need to verify your identity and may request information reasonably necessary to process the request.`,
+            /* Written when the machinery to do this actually existed. Until
+               then the section offered rights with no mechanism behind them,
+               which is the discrepancy the Implementation Guide asks to have
+               flagged — and the one nobody notices until somebody asks. */
+            '<strong>What happens when you ask.</strong> We look up everything held against your email address and reply within 30 days. For an access request that means a machine-readable copy of every Journey held, the advisor who received it, any notes they recorded about you, and the exact wording you agreed to at the time. For an erasure request we delete all of it, including the consent record and the advisor’s notes, and tell you plainly what we could not reach — an email already delivered to your advisor sits in their mailbox, so we ask them to delete it rather than claim it is gone.',
+            'Please write from the address you shared with, or tell us which one it was. It is the only way we can find your records, and answering the wrong address with “we hold nothing about you” would be worse than no answer at all.'
+          ]
         },
 
         {

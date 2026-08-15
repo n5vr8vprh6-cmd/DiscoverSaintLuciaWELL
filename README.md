@@ -490,6 +490,119 @@ system after.
 | `node tools/auth-test.js [url]` | deployed site | The auth lifecycle end to end, then cleans up after itself |
 | `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
 
+## Privacy: the promises, and what keeps them true
+
+The policy at `/privacy` is the source of truth for what we claim. The rule this
+project follows is that **it may only describe what the software does** — so
+every section below was written after the code that makes it true, not before.
+
+The 14 August 2026 review found the gap running in one direction: the policy
+promised things the software could not do.
+
+| Promise | What now keeps it |
+|---|---|
+| §14 access, correction, erasure | `/hub/admin/subject` |
+| §12 "only as long as necessary" | `purge_expired()`, 24 months, `006-retention.sql` |
+| §5 advisor handles it responsibly | the Advisor Data Undertaking, accepted and versioned |
+| §10 who receives your data | typefaces self-hosted, so Google no longer does |
+| §13 we assess a breach | `db/BREACH-LOG.md` |
+
+### Answering a privacy request
+
+`/hub/admin/subject`, exact match on one email address. Not a partial search: a
+lookup returning everyone at gmail.com discloses other people's data in order to
+answer one person's question.
+
+**Export** produces the access response as JSON — every field, the advisor who
+received it, the notes they wrote, and the exact consent wording that person
+agreed to. That last one is usually what somebody means when they ask what you
+hold. **Correct** is an allow-list; fixing a phone number is a right, editing a
+consent record is falsifying one. **Erase** deletes the Journeys, and
+`advisor_notes` follow by `ON DELETE CASCADE`.
+
+Two things about erasure are worth knowing before you use it:
+
+**The audit row does not contain what was erased.** Writing the name and email
+into `admin_audit` would recreate the data in a table nobody thinks of as
+holding personal data. It stores an HMAC of the address instead, domain-separated
+from the IP hash. When they write back asking whether it was really deleted,
+hashing the address they give you finds the entry — answerable without keeping
+what it destroyed.
+
+**It does not reach the advisor's mailbox.** The notification email carried that
+person's name, email and phone. No delete here touches it. The screen says so,
+and tells you to ask the advisor — which the Undertaking obliges them to do.
+
+### Retention
+
+24 months, excluding `booked` Journeys — those are transaction records, and
+deleting them on a marketing clock is the opposite mistake. The number lives in
+`retention_months()` in the database and the dashboard reads it from there, so
+the figure shown can never drift from the one the purge uses.
+
+**The failure mode is not deletion, it is a scheduled job that silently stops.**
+Nothing errors, every test still passes, and §12 quietly becomes untrue. Two
+things guard it: every run writes to `admin_audit` *including runs that removed
+nothing* — a healthy system must not look like a dead one — and the dashboard
+shows the oldest Journey's age against the limit, which climbs into view on a
+screen you open anyway.
+
+If `pg_cron` was unavailable when 006 ran, **the migration says so in a notice**
+and nothing is scheduled. `node tools/retention.js` reports the state; `--run`
+sweeps.
+
+### The Advisor Data Undertaking
+
+`/advisors/data-undertaking`. Until it existed, the one point where personal data
+left this system — an advisor receiving a traveller's name, phone and free-text
+note — was the one point covered by no agreement. Registration said "you agree to
+our terms" and `/terms` is a consumer document.
+
+Versioned, and the version is stored on the advisor row at acceptance, the same
+evidence pattern as `consent_text`. The constant lives in
+`api/_lib/undertaking.js` and the **page imports it** — two copies of a version
+string is how an acceptance gets recorded against a document that was never
+shown. Bumping it re-gates everybody, which is the intended cost of changing what
+people promised.
+
+**Never backfill `undertaking_version`.** One UPDATE would stamp all eleven
+existing advisors as having accepted, and it would be a forgery. They are gated
+at next sign-in. `tools/undertaking-test.js` asserts the backfill has not
+happened.
+
+The gate lives in `requireAdvisor` and `requireAdmin` — one place, because a gate
+applied screen-by-screen is one somebody forgets on the ninth screen. It never
+fires while an admin is viewing as somebody: accepting there would record that
+the advisor agreed while they were nowhere near a keyboard. And sign-out is
+always reachable, because holding somebody inside a product until they accept a
+legal document is not consent.
+
+### Typefaces are self-hosted, and must stay that way
+
+`assets/fonts/`, declared in `css/tokens.css`. They came from
+fonts.googleapis.com until 14 August 2026, which disclosed every visitor's IP
+address to Google before they had read a word — and it was the only third party
+loading on a default page, since `GTM_ID` is empty.
+
+All three families are OFL-licensed, so self-hosting is expressly permitted
+(`assets/fonts/OFL.txt`). The `unicode-range` values are Google's own, copied
+verbatim: they are what makes `latin-ext` a separate 19 KB file most visitors
+never download, and dropping them would silently double the payload.
+
+**`tools/regress.js` asserts no page loads a typeface from Google**, checking `/`,
+`/privacy` and `/advisors/foundations` separately — Foundations carries its own
+source head and was the one still leaking after the main template was fixed.
+Google Fonts came *out* of §10 rather than being reworded, so if the link ever
+returns the policy is silently wrong about who receives your data.
+
+Hanken Grotesk 700 is used in a handful of places and was never in the Google
+request either — the browser has always synthesised it. Adding a real 700 would
+be an improvement *and* a visible change to type already signed off, so it was
+deliberately not made in a pass meant to change nothing you can see.
+
+**`cdn.jsdelivr.net` still serves GSAP and Lenis to the Foundations page**, and
+is now the only third party receiving a visitor's IP. It is disclosed in §10.
+
 ## Email: two systems, and the split is deliberate
 
 | | Sends what | Why there |

@@ -163,6 +163,33 @@ const post = (path, payload) => json(path, {
   check('share consent states advisor independence',
     finderJs.includes('independent travel'));
 
+  /* ── No third party sees a visitor before they consent ──────────────────
+     The typefaces were served from fonts.googleapis.com until 2026-08-14,
+     which disclosed every visitor's IP address to Google in order to render
+     text. They are self-hosted now, and the sentence about it came OUT of §10
+     of the privacy policy — so if a Google font link ever comes back, the
+     policy silently becomes wrong about who receives your data.
+
+     Checked against the SHIPPED HTML of both heads. /advisors/foundations
+     carries its own source head and was the one that still had the link after
+     the main template was fixed, which is exactly why it is asserted
+     separately rather than trusted to follow. */
+  for (const path of ['/', '/privacy', '/advisors/foundations']) {
+    const html = await (await fetch(BASE + path)).text();
+    check(`${path} loads no typeface from Google`,
+      !/fonts\.googleapis\.com\/css|fonts\.gstatic\.com/.test(html));
+  }
+
+  /* And that they are actually served from here — a page with neither the
+     Google link nor a local @font-face would pass the check above while
+     rendering in Georgia. */
+  const tokens = await (await fetch(BASE + '/css/tokens.css')).text();
+  check('the typefaces are declared locally instead',
+    (tokens.match(/@font-face/g) || []).length >= 6 &&
+    tokens.includes('/assets/fonts/'));
+  check('and the OFL licence ships with them',
+    (await fetch(BASE + '/assets/fonts/OFL.txt')).status === 200);
+
   const failed = results.filter((x) => !x.skipped && !x.pass);
   const skipped = results.filter((x) => x.skipped);
   const ran = results.length - skipped.length;

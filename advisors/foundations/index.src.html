@@ -16,11 +16,10 @@
 <meta property="og:image" content="https://welldestination.com/assets/og-foundations.jpg">
 <meta name="twitter:card" content="summary_large_image">
 
-<!-- Fonts: brand family — Libre Caslon Display / Text + Hanken Grotesk -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
-
+<!-- Fonts: brand family, self-hosted. Declared in css/tokens.css, which
+     build.js links into this page's head, and served from /assets/fonts/ — no
+     request leaves for a typeface, so a visitor discloses nothing to Google
+     before they have read a word. -->
 <link rel="stylesheet" href="css/site.css">
 
 <!-- Structured data: Course + FAQ + Organization -->
