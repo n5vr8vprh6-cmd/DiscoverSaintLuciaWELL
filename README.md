@@ -490,6 +490,49 @@ system after.
 | `node tools/auth-test.js [url]` | deployed site | The auth lifecycle end to end, then cleans up after itself |
 | `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
 
+## Email: two systems, and the split is deliberate
+
+| | Sends what | Why there |
+|---|---|---|
+| **Resend** | Journey notifications, password resets, admin invitations | Transactional. Must never be suppressible. |
+| **Encharge** | Advisor onboarding sequences | Marketing automation, with an unsubscribe. |
+
+**The Journey notification stays on Resend, permanently.** "Somebody shared
+their Journey with you" is time-critical, and routing it through a marketing
+platform would make it suppressible — an advisor who unsubscribes from
+onboarding must still be told a real person is waiting for a reply. Scoping
+`api/_lib/encharge.js` to three lifecycle events is what keeps those two things
+from silently becoming one.
+
+**No consumer data reaches Encharge.** It receives advisors. The one event that
+mentions a Journey at all sends a count, not a person — somebody who shared
+their details agreed to reach one travel advisor, not to enter a marketing
+platform.
+
+The three events, all fired server-side through the Ingest API
+(`POST https://ingest.encharge.io/v1/`, header `X-Encharge-Token`):
+
+| Event | From |
+|---|---|
+| `advisor_registered` | `api/auth/register.js`, and `admin-people.js` for admin-created accounts |
+| `advisor_activated` | admin approve, and admin-created accounts (which arrive active) |
+| `advisor_first_journey` | `api/share.js` — counted AFTER the insert, so `1` means this was the first. Counting before would race two simultaneous shares into two "first Journey" emails. |
+
+Every call is **awaited, not fired and forgotten**: a serverless function is
+killed once it responds, so an un-awaited call is one that may never leave — and
+a call that *usually* works is worse than one that never does, because nobody
+investigates it. It is bounded by its own 2.5s timeout instead, so a hung
+marketing platform cannot hold up a registration.
+
+Without `ENCHARGE_TOKEN` every helper no-ops and the system behaves exactly as
+it did before, which is how every integration here degrades.
+
+**Encharge validates addresses on ingest.** Test contacts on `@example.com` are
+flagged `Email Validation Result: invalid`, which is correct — they cannot
+receive mail. Worth knowing for two reasons: flows attached to those contacts
+may not send, and a real advisor who mistypes their address will be flagged the
+same way rather than silently failing.
+
 ### The seeded fixture set
 
 `node tools/seed-advisors.js` creates ten test advisors — six pending, three
