@@ -490,6 +490,81 @@ system after.
 | `node tools/auth-test.js [url]` | deployed site | The auth lifecycle end to end, then cleans up after itself |
 | `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
 
+## Prize draws: a flag on a share, not a contest engine
+
+Advisors run their own giveaways to build a list. The mechanic already existed —
+somebody completes the Finder and shares it with the advisor — so the only thing
+built was knowing **which** shares came in through the promotion.
+
+**Discover Saint Lucia WELL is not the sponsor**, and the code is shaped around
+that. There is no prize field, no rules field, no eligibility logic, no entrant
+email, and no winner picker. Building any of them would put the platform inside
+somebody else's promotion. The advisor exports the list and draws however they
+like.
+
+This is deliberately *not* Consumer Engine brief §7's campaign layer
+(`prize_summary`, `rules_url`, `eligible_regions`, sponsor metadata, four
+separate consents). That design assumes the platform runs the contest.
+
+### How an entry happens
+
+`/well/<advisor_code>/<draw_code>` → `api/well.js` → `/?advisor=…&s=…`. The `s`
+is kept **first-touch** in `js/attribution.js`, like advisor ownership and unlike
+every other source param: somebody who arrived through a draw link entered one
+draw, and it was the first.
+
+**An entry is a share, not a Finder completion.** Completing the Finder collects
+no contact details, so a pool of completions cannot be contacted, verified or
+drawn from. `journey_shares.created_at` is the entry time; there is no separate
+`entered_at` to drift from it.
+
+**The decision is server-side and nowhere else.** `api/share.js` re-resolves the
+code against the database and against *that* advisor, so a hand-edited request
+cannot enter somebody, enter them into another advisor's draw, or enter them into
+a closed one. Every refusal is silent and the share still succeeds — somebody
+handing over their details to reach a travel advisor must never be blocked
+because a campaign ended.
+
+**The confirmation echoes the server.** `entered` is what was actually written,
+and `js/journey.js` renders the "your entry is counted" line from that, never
+from the fact that a code was in the link. If the draw closed while they were
+filling in the form, they are told they shared and nothing about a draw they are
+not in. That is the one lie this feature could tell.
+
+### Two behaviours that look like bugs and are not
+
+**A closed draw's link still works.** It attributes to the advisor as an ordinary
+WELL link and stops counting. A printed card or QR code outlives the campaign it
+was made for, and a link that 404s months later is worse than one that quietly
+stops counting. `resolveForLink()` is deliberately more forgiving than
+`resolveForEntry()`.
+
+**A draw with entrants refuses to be deleted.** It is the only record that those
+people entered anything. Closing is what an advisor wants; deletion is offered
+only for a draw nobody entered. If a draw *is* deleted, `ON DELETE SET NULL`
+means the entrants survive un-flagged — asserted in the suite, because the
+alternative is destroying real people's Journeys while tidying up a campaign.
+
+### What the entrant is told
+
+The sponsor disclaimer **appends to the existing `consent_text`** rather than
+taking its own column: that field is a record of what the person actually read,
+and what they read is one block of text. It names the advisor as the one running
+the draw and says plainly that we are not the sponsor.
+
+### Where things are
+
+| | |
+|---|---|
+| `/hub/sweepstakes` | the advisor's draws — create, rename, close, link + QR |
+| `/hub/sweepstakes/:id` | entrants and **Export CSV** — the whole draw mechanism |
+| Journeys list & detail | a `Prize draw` tag, shown in view-as too (it identifies nobody) |
+| Admin advisor detail | that advisor's draws, so campaigns in this brand's name are visible |
+
+Entries are ordinary Journey shares, so **retention applies** (24 months) and an
+**erasure request removes somebody from the pool**. Export before drawing if a
+request is outstanding.
+
 ## Privacy: the promises, and what keeps them true
 
 The policy at `/privacy` is the source of truth for what we claim. The rule this

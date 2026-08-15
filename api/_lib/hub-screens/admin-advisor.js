@@ -32,6 +32,7 @@ const { journeysFor, funnelFor } = require('../hub-data.js');
 const { deleteAdvisor, deletionImpact, setRole, sendInvite } = require('../admin-people.js');
 const { track } = require('../encharge.js');
 const { allAdvisors } = require('../admin-data.js');
+const { listFor: drawsFor } = require('../sweepstakes.js');
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
@@ -73,12 +74,13 @@ module.exports = async function handler(req, res) {
   const advisor = await advisorById(id);
   if (!advisor) return notFound(res, admin);
 
-  const [journeys, funnel, history, locked, everyone] = await Promise.all([
+  const [journeys, funnel, history, locked, everyone, draws] = await Promise.all([
     journeysFor(advisor.id, { limit: 50 }),
     funnelFor(advisor.id),
     auditLog({ advisorId: advisor.id, limit: 20 }),
     isLocked(advisor.auth_user_id),
-    allAdvisors()
+    allAdvisors(),
+    drawsFor(advisor.id)
   ]);
   const adminCount = everyone.filter((a) => a.role === 'admin').length;
 
@@ -153,6 +155,26 @@ module.exports = async function handler(req, res) {
                  details masked — is a separate feature, deliberately.</p>`
             : '<p class="hub-hint">Nobody has shared a Journey with them yet.</p>'}
         </section>
+
+        ${draws.length ? `
+        <section class="hub-card">
+          <h2>Their prize draws</h2>
+          ${/* Visible here because campaigns run in this brand's name, and being
+                able to look without asking is worth having. It is NOT approval:
+                advisors create these themselves, the rules and prize are
+                theirs, and Discover Saint Lucia WELL is not the sponsor. */''}
+          <ul class="hub-notes">
+            ${draws.map((d) => `<li>
+              <p>${esc(d.name)} — ${d.entries} ${d.entries === 1 ? 'entrant' : 'entrants'}
+                <span class="hub-stage" data-stage="${d.status === 'open' ? 'new' : 'closed'}">${
+                  d.status === 'open' ? 'Open' : 'Closed'}</span></p>
+              <span class="hub-note-when">${esc(SITE_ORIGIN)}/well/${esc(advisor.public_code || '')}/${esc(d.code)}
+                · started ${esc(since(d.created_at))}</span>
+            </li>`).join('')}
+          </ul>
+          <p class="hub-hint">The rules, the prize and the draw itself are the advisor's, run off
+            this platform. Entrants are told that in the wording they agree to.</p>
+        </section>` : ''}
 
         <section class="hub-card">
           <h2>History</h2>

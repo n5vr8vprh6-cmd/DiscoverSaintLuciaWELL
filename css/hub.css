@@ -188,6 +188,10 @@ body {
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: stretch;
+  /* Bottom margin added when prize draws started stacking a link row above a
+     row of buttons; on Home it is the last thing in its card, so it was never
+     needed there. */
+  margin-bottom: 1rem;
 }
 .hub-link-row input {
   flex: 1 1 18rem;
@@ -576,6 +580,33 @@ body {
   }
   .hub-actions .btn { flex: 1 1 100%; justify-content: center; }
   .hub-stat-n { font-size: 1.8rem; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PRIZE DRAWS
+   Built from the cards, stats and link rows that already exist. A draw is an
+   ordinary thing an advisor does, not a mode the Hub enters, so it gets no
+   special colour — only the one tag that marks an entrant apart from an
+   ordinary Journey.
+   ══════════════════════════════════════════════════════════════════════════ */
+.hub-tag[data-tag="draw"] {
+  background: rgba(217, 160, 60, 0.14);
+  color: var(--gold-deep);
+}
+
+.hub-sweeps-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.hub-sweeps-head h2 { margin: 0; }
+
+.hub-funnel--tight { margin: 1rem 0 1.25rem; }
+
+@media (max-width: 620px) {
+  .hub-sweeps-head { flex-direction: column; gap: 0.5rem; }
+  .hub-link-row .btn { flex: 1 1 auto; justify-content: center; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

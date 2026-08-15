@@ -3121,3 +3121,13 @@ body[data-motion="ready"] .day-track.settled > li .day-body > * {
   line-height: 1.45;
   color: var(--muted);
 }
+
+/* The prize-draw confirmation. Only ever rendered when the SERVER said the
+   entry was written — see js/journey.js. Marked with the gold rule rather than
+   a badge or a burst: somebody has just handed over their phone number, and
+   confetti at that moment reads as a sales flourish. */
+.share-entered {
+  margin-top: 0.9rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--gold);
+}

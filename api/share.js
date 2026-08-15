@@ -28,6 +28,7 @@ const {
   db, json, str, esc, looksLikeEmail, ipHash, body, methodGuard
 } = require('./_lib/core.js');
 const { activeAdvisor } = require('./_lib/advisors.js');
+const { resolveForEntry } = require('./_lib/sweepstakes.js');
 const { track } = require('./_lib/encharge.js');
 
 /* Deliberately generous. A real person sharing a Journey submits once; this
@@ -66,6 +67,7 @@ module.exports = async function handler(req, res) {
   const travelWindow = normaliseWindow(str(b.travelWindow, 20), timing);
   const context = str(b.context, 1200);
   const advisorRef = str(b.advisor, 120);
+  const sweepsRef = str(b.sweeps, 32);
   const sessionId = str(b.session, 64);
   const source = str(b.source, 40).toLowerCase() || null;
 
@@ -104,10 +106,28 @@ module.exports = async function handler(req, res) {
        their hand is never dropped because a link was stale. */
     const advisor = advisorRef ? await activeAdvisor(supabase, advisorRef) : null;
 
+    /* ── PRIZE-DRAW ENTRY, DECIDED HERE AND NOWHERE ELSE ──────────────────
+       The client sends a code it picked up from the link. This re-resolves it
+       against the database and against THIS advisor, so a hand-edited request
+       cannot enter somebody into a draw, enter them into another advisor's
+       draw, or enter them into one that has closed.
+
+       Every failure is silent and the share still succeeds. Somebody sharing
+       their Journey must never be blocked because a campaign ended — they came
+       to talk to a travel advisor, and that is what happens either way.
+
+       What they are TOLD depends on this result, not on what they clicked:
+       `entered` below is the truth of what was written. If the draw closed
+       while they were filling in the form, they are not told they entered. */
+    const draw = (advisor && sweepsRef)
+      ? await resolveForEntry(supabase, sweepsRef, advisor.id)
+      : null;
+
     const { data: share, error } = await supabase
       .from('journey_shares')
       .insert({
         advisor_id: advisor ? advisor.id : null,
+        sweepstakes_id: draw ? draw.id : null,
         answers,
         villages,
         consumer_first: first,
@@ -164,7 +184,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    return json(res, 200, { ok: true, notified });
+    return json(res, 200, { ok: true, notified, entered: !!draw });
   } catch (e) {
     console.error('share failed', e);
     return json(res, 500, { error: 'share_failed' });

@@ -47,6 +47,21 @@
     }
   });
 
+  /* Prize-draw entry: FIRST touch wins, like advisor ownership and unlike every
+     other source param. Somebody who arrived through an advisor's draw link and
+     then wandered the site — picking up a utm from a newsletter on the way back
+     — entered ONE draw, and it was the first one. Treating it as last-touch
+     would let an unrelated later visit silently move which campaign they are
+     counted in.
+
+     It is only ever a hint. api/share.js re-resolves the code server-side and
+     decides whether it is really an entry; nothing here can make one. */
+  var s = params.get('s');
+  if (s && !stored.sweeps) {
+    stored.sweeps = s.slice(0, 32);
+    changed = true;
+  }
+
   /* Source data: last touch wins — it describes how they got here this time. */
   SOURCE_PARAMS.forEach(function (p) {
     var v = params.get(p);
@@ -130,6 +145,8 @@
   window.dslwAttribution = function () {
     return {
       advisor: stored.advisor || null,
+      /* A hint only. The share endpoint re-resolves it and decides. */
+      sweeps: stored.sweeps || null,
       source: stored.utm_source || stored.src || null,
       medium: stored.utm_medium || null,
       campaign: stored.utm_campaign || stored.campaign || null,

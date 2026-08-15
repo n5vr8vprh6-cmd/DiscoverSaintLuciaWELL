@@ -121,6 +121,12 @@ module.exports = async function handler(req, res) {
       <p class="hub-contact">
         ${j.consumer_email ? `<span>${esc(j.consumer_email)}</span>` : ''}
         ${j.consumer_phone ? `<span>${esc(j.consumer_phone)}</span>` : ''}
+        ${/* Shown in view-as too, unlike the name and contact details beside it.
+              "Arrived through a promotion" is a fact about the CAMPAIGN, not
+              about the person — it identifies nobody, and hiding it would make
+              a support session unable to explain why a list looks the way it
+              does. hub-mask.js draws the same line. */''}
+        ${j.sweepstakes_id ? '<span class="hub-tag" data-tag="draw">Entered your prize draw</span>' : ''}
       </p>
     </header>
 

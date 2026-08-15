@@ -106,6 +106,14 @@
       "destination": "/api/hub?screen=journey&id=:id"
     },
     {
+      "source": "/hub/sweepstakes",
+      "destination": "/api/hub?screen=sweepstakes"
+    },
+    {
+      "source": "/hub/sweepstakes/:id",
+      "destination": "/api/hub?screen=sweepstakesDetail&id=:id"
+    },
+    {
       "source": "/hub/undertaking",
       "destination": "/api/hub?screen=undertaking"
     },
@@ -144,6 +152,10 @@
     {
       "source": "/well/:code",
       "destination": "/api/well?code=:code"
+    },
+    {
+      "source": "/well/:code/:sweeps",
+      "destination": "/api/well?code=:code&sweeps=:sweeps"
     }
   ]
 }

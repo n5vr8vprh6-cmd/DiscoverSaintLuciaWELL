@@ -187,7 +187,12 @@ module.exports = {
                consumer deciding whether to press the button is entitled to know
                what was asked of the person receiving their details. */
             'Before an advisor can receive a Journey, they must accept our <a href="/advisors/data-undertaking">Advisor Data Undertaking</a>. Among other things it requires them to use your information to plan the travel you asked about, not to add you to marketing lists without asking you separately, to keep it secure, to delete it on request and tell us they have, and to report any exposure of it to us within 72 hours. This does not make them our employee or our agent, and it does not replace their own legal obligations.',
-            'Sharing a Journey with an advisor does not, by itself, subscribe you to Discover Saint Lucia WELL marketing communications.'
+            'Sharing a Journey with an advisor does not, by itself, subscribe you to Discover Saint Lucia WELL marketing communications.',
+            /* Added 15 August 2026 with the prize-draw links. The wording an
+               entrant agrees to says the same thing at the moment they enter,
+               and is stored with their record; this is the standing version of
+               it for somebody reading the policy first. */
+            '<strong>Prize draws run by advisors.</strong> An advisor may give out a link that also enters you into a prize draw of their own when you share your Journey. If so, you are told at the point of entry and it is included in the wording you agree to. <strong>Those draws belong to the advisor, not to us:</strong> the rules, eligibility, prize and the selection of a winner are theirs, we are not the sponsor, and we take no part in choosing. We record which shares came through a draw link so the advisor can see who entered; we do not contact entrants about it.'
           ]
         },
 

@@ -118,6 +118,10 @@ function row(j) {
       <span class="hub-journey-meta">
         <span class="hub-stage" data-stage="${esc(j.stage)}">${esc(STAGE_LABEL[j.stage] || j.stage)}</span>
         ${j.travel_window ? `<span>${esc(WINDOW_LABEL[j.travel_window] || j.travel_window)}</span>` : ''}
+        ${/* Marked because it changes how you open the conversation: somebody
+              who came in through a giveaway is warmer about the prize than
+              about the trip, and worth greeting differently. */''}
+        ${j.sweepstakes_id ? '<span class="hub-tag" data-tag="draw">Prize draw</span>' : ''}
         <span>Shared ${esc(since(j.created_at))}</span>
       </span>
       ${villages ? `<span class="hub-journey-villages">${esc(villages)}</span>` : ''}

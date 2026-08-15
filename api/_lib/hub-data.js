@@ -19,7 +19,10 @@ const { WINDOW_ORDER } = require('./hub-render.js');
 const SHARE_FIELDS =
   'id, consumer_first, consumer_last, consumer_email, consumer_phone, ' +
   'timing, travel_window, context, answers, villages, stage, source, ' +
-  'created_at, last_activity_at, notified_at';
+  /* A column missing from this string is `undefined` on every Hub screen, so a
+     badge keyed off it would simply never render — silently, and looking
+     exactly like "nobody has entered". */
+  'sweepstakes_id, created_at, last_activity_at, notified_at';
 
 async function journeysFor(advisorId, { limit = 200 } = {}) {
   const supabase = db();

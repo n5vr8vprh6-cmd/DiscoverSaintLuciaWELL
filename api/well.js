@@ -19,11 +19,27 @@
    /journey for "take the Finder", /eclipse for a particular conversation — and
    is restricted to a known list, because an open redirect on a link designed
    to be printed and trusted would be a genuinely bad thing to ship.
+
+   ── /well/<code>/<sweeps> — THE PRIZE-DRAW VARIANT ────────────────────────
+   A second segment names one of that advisor's prize draws. It rides through
+   to the site as `&s=<code>`, is retained by js/attribution.js, and is what
+   makes the eventual share an ENTRY.
+
+   Three deliberate behaviours, and each is the forgiving one:
+
+     · a CLOSED draw still redirects, attributed, without the `s` — a printed
+       card or a QR code outlives the campaign it was made for, and a link that
+       404s months later is worse than one that quietly stops counting;
+     · an UNKNOWN second segment is ignored the same way, so a typo costs the
+       entry flag rather than the advisor's attribution;
+     · a draw belonging to a DIFFERENT advisor is ignored, so a second code can
+       never move a lead. Ownership comes from the first segment, always.
    ========================================================================== */
 'use strict';
 
 const { db, str } = require('./_lib/core.js');
 const { resolveAdvisor } = require('./_lib/advisors.js');
+const { resolveForLink, OPEN } = require('./_lib/sweepstakes.js');
 
 /* Where an advisor may aim their link. Deliberately a list, not a pattern. */
 const DESTINATIONS = {
@@ -38,11 +54,14 @@ const DESTINATIONS = {
 module.exports = async function handler(req, res) {
   const url = new URL(req.url, 'https://x');
   const code = str(url.searchParams.get('code'), 120);
+  const sweeps = str(url.searchParams.get('sweeps'), 32);
   const to = DESTINATIONS[str(url.searchParams.get('to'), 20).toLowerCase()] || '/';
 
   const supabase = db();
+  /* `id` is selected because the draw lookup below is scoped by advisor — a
+     code alone must never be enough to attach an entry to somebody. */
   const advisor = supabase
-    ? await resolveAdvisor(supabase, code, 'public_code, slug, status') : null;
+    ? await resolveAdvisor(supabase, code, 'id, public_code, slug, status') : null;
 
   /* An unknown, retyped-wrong or deactivated code sends the visitor to the site
      anyway, unattributed. They came here to read about Saint Lucia; a 404 would
@@ -53,7 +72,18 @@ module.exports = async function handler(req, res) {
      who arrives in lower case, or through an old slug, continues with the one
      identifier the rest of the funnel will agree on. */
   const ref = attributed ? (advisor.public_code || advisor.slug) : null;
-  const target = ref ? `${to}?advisor=${encodeURIComponent(ref)}` : to;
+
+  /* Only an OPEN draw belonging to THIS advisor rides along. Everything else
+     falls back to the plain attributed link rather than failing. */
+  let draw = null;
+  if (ref && sweeps) {
+    draw = await resolveForLink(supabase, sweeps, advisor.id);
+    if (draw && draw.status !== OPEN) draw = null;
+  }
+
+  const target = ref
+    ? `${to}?advisor=${encodeURIComponent(ref)}${draw ? '&s=' + encodeURIComponent(draw.code || sweeps.toUpperCase()) : ''}`
+    : to;
 
   /* 302, not 301. A permanent redirect would be cached by the browser, and an
      advisor who is later paused — or a code aimed somewhere new — would keep

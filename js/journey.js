@@ -501,12 +501,28 @@
      (`consent_text`), so we can always show what a given person actually saw. */
   function shareConsent(advisorName) {
     var who = advisorName || 'a participating Saint Lucia WELL advisor';
-    return 'By choosing “Share my Journey,” you agree that Discover Saint Lucia ' +
+    var base = 'By choosing “Share my Journey,” you agree that Discover Saint Lucia ' +
       'WELL may share your contact information, Journey Finder result and the ' +
       'travel details you provide with ' + who + ' so they can contact you about ' +
       'planning your Saint Lucia journey. Your advisor is an independent travel ' +
       'professional and handles information they receive under their own privacy ' +
       'practices. Sharing your Journey does not subscribe you to marketing emails.';
+
+    /* ── The prize-draw sentence ──────────────────────────────────────────
+       Appended to the SAME string rather than shown separately, because
+       `consent_text` is stored verbatim and has to be a record of what this
+       person actually read. Two fields would be two records of one moment.
+
+       It says plainly who the sponsor is, and that it is not us. Discover
+       Saint Lucia WELL provides the Journey Finder; the rules, the prize and
+       the draw belong to the advisor and happen off this site. Somebody
+       deciding whether to hand over their phone number is entitled to know
+       which of those two they are dealing with. */
+    if (!attribution().sweeps) return base;
+    return base + ' You are also entering a prize draw run by ' + who +
+      '. That draw is theirs — its rules, eligibility and prize are set by ' +
+      'them, not by Discover Saint Lucia WELL, which is not the sponsor and ' +
+      'takes no part in selecting a winner.';
   }
 
   function attribution() {
@@ -650,6 +666,9 @@
         company: get('company'),                       /* honeypot */
         consent: true, consentText: shareConsent(advisorName),
         advisor: attr.advisor || null,
+        /* A hint. api/share.js re-resolves it and decides whether this is
+           really an entry — nothing here can make one. */
+        sweeps: attr.sweeps || null,
         source: attr.source || null,
         session: sessionId(),
         answers: answers,
@@ -659,13 +678,28 @@
       return r.json().then(function (d) { return { ok: r.ok, d: d }; });
     }).then(function (res) {
       if (!res.ok) throw new Error((res.d && res.d.error) || 'failed');
-      track('journey_shared', { attributed: !!advisorName });
+      /* ── THE CONFIRMATION ECHOES THE SERVER ───────────────────────────
+         `entered` is what api/share.js actually wrote, not what this page
+         believed when it drew the form. If the draw closed in the minutes
+         somebody spent filling it in, they are told they shared — which is
+         true — and nothing about a draw they are not in.
+
+         This is the one lie the feature could tell, and telling it would be
+         easy: the page already knows a draw code was in the link. It is not
+         allowed to answer from that. */
+      var entered = !!(res.d && res.d.entered);
+      track('journey_shared', { attributed: !!advisorName, entered: entered });
       form.innerHTML =
         '<h4 class="share-title">Sent.</h4>' +
         '<p class="share-note">' +
           (advisorName ? esc(advisorName) + ' has your Journey' : 'Your Journey is on its way') +
           ' and can help you explore how it might come to life in Saint Lucia. ' +
-          'Your result stays on this page — the link in your address bar will bring you back to it.</p>';
+          'Your result stays on this page — the link in your address bar will bring you back to it.</p>' +
+        (entered
+          ? '<p class="share-note share-entered"><strong>Your entry is counted.</strong> ' +
+            esc(advisorName || 'Your advisor') + ' will be in touch about the draw — ' +
+            'it is theirs to run, so any questions about it go to them.</p>'
+          : '');
     }).catch(function (err) {
       button.disabled = false;
       fail(status, String(err.message) === 'rate_limited'
