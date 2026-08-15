@@ -114,6 +114,78 @@ async function saveProfile(advisorId, patch) {
   return { ok: true };
 }
 
+/* ── The advisor's link ───────────────────────────────────────────────────
+   Copy is STORED with the literal token {{WELL_LINK}} and the real URL is put
+   in on the way out. Two reasons: the model never sees a URL it might mangle,
+   and an advisor whose public_code ever changes does not end up with a month
+   of copy pointing at a dead link.
+
+   IT LIVES HERE BECAUSE TWO PLACES RENDER COPY. api/gtm.js returns assets as
+   JSON and campaign-blocks.js renders them into the page, and when only the
+   first one substituted, a reload showed every advisor the raw {{WELL_LINK}}
+   token where their link should be. One function, both callers. */
+const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
+
+function wellLink(advisor) {
+  const code = advisor && advisor.public_code;
+  return code ? `${SITE_ORIGIN}/well/${code}` : SITE_ORIGIN;
+}
+
+function substitute(text, advisor) {
+  return String(text == null ? '' : text).replace(/\{\{WELL_LINK\}\}/g, wellLink(advisor));
+}
+
+/* ── Reading a plan back ──────────────────────────────────────────────────
+   The newest ready plan and its assets. "Current" is simply the most recent
+   row rather than a flag on one of them: a flag is a second fact that can
+   disagree with the timestamps, and there would be nothing to arbitrate it. */
+async function currentPlan(advisorId) {
+  const supabase = db();
+  if (!supabase || !advisorId) return null;
+
+  const { data: plan, error } = await supabase
+    .from('gtm_plan').select('*')
+    .eq('advisor_id', advisorId).eq('status', 'ready')
+    .order('created_at', { ascending: false }).limit(1).maybeSingle();
+
+  if (error) {
+    /* Absent until migration 012. Same two codes as profileFor — see there. */
+    if (['42P01', 'PGRST205', 'PGRST204'].indexOf(String(error.code)) === -1) {
+      console.error('currentPlan', error);
+    }
+    return null;
+  }
+  if (!plan) return null;
+
+  const { data: assets } = await supabase
+    .from('gtm_asset').select('*')
+    .eq('plan_id', plan.id).order('week').order('position');
+
+  return { plan, assets: assets || [] };
+}
+
+/* Every action in the skeleton, paired with the asset that belongs to it (or
+   null). Built here rather than in the browser because the shape of a plan is
+   a server concern — a client that derived it would have to be updated in step
+   with the generator, and the two would drift on the first change. */
+function planRows(plan, assets) {
+  const byKey = {};
+  (assets || []).forEach((a) => { byKey[a.week + ':' + a.position] = a; });
+
+  return ((plan && plan.skeleton && plan.skeleton.weeks) || []).map((w) => ({
+    week: w.week,
+    theme: w.theme,
+    actions: (w.actions || []).map((a, i) => ({
+      position: i,
+      title: a.title,
+      why: a.why,
+      channel: a.channel,
+      assetKind: a.assetKind,
+      asset: byKey[w.week + ':' + i] || null
+    }))
+  }));
+}
+
 /* ── The gap report ───────────────────────────────────────────────────────
    Honest diagnostic, not a crippled tool. The plan is always as good as the
    inputs allow; this says what is missing and what it costs, which is a better
@@ -234,6 +306,7 @@ make marketing harder? Be blunt. I would rather know.`;
 module.exports = {
   BANDS, FIELDS, GAPS,
   rung, mayRefresh,
-  profileFor, saveProfile,
+  profileFor, saveProfile, currentPlan, planRows,
+  wellLink, substitute,
   gapReport, intakePrompt
 };

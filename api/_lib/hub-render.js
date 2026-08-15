@@ -16,7 +16,10 @@
 
 const { render } = require('../../lib/page.js');
 
-function hubPage(res, { path, title, advisor, body, status }) {
+/* `js` adds a screen-specific script alongside hub.js. Only /hub/campaign uses
+   one — it orchestrates a dozen sequential fetches and would otherwise be
+   several hundred lines that every other Hub page downloads and never runs. */
+function hubPage(res, { path, title, advisor, body, status, js }) {
   const html = render({
     key: 'hub',
     path,
@@ -29,7 +32,7 @@ function hubPage(res, { path, title, advisor, body, status }) {
        choreography or the consumer motion ladder — those exist to make an
        editorial page unfold, and here they would just delay a table. */
     scripts: false,
-    js: ['/js/hub.js'],
+    js: ['/js/hub.js'].concat(js || []),
     /* Declaring `styles` swaps css/site.css for this one (see lib/page.js), so
        the Hub inherits the tokens and the chrome primitives — .wrap, .btn,
        .eyebrow, the type scale — without also inheriting three thousand lines

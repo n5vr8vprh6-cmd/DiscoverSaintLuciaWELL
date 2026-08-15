@@ -807,3 +807,254 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ── The 30-day plan ──────────────────────────────────────────────────────
+   Spec §9's deliverable, and the shape follows how it is used: somebody opens
+   this on a Monday, on a phone, and wants to know what this week asks of them.
+   So weeks are the structure and every piece of copy is a box you can paste
+   from, not a document you scroll.
+
+   Nothing here introduces a colour. Warnings borrow the gold rule already used
+   by .hub-notice and the one blocking state borrows --v-movement, the same
+   token .hub-flash--bad uses — full-saturation deck colour stays where the
+   brand puts it, in the ring mark on the overlay below and nowhere else. */
+.gtm-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.9rem;
+  margin: 0 0 1.25rem;
+}
+.gtm-locked { margin-top: 0; }
+
+.gtm-week { margin: 1.75rem 0 0; }
+.gtm-week-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--hairline-l);
+  margin-bottom: 0.9rem;
+}
+.gtm-week-n {
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  white-space: nowrap;
+}
+.gtm-week-head h3 { margin: 0; font-size: var(--fs-lead); }
+
+.gtm-block {
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  padding: clamp(0.85rem, 2.5vw, 1.15rem);
+  margin-bottom: 0.85rem;
+  background: #fff;
+}
+/* An action with no copy attached — "call two clients" wants a note on what to
+   say, not a caption. Rendering it as an empty box would imply a failure. */
+.gtm-block--bare { background: var(--paper); }
+
+.gtm-block-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.gtm-block-head h4 { margin: 0 0 0.25rem; font-size: var(--fs-body); }
+.gtm-block-head .hub-hint { margin: 0; }
+
+.gtm-chan {
+  flex: none;
+  font-family: var(--sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--paper-2);
+  border-radius: 999px;
+  padding: 0.2em 0.65em;
+  white-space: nowrap;
+}
+
+.gtm-block-body { margin-top: 0.85rem; }
+
+.gtm-label {
+  display: block;
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+.gtm-edited {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--gold-deep);
+}
+
+.gtm-body {
+  width: 100%;
+  /* The same measure .hub-card p uses. Without it a caption gets the full card
+     — 1202px on a 2000px screen — and nobody can read a 1200px line, least of
+     all to check it before publishing. The box is what the copy will look like
+     wherever it lands, so it should not be shaped like nowhere. */
+  max-width: 62ch;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  padding: 0.75rem 0.85rem;
+  resize: vertical;
+}
+.gtm-body[readonly] { background: var(--paper); }
+.is-editing .gtm-body {
+  background: #fff;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(217, 160, 60, 0.18);
+}
+
+.gtm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+}
+
+/* ── The checker's verdict ───────────────────────────────────────────────
+   Above the copy, never below it. A warning underneath text somebody has
+   already read and copied has arrived too late to be a warning. */
+.gtm-flags {
+  border-left: 3px solid var(--gold);
+  background: var(--paper-2);
+  padding: 0.75rem 0.95rem;
+  margin: 0 0 0.75rem;
+  font-size: var(--fs-small);
+}
+.gtm-flags--high { border-left-color: var(--v-movement); }
+.gtm-flags-head {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+  font-family: var(--sans);
+}
+.gtm-flags ul { margin: 0; padding-left: 1.1rem; }
+.gtm-flags li { margin-bottom: 0.4rem; }
+.gtm-flags li:last-child { margin-bottom: 0; }
+.gtm-instead {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--muted);
+}
+
+/* CASL and the TCPA land on the sender, who is the advisor. A template handed
+   over without this is a liability given away as a gift. */
+.gtm-consent {
+  font-size: var(--fs-small);
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px dashed var(--hairline-l);
+  border-radius: 3px;
+  padding: 0.6rem 0.8rem;
+  margin: 0 0 0.75rem;
+}
+.gtm-failed {
+  font-size: var(--fs-small);
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ── The thinking overlay ────────────────────────────────────────────────
+   The minute where the product either feels like it works or feels like it
+   has hung. It says what it is doing, and the ring mark is the one place the
+   brand's full-saturation colour belongs. */
+.gtm-thinking {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(18, 48, 47, 0.94);
+  padding: var(--gutter);
+}
+.gtm-thinking[hidden] { display: none; }
+body.gtm-busy { overflow: hidden; }
+
+.gtm-thinking-inner { text-align: center; max-width: 26rem; }
+.gtm-thinking-step {
+  font-family: var(--serif-display);
+  font-size: var(--fs-lead);
+  color: var(--paper);
+  margin: 1.25rem 0 0.85rem;
+}
+.gtm-thinking .hub-hint { color: var(--mist); }
+.gtm-thinking-note { margin-top: 0.9rem; }
+
+.gtm-ring { width: clamp(76px, 22vw, 108px); height: auto; }
+.gtm-ring circle {
+  fill: none;
+  stroke-width: 2;
+  transform-origin: 60px 60px;
+}
+.gtm-ring-1 { stroke: var(--teal-bright); animation: gtm-spin 3.2s linear infinite; }
+.gtm-ring-2 { stroke: var(--gold);        animation: gtm-spin 2.4s linear infinite reverse; }
+.gtm-ring-3 { stroke: var(--coral);       animation: gtm-spin 4s   linear infinite; }
+.gtm-ring circle {
+  stroke-dasharray: 90 210;
+  stroke-linecap: round;
+}
+@keyframes gtm-spin { to { transform: rotate(360deg); } }
+
+/* The gold journey line, filling as pieces land. */
+.gtm-thinking-bar {
+  height: 2px;
+  background: var(--hairline-d);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.gtm-thinking-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--gold);
+  transition: width 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gtm-ring circle { animation: none; }
+  .gtm-thinking-bar span { transition: none; }
+}
+
+/* ── Narrow phones ───────────────────────────────────────────────────────
+   360–380px is a real Android width, and the block head is the thing that
+   breaks first: a long action title beside a channel badge leaves the title
+   two words a line. Below 460 the badge moves under the title instead. */
+@media (max-width: 460px) {
+  .gtm-block-head { flex-direction: column; gap: 0.4rem; }
+  .gtm-chan { align-self: flex-start; }
+  .gtm-actions .btn { flex: 1 1 auto; }
+
+  /* Padding was nesting four deep — .wrap, .hub-card, .gtm-block and then the
+     textarea's own — which left 253px of column on a 380px phone against the
+     282px a plain paragraph in the same card gets. The block's side padding is
+     the redundant level: the card already holds the content off the edge. So
+     on narrow screens blocks become stacked rows divided by a rule rather than
+     boxes inside a box, and the copy gets its width back. */
+  .gtm-block {
+    padding-left: 0;
+    padding-right: 0;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+  .gtm-block--bare { background: transparent; }
+}

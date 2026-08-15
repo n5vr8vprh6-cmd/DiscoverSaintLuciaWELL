@@ -30,12 +30,10 @@
 
 const { db, json, str, body: parseBody } = require('./_lib/core.js');
 const { requireAdvisorJson } = require('./_lib/auth.js');
-const { rung, mayRefresh, profileFor } = require('./_lib/gtm.js');
+const { rung, mayRefresh, profileFor, substitute } = require('./_lib/gtm.js');
 const { generateSkeleton, generateAsset } = require('./_lib/gtm-generate.js');
 const { check, ownNames } = require('./_lib/claims.js');
 const { configured, reasonText } = require('./_lib/openai.js');
-
-const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
 /* ── Loop guards, not quotas ──────────────────────────────────────────────
    Set where nobody working normally will ever meet them. An advisor past
@@ -53,14 +51,9 @@ async function countSince(supabase, table, advisorId, minutes) {
   return count || 0;
 }
 
-/* The advisor's real link, substituted AFTER the checker has run. The model
-   only ever sees the token — see gtm-generate.js. */
-function wellLink(advisor) {
-  return advisor.public_code ? `${SITE_ORIGIN}/well/${advisor.public_code}` : SITE_ORIGIN;
-}
-function substitute(text, advisor) {
-  return String(text || '').replace(/\{\{WELL_LINK\}\}/g, wellLink(advisor));
-}
+/* substitute() comes from _lib/gtm.js so the JSON path and the server-rendered
+   page cannot disagree about it. They did: only this one substituted, so a
+   reload showed the raw token. */
 
 /* ── plan ─────────────────────────────────────────────────────────────────
    The skeleton. Frozen rung, because the copy that follows is written under

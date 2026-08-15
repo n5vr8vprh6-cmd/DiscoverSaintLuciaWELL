@@ -21,8 +21,11 @@ const { requireAdvisor } = require('../auth.js');
 const { str, body: parseBody } = require('../core.js');
 const { hubPage, esc, pageHead } = require('../hub-render.js');
 const {
-  BANDS, FIELDS, profileFor, saveProfile, gapReport, intakePrompt, rung, mayRefresh
+  BANDS, FIELDS, profileFor, saveProfile, gapReport, intakePrompt, rung, mayRefresh,
+  currentPlan, planRows
 } = require('../gtm.js');
+const { planSection, thinkingOverlay } = require('../campaign-blocks.js');
+const { configured } = require('../openai.js');
 
 const LADDER_LABEL = {
   registered: 'Registered',
@@ -60,14 +63,58 @@ module.exports = async function handler(req, res) {
   const p = profile || {};
   const where = rung(advisor);
 
+  /* The plan, if there is one. Loaded before the intake because it changes what
+     the page is: with a plan this screen is a kit you use, and the intake below
+     is where you go to improve the next one. */
+  const held = await currentPlan(advisor.id);
+  const rows = held ? planRows(held.plan, held.assets) : [];
+  const canGenerate = configured() && gaps.enoughToGenerate && !advisor.viewingAs;
+
   const body = `<div class="hub-main">
   <div class="wrap">
 
     ${pageHead('My Campaign', 'Your 30-day plan',
-      'A plan of small actions with the words already written, each one pointing at your WELL link. First it needs to know who you are.')}
+      held
+        ? 'Small actions with the words already written, each one pointing at your WELL link.'
+        : 'A plan of small actions with the words already written, each one pointing at your WELL link. First it needs to know who you are.')}
 
     ${done ? `<p class="hub-flash${/failed|readonly/.test(done) ? ' hub-flash--bad' : ''}">${
       esc(DONE_MESSAGE[done] || done)}</p>` : ''}
+
+    ${thinkingOverlay()}
+
+    ${held ? planSection(rows, {
+        advisor,
+        planId: held.plan.id,
+        premise: (held.plan.skeleton && held.plan.skeleton.premise) || '',
+        mayRefresh: canGenerate && mayRefresh(advisor)
+      }) : `
+    ${/* No plan yet. The button is the point of the screen, so it comes first —
+          and when it cannot be pressed it says why, rather than sitting greyed
+          out with no explanation. */''}
+    <section class="hub-card gtm-start">
+      <h2>Build your plan</h2>
+      ${canGenerate ? `
+        <p class="hub-hint">Four weeks of small actions, with the copy written for each one. It
+          takes about a minute and you can edit everything afterwards.</p>
+        <div class="hub-actions">
+          <button type="button" class="btn btn--gold" id="gtm-build">Build my 30-day plan</button>
+        </div>
+        ${mayRefresh(advisor) ? '' : `<p class="hub-hint">You get one plan. Rebuilding it whenever
+          you like is part of <a href="/advisors/foundations" target="_blank" rel="noopener">Well
+          Destination Foundations</a>.</p>`}`
+      : advisor.viewingAs ? `
+        <p class="hub-hint">You are viewing this advisor's Hub. Generating a campaign under their
+          name is not available here — it would put words in their mouth that they publish and
+          warrant as their own.</p>`
+      : !gaps.enoughToGenerate ? `
+        <p class="hub-hint">Not yet — fill in the essentials below first. A plan built on guesses
+          reads like one, and you would be the one publishing it.</p>
+        <p class="hub-hint"><strong>Still needed:</strong> ${esc(gaps.blockers.join(' · '))}</p>`
+      : `
+        <p class="hub-hint">Plan writing is not switched on just yet. Everything below still works —
+          fill it in now and the plan will be ready the moment it is.</p>`}
+    </section>`}
 
     ${/* Readiness before anything else, because it answers the only question
           somebody has on arrival: is this worth my time yet. */''}
@@ -185,7 +232,10 @@ module.exports = async function handler(req, res) {
   </div>
 </div>`;
 
-  hubPage(res, { path: '/hub/campaign', title: 'My Campaign', advisor, body });
+  hubPage(res, {
+    path: '/hub/campaign', title: 'My Campaign', advisor, body,
+    js: ['/js/hub-campaign.js']
+  });
 };
 
 /* ── Bits ────────────────────────────────────────────────────────────────── */

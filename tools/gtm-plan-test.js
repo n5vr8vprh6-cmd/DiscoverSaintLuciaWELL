@@ -472,6 +472,92 @@ let cleanup = [];
       'a checker that cries wolf teaches advisors to click past the one that mattered');
 
     await call('revert', advisor, { asset_id: assetId });
+
+    /* ══ THE TWO RENDER PATHS MUST AGREE ══════════════════════════════════
+       An asset reaches an advisor two ways: as JSON from api/gtm.js when it is
+       generated, and as HTML from campaign-blocks.js on every page load after
+       that. Both have to put the real link in place of {{WELL_LINK}}.
+
+       They did not. Only the JSON path substituted, so the copy appeared
+       correctly as it was written and then showed the raw token the moment the
+       page was reloaded — every advisor, every visit. Caught by reading the
+       rendered page rather than by any assertion here, which is why there is
+       now an assertion here. */
+    console.log('\n  Both render paths substitute the link');
+    const { planRows: rowsOf, substitute } = require('../api/_lib/gtm.js');
+    const { planSection } = require('../api/_lib/campaign-blocks.js');
+
+    /* The plan that actually has assets on it. currentPlan() would return the
+       newer one built for the promoted advisor a few assertions ago, which is
+       correct behaviour and empty — and rendering nothing makes "no token
+       left behind" pass without proving anything. */
+    const { data: heldPlan } = await db.from('gtm_plan').select('*').eq('id', planId).single();
+    const { data: heldAssets } = await db.from('gtm_asset').select('*')
+      .eq('plan_id', planId).order('week').order('position');
+    const held = { plan: heldPlan, assets: heldAssets || [] };
+
+    ok('the plan loads back with assets on it', held.assets.length > 0,
+      'an empty render would pass the next assertions for the wrong reason');
+
+    const html = planSection(rowsOf(held.plan, held.assets), { advisor, planId: held.plan.id });
+    ok('and the markup actually contains copy', /gtm-body/.test(html),
+      'guards every assertion below from passing on an empty string');
+    ok('the STORED copy still holds the token',
+      held.assets.some((a) => /\{\{WELL_LINK\}\}/.test(String(a.body || ''))),
+      'storing the substituted link would break every asset if public_code changed');
+    ok('the rendered PAGE shows a real link',
+      /\/well\/[A-Z0-9]+/i.test(html), 'the bug: raw {{WELL_LINK}} on every reload');
+    ok('and leaves no token behind', !/\{\{WELL_LINK\}\}/.test(html),
+      'this is the assertion that was missing');
+
+    const viaJson = await call('asset', advisor, { plan_id: planId, week: 1, position: 0 });
+    ok('the JSON path substitutes too', /\/well\//i.test(viaJson.payload.asset.body));
+    ok('and both produce the SAME link',
+      html.indexOf(substitute('{{WELL_LINK}}', advisor)) !== -1 &&
+      viaJson.payload.asset.body.indexOf(substitute('{{WELL_LINK}}', advisor)) !== -1,
+      'one function, or they drift again');
+
+    /* ══ THE CONSENT WARNING ══════════════════════════════════════════════
+       CASL and the TCPA land on the sender, who is the advisor. A ready-to-send
+       text template handed over without that note is a liability given away as
+       a gift. Sabotage found this untested: removing it entirely broke nothing.
+
+       Both halves. It must appear on the kinds that message a person directly,
+       AND be absent from the ones that do not — a note on every block is
+       wallpaper, and wallpaper is not a warning. */
+    console.log('\n  The consent warning');
+    const renderKind = (kind) => planSection([{
+      week: 1, theme: 'T', actions: [{
+        position: 0, title: 'Do the thing', why: 'because', channel: 'x', assetKind: kind,
+        asset: { id: 'x', status: 'ready', body: 'Some copy.', canonical_body: 'Some copy.',
+                 severity: 'none', flags: [] }
+      }]
+    }], { advisor, planId: 'p' });
+
+    ['sms', 'dm', 'email'].forEach((k) => {
+      ok(`a ${k} carries the consent note`, /gtm-consent/.test(renderKind(k)));
+    });
+    ['caption', 'script', 'outline'].forEach((k) => {
+      ok(`a ${k} does NOT`, !/gtm-consent/.test(renderKind(k)),
+        'a warning on every block is wallpaper');
+    });
+    ok('and it names both regimes', /CASL/.test(renderKind('sms')) && /TCPA/.test(renderKind('sms')),
+      'vague warnings get ignored; named ones get checked');
+    ok('and says who carries it', /you, not us/.test(renderKind('sms')));
+
+    /* And the checker's verdict survives into the markup. */
+    ok('a blocked asset disables its copy button in the HTML',
+      (() => {
+        const bad = 'Ten days here reduces burnout at the Azure Piton Retreat.';
+        const rows2 = rowsOf(held.plan, [Object.assign({}, held.assets[0], {
+          body: bad, severity: 'high',
+          flags: require('../api/_lib/claims.js').check(bad, 'registered').flags
+        })]);
+        const h = planSection(rows2, { advisor, planId: held.plan.id });
+        return /gtm-copy[^>]*disabled/.test(h) && /gtm-flags--high/.test(h);
+      })(),
+      'severity has to survive the trip into markup or the block is decorative');
+
     await db.from('advisors').update({ foundations_at: before }).eq('id', seed.id);
   }
 
