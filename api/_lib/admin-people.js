@@ -22,6 +22,7 @@ const crypto = require('crypto');
 const { db } = require('./core.js');
 const { recoveryLink } = require('./auth-admin.js');
 const { audit } = require('./admin-data.js');
+const { track } = require('./encharge.js');
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
@@ -100,6 +101,13 @@ async function createAdvisor(admin, input, { invite = true } = {}) {
 
   let invited = false;
   if (invite) invited = await sendInvite(advisor);
+
+  /* An admin-created advisor arrives already active, so registration and
+     activation happen in the same breath. Both events fire: an Encharge
+     sequence keyed on either one behaves the same whether somebody registered
+     themselves or was added from a workshop list. */
+  await track('advisor_registered', advisor, { createdByAdmin: true, invited });
+  await track('advisor_activated', advisor, { createdByAdmin: true });
 
   await audit(admin, 'create', { subject: advisor, detail: { invited } });
   return { ok: true, advisor, invited };

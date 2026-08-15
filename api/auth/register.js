@@ -22,6 +22,7 @@
 
 const { db, json, str, esc, looksLikeEmail, body, methodGuard } = require('../_lib/core.js');
 const { anonClient, setSession } = require('../_lib/auth.js');
+const { track } = require('../_lib/encharge.js');
 
 module.exports = async function handler(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
@@ -115,7 +116,7 @@ module.exports = async function handler(req, res) {
 
       if (!existing.data) {
         const slug = await uniqueSlug(supabase);
-        const { error: insErr } = await supabase.from('advisors').insert({
+        const { data: created, error: insErr } = await supabase.from('advisors').insert({
           auth_user_id: user.id,
           slug,
           first_name: first,
@@ -127,8 +128,17 @@ module.exports = async function handler(req, res) {
           registration_note: registrationNote || null,
           status: 'pending',
           onboarding_state: 'profile'
-        });
+        }).select().single();
         if (insErr) throw insErr;
+
+        /* Onboarding starts here. Awaited rather than fired and forgotten: a
+           serverless function is killed once it responds, so an un-awaited
+           call is a call that may never leave. It is bounded by its own
+           timeout and cannot fail this request — see api/_lib/encharge.js. */
+        await track('advisor_registered', created, {
+          hasNote: !!created.registration_note,
+          hasHostAgency: !!created.host_agency
+        });
       }
     }
 

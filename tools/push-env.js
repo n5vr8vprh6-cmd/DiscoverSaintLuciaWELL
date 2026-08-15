@@ -50,6 +50,18 @@ const REQUIRED = [
   'IP_HASH_SALT'
 ];
 
+/* Present in .env if set, pushed if present, and not an error when absent —
+   every one of these is a feature that degrades to a no-op without its key,
+   so the deploy must not be blocked on having configured it yet. */
+const OPTIONAL = [
+  /* Advisor onboarding events. Without it api/_lib/encharge.js no-ops and the
+     Hub behaves exactly as it does today. */
+  'ENCHARGE_TOKEN',
+  /* Canonical origin for links that travel in email. Falls back in code to the
+     www host, which is what the site 308s to anyway. */
+  'SITE_ORIGIN'
+];
+
 if (!fs.existsSync(ENV_FILE)) {
   console.error('No .env found. Copy .env.example to .env and fill it in first.');
   process.exit(1);
@@ -85,7 +97,11 @@ try {
 
 let added = 0, skipped = 0, failed = 0;
 
-for (const key of REQUIRED) {
+/* Optional keys join the run only when they are actually set locally, so an
+   unconfigured integration is silently absent rather than pushed as empty. */
+const TO_PUSH = REQUIRED.concat(OPTIONAL.filter((k) => values[k]));
+
+for (const key of TO_PUSH) {
   for (const target of TARGETS) {
     const already = new RegExp('^\\s*' + key + '\\s', 'm').test(existing);
     if (already && !FORCE) {

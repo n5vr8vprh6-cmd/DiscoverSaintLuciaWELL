@@ -28,6 +28,7 @@ const {
   db, json, str, esc, looksLikeEmail, ipHash, body, methodGuard
 } = require('./_lib/core.js');
 const { activeAdvisor } = require('./_lib/advisors.js');
+const { track } = require('./_lib/encharge.js');
 
 /* Deliberately generous. A real person sharing a Journey submits once; this
    only has to stop a script, not inconvenience a household or an office
@@ -130,6 +131,27 @@ module.exports = async function handler(req, res) {
        their submission failed when it did not. */
     let notified = false;
     if (advisor) {
+      /* ── The advisor's first Journey ─────────────────────────────────────
+         Fired once, ever, per advisor: the count is taken AFTER the insert, so
+         "1" means this one was the first. Counting before would race two
+         simultaneous shares into two "first Journey" emails.
+
+         NO CONSUMER DATA GOES WITH IT. Encharge is told that an advisor
+         received their first Journey, not who sent it — the person who shared
+         it agreed to reach one travel advisor, not to enter a marketing
+         platform. */
+      const { count } = await supabase
+        .from('journey_shares')
+        .select('id', { count: 'exact', head: true })
+        .eq('advisor_id', advisor.id);
+      if (count === 1) {
+        const { data: full } = await supabase
+          .from('advisors')
+          .select('id, first_name, last_name, email, business, host_agency, website, market, status, public_code, registration_note')
+          .eq('id', advisor.id).maybeSingle();
+        if (full) await track('advisor_first_journey', full, {});
+      }
+
       notified = await notifyAdvisor({
         advisor, first, last, email, phone, timing, context, villages, answers,
         shareId: share.id

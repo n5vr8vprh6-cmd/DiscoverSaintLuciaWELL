@@ -30,6 +30,7 @@ const {
 const { setLocked, recoveryLink, isLocked } = require('../auth-admin.js');
 const { journeysFor, funnelFor } = require('../hub-data.js');
 const { deleteAdvisor, deletionImpact, setRole, sendInvite } = require('../admin-people.js');
+const { track } = require('../encharge.js');
 const { allAdvisors } = require('../admin-data.js');
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
@@ -344,6 +345,10 @@ async function act(admin, id, form) {
       });
       if (!r.ok) return 'failed';
       await audit(admin, 'approve', { subject: target });
+      /* The moment their link starts working is the moment worth an email, so
+         this is the event the "you are live" sequence hangs off. Fired with the
+         UPDATED row so Encharge sees status=active, not the stale pending. */
+      await track('advisor_activated', r.advisor || target, { approvedBy: admin.email });
       return 'approved';
     }
     case 'pause': {

@@ -18,8 +18,14 @@
      · JSDELIVR — serves the GSAP/Lenis libraries on the Foundations page.
        Loading a script from a CDN discloses the visitor's IP address to it.
 
-   Going the other way, the policy names technologies this site does not yet
-   load — Encharge, Meta, Stripe, ThriveCart, OpenAI, Anthropic, and Google
+   ENCHARGE IS NOW LIVE, AND WAS ALREADY DISCLOSED. api/_lib/encharge.js sends
+   advisor lifecycle events, so §6 and §10 describe something the code actually
+   does rather than something forward-looking. No consumer data goes to it: it
+   receives advisors, and the one event that mentions a Journey sends a count,
+   not a person.
+
+   Going the other way, the policy still names technologies this site does not
+   load — Meta, Stripe, ThriveCart, OpenAI, Anthropic, and Google
    Analytics (GTM_ID in js/analytics.js is empty, so no request is made). The
    wording is "may use ... depending on configuration", which is forward-looking
    rather than inaccurate, so it stands. §7's rule is the one to keep in view if

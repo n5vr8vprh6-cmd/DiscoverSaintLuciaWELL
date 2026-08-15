@@ -192,16 +192,46 @@ check('masking off returns the very same object', maskJourney(realJourney, false
 check('an anonymous row masks without throwing',
   maskJourney({ id: 'y' }, true).consumer_first === 'Someone');
 
+/* ── Encharge degrades to nothing ─────────────────────────────────────────
+   The property every caller depends on: registration, approval and sharing a
+   Journey must all succeed whether or not a marketing platform is configured.
+   No network here — these are the no-token paths, which return before any
+   request is made.
+
+   THE REST OF THIS SUITE IS SYNCHRONOUS. These three are not, so they are
+   collected and awaited before the report runs — a `.then()` that lands after
+   the summary has printed is a check that silently did not happen, which is
+   the one failure mode this file exists to prevent. */
+const encharge = require('../api/_lib/encharge.js');
+const savedToken = process.env.ENCHARGE_TOKEN;
+delete process.env.ENCHARGE_TOKEN;
+
+const enchargeFixture = { id: 'x', email: 'a@example.com', first_name: 'A', last_name: 'B' };
+const asyncChecks = [
+  encharge.identify(enchargeFixture)
+    .then((r) => check('no token: identify no-ops rather than throwing', r === false)),
+  encharge.track('advisor_registered', enchargeFixture, {})
+    .then((r) => check('no token: track no-ops rather than throwing', r === false)),
+  encharge.track('x', {}, {})
+    .then((r) => check('an advisor with no email is skipped', r === false))
+];
+if (savedToken) process.env.ENCHARGE_TOKEN = savedToken;
+
 /* ── since() ─────────────────────────────────────────────────────────────── */
 check('since() reads as today for a fresh share', since(day(0)) === 'today');
 check('since() reads as yesterday at one day', since(day(1)) === 'yesterday');
 check('since() has no output for a missing date', since(null) === '');
 
-/* ── Report ──────────────────────────────────────────────────────────────── */
-let failed = 0;
-results.forEach((r) => {
-  if (!r.pass) failed++;
-  console.log(`  ${r.pass ? 'PASS' : 'FAIL'}  ${r.n}${r.d && !r.pass ? '  — ' + r.d : ''}`);
+/* ── Report ────────────────────────────────────────────────────────────────
+   Deferred until the async checks above have settled. A `.then()` that lands
+   after the summary is printed is a check that silently did not run, and this
+   suite exists to catch exactly that class of thing. */
+Promise.all(asyncChecks).then(() => {
+  let failed = 0;
+  results.forEach((r) => {
+    if (!r.pass) failed++;
+    console.log(`  ${r.pass ? 'PASS' : 'FAIL'}  ${r.n}${r.d && !r.pass ? '  — ' + r.d : ''}`);
+  });
+  console.log(`\n  ${results.length - failed}/${results.length} passed`);
+  process.exit(failed ? 1 : 0);
 });
-console.log(`\n  ${results.length - failed}/${results.length} passed`);
-process.exit(failed ? 1 : 0);
