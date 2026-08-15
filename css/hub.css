@@ -1058,3 +1058,41 @@ body.gtm-busy { overflow: hidden; }
   }
   .gtm-block--bare { background: transparent; }
 }
+
+/* ── Angles ──────────────────────────────────────────────────────────────
+   Behind a disclosure because four more buttons on a block that already has
+   four is noise. Closed by default: an advisor who is happy with the copy
+   should never have to look at this. */
+.gtm-angles {
+  margin-top: 0.7rem;
+  border-top: 1px solid var(--hairline-l);
+  padding-top: 0.6rem;
+}
+.gtm-angles > summary {
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--muted);
+  list-style: none;
+  /* A generous target — this sits between two rows of buttons on a phone and
+     a mis-tap opens something the advisor did not want. */
+  padding: 0.3rem 0;
+}
+.gtm-angles > summary::-webkit-details-marker { display: none; }
+.gtm-angles > summary::before {
+  content: '＋';
+  margin-right: 0.4em;
+  color: var(--gold-deep);
+}
+.gtm-angles[open] > summary::before { content: '−'; }
+.gtm-angles > summary:hover { color: var(--ink); }
+.gtm-angles > summary:focus-visible {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.gtm-angle-now {
+  color: var(--gold-deep);
+  font-style: italic;
+}
+.gtm-angles .hub-hint { margin: 0.4rem 0 0.6rem; }

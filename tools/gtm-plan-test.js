@@ -377,14 +377,19 @@ let cleanup = [];
     ok('actionAsset generates and stores one', a1.code === 200 && a1.payload.ok,
       a1.code + ' ' + JSON.stringify(a1.payload).slice(0, 120));
     const assetId = a1.payload.asset && a1.payload.asset.id;
-    const generated = a1.payload.asset && a1.payload.asset.body;
+    const generated = (a1.payload.asset && a1.payload.asset.body) || '';
 
     ok('the link token is substituted on the way OUT',
       /\/well\//.test(generated) && !/\{\{WELL_LINK\}\}/.test(generated),
       'the advisor must get a real link, not a token');
-    const { data: stored } = await db.from('gtm_asset').select('body').eq('id', assetId).single();
+
+    /* Guarded. Reading through a null asset crashes the run and hides every
+       assertion after it — a crash reports strictly less than a failure. */
+    const { data: stored } = assetId
+      ? await db.from('gtm_asset').select('body').eq('id', assetId).single()
+      : { data: null };
     ok('but the STORED text keeps the token',
-      /\{\{WELL_LINK\}\}/.test(stored.body),
+      Boolean(stored) && /\{\{WELL_LINK\}\}/.test(stored.body),
       'so a changed public_code does not leave a month of copy pointing nowhere');
 
     ok('asking again returns the cached asset rather than paying twice',
@@ -439,14 +444,14 @@ let cleanup = [];
     const { data: afterEdit } = await db.from('gtm_asset')
       .select('body, canonical_body').eq('id', assetId).single();
     ok('the edit does NOT touch canonical_body',
-      afterEdit.canonical_body === stored.body,
+      Boolean(stored) && afterEdit.canonical_body === stored.body,
       'if an edit overwrites the canonical text there is nothing left to revert to');
 
     const r1 = await call('revert', advisor, { asset_id: assetId });
     ok('actionRevert returns 200', r1.code === 200 && r1.payload.ok);
     const { data: afterRevert } = await db.from('gtm_asset').select('body').eq('id', assetId).single();
     ok('and restores the canonical text EXACTLY, byte for byte',
-      afterRevert.body === stored.body,
+      Boolean(stored) && afterRevert.body === stored.body,
       'a regeneration would return different text, which is not a revert at all');
     ok('the reverted asset no longer reads as edited', r1.payload.asset.edited === false);
 

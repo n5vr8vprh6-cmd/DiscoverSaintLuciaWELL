@@ -212,6 +212,40 @@ ok('a real property is not flagged at all',
 ok('nor a real one named loosely',
   entities('Sugar Beach has the view.').length === 0);
 
+/* ── Subject lines, found in the second real generation ────────────────────
+   Title case is the convention for a subject line, so almost every generated
+   email produced a capitalised run — "Discover Unhurried Days", "A Different
+   Kind of Getaway" — and every one was reported as an unrecognised place. */
+console.log('\n  Subject lines are title case, not places');
+const EMAIL = (subject, body) => 'Subject: ' + subject + '\n\nHello,\n\n' + body;
+
+ok('a title-case subject line is not flagged',
+  entities(EMAIL('Discover Unhurried Days in Saint Lucia', 'A slower rhythm is the point.')).length === 0,
+  JSON.stringify(entities(EMAIL('Discover Unhurried Days in Saint Lucia', 'A slower rhythm is the point.'))));
+ok('nor another one',
+  entities(EMAIL('A Different Kind of Getaway', 'Room to breathe is the point.')).length === 0);
+
+/* Both halves. The exemption must not become a hiding place. */
+ok('but an INVENTED resort in a subject line is still blocked',
+  blocks(EMAIL('Stay at the Azure Piton Retreat', 'Book now.')),
+  'a subject line is a worse place to invent a property, not a safer one');
+ok('and a name in BOTH subject and body is judged normally',
+  entities(EMAIL('About Marigot Springs', 'Marigot Springs is worth seeing.')).length > 0,
+  'appearing in the subject must not launder a mention in the body');
+ok('the body is still checked when a subject line is present',
+  blocks(EMAIL('A quiet week', 'The Coral Ridge Sanctuary is stunning.')));
+
+console.log('\n  Our own safe register is not an unknown place');
+ok('every SAFE_REGISTER word is treated as ordinary English',
+  FACTS.SAFE_REGISTER.join(' ').toLowerCase().split(/[^a-z]+/).filter(Boolean)
+    .every((w) => FACTS.SENTENCE_WORDS.indexOf(w) !== -1),
+  'we tell the model to use this phrasing — flagging the result teaches advisors to distrust it');
+ok('so the phrasing we recommend passes clean',
+  FACTS.SAFE_REGISTER.every((phrase) => clean('Come to Saint Lucia. ' +
+    phrase.charAt(0).toUpperCase() + phrase.slice(1) + '.')),
+  JSON.stringify(FACTS.SAFE_REGISTER.filter((p) => !clean('Come to Saint Lucia. ' +
+    p.charAt(0).toUpperCase() + p.slice(1) + '.'))));
+
 console.log('\n  The fact bank extractor');
 ok('no vocabulary entry stringified badly',
   FACTS.VOCABULARY.every((v) => v.indexOf('[object') === -1),

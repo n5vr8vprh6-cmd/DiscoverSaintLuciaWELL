@@ -108,11 +108,38 @@ const CANDIDATE = /\b[A-Z][a-zA-Z’']+(?:[ \t]+(?:[A-Z][a-zA-Z’']+|&|(?:de|du
 
 /* Placeholders are not claims. "[Client's Name]" is an instruction to the
    advisor and {{WELL_LINK}} is ours; blanked to spaces so the surrounding text
-   still reads as separate runs rather than being joined across the gap. */
+   still reads as separate runs rather than being joined across the gap.
+
+   A SUBJECT LINE IS TITLE CASE BY CONVENTION, so almost every one produces a
+   capitalised run: "Discover Unhurried Days", "A Different Kind of Getaway".
+   None of them name a place, and all of them were being reported as unknown
+   ones. Its severity is downgraded rather than skipped — a genuinely invented
+   resort in a subject line is still a resort, so the venue rule below still
+   blocks it. Only the advisory tier is silenced, because that tier on a
+   subject line is pure noise. */
+const SUBJECT_LINE = /^\s*subject:.*$/gim;
+
 function withoutPlaceholders(text) {
   return String(text || '')
     .replace(/\[[^\]\n]{0,80}\]/g, (m) => ' '.repeat(m.length))
     .replace(/\{\{[^}\n]{0,80}\}\}/g, (m) => ' '.repeat(m.length));
+}
+
+/* The candidates that appear ONLY inside a subject line. */
+function subjectOnly(text) {
+  const subjects = String(text || '').match(SUBJECT_LINE);
+  if (!subjects) return new Set();
+  const inSubjects = new Set();
+  subjects.forEach((line) => {
+    (withoutPlaceholders(line).match(CANDIDATE) || [])
+      .forEach((c) => inSubjects.add(c.toLowerCase().trim()));
+  });
+  /* Anything that ALSO appears in the body is not subject-line-only, and gets
+     judged normally — a property named in both places is named in the body. */
+  const body = String(text || '').replace(SUBJECT_LINE, ' ');
+  (withoutPlaceholders(body).match(CANDIDATE) || [])
+    .forEach((c) => inSubjects.delete(c.toLowerCase().trim()));
+  return inSubjects;
 }
 
 /* `own` is the advisor's own identity — their name, business and host agency.
@@ -122,6 +149,7 @@ function entityPass(text, own) {
   const flags = [];
   const mine = new Set((own || []).map((v) => String(v || '').toLowerCase().trim()).filter(Boolean));
   const candidates = withoutPlaceholders(text).match(CANDIDATE) || [];
+  const subjects = subjectOnly(text);
 
   [...new Set(candidates)].forEach((c) => {
     const low = c.toLowerCase().trim();
@@ -158,6 +186,11 @@ function entityPass(text, own) {
 
     const isVenue = words.some(isVenueWord);
     const namesSomething = words.some((w) => !SENTENCE.has(w) && !isVenueWord(w));
+
+    /* A subject-line-only run that does not read as a venue is title case, not
+       a place. Dropped rather than downgraded — it is already the lowest tier,
+       and the alternative is a warning on almost every email we generate. */
+    if (subjects.has(low) && !(isVenue && namesSomething)) return;
 
     flags.push({
       pass: 'entity',

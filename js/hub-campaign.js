@@ -164,6 +164,27 @@
     dm: 'Direct message', script: 'What to say', outline: 'Outline'
   };
 
+  /* Labels say what the angle DOES. "Pain" is a marketing word; "Lead with
+     what is wrong" is a choice an advisor can make without a glossary. */
+  var ANGLE_LABEL = {
+    pain: 'Lead with what is wrong',
+    aspiration: 'Lead with what they want back',
+    proof: 'Lead with something you know',
+    practical: 'Lead with the decision'
+  };
+
+  function anglesHtml(current) {
+    var buttons = Object.keys(ANGLE_LABEL).map(function (k) {
+      return '<button type="button" class="btn btn--ghost btn--sm" data-gtm="angle" data-angle="' +
+        k + '"' + (current === k ? ' disabled' : '') + '>' + esc(ANGLE_LABEL[k]) + '</button>';
+    }).join('');
+    return '<details class="gtm-angles"><summary>Try another angle' +
+      (current ? ' <span class="gtm-angle-now">now: ' + esc(ANGLE_LABEL[current] || current) + '</span>' : '') +
+      '</summary><p class="hub-hint">Rewrites this one piece from a different starting point. ' +
+      'It does not cost you a build — you already paid for this plan.</p>' +
+      '<div class="gtm-actions">' + buttons + '</div></details>';
+  }
+
   function consentHtml(kind) {
     if (kind !== 'sms' && kind !== 'dm' && kind !== 'email') return '';
     var what = kind === 'sms' ? 'text' : kind === 'dm' ? 'message' : 'email';
@@ -194,7 +215,8 @@
         '<button type="button" class="btn btn--ghost btn--sm" data-gtm="regenerate">Regenerate</button>' +
         '<button type="button" class="btn btn--ghost btn--sm gtm-revert"' +
           (asset.edited ? '' : ' hidden') + ' data-gtm="revert">Revert</button>' +
-      '</div>';
+      '</div>' +
+      anglesHtml(asset.angle);
 
     tally();
   }
@@ -259,16 +281,17 @@
       return;
     }
 
-    if (what === 'regenerate') {
-      busy(btn, 'Writing');
+    if (what === 'regenerate' || what === 'angle') {
+      busy(btn, what === 'angle' ? 'Rewriting' : 'Writing');
       post({
         action: 'asset', force: '1',
+        angle: what === 'angle' ? btn.getAttribute('data-angle') : '',
         plan_id: plan ? plan.getAttribute('data-plan') : '',
         week: b.getAttribute('data-week'),
         position: b.getAttribute('data-pos')
       }).then(function (res) {
         if (res.status === 200 && res.data.ok) paint(b, res.data.asset);
-        else { unbusy(btn, 'Regenerate'); fail(b, res.data.message); }
+        else { unbusy(btn, what === 'angle' ? 'Try again' : 'Regenerate'); fail(b, res.data.message); }
       });
     }
   });

@@ -256,6 +256,20 @@ const SAFE_REGISTER = [
   'a slower rhythm', 'room to breathe', 'somewhere that asks nothing of you'
 ];
 
+/* ── Our own approved register, unpacked into words ──────────────────────
+   SAFE_REGISTER is the phrasing we explicitly bless — "unhurried days", "room
+   to breathe", "come back rested". A model told to use it then had the result
+   flagged as an unrecognised place, because "Discover Unhurried Days" in a
+   subject line is title case and "unhurried" appeared in no list.
+
+   Blessing a phrase and then warning about it is the worst of both worlds: the
+   advisor is taught to distrust the exact copy we asked for. Derived from the
+   list rather than typed out again, so the two cannot drift — and placed here,
+   after SAFE_REGISTER exists, because `const` in the temporal dead zone throws
+   rather than reading as empty. */
+SAFE_REGISTER.join(' ').toLowerCase().split(/[^a-z]+/).filter(Boolean)
+  .forEach((w) => { if (SENTENCE_WORDS.indexOf(w) === -1) SENTENCE_WORDS.push(w); });
+
 const GUARANTEE_PATTERNS = [
   'guarantee', 'guaranteed', 'risk-free', 'no.1', '#1', 'number one', 'the best',
   'award-winning', 'world-class', 'unrivalled', 'unrivaled', 'exclusive access',

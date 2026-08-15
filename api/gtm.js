@@ -31,7 +31,7 @@
 const { db, json, str, body: parseBody } = require('./_lib/core.js');
 const { requireAdvisorJson } = require('./_lib/auth.js');
 const { rung, mayRefresh, profileFor, substitute } = require('./_lib/gtm.js');
-const { generateSkeleton, generateAsset } = require('./_lib/gtm-generate.js');
+const { generateSkeleton, generateAsset, ANGLES } = require('./_lib/gtm-generate.js');
 const { check, ownNames } = require('./_lib/claims.js');
 const { configured, reasonText } = require('./_lib/openai.js');
 
@@ -152,10 +152,17 @@ async function actionAsset(req, res, advisor, supabase, form) {
     return json(res, 429, { error: 'too_fast', message: 'Give it a minute.' });
   }
 
+  /* An angle is only meaningful on a deliberate regeneration — the first pass
+     has no angle because the advisor has not yet seen what they want to change.
+     Validated against the table rather than passed through, so a hand-edited
+     request cannot inject prompt text. */
+  const angle = ANGLES[str(form.angle, 20)] ? str(form.angle, 20) : null;
+
   const profile = await profileFor(advisor.id);
   const r = await generateAsset(
     advisor, profile, plan.rung_at_generation,
-    Object.assign({ week, position }, action), weekRow.theme
+    Object.assign({ week, position }, action), weekRow.theme,
+    { angle }
   );
 
   const row = {
@@ -173,6 +180,7 @@ async function actionAsset(req, res, advisor, supabase, form) {
   }
 
   Object.assign(row, {
+    angle: r.angle || null,
     body: r.body,
     /* Written once, on first generation, and never overwritten by an edit.
        A forced regeneration DOES move it: the new text becomes the thing you
@@ -189,11 +197,38 @@ async function actionAsset(req, res, advisor, supabase, form) {
   return json(res, 200, { ok: true, asset: publicAsset(saved, advisor), ms: r.ms });
 }
 
+/* ── Writing an asset, with one retry ─────────────────────────────────────
+   `angle` arrives with migration 013. Deploying this code before that
+   migration is applied is not hypothetical — every migration in this project
+   has been applied by hand, minutes or hours after the deploy that needed it.
+
+   Without the retry, a missing column takes ALL generation down, not just the
+   angle button: every asset write fails, so a plan builds a skeleton and then
+   nothing. That is a much worse failure than losing a feature nobody has used
+   yet. So the same shape as the 23505 retry in api/share.js — attempt the full
+   row, and if the database says a column is unknown, drop it and write the
+   rest.
+
+   PGRST204 is the one that actually appears: PostgREST rejects the payload
+   against its cached schema before Postgres ever sees it. 42703 is the direct
+   Postgres code, kept because the two surfaces report this differently and
+   assuming one covers the other is how the log fills up. */
+const UNKNOWN_COLUMN = ['PGRST204', '42703'];
+
 async function upsertAsset(supabase, existing, row) {
-  const q = existing
-    ? supabase.from('gtm_asset').update(row).eq('id', existing.id)
-    : supabase.from('gtm_asset').insert(row);
-  const { data, error } = await q.select('*').single();
+  const write = (r) => (existing
+    ? supabase.from('gtm_asset').update(r).eq('id', existing.id)
+    : supabase.from('gtm_asset').insert(r)).select('*').single();
+
+  let { data, error } = await write(row);
+
+  if (error && UNKNOWN_COLUMN.indexOf(String(error.code)) !== -1 && 'angle' in row) {
+    console.warn('gtm_asset.angle missing — is migration 013 applied? Writing without it.');
+    const without = Object.assign({}, row);
+    delete without.angle;
+    ({ data, error } = await write(without));
+  }
+
   if (error) { console.error('gtm asset save', error); return null; }
   return data;
 }
@@ -263,6 +298,7 @@ function publicAsset(row, advisor) {
     channel: row.channel, title: row.title,
     body: substitute(row.body, advisor),
     severity: row.severity,
+    angle: row.angle || null,
     flags: row.flags || [],
     copyable: row.severity !== 'high',
     edited: row.body !== row.canonical_body,

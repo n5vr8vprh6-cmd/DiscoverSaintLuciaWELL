@@ -34,6 +34,76 @@
 const { chat } = require('./openai.js');
 const { check, ownNames } = require('./claims.js');
 const FACTS = require('../../content/campaign-facts.js');
+const PLAYBOOK = require('../../content/marketing-playbook.js');
+
+/* ── Only the relevant channel goes into a prompt ─────────────────────────
+   The playbook is twelve thousand characters. Sending all of it on every asset
+   call would cost more than the copy is worth and bury the one page that
+   matters — a model given advice about ten channels writes for none of them.
+
+   Channel first, then kind: a skeleton says channel `instagram` with kind
+   `caption`, or channel `direct` with kind `dm`. The first is a platform, the
+   second is a shape, and either can be the useful key. */
+function playbookFor(channel, kind) {
+  const list = PLAYBOOK.channels || [];
+  const by = (name) => list.find((c) => c.channel === String(name || '').toLowerCase());
+  return by(channel) || by(kind) || null;
+}
+
+/* Who the copy is for, in the depth that lets it speak to somebody rather than
+   about a place. NEVER_PROMISE travels with it, always — a pain is a reason
+   somebody starts looking, and the moment it reads as a promise about what a
+   trip does to them, claims.js blocks the copy and the advisor has wasted a
+   build. Better to say it up front than catch it at the end. */
+function icpBlock() {
+  const icp = PLAYBOOK.icp || {};
+  const lines = (label, arr) => (arr && arr.length
+    ? `${label}:\n${arr.map((s) => '  - ' + s).join('\n')}\n` : '');
+
+  return `WHO YOU ARE WRITING FOR
+${lines('What is actually wrong for them', icp.pains)}${
+  lines('What makes them start looking now', icp.triggers)}${
+  lines('What they will think but not say', icp.objections)}${
+  lines('What they have already tried that did not hold', icp.tried)}
+NEVER, WHATEVER THE PLAYBOOK SAYS:
+${(icp.NEVER_PROMISE || []).map((s) => '  - ' + s).join('\n')}`;
+}
+
+/* The channel's own page, rendered small. `converts` and `kills` are the two
+   lists the critique pass scores against, so they are stated as rules rather
+   than as prose the model can admire and ignore. */
+function playbookBlock(channel, kind) {
+  const p = playbookFor(channel, kind);
+  if (!p) return '';
+
+  const bullets = (arr) => (arr || []).map((s) => '  - ' + s).join('\n');
+  const hooks = (p.hooks || []).map((h) =>
+    `  - ${h.pattern} — ${h.why}\n      e.g. ${h.example}`).join('\n');
+
+  return `HOW THIS CHANNEL ACTUALLY WORKS (${p.channel})
+Shape:
+${bullets(p.anatomy)}
+${hooks ? 'Openings that earn the next line:\n' + hooks + '\n' : ''}Length: ${
+  p.lengths ? p.lengths.ideal + ' (never past ' + p.lengths.max + ' ' + p.lengths.unit + ')' : 'short'}
+
+WHAT MAKES IT WORK:
+${bullets(p.converts)}
+
+WHAT KILLS IT — do none of these:
+${bullets(p.kills)}
+${(p.cta || []).length ? '\nAsks that suit this channel:\n' + bullets(p.cta) : ''}`;
+}
+
+/* ── Angles ───────────────────────────────────────────────────────────────
+   Requested per asset, never generated as a set. An advisor spends variety on
+   the one caption they are unsure of rather than paying for three versions of
+   all eight — which is both cheaper and a better use of a build. */
+const ANGLES = {
+  pain: 'Lead with what is actually wrong for them right now. Name it plainly, without self-pity and without promising to fix it.',
+  aspiration: 'Lead with the specific ordinary thing they want back — a morning with nothing in it, a conversation that is not about logistics.',
+  proof: 'Lead with something concrete you know: a detail about the place, a pattern across clients, a thing you got wrong and learned from.',
+  practical: 'Lead with the decision they are avoiding, and make it smaller. Which month, which coast, how many days.'
+};
 
 /* ── What the model is allowed to know ───────────────────────────────────── */
 
@@ -126,6 +196,31 @@ to Saint Lucia and collect enquiries through their personal link.
 
 THE ADVISOR
 ${JSON.stringify(ctx, null, 1)}
+
+${icpBlock()}
+
+${/* THE SKELETON NEEDS THIS AS MUCH AS THE ASSETS DO, and for a while it did
+     not have it. The first D1 run produced captions that had visibly improved
+     and a plan that still said "Post a stunning image of Saint Lucia" and
+     "Post a countdown to wellness travel" — because the playbook reached the
+     asset prompt and stopped there. The actions ARE the plan; copy attached to
+     a worthless action is worthless copy, written well. */''}
+WHAT MAKES AN ACTION WORTH DOING
+An action names a specific thing to do, to specific people. "Post a stunning
+image", "share a wellness tip" and "message past clients" are categories, not
+actions — nobody can tell whether they did them.
+
+Every action must survive two questions:
+  1. How would I know if I had done this?
+  2. Could this action appear, word for word, in another advisor's plan?
+If the answer to the second is yes, it is too vague to be worth their month.
+
+DELIBERATELY NO EXAMPLES ARE GIVEN HERE. Every example this prompt has carried
+was copied into the plan verbatim rather than learned from, which produced an
+action about somebody else's business. Build each action out of what THIS
+advisor actually told you above — the words they used for what they sell, the
+people they described, the clients they named, the markets they work in. If a
+detail of theirs can carry an action, it should.
 
 THE SHAPE IT MUST TAKE
 Four weeks. Two to four actions per week, no more. Real actions of mixed size:
@@ -237,11 +332,14 @@ const SHAPES = {
   outline: 'A short outline as bullet points. Under 120 words.'
 };
 
-function assetPrompt(ctx, action, rung, weekTheme) {
+function assetPrompt(ctx, action, rung, weekTheme, angle) {
+  const book = playbookBlock(action.channel, action.assetKind);
   return `Write one piece of copy for this travel advisor.
 
 THE ADVISOR
 ${JSON.stringify(ctx, null, 1)}
+
+${icpBlock()}
 
 THE ACTION IT IS FOR
 Week ${action.week} — ${weekTheme}
@@ -252,6 +350,8 @@ Channel: ${action.channel}
 THE SHAPE
 ${SHAPES[action.assetKind] || SHAPES.caption}
 
+${book || ''}
+${angle && ANGLES[angle] ? `\nTHE ANGLE FOR THIS VERSION\n${ANGLES[angle]}\n` : ''}
 WHAT YOU MAY DRAW ON
 ${JSON.stringify(modelFacts(), null, 1)}
 
@@ -261,11 +361,12 @@ Return the copy only. No preamble, no notes, no explanation, no quotation marks
 around the whole thing.`;
 }
 
-async function generateAsset(advisor, profile, rung, action, weekTheme) {
+async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
+  const o = opts || {};
   const ctx = advisorContext(advisor, profile);
   const r = await chat({
     system: ASSET_SYSTEM,
-    user: assetPrompt(ctx, action, rung, weekTheme || ''),
+    user: assetPrompt(ctx, action, rung, weekTheme || '', o.angle),
     maxTokens: 700,
     temperature: 0.65,
     stub: STUB_ASSET
@@ -273,24 +374,53 @@ async function generateAsset(advisor, profile, rung, action, weekTheme) {
 
   if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms };
 
-  const body = String(r.text || '').trim().replace(/^["“](.*)["”]$/s, '$1').trim();
+  let body = String(r.text || '').trim().replace(/^["“](.*)["”]$/s, '$1').trim();
   if (!body) return { ok: false, reason: 'empty', payload: r.payload, ms: r.ms };
 
-  /* The verdict, from plain code. Stored with the asset so a warning survives a
-     reload — but re-run on every edit, because a cached verdict about text
-     somebody has since rewritten is worse than no verdict at all. */
+  /* ── The critique pass ──────────────────────────────────────────────────
+     A second small call that scores the draft against this channel's own
+     `converts` and `kills` and rewrites it once. On by default, skippable for
+     tests and for the angle button where the advisor is already iterating.
+
+     IT CANNOT MAKE THINGS WORSE. A failed or unparseable critique returns the
+     original draft untouched, so the only outcomes are "better" and "the same".
+     The score is never returned to the browser — a visible score invites
+     arguing with the number instead of reading the copy. */
+  let critiqued = null;
+  if (o.critique !== false) {
+    const { improve } = require('./critique.js');
+    critiqued = await improve({
+      body, ctx, rung,
+      channel: action.channel, kind: action.assetKind,
+      playbook: playbookFor(action.channel, action.assetKind)
+    });
+    if (critiqued && critiqued.ok && critiqued.body) body = critiqued.body;
+  }
+
+  /* The verdict, from plain code, ALWAYS on the final text. The rewrite is more
+     surface for a health claim than the draft was, and a checker that ran
+     before the last edit is a checker that ran on something else. */
   const verdict = check(body, rung, ownNames(advisor));
 
+  const usage = [r.usage, critiqued && critiqued.usage].filter(Boolean);
   return {
     ok: true,
     body,
     flags: verdict.flags,
     severity: verdict.high ? 'high' : verdict.flags.length ? 'low' : 'none',
     copyable: verdict.copyable,
+    angle: o.angle || null,
+    /* Internal only — never rendered. Present so tests and cost measurement
+       can see whether the pass actually did anything. */
+    critique: critiqued ? { score: critiqued.score, changed: critiqued.changed } : null,
     payload: r.payload,
-    ms: r.ms,
+    ms: r.ms + (critiqued ? critiqued.ms || 0 : 0),
     model: r.model,
-    usage: r.usage
+    usage: usage.length ? usage.reduce((a, u) => ({
+      prompt_tokens: (a.prompt_tokens || 0) + (u.prompt_tokens || 0),
+      completion_tokens: (a.completion_tokens || 0) + (u.completion_tokens || 0),
+      total_tokens: (a.total_tokens || 0) + (u.total_tokens || 0)
+    }), {}) : null
   };
 }
 
@@ -325,6 +455,7 @@ Take two minutes and see what comes back: {{WELL_LINK}}`;
 
 module.exports = {
   advisorContext, modelFacts, rulesBlock,
+  playbookFor, playbookBlock, icpBlock, ANGLES, PLAYBOOK,
   skeletonPrompt, assetPrompt, parseJson, normaliseSkeleton,
   generateSkeleton, generateAsset,
   ADVISOR_FIELDS, PROFILE_FIELDS, CHANNEL_FIELDS, ASSET_KINDS,

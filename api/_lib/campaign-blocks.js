@@ -81,6 +81,35 @@ function consentNote(kind) {
     If you are not sure, ask them first. This is a prompt to check, not legal advice.</p>`;
 }
 
+/* ── Angles ───────────────────────────────────────────────────────────────
+   Four buttons on every block would be clutter on a screen that already has
+   four, so they live behind a disclosure that stays shut until somebody wants
+   one. `<details>` rather than a script: it opens without JavaScript, it is
+   keyboard-navigable for free, and there is nothing to go wrong.
+
+   Each label says what the angle DOES, not what it is called. "Pain" is a
+   marketing word; "Lead with what is wrong" is an instruction an advisor can
+   choose between without a glossary. */
+const ANGLE_LABEL = {
+  pain: 'Lead with what is wrong',
+  aspiration: 'Lead with what they want back',
+  proof: 'Lead with something you know',
+  practical: 'Lead with the decision'
+};
+
+function angleBlock(current) {
+  const buttons = Object.keys(ANGLE_LABEL).map((k) =>
+    `<button type="button" class="btn btn--ghost btn--sm" data-gtm="angle" data-angle="${k}"${
+      current === k ? ' disabled' : ''}>${esc(ANGLE_LABEL[k])}</button>`).join('');
+
+  return `<details class="gtm-angles">
+    <summary>Try another angle${current ? ` <span class="gtm-angle-now">now: ${esc(ANGLE_LABEL[current] || current)}</span>` : ''}</summary>
+    <p class="hub-hint">Rewrites this one piece from a different starting point. It does not
+      cost you a build — you already paid for this plan.</p>
+    <div class="gtm-actions">${buttons}</div>
+  </details>`;
+}
+
 /* One action. Some have no copy attached — "call two clients" needs a note on
    what to say, not a caption — and those render as the action alone rather than
    as an empty box implying something failed to arrive. */
@@ -123,7 +152,8 @@ function block(week, action, advisor) {
           <button type="button" class="btn btn--ghost btn--sm" data-gtm="regenerate">Regenerate</button>
           <button type="button" class="btn btn--ghost btn--sm gtm-revert"${
             edited ? '' : ' hidden'} data-gtm="revert">Revert</button>
-        </div>`
+        </div>
+        ${angleBlock(a.angle)}`
       : failed ? `
         <p class="gtm-failed">This piece did not come back. Nothing else in the plan
           was affected — try it again on its own.</p>
@@ -199,4 +229,4 @@ function thinkingOverlay() {
   </div>`;
 }
 
-module.exports = { planSection, block, thinkingOverlay, KIND_LABEL };
+module.exports = { planSection, block, thinkingOverlay, angleBlock, KIND_LABEL, ANGLE_LABEL };

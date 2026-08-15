@@ -1193,6 +1193,15 @@ module.exports = {
     "picture",
     "consider",
     "looking",
-    "thinking"
+    "thinking",
+    "back",
+    "think",
+    "unhurried",
+    "yours",
+    "rhythm",
+    "breathe",
+    "somewhere",
+    "asks",
+    "nothing"
   ]
 };
