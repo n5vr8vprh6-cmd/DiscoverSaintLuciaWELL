@@ -716,6 +716,46 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   .footer-grid--conversion { grid-template-columns: 1fr; }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   THE HEADER ON A NARROW PHONE
+   --------------------------------------------------------------------------
+   The header is one row that cannot wrap: wordmark, then the menu button. Both
+   were fixed-width — .brand-lockup had `flex-shrink: 0` and the toggle is a
+   text button with no icon — so the row needed 368px on the consumer pages and
+   376px in the Hub before anything gave.
+
+   THAT BROKE 360px, WHICH IS NOT AN EDGE CASE. It is the standard Android
+   portrait width — Galaxy S, Pixel — so a large share of phones got a seven-
+   pixel horizontal scroll on every page of the site. Measured on the live
+   deploy, not inferred.
+
+   ── WHY THE TYPE STEPS DOWN RATHER THAN THE BOX SHRINKING ─────────────────
+   Letting .brand-lockup shrink on its own removes the overflow and looks like a
+   fix in every measurement that counts pixels — the scroll goes away, nothing
+   is clipped. It is not a fix: the wordmark WRAPS ONTO TWO LINES. Caught by
+   measuring the element's height rather than the page's width.
+
+   So `white-space: nowrap` makes wrapping impossible, and the type steps down
+   instead. Two steps, because one large enough to fit 320px would be needlessly
+   small on 375px.
+
+   This is a visible change to the wordmark on phones and it is deliberate. The
+   alternative is a page that scrolls sideways, and tighter tracking at 11px
+   reads better than the desktop tracking does at that size anyway. Nothing at
+   421px and above is touched.
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 420px) {
+  .nav { gap: 0.75rem; }
+  .brand-lockup { flex-shrink: 1; min-width: 0; }
+  .brand-words b { font-size: 0.74rem; letter-spacing: 0.08em; white-space: nowrap; }
+  .brand-words i { font-size: 0.58rem; letter-spacing: 0.12em; white-space: nowrap; }
+}
+
+@media (max-width: 360px) {
+  .brand-words b { font-size: 0.66rem; letter-spacing: 0.05em; }
+  .brand-words i { font-size: 0.52rem; letter-spacing: 0.09em; }
+}
+
 /* Very wide screens — the measure holds, the photography grows. */
 @media (min-width: 1600px) {
   :root { --maxw: 1400px; }

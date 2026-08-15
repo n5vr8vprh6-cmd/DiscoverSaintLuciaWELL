@@ -190,6 +190,30 @@ const post = (path, payload) => json(path, {
   check('and the OFL licence ships with them',
     (await fetch(BASE + '/assets/fonts/OFL.txt')).status === 200);
 
+  /* ── The header fits a real phone ───────────────────────────────────────
+     The header is one unwrappable row — wordmark plus menu button — and both
+     were fixed-width, so it needed 368px (376px in the Hub) before anything
+     gave. 360px is the standard Android portrait width, so every page of the
+     site scrolled sideways on a large share of phones, from launch until
+     2026-08-15, with nothing to catch it.
+
+     Checked as ARITHMETIC on the CSS rather than by rendering, because this
+     suite has no browser: the rules that let the header narrow must be present,
+     and the wordmark must be pinned so it can never "fix" an overflow by
+     wrapping onto two lines — which is what the first attempted fix did, and
+     which every page-width measurement reported as a success. */
+  const chrome = await (await fetch(BASE + '/css/chrome.css')).text();
+  const narrow = chrome.slice(chrome.indexOf('@media (max-width: 420px)'));
+
+  check('the header has a narrow-phone breakpoint',
+    chrome.includes('@media (max-width: 420px)') && chrome.includes('@media (max-width: 360px)'));
+  check('the brand lockup is allowed to narrow',
+    /\.brand-lockup\s*\{[^}]*flex-shrink:\s*1/.test(narrow),
+    'flex-shrink: 0 makes the header need 368px and 360px phones scroll sideways');
+  check('and the wordmark can NEVER wrap instead',
+    /\.brand-words b\s*\{[^}]*white-space:\s*nowrap/.test(narrow),
+    'without nowrap the overflow "fixes" itself by breaking the wordmark over two lines');
+
   const failed = results.filter((x) => !x.skipped && !x.pass);
   const skipped = results.filter((x) => x.skipped);
   const ran = results.length - skipped.length;
