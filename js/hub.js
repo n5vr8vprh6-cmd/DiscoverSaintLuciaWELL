@@ -70,7 +70,8 @@
     email_unavailable:    'We could not send the email just now. Please try again shortly.',
     not_configured:       'The Hub is not available at the moment. Please try again shortly.',
     rate_limited:         'That is a few too many attempts. Please wait a little and try again.',
-    undertaking_required: 'Please read and agree to the Advisor Data Undertaking to create an account.'
+    undertaking_required: 'Please read and agree to the Advisor Data Undertaking to create an account.',
+    migration_pending:    'Accounts cannot be created just now. Please try again shortly.'
   };
 
   document.addEventListener('submit', function (e) {

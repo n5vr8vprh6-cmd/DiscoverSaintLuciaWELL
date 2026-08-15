@@ -83,6 +83,18 @@ const post = async (p, payload) => {
   });
   /* A rate-limited mailer is now reported honestly rather than masked as
      success, so the suite can say plainly why it cannot continue. */
+  /* The other 503 that stops this suite honestly rather than reporting a
+     confusing cascade of failures three checks later. */
+  if (r.status === 503 && r.body && r.body.error === 'migration_pending') {
+    console.log('');
+    console.log('  SKIPPED: db/migrations/007-undertaking.sql is not applied yet,');
+    console.log('  so registration fails closed rather than creating an advisor with');
+    console.log('  no recorded acceptance. Run the migration and re-run this suite.');
+    console.log('');
+    check('register refuses to create an account it cannot record consent for', true);
+    return report();
+  }
+
   if (r.status === 503 && r.body && r.body.error === 'email_unavailable') {
     console.log('');
     console.log('  SKIPPED: Supabase cannot send a verification email right now');
@@ -122,7 +134,7 @@ const post = async (p, payload) => {
   }
 
   /* ── Registering the same address again must not disclose it ───────────── */
-  r = await post('/api/auth/register', { firstName: 'Auth', lastName: 'Test', email: EMAIL, password: PASSWORD });
+  r = await post('/api/auth/register', { firstName: 'Auth', lastName: 'Test', email: EMAIL, password: PASSWORD, undertaking: true });
   check('re-registering does not reveal the address is taken',
     r.status === 200 && !r.body.error, JSON.stringify(r.body));
 

@@ -144,7 +144,24 @@ module.exports = async function handler(req, res) {
           undertaking_version: UNDERTAKING_VERSION,
           undertaking_at: new Date().toISOString()
         }).select().single();
-        if (insErr) throw insErr;
+        if (insErr) {
+          /* ── MIGRATION 007 HAS NOT BEEN APPLIED ─────────────────────────
+             undertaking_version / undertaking_at do not exist yet, so this
+             insert fails with 42703 and every registration returns a generic
+             "register_failed" that says nothing about why.
+
+             It FAILS CLOSED on purpose. Dropping the two columns and carrying
+             on would create accounts with no recorded acceptance, which is
+             exactly what this release exists to prevent — an advisor holding
+             travellers' contact details under no agreement at all. But a guard
+             whose symptom does not name its cause costs somebody an afternoon,
+             so it names it. */
+          if (String(insErr.code) === '42703' || /undertaking/.test(insErr.message || '')) {
+            console.error('REGISTRATION BLOCKED: db/migrations/007-undertaking.sql is not applied', insErr);
+            return json(res, 503, { error: 'migration_pending' });
+          }
+          throw insErr;
+        }
 
         /* Onboarding starts here. Awaited rather than fired and forgotten: a
            serverless function is killed once it responds, so an un-awaited
