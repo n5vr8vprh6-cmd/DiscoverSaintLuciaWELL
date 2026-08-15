@@ -5,8 +5,9 @@
    destination layout points here.
 
    HOW IT WORKS
-   Four questions, scored against the six villages, top three returned with the
-   experiences that sit inside them. No backend, no account, no stored answers.
+   Six questions, scored against the six villages, top three returned with the
+   experiences that sit inside them. No backend, no account, no stored answers
+   until the visitor chooses to share.
 
    PROGRESSIVE ENHANCEMENT
    Without JavaScript the page is a complete static explainer — the six villages
@@ -16,8 +17,11 @@
 
    SCORING
    `weights` maps an answer to village keys and the points it contributes.
-   Question 1 carries the most weight because a stated intention should beat an
-   inferred one. Question 4 does not score villages at all — it decides whether
+   `intention` and `place` carry the most weight — brief §6 names them as the
+   questions that capture desire and environmental pull, and they are allowed to
+   compete when they disagree. `orientation` carries NO weights: it changes what
+   is proposed inside a village, not which village. `recognition` scores nothing
+   either — it decides whether
    Eclipse is surfaced, and it is worded as recognition rather than diagnosis.
    Nobody is told they are burned out by a website.
    ========================================================================== */
@@ -53,6 +57,45 @@ const QUESTIONS = [
     ]
   },
   {
+    /* ── Q3 · PLACE PULL ─────────────────────────────────────────────────
+       Consumer Engine brief §5. Restored 15 August 2026 after the spec review
+       found it missing, and it is the one that mattered: §6 names Q1, Q2 and
+       Q3 as the highest-weight questions "because they capture desire and
+       environmental pull", and this is the direct village signal. Without it
+       the whole result rested on `intention` plus two modifiers, which is why
+       a slow solo traveller and a slow couple could land in the same place.
+
+       WEIGHTED 4, ONE MORE THAN `intention`, AND THE COVERAGE MATRIX IS WHY.
+       At 3 the two questions tied in 18 of the 30 intention x place
+       combinations, and every tie was decided by the order of the villages
+       array — which handed them to Longevity first, then Nature, then Ocean,
+       for no reason a traveller would recognise. Somebody who needed rest but
+       pictured food and culture was sent to Longevity, which nothing in their
+       answers had mentioned.
+
+       So place wins when they disagree: the villages ARE places, and where you
+       pictured yourself is where you will be. The need still shapes what is
+       proposed once you are there, and still decides outright when the two
+       agree. Reverse this by dropping it back to 3 if the matrix ever says
+       otherwise — but re-read the matrix, not the number.
+
+       The six choices map almost one-to-one onto the six villages, which is
+       not a coincidence: the villages were built from the island's landscapes.
+       Volcanic earth carries a little rainforest with it because Sulphur
+       Springs sits inside it. */
+    id: 'place',
+    question: 'Which Saint Lucia calls you first?',
+    help: 'Go with the one you pictured, not the one that sounds most sensible.',
+    options: [
+      { value: 'ocean',      label: 'The ocean',           note: 'Water, light, and the sound of it from where you sleep.',      weights: { ocean: 4 } },
+      { value: 'rainforest', label: 'The rainforest',      note: 'Canopy, waterfalls, and air that smells like rain.',           weights: { rainforest: 4 } },
+      { value: 'volcanic',   label: 'The volcanic earth',  note: 'Sulphur springs, mineral heat, the island still working.',      weights: { longevity: 4, rainforest: 1 } },
+      { value: 'culture',    label: 'Food and culture',    note: 'Cacao estates, Creole kitchens, markets and music.',            weights: { heritage: 4 } },
+      { value: 'adventure',  label: 'Somewhere to climb',  note: 'The Pitons, the trails, the water you get into properly.',      weights: { movement: 4 } },
+      { value: 'romance',    label: 'Somewhere for two',   note: 'A place that does not need you to do anything but be there.',   weights: { connection: 4 } }
+    ]
+  },
+  {
     id: 'companions',
     question: 'Who is traveling?',
     options: [
@@ -60,6 +103,33 @@ const QUESTIONS = [
       { value: 'partner', label: 'With a partner',   weights: { connection: 2 } },
       { value: 'friends', label: 'With friends',     weights: { movement: 1, heritage: 1 } },
       { value: 'family',  label: 'With family',      weights: { heritage: 1, movement: 1, ocean: 1 } }
+    ]
+  },
+  {
+    /* ── Q5 · WELLNESS ORIENTATION ───────────────────────────────────────
+       Brief §5, and §9 lists it as a lead-brief field: it is what tells an
+       advisor whether to propose a retreat or a holiday, which is the single
+       most useful thing to know before the first call.
+
+       IT CARRIES NO VILLAGE WEIGHTS, DELIBERATELY. §6: "Q5 modifies the
+       depth/structure of the recommended journey without overriding the
+       traveller's place preferences." Any weight at all would make it a
+       seventh village signal competing with the two questions that are
+       supposed to decide, so the honest reading is zero — it changes what is
+       proposed inside a village, not which village.
+
+       Reverse this by giving the options weights if it ever turns out that
+       "wellness-led" should genuinely pull toward Longevity. */
+    id: 'orientation',
+    question: 'What kind of journey sounds like you?',
+    help: 'This shapes how much is planned, not where you go.',
+    options: [
+      { value: 'vacation', label: 'A beautiful vacation, with wellness woven in',
+        note: 'Mostly free. The restorative parts are there when you want them.' },
+      { value: 'balance',  label: 'A balance of exploring and restoring',
+        note: 'Some structure, some space. Days that alternate.' },
+      { value: 'led',      label: 'A wellness-led journey with real depth',
+        note: 'Built around the restoration, with the island around it.' }
     ]
   },
   {

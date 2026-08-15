@@ -209,6 +209,8 @@ module.exports = async function handler(req, res) {
                so nothing is hidden from the advisor, not so it is read first. -->
           <dl class="hub-answers">
             ${answerRow('Needed most', 'intention', j.answers)}
+            ${answerRow('Pictured first', 'place', j.answers)}
+            ${answerRow('Kind of journey', 'orientation', j.answers)}
             ${answerRow('Travelling', 'companions', j.answers)}
             ${answerRow('Pace', 'pace', j.answers)}
             ${answerRow('Recognised the description', 'recognition', j.answers)}

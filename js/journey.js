@@ -1,9 +1,15 @@
 /* ============================================================================
    THE WELL JOURNEY FINDER
    ----------------------------------------------------------------------------
-   Four questions → the three villages that best answer them → the experiences
+   Six questions → the three villages that best answer them → the experiences
    inside those villages → an advisor, or an email if they are not ready to talk
    to one yet.
+
+   The question set is DATA, read from #finder-data. Nothing in this file names
+   a question or an answer literally — including the result hash, which is built
+   and parsed from `questions` at both ends. Adding a question used to break that
+   round trip silently: an old link restored fewer answers and scored a
+   different result, with no error anywhere.
 
    Everything runs in the browser. No answers are transmitted, no account is
    created, nothing is written to storage. The result is reproducible from the
@@ -476,7 +482,12 @@
 
     /* Shareable and returnable without us storing anything. */
     try {
-      var hash = '#r=' + [answers.intention, answers.companions, answers.pace, answers.recognition].join('-');
+      /* DERIVED FROM `questions`, never a hand-written list. This used to name
+         the four answers literally, and its parser named them again at the
+         bottom of the file — so adding a question broke the round trip in a
+         way nothing would have caught: an old link restores fewer answers,
+         scores them, and shows a DIFFERENT result with no error anywhere. */
+      var hash = '#r=' + questions.map(function (q) { return answers[q.id]; }).join('-');
       history.replaceState(null, '', location.pathname + hash);
     } catch (e) { /* non-fatal */ }
   }
@@ -843,10 +854,19 @@
      `instant` — someone arriving on a friend's link has answered nothing, so
      performing a "shaping your journey" sequence at them would be pure
      theatre. They get the result directly, which is what they clicked for. */
-  var m = /#r=([a-z]+)-([a-z]+)-([a-z]+)-([a-z]+)/.exec(location.hash);
+  /* The other half of the round trip, and derived from the same source. A link
+     made before a question was added simply has too few parts, fails the
+     validity check below, and falls through to the ordinary launch screen —
+     which is the right outcome. Restoring a partial answer set would show
+     somebody a result that is not the one they were sent. */
+  var m = /#r=([a-z-]+)/.exec(location.hash);
   if (m) {
-    answers = { intention: m[1], companions: m[2], pace: m[3], recognition: m[4] };
-    var valid = questions.every(function (q) {
+    var parts = m[1].split('-');
+    answers = {};
+    if (parts.length === questions.length) {
+      questions.forEach(function (q, i) { answers[q.id] = parts[i]; });
+    }
+    var valid = parts.length === questions.length && questions.every(function (q) {
       return q.options.some(function (o) { return o.value === answers[q.id]; });
     });
     if (valid) {

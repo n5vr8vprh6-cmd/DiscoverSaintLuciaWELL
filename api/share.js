@@ -71,9 +71,17 @@ module.exports = async function handler(req, res) {
   const sessionId = str(b.session, 64);
   const source = str(b.source, 40).toLowerCase() || null;
 
+  /* An allow-list, so a hand-edited request cannot write arbitrary keys into
+     the stored answers. THE COST OF FORGETTING ONE IS SILENCE: a question the
+     Finder asks but this omits is collected from the visitor, shown in their
+     result, and then dropped on the floor — no error, no log, and the advisor
+     simply never sees it. `place` and `orientation` were added here in the same
+     change that added them to content/journey.js, for that reason. */
   const answers = (b.answers && typeof b.answers === 'object') ? {
     intention: str(b.answers.intention, 40),
+    place: str(b.answers.place, 40),
     companions: str(b.answers.companions, 40),
+    orientation: str(b.answers.orientation, 40),
     pace: str(b.answers.pace, 40),
     recognition: str(b.answers.recognition, 40)
   } : {};

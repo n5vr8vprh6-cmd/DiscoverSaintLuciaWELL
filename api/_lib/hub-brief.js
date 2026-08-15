@@ -70,10 +70,45 @@ const RECOGNITION = {
   no:  { label: 'Not really' }
 };
 
+/* Which Saint Lucia they pictured. Carries the same weight as intention in the
+   scoring, so it deserves the same standing in the briefing — and where the two
+   disagree, that gap is the single most useful thing an advisor can open with. */
+const PLACE = {
+  ocean:      { label: 'The ocean',          said: 'pulled first toward the ocean',
+    ask: 'Is it being ON the water you want, or beside it with nothing asked of you?' },
+  rainforest: { label: 'The rainforest',     said: 'pulled first toward the rainforest',
+    ask: 'How far into it do you want to get — a walk, or a proper day of it?' },
+  volcanic:   { label: 'The volcanic earth', said: 'pulled first toward the volcanic earth',
+    ask: 'Have you been in mineral springs before, or would this be the first time?' },
+  culture:    { label: 'Food and culture',   said: 'pulled first toward food and culture',
+    ask: 'Do you want to eat your way through it, or learn to cook some of it?' },
+  adventure:  { label: 'Somewhere to climb', said: 'pulled first toward the climbing and the trails',
+    ask: 'What have you done recently that felt like this? The Pitons are a real climb.' },
+  romance:    { label: 'Somewhere for two',  said: 'pulled first toward somewhere for two',
+    ask: 'Is this an occasion, or is it that you simply have not had time together?' }
+};
+
+/* THE FIELD THAT DECIDES WHAT YOU PROPOSE. Brief §9 lists it as a lead-brief
+   field, and it is the difference between sending a retreat itinerary to
+   somebody who wanted a holiday and the other way round. It scores no villages
+   — it changes what goes inside one. */
+const ORIENTATION = {
+  vacation: { label: 'A vacation with wellness woven in',
+    said: 'a beautiful vacation with wellness woven through it, rather than a programme',
+    ask: 'What would make this feel like a holiday first? I will keep the structure light.' },
+  balance:  { label: 'A balance of exploring and restoring',
+    said: 'a balance — some exploring, some restoring, days that alternate',
+    ask: 'Which way do you lean when you have to choose on the day?' },
+  led:      { label: 'A wellness-led journey with real depth',
+    said: 'a wellness-led journey with real depth, with the island around it',
+    ask: 'Have you done something like this before, and what did it give you that an ordinary trip did not?' }
+};
+
 /* The advisor should never be shown a stored code. `reflect` means something to
    the scoring engine and nothing to a person about to make a phone call. */
 function answerLabel(question, value) {
-  const map = { intention: INTENTION, companions: COMPANIONS, pace: PACE, recognition: RECOGNITION }[question];
+  const map = { intention: INTENTION, place: PLACE, companions: COMPANIONS,
+                orientation: ORIENTATION, pace: PACE, recognition: RECOGNITION }[question];
   const entry = map && map[value];
   return entry ? entry.label : (value || '');
 }
@@ -88,6 +123,17 @@ function brief(j) {
 
   const intention = INTENTION[a.intention];
   if (intention) lines.push(`${name} began with ${intention.said}.`);
+
+  /* Where the stated need and the pictured place DISAGREE is the most useful
+     sentence on this screen — somebody who needs rest but pictured the Pitons
+     is telling you two true things, and reconciling them is the conversation.
+     So it is said as one sentence when they align and as a contrast when they
+     do not, rather than as two flat facts. */
+  const place = PLACE[a.place];
+  if (place) lines.push(`${cap(place.said)}.`);
+
+  const orientation = ORIENTATION[a.orientation];
+  if (orientation) lines.push(`They are after ${orientation.said}.`);
 
   const who = COMPANIONS[a.companions];
   const pace = PACE[a.pace];
@@ -125,6 +171,10 @@ function brief(j) {
      this reads as a call sheet rather than a script. */
   const prompts = [];
   if (intention) prompts.push(intention.ask);
+  /* Orientation before place: what KIND of trip decides the shape of the whole
+     proposal, and getting it wrong wastes the call. */
+  if (orientation) prompts.push(orientation.ask);
+  if (place) prompts.push(place.ask);
   if (who) prompts.push(who.ask);
   if (j.context) prompts.push('They wrote something in their own words — open with that rather than with the quiz.');
   prompts.push('What would make this trip worth having taken, six months after you are home?');
