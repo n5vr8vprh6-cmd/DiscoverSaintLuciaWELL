@@ -141,13 +141,21 @@ async function get(q) {
      inside the SQL editor's single transaction rolls back the change it was
      checking — which is how 006 and 007 both appeared not to have been run at
      all. The assertion belongs here, where failing is a red test. */
+  /* Content-Type is REQUIRED on an rpc POST and is not in the shared headers,
+     which are built for GETs. Without it PostgREST cannot parse the body, finds
+     no zero-argument overload, and answers 404 PGRST202 — "function not found",
+     which reads exactly like a migration that was never applied. It cost a
+     round of hunting for a migration that was in fact fine, so the failure
+     message below now distinguishes the two rather than assuming. */
   const months = await fetch(URL + '/rest/v1/rpc/retention_months', {
-    method: 'POST', headers: H, body: JSON.stringify({ what: 'journey_shares' })
+    method: 'POST',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, H),
+    body: JSON.stringify({ what: 'journey_shares' })
   });
   const has006 = months.ok;
   if (!has006) {
     check('006 · retention is in force', false,
-      'purge_expired() / retention_months() missing — nothing expires and §12 is not true');
+      'HTTP ' + months.status + ' — if PGRST202, 006 is not applied and nothing expires');
   } else {
     const n = await months.json();
     check('006 · retention limit is set', n === 24, 'got ' + n);
@@ -157,7 +165,7 @@ async function get(q) {
        job and a healthy one look identical. */
     const sweeps = await get('admin_audit?select=created_at,detail&action=eq.retention_purge&order=created_at.desc&limit=1');
     check('006 · the purge records its runs', !sweeps.error, sweeps.error || '');
-    if (!sweeps.error && !sweeps.data.length) {
+    if (!sweeps.error && !sweeps.rows.length) {
       check('006 · a sweep has run', true, 'none yet — expected until the first scheduled run');
     }
   }
@@ -172,8 +180,8 @@ async function get(q) {
 
     /* THE ONE THAT MUST NEVER FLIP. Stamping existing advisors as having
        accepted would be one UPDATE and a forgery. */
-    const stamped = und.data.filter((a) => a.undertaking_version);
-    const total = und.data.length;
+    const stamped = und.rows.filter((a) => a.undertaking_version);
+    const total = und.rows.length;
     check('007 · acceptances are real, not backfilled',
       stamped.length === 0 || stamped.length < total,
       stamped.length + '/' + total + ' stamped — all of them at once means a backfill');
