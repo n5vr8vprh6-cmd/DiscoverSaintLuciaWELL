@@ -1,0 +1,332 @@
+/* ============================================================================
+   GTM GENERATE — the prompts, the projection, and what comes back
+   ----------------------------------------------------------------------------
+   openai.js moves text. gtm.js handles HTTP. This is the part that decides what
+   the model is told and what we do with the answer.
+
+   ── THE ISOLATION IS STRUCTURAL, NOT PROCEDURAL ────────────────────────────
+   No consumer or Journey data ever reaches the AI. That is not achieved by
+   remembering not to include it — it is achieved by advisorContext() taking an
+   advisor and a profile and copying named fields out of them. There is no path
+   from journey_shares into a prompt, because nothing here is ever handed a
+   share to filter. A filter can be written wrong; an absent parameter cannot.
+
+   The travellers who shared a Journey consented to an introduction to an
+   advisor. They did not consent to becoming raw material for that advisor's
+   marketing, and the difference is not subtle.
+
+   ── THE FACT PROJECTION DROPS `unverified` ─────────────────────────────────
+   Property records carry an `unverified` note — "treatment-room counts differ
+   across current materials; confirm if planning groups". That is a caution for
+   a human planning a group booking. Handing it to a copywriter does the
+   opposite of what it is for: it introduces treatment rooms as a topic and
+   invites the exact sentence it warns against. What the model gets is the
+   confirmed hook and the mappings, and nothing about our uncertainty.
+
+   ── THE MODEL IS NEVER ASKED TO POLICE ITSELF ──────────────────────────────
+   The prompts carry the claim rules because a prompt that invites invention
+   produces more work for the checker. But the verdict is always claims.js,
+   running plain code against the fact bank. A checker that can hallucinate is
+   not a control, and "I asked it to be careful" is not a compliance position.
+   ========================================================================== */
+'use strict';
+
+const { chat } = require('./openai.js');
+const { check } = require('./claims.js');
+const FACTS = require('../../content/campaign-facts.js');
+
+/* ── What the model is allowed to know ───────────────────────────────────── */
+
+/* Confirmed entries only, and only the fields that help someone write a true
+   sentence. Rebuilt per call rather than cached at module load so a fact-bank
+   regeneration is picked up by the next request rather than the next deploy. */
+function modelFacts() {
+  return {
+    villages: FACTS.villages.map((v) => ({ name: v.name, short: v.short })),
+    compass: FACTS.compass.map((c) => ({ name: c.name, read: c.read })),
+    continuum: FACTS.continuum.map((c) => ({ name: c.name, meaning: c.meaning, plan: c.plan })),
+    properties: FACTS.properties
+      /* An unconfirmed property is absent entirely rather than present with a
+         caveat nobody reads. Today every record is confirmed; this filter is
+         what keeps that true when the Field Guide's research agent adds one
+         that is not. */
+      .filter((p) => p.confirmed !== false && p.placeholder !== true)
+      .map((p) => ({
+        name: p.name,
+        villages: p.villages,
+        compass: p.compass,
+        hook: p.hook
+        /* p.unverified is deliberately absent — see the header. */
+      })),
+    safeRegister: FACTS.SAFE_REGISTER,
+    neverClaim: FACTS.NEVER_CLAIM
+  };
+}
+
+/* THE ALLOW-LIST. Everything the model learns about who it is writing for comes
+   through here. Adding a field is a deliberate act; nothing arrives by being
+   attached to an object that happened to be passed in. */
+const ADVISOR_FIELDS = ['first_name', 'last_name', 'business', 'host_agency', 'market'];
+const PROFILE_FIELDS = [
+  'positioning', 'differentiator', 'icp', 'client_examples', 'specialties', 'markets',
+  'email_band', 'social_band', 'client_band'
+];
+/* Channels are sent as names only. The URLs stay out: we never fetch them, the
+   model cannot open them, and a link in a prompt is just a token the model may
+   decide to print into a caption. */
+const CHANNEL_FIELDS = ['website', 'linkedin', 'instagram', 'facebook', 'tiktok', 'newsletter'];
+
+function advisorContext(advisor, profile) {
+  const a = advisor || {};
+  const p = profile || {};
+  const out = { channels: [] };
+
+  ADVISOR_FIELDS.forEach((f) => { if (a[f]) out[f] = String(a[f]).slice(0, 200); });
+  PROFILE_FIELDS.forEach((f) => { if (p[f]) out[f] = String(p[f]).slice(0, 900); });
+  CHANNEL_FIELDS.forEach((f) => { if (String(p[f] || '').trim()) out.channels.push(f); });
+
+  /* The advisor's WELL link is the one URL that belongs in copy, and it is
+     ours. Passed as a placeholder token rather than the real link so a model
+     that mangles a URL cannot produce a broken one — gtm.js substitutes the
+     real value after the checker has run. */
+  out.linkToken = '{{WELL_LINK}}';
+  return out;
+}
+
+/* ── The rules every prompt carries ──────────────────────────────────────── */
+function rulesBlock(rung) {
+  const ladder = FACTS.CLAIMS_LADDER[rung] || FACTS.CLAIMS_LADDER.registered;
+  return `RULES — THESE OUTRANK THE WRITING
+
+1. HEALTH. Never say or imply that travel treats, cures, heals, reduces,
+   relieves or improves any condition, symptom or measurable thing. No
+   cortisol, no burnout, no anxiety, no sleep quality, no immune function.
+   Write about places and time, never about effects on a body.
+   This register is safe and is the register to use: ${FACTS.SAFE_REGISTER.join('; ')}.
+2. CREDENTIALS. This advisor may accurately say: ${ladder.may.join('; ')}.
+   They may NOT say: ${ladder.mayNot.join('; ')}. Do not imply it either.
+3. FACTS. Name only places and properties from the list you were given. Do not
+   add a property, a village, a treatment, a practitioner or a partner that is
+   not on it. If you want a detail you do not have, write about what you do.
+4. NEVER: ${FACTS.NEVER_CLAIM.join('; ')}.
+5. The advisor's link is the literal token {{WELL_LINK}}. Write it exactly.
+   Never invent a URL, a handle or a phone number.`;
+}
+
+/* ── Skeleton: the shape of the month ────────────────────────────────────── */
+
+const SKELETON_SYSTEM = `You plan short, realistic marketing campaigns for independent travel
+advisors. You are practical and unexcitable. You produce small actions a busy
+person will actually do, not content calendars they will abandon in week two.
+You return JSON and nothing else.`;
+
+function skeletonPrompt(ctx, rung) {
+  return `Plan a 30-day campaign for this travel advisor to promote wellness travel
+to Saint Lucia and collect enquiries through their personal link.
+
+THE ADVISOR
+${JSON.stringify(ctx, null, 1)}
+
+THE SHAPE IT MUST TAKE
+Four weeks. Two to four actions per week, no more. Real actions of mixed size:
+messaging a short list of past clients by name, one post, one email, one
+conversation. NOT thirty social posts — that plan fails in week two and the
+advisor blames themselves.
+
+Use ONLY the channels listed in "channels". If they have no Instagram, do not
+plan Instagram. If the only channel is a newsletter, plan around a newsletter.
+
+${rulesBlock(rung)}
+
+RETURN EXACTLY THIS JSON, no prose, no code fence:
+{
+  "premise": "one sentence on the strategy, in plain language",
+  "weeks": [
+    {
+      "week": 1,
+      "theme": "three or four words",
+      "actions": [
+        {
+          "title": "imperative, under 60 characters",
+          "why": "one sentence on what this is for",
+          "channel": "one of the advisor's channels, or \\"direct\\" for one-to-one messages",
+          "assetKind": "caption | email | sms | dm | script | outline | none"
+        }
+      ]
+    }
+  ]
+}`;
+}
+
+/* Models wrap JSON in code fences no matter how firmly you ask them not to. */
+function parseJson(text) {
+  const t = String(text || '').trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '');
+  try {
+    return JSON.parse(t);
+  } catch (_) {
+    /* Second chance: the first balanced object in the string. A model that
+       prefaces JSON with "Here's your plan:" is common enough to handle. */
+    const i = t.indexOf('{');
+    const j = t.lastIndexOf('}');
+    if (i >= 0 && j > i) {
+      try { return JSON.parse(t.slice(i, j + 1)); } catch (_) { /* give up */ }
+    }
+    return null;
+  }
+}
+
+const ASSET_KINDS = ['caption', 'email', 'sms', 'dm', 'script', 'outline', 'none'];
+
+/* Whatever comes back is shaped by us before it touches the database. A model
+   that returns six weeks, or nine actions, or an assetKind it invented, must
+   not be able to write a plan the Hub cannot render. */
+function normaliseSkeleton(raw) {
+  if (!raw || typeof raw !== 'object' || !Array.isArray(raw.weeks)) return null;
+
+  const weeks = raw.weeks.slice(0, 4).map((w, i) => ({
+    week: i + 1,
+    theme: String(w && w.theme || '').slice(0, 60),
+    actions: (Array.isArray(w && w.actions) ? w.actions : []).slice(0, 4).map((a) => {
+      const kind = String(a && a.assetKind || 'none').toLowerCase().trim();
+      return {
+        title: String(a && a.title || '').slice(0, 120),
+        why: String(a && a.why || '').slice(0, 300),
+        channel: String(a && a.channel || 'direct').toLowerCase().slice(0, 20),
+        assetKind: ASSET_KINDS.indexOf(kind) === -1 ? 'none' : kind
+      };
+    }).filter((a) => a.title)
+  })).filter((w) => w.actions.length);
+
+  if (!weeks.length) return null;
+  return { premise: String(raw.premise || '').slice(0, 300), weeks };
+}
+
+async function generateSkeleton(advisor, profile, rung) {
+  const ctx = advisorContext(advisor, profile);
+  const r = await chat({
+    system: SKELETON_SYSTEM,
+    user: skeletonPrompt(ctx, rung),
+    maxTokens: 1400,
+    temperature: 0.5,
+    stub: STUB_SKELETON
+  });
+
+  if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms };
+
+  const skeleton = normaliseSkeleton(parseJson(r.text));
+  if (!skeleton) {
+    return { ok: false, reason: 'unparseable', payload: r.payload, ms: r.ms };
+  }
+  return { ok: true, skeleton, payload: r.payload, ms: r.ms, model: r.model, usage: r.usage };
+}
+
+/* ── One asset ───────────────────────────────────────────────────────────── */
+
+const ASSET_SYSTEM = `You write short marketing copy for independent travel advisors in
+their own voice. You are specific and plain. You never write like a brochure and
+you never make claims about health. You return only the copy requested.`;
+
+const SHAPES = {
+  caption: 'A social caption. Under 80 words. One idea. A question or an invitation at the end. No hashtag wall — three at most.',
+  email:   'An email. A subject line on the first line prefixed "Subject: ", then the body. Under 200 words. Written to one person, not a list.',
+  sms:     'A text message. Under 40 words. Sounds like a person, not a business.',
+  dm:      'A direct message to one past client. Under 60 words. Reference that you know them. No pitch in the first two sentences.',
+  script:  'What to say out loud, as bullet points. Under 120 words. For a conversation, not a reading.',
+  outline: 'A short outline as bullet points. Under 120 words.'
+};
+
+function assetPrompt(ctx, action, rung, weekTheme) {
+  return `Write one piece of copy for this travel advisor.
+
+THE ADVISOR
+${JSON.stringify(ctx, null, 1)}
+
+THE ACTION IT IS FOR
+Week ${action.week} — ${weekTheme}
+${action.title}
+Purpose: ${action.why}
+Channel: ${action.channel}
+
+THE SHAPE
+${SHAPES[action.assetKind] || SHAPES.caption}
+
+WHAT YOU MAY DRAW ON
+${JSON.stringify(modelFacts(), null, 1)}
+
+${rulesBlock(rung)}
+
+Return the copy only. No preamble, no notes, no explanation, no quotation marks
+around the whole thing.`;
+}
+
+async function generateAsset(advisor, profile, rung, action, weekTheme) {
+  const ctx = advisorContext(advisor, profile);
+  const r = await chat({
+    system: ASSET_SYSTEM,
+    user: assetPrompt(ctx, action, rung, weekTheme || ''),
+    maxTokens: 700,
+    temperature: 0.65,
+    stub: STUB_ASSET
+  });
+
+  if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms };
+
+  const body = String(r.text || '').trim().replace(/^["“](.*)["”]$/s, '$1').trim();
+  if (!body) return { ok: false, reason: 'empty', payload: r.payload, ms: r.ms };
+
+  /* The verdict, from plain code. Stored with the asset so a warning survives a
+     reload — but re-run on every edit, because a cached verdict about text
+     somebody has since rewritten is worse than no verdict at all. */
+  const verdict = check(body, rung);
+
+  return {
+    ok: true,
+    body,
+    flags: verdict.flags,
+    severity: verdict.high ? 'high' : verdict.flags.length ? 'low' : 'none',
+    copyable: verdict.copyable,
+    payload: r.payload,
+    ms: r.ms,
+    model: r.model,
+    usage: r.usage
+  };
+}
+
+/* ── Stubs ────────────────────────────────────────────────────────────────
+   Used only when OPENAI_STUB=1. They must look like real output — same shape,
+   same register, deliberately including the {{WELL_LINK}} token — or the tests
+   exercise a parser against a fiction and pass where production would fail. */
+const STUB_SKELETON = JSON.stringify({
+  premise: 'Start with the people who already trust you, then let the link do the rest.',
+  weeks: [
+    { week: 1, theme: 'The warm list', actions: [
+      { title: 'Message 10 past clients by name', why: 'The highest-intent audience you will ever have.', channel: 'direct', assetKind: 'dm' },
+      { title: 'Post once about why Saint Lucia', why: 'Signals the new focus without announcing it.', channel: 'instagram', assetKind: 'caption' }
+    ] },
+    { week: 2, theme: 'Widen it', actions: [
+      { title: 'Email your list', why: 'Reaches the people who opted in and never hear from you.', channel: 'newsletter', assetKind: 'email' }
+    ] },
+    { week: 3, theme: 'Conversations', actions: [
+      { title: 'Follow up everyone who replied', why: 'Replies decay fast.', channel: 'direct', assetKind: 'script' }
+    ] },
+    { week: 4, theme: 'Close the loop', actions: [
+      { title: 'Share what you learned', why: 'Proof you are doing the work.', channel: 'instagram', assetKind: 'caption' }
+    ] }
+  ]
+}, null, 1);
+
+const STUB_ASSET = `Six villages, one island, and a way of choosing that actually asks what you
+need. If you have been meaning to go somewhere that gives you unhurried days,
+this is the one I would send you to first.
+
+Take two minutes and see what comes back: {{WELL_LINK}}`;
+
+module.exports = {
+  advisorContext, modelFacts, rulesBlock,
+  skeletonPrompt, assetPrompt, parseJson, normaliseSkeleton,
+  generateSkeleton, generateAsset,
+  ADVISOR_FIELDS, PROFILE_FIELDS, CHANNEL_FIELDS, ASSET_KINDS,
+  STUB_SKELETON, STUB_ASSET
+};
