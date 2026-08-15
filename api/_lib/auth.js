@@ -41,6 +41,20 @@ const REFRESH = 'dslw_refresh';
    still comes from the HttpOnly session through advisorFor(). */
 const WHO = 'dslw_who';
 
+/* ── Viewing another advisor's Hub ────────────────────────────────────────
+   `dslw_viewas` holds the id of the advisor being looked at. It is HttpOnly,
+   short-lived, and — the important part — SEPARATE FROM THE SESSION. The
+   session cookie stays the admin's throughout. This is not a login as somebody
+   else; it is the admin's own session, rendering somebody else's data.
+
+   That distinction is what makes the audit trail meaningful: every row still
+   carries the real admin's identity, because the real admin is who is signed
+   in. It is also why the cookie alone grants nothing — advisorFor() only
+   honours it when the signed-in account is genuinely an admin, checked against
+   the database on every request. */
+const VIEWAS = 'dslw_viewas';
+const VIEWAS_MINUTES = 30;
+
 function anonClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
@@ -86,6 +100,24 @@ function appendCookie(res, value) {
   const list = existing ? (Array.isArray(existing) ? existing.slice() : [existing]) : [];
   list.push(value);
   res.setHeader('Set-Cookie', list);
+}
+
+function setViewAs(res, advisorId) {
+  const secure = process.env.NODE_ENV !== 'development';
+  appendCookie(res, [
+    `${VIEWAS}=${encodeURIComponent(advisorId)}`,
+    'Path=/', 'HttpOnly', 'SameSite=Lax',
+    secure ? 'Secure' : '',
+    `Max-Age=${VIEWAS_MINUTES * 60}`
+  ].filter(Boolean).join('; '));
+}
+
+/* Deliberately does not touch the session. Exiting is only ever forgetting who
+   you were looking at, which is why it needs no permission check of its own —
+   clearing this cookie can never grant anything. */
+function clearViewAs(res) {
+  const secure = process.env.NODE_ENV !== 'development';
+  appendCookie(res, `${VIEWAS}=; Path=/; HttpOnly; SameSite=Lax; ${secure ? 'Secure; ' : ''}Max-Age=0`);
 }
 
 /* Display state for the signed-in header. Deliberately readable — see WHO. */
@@ -171,7 +203,41 @@ async function advisorFor(req, res) {
     if (!current || current.n !== data.first_name || current.i !== initials) setWho(res, data);
   }
 
-  return Object.assign({ authUserId: user.id, authEmail: user.email }, data);
+  const self = Object.assign({ authUserId: user.id, authEmail: user.email }, data);
+
+  /* ── The view-as override ───────────────────────────────────────────────
+     Deliberately the LAST thing this function does, and the only place in the
+     system where the advisor you get back is not the advisor you signed in as.
+     Putting it anywhere else would mean two answers to "who is this request",
+     which is how support tooling turns into a privilege bug.
+
+     Three conditions, all required, all checked here:
+       · the cookie is present;
+       · the SIGNED-IN account is genuinely an admin, read from the database on
+         this request — not from the session, not from a claim in a cookie;
+       · the target still exists.
+
+     Any of them failing returns the admin as themselves. A stale cookie after
+     a demotion is therefore inert rather than dangerous. */
+  const viewAsId = parseCookies(req)[VIEWAS];
+  if (!viewAsId || data.role !== 'admin' || viewAsId === data.id) return self;
+
+  const { data: target } = await supabase
+    .from('advisors')
+    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at')
+    .eq('id', viewAsId)
+    .maybeSingle();
+  if (!target) return self;
+
+  return Object.assign({}, target, {
+    authUserId: user.id,
+    authEmail: user.email,
+    /* Screens branch on this to refuse writes and to mask consumer details. */
+    viewingAs: true,
+    /* The real identity travels with the request so the audit trail records the
+       person, not the costume. */
+    realAdmin: { id: self.id, email: self.email, first_name: self.first_name }
+  });
 }
 
 /* Guard for Hub pages. Redirects rather than 401s, because these are documents
@@ -217,7 +283,17 @@ async function requireAdmin(req, res, next) {
     return null;
   }
 
-  if (advisor.role !== 'admin') {
+  /* Two refusals, and the second is not covered by the first.
+
+     While viewing as somebody, you are not acting as an admin — you are looking
+     at their Hub, and the admin console is not part of what they can see. The
+     role check alone would miss the case of an admin viewing as ANOTHER ADMIN,
+     where the effective role is still 'admin'. So `viewingAs` is refused
+     outright, whoever the target happens to be.
+
+     The way back is the banner's Stop viewing, which clears the cookie and
+     needs no permission of its own. */
+  if (advisor.viewingAs || advisor.role !== 'admin') {
     res.statusCode = 302;
     res.setHeader('Location', '/hub');
     res.end();
@@ -256,6 +332,7 @@ function safeNext(value) {
 
 module.exports = {
   anonClient, parseCookies, setSession, setWho, clearSession,
+  setViewAs, clearViewAs,
   userFor, advisorFor, requireAdvisor, requireAdmin, requireAdvisorJson, safeNext,
-  COOKIE, REFRESH, WHO
+  COOKIE, REFRESH, WHO, VIEWAS, VIEWAS_MINUTES
 };

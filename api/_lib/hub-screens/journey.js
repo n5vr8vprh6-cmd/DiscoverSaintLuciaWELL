@@ -22,6 +22,8 @@ const {
   hubPage, esc, emptyState, STAGES, STAGE_LABEL, WINDOW_LABEL, since
 } = require('../hub-render.js');
 const { journeyById, notesFor, setStage, addNote } = require('../hub-data.js');
+const { maskJourney } = require('../hub-mask.js');
+const { audit } = require('../admin-data.js');
 const { brief, fullName, answerLabel } = require('../hub-brief.js');
 
 module.exports = async function handler(req, res) {
@@ -37,6 +39,30 @@ module.exports = async function handler(req, res) {
   if (!id) return notFound(res, advisor);
 
   if (req.method === 'POST') {
+    /* VIEW-AS IS READ-ONLY, ENFORCED HERE RATHER THAN BY HIDING THE FORM.
+       A hidden button is a suggestion; this is the rule. Staff looking at
+       somebody's Hub for support must not be able to move a Journey or leave a
+       note that the advisor would later read as their own. */
+    if (advisor.viewingAs) {
+      /* One exception, and it is not a write to the Journey: revealing the
+         consumer's details. It is a POST rather than a link precisely so it is
+         a deliberate act that can be recorded — the audit row is the point. */
+      if (str((body(req) || {}).action, 20) === 'reveal') {
+        await audit(advisor.realAdmin, 'view_as_reveal', {
+          subject: { id: advisor.id, first_name: advisor.first_name,
+                     last_name: advisor.last_name, email: advisor.email },
+          detail: { share_id: id }
+        });
+        res.statusCode = 303;
+        res.setHeader('Location', `/hub/journeys/${encodeURIComponent(id)}?reveal=1`);
+        return res.end();
+      }
+
+      res.statusCode = 303;
+      res.setHeader('Location', `/hub/journeys/${encodeURIComponent(id)}?done=readonly`);
+      return res.end();
+    }
+
     const b = body(req) || {};
     const stage = str(b.stage, 20);
     const note = str(b.note, 4000);
@@ -47,8 +73,14 @@ module.exports = async function handler(req, res) {
     return res.end();
   }
 
-  const j = await journeyById(advisor.id, id);
-  if (!j) return notFound(res, advisor);
+  const raw = await journeyById(advisor.id, id);
+  if (!raw) return notFound(res, advisor);
+
+  /* Revealing is per-page-view and audited at the moment the button is
+     pressed — see the POST branch. It is not remembered, so returning to
+     this Journey later starts masked again. */
+  const revealed = url.searchParams.get('reveal') === '1';
+  const j = maskJourney(raw, advisor.viewingAs && !revealed);
 
   const notes = await notesFor(advisor.id, id);
   const b = brief(j);
@@ -58,6 +90,22 @@ module.exports = async function handler(req, res) {
   <div class="wrap">
 
     <p class="hub-back"><a href="/hub/journeys">← All Journeys</a></p>
+
+    ${advisor.viewingAs ? (revealed
+      ? `<p class="hub-flash hub-flash--bad">Their details are showing, and that has been recorded
+           in the audit log.</p>`
+      : `<div class="hub-notice">
+           <strong>This person's details are hidden.</strong> You are looking at another advisor's
+           Hub, and almost every support question can be answered without seeing who their client
+           is. If you genuinely need to, revealing is recorded.
+           <form method="POST" action="/hub/journeys/${esc(id)}" class="hub-reveal">
+             <input type="hidden" name="action" value="reveal">
+             <button class="btn btn--ghost btn--sm" type="submit">Reveal, and record it</button>
+           </form>
+         </div>`) : ''}
+    ${url.searchParams.get('done') === 'readonly'
+      ? `<p class="hub-flash hub-flash--bad">Nothing was changed — you are viewing this Hub, not
+           signed in as its owner.</p>` : ''}
 
     <header class="hub-detail-head">
       <p class="eyebrow">Shared ${esc(since(j.created_at))}${j.travel_window

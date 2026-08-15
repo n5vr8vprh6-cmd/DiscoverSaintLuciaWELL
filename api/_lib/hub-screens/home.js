@@ -11,6 +11,7 @@
 const { requireAdvisor } = require('../auth.js');
 const { hubPage, esc, emptyState, STAGE_LABEL, WINDOW_LABEL, since } = require('../hub-render.js');
 const { journeysFor, funnelFor, needsAttention } = require('../hub-data.js');
+const { maskJourneys } = require('../hub-mask.js');
 
 module.exports = async function handler(req, res) {
   const advisor = await requireAdvisor(req, res, '/hub');
@@ -20,7 +21,9 @@ module.exports = async function handler(req, res) {
     journeysFor(advisor.id, { limit: 100 }),
     funnelFor(advisor.id)
   ]);
-  const attention = needsAttention(journeys).slice(0, 5);
+  /* Ranked on the real rows, then masked for display — the ordering must not
+     change just because staff are the ones looking. */
+  const attention = maskJourneys(needsAttention(journeys).slice(0, 5), advisor.viewingAs);
   const link = `https://discoversaintluciawell.com/well/${advisor.public_code}`;
 
   const body = `<div class="hub-main">

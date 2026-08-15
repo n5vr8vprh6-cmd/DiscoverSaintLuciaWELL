@@ -42,7 +42,9 @@ const SCREENS = {
   adminAdvisor:   () => require('../_lib/hub-screens/admin-advisor.js'),
   adminAudit:     () => require('../_lib/hub-screens/admin-audit.js'),
   adminNew:       () => require('../_lib/hub-screens/admin-new.js'),
-  adminImport:    () => require('../_lib/hub-screens/admin-import.js')
+  adminImport:    () => require('../_lib/hub-screens/admin-import.js'),
+  /* Unguarded on purpose — see the file. */
+  viewasExit:     () => require('../_lib/hub-screens/viewas-exit.js')
 };
 
 module.exports = async function handler(req, res) {

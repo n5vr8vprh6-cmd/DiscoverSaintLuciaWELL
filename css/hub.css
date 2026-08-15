@@ -344,6 +344,9 @@ body {
 }
 .hub-field select:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: 1px; }
 
+.hub-reveal { margin-top: 0.75rem; }
+.hub-reveal .btn { width: auto; }
+
 .hub-file { display: inline-flex; align-items: center; gap: 0.5rem; margin-right: 0.5rem; }
 .hub-confirm { margin-top: 1.5rem; }
 

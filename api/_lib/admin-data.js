@@ -241,7 +241,13 @@ const ACTION_LABEL = {
      evidence, are each events in their own right. */
   transfer:   'Transferred their Journeys',
   erase:      'Erased their Journeys',
-  delete:     'Deleted the account'
+  delete:     'Deleted the account',
+  /* Support access. Recorded as three separate events rather than one session,
+     because "looked at their Hub" and "revealed a consumer's contact details"
+     are different acts and only the second discloses anything. */
+  view_as_start:  'Started viewing their Hub',
+  view_as_reveal: 'Revealed a consumer’s details',
+  view_as_end:    'Stopped viewing their Hub'
 };
 
 module.exports = {

@@ -158,6 +158,40 @@ check('headers normalise across spacing and case',
 check('a comma inside a quoted name survives to the object',
   obj.rows[0].lastName === 'Park, Jr.', obj.rows[0].lastName);
 
+/* ── Masking ──────────────────────────────────────────────────────────────
+   What staff see when looking at somebody else's Hub. The assertions that
+   matter are the negative ones: nothing in the returned object may contain the
+   real name, address or words, because this object is interpolated straight
+   into a page. */
+const { maskJourney } = require('../api/_lib/hub-mask.js');
+
+const realJourney = {
+  id: 'x', stage: 'new',
+  consumer_first: 'Harriet', consumer_last: 'Blythe',
+  consumer_email: 'harriet.blythe@gmail.com', consumer_phone: '+1 647 555 0198',
+  context: 'I have not taken more than four consecutive days off in three years.'
+};
+const masked = maskJourney(realJourney, true);
+
+check('masked: name reduced to initials',
+  masked.consumer_first === 'H—' && masked.consumer_last === 'B—',
+  masked.consumer_first + ' ' + masked.consumer_last);
+check('masked: email keeps only the domain', masked.consumer_email === 'h•••@gmail.com', masked.consumer_email);
+check('masked: phone keeps only the last three', masked.consumer_phone === '•••198', masked.consumer_phone);
+check('masked: their own words are withheld, not obscured',
+  !/three years/.test(masked.context), masked.context);
+check('masked: no part of the real name survives anywhere in the object',
+  !/Harriet|Blythe/.test(JSON.stringify(masked)));
+check('masked: no part of the real address survives',
+  !/harriet\.blythe/.test(JSON.stringify(masked)));
+/* The same row is counted and sorted elsewhere in the request; mutating it
+   would quietly change what those did. */
+check('masking does not mutate the original row',
+  realJourney.consumer_email === 'harriet.blythe@gmail.com');
+check('masking off returns the very same object', maskJourney(realJourney, false) === realJourney);
+check('an anonymous row masks without throwing',
+  maskJourney({ id: 'y' }, true).consumer_first === 'Someone');
+
 /* ── since() ─────────────────────────────────────────────────────────────── */
 check('since() reads as today for a fresh share', since(day(0)) === 'today');
 check('since() reads as yesterday at one day', since(day(1)) === 'yesterday');

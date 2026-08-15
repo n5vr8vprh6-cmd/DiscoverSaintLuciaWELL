@@ -23,6 +23,14 @@ module.exports = async function handler(req, res) {
 
   let saved = false;
   if (req.method === 'POST') {
+    /* Read-only while viewing as somebody. Editing another advisor's profile
+       from inside their own Hub would be indistinguishable, in the record, from
+       them editing it themselves. */
+    if (advisor.viewingAs) {
+      res.statusCode = 303;
+      res.setHeader('Location', '/hub/account?saved=readonly');
+      return res.end();
+    }
     saved = await save(advisor, parseBody(req) || {});
     res.statusCode = 303;
     res.setHeader('Location', '/hub/account?saved=' + (saved ? '1' : '0'));
@@ -40,6 +48,7 @@ module.exports = async function handler(req, res) {
 
     ${flag === '1' ? '<p class="hub-flash">Saved.</p>' : ''}
     ${flag === '0' ? '<p class="hub-flash hub-flash--bad">That did not save. Try again.</p>' : ''}
+    ${flag === 'readonly' ? '<p class="hub-flash hub-flash--bad">Nothing was changed — you are viewing this Hub, not signed in as its owner.</p>' : ''}
 
     <!-- A plain form. The endpoint already does POST/redirect/GET with a flash
          message, which is the same behaviour fetch would have produced with

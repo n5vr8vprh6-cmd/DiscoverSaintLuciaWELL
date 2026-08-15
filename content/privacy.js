@@ -118,6 +118,12 @@ module.exports = {
             'Generate and display Journey Finder results.',
             'At your request, share your WELL Journey and contact details with a selected or assigned independent travel advisor so they can follow up about travel planning.',
             'Create and administer advisor accounts, attributed campaign links, the Advisor Hub, and Journey workspaces.',
+            /* Staff access for support. The policy contemplated the Hub but not
+               this, and an undisclosed processing purpose is the direction this
+               project has consistently refused to go. Written to describe what
+               the software actually does — masked by default, revealing
+               recorded — rather than to claim a broader licence than is used. */
+            'Provide technical support to travel advisors, which may involve our staff viewing an advisor’s Hub as they see it. In that mode the software is read-only and consumers’ names and contact details are hidden by default; where a member of staff needs to see them to resolve a problem, that access is recorded.',
             'Attribute campaign traffic and measure campaign effectiveness.',
             'Register you for briefings, webinars, programs, events, or other requested services.',
             'Process transactions, administer purchases, and maintain transaction records.',

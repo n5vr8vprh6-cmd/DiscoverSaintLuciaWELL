@@ -21,7 +21,7 @@
    ========================================================================== */
 'use strict';
 
-const { requireAdmin } = require('../auth.js');
+const { requireAdmin, setViewAs, VIEWAS_MINUTES } = require('../auth.js');
 const { str, body: parseBody } = require('../core.js');
 const { hubPage, esc, emptyState, since } = require('../hub-render.js');
 const {
@@ -44,6 +44,22 @@ module.exports = async function handler(req, res) {
   if (!id) return notFound(res, admin);
 
   if (req.method === 'POST') {
+    /* Entering view-as sets a cookie, so it is handled here rather than in
+       act(), which only returns a status string. */
+    if (str((parseBody(req) || {}).action, 20) === 'viewas') {
+      const target = await advisorById(id);
+      if (target && target.id !== admin.id) {
+        await audit(admin, 'view_as_start', { subject: target });
+        setViewAs(res, target.id);
+        res.statusCode = 303;
+        res.setHeader('Location', '/hub');
+        return res.end();
+      }
+      res.statusCode = 303;
+      res.setHeader('Location', `/hub/admin/advisors/${encodeURIComponent(id)}?done=refused_self`);
+      return res.end();
+    }
+
     const result = await act(admin, id, parseBody(req) || {});
     res.statusCode = 303;
     /* A successful delete has nowhere to go back to. */
@@ -188,6 +204,14 @@ module.exports = async function handler(req, res) {
           <h2>Password</h2>
           <p class="hub-hint">Sends them a link to choose a new one. You never see or set it.</p>
           ${action('reset', 'Send a reset link')}
+        </section>
+
+        <section class="hub-card">
+          <h2>Support</h2>
+          <p class="hub-hint">Opens their Hub exactly as they see it — read-only, with their
+            clients' names and contact details hidden. Revealing any of them is recorded, as is
+            starting and stopping. Ends by itself after ${VIEWAS_MINUTES} minutes.</p>
+          ${action('viewas', 'View their Hub')}
         </section>
 
         <section class="hub-card">

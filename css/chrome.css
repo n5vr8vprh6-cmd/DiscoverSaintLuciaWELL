@@ -422,6 +422,38 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
 .acct-menu button:hover { background: var(--paper-2); }
 .acct-menu form { margin: 0; border-top: 1px solid var(--hairline-l); padding-top: 0.25rem; }
 
+/* ── View-as banner ───────────────────────────────────────────────────────
+   The Eclipse palette, deliberately: it is the one colour world on this site
+   that is never used for ordinary chrome, so a page wearing it is visibly not
+   a page you are simply browsing. Sticky, because scrolling past this is the
+   mistake it exists to prevent. */
+.viewas-bar {
+  position: sticky;
+  top: 0;
+  z-index: 70;
+  background: var(--eclipse-midnight);
+  color: var(--eclipse-sand);
+  border-bottom: 2px solid var(--eclipse-copper);
+}
+.viewas-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding-block: 0.7rem;
+}
+.viewas-inner p {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+}
+.viewas-inner strong { color: var(--eclipse-copper-l); }
+.viewas-inner form { margin: 0; flex-shrink: 0; }
+.viewas-inner .btn { border-color: var(--eclipse-copper-l); color: var(--eclipse-sand); }
+.viewas-inner .btn:hover { background: rgba(232, 223, 210, 0.12); }
+
 /* Hub band: the same component as the /advisors context strip, so the Hub
    reads as part of the site rather than as a second product. */
 .hub-context .eyebrow { color: var(--gold); }

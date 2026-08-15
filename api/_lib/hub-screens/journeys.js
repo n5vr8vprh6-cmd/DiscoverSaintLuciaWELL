@@ -16,6 +16,7 @@ const {
   STAGES, STAGE_LABEL, WINDOW_LABEL, WINDOW_ORDER, since
 } = require('../hub-render.js');
 const { journeysFor, needsAttention } = require('../hub-data.js');
+const { maskJourneys } = require('../hub-mask.js');
 
 const VIEWS = [
   { id: 'attention', label: 'Needs attention' },
@@ -32,7 +33,9 @@ module.exports = async function handler(req, res) {
   const advisor = await requireAdvisor(req, res, `/hub/journeys?view=${view}`);
   if (!advisor) return;
 
-  const all = await journeysFor(advisor.id);
+  /* Masked once, here, so every view below renders from the same rows and no
+     future view can forget to. */
+  const all = maskJourneys(await journeysFor(advisor.id), advisor.viewingAs);
 
   const body = `<div class="hub-main">
   <div class="wrap">
