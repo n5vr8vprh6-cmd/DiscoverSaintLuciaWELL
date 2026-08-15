@@ -22,6 +22,16 @@
     var out = {};
     Array.prototype.forEach.call(form.elements, function (el) {
       if (!el.name || el.type === 'submit') return;
+      /* A checkbox has a `value` whether or not it is ticked, so reading
+         el.value alone would post "yes" for a box nobody touched — which would
+         hand the registration endpoint a forged acceptance of the Advisor Data
+         Undertaking and make its server-side guard unreachable through the real
+         form. The browser's `required` normally blocks submit first, which is
+         exactly why this would have gone unnoticed. */
+      if (el.type === 'checkbox') {
+        if (el.checked) out[el.name] = el.value;
+        return;
+      }
       out[el.name] = el.value;
     });
     /* Where to go after signing in, carried on the form rather than in a field
@@ -59,7 +69,8 @@
     token_invalid:        'This reset link has expired. Please request a new one.',
     email_unavailable:    'We could not send the email just now. Please try again shortly.',
     not_configured:       'The Hub is not available at the moment. Please try again shortly.',
-    rate_limited:         'That is a few too many attempts. Please wait a little and try again.'
+    rate_limited:         'That is a few too many attempts. Please wait a little and try again.',
+    undertaking_required: 'Please read and agree to the Advisor Data Undertaking to create an account.'
   };
 
   document.addEventListener('submit', function (e) {

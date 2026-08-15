@@ -53,8 +53,19 @@ module.exports = async function handler(req, res) {
         { name: 'password', label: 'Password', type: 'password', autocomplete: 'new-password',
           minlength: 10, wide: true, hint: 'At least 10 characters.' }
       ],
+      /* THE ONE THING ON THIS FORM THAT IS NOT OPTIONAL AND NOT A CREDENTIAL.
+         Until this existed, "you agree to our terms" pointed an advisor at a
+         consumer document that says nothing about handling a traveller's
+         details — so the single point where personal data leaves this system
+         was the one point nobody had promised anything about. */
+      consent: {
+        name: 'undertaking',
+        label: 'I have read the <a href="/advisors/data-undertaking" target="_blank" ' +
+               'rel="noopener">Advisor Data Undertaking</a> and agree to it — travellers’ ' +
+               'details are for planning their trip, kept safe, and deleted when they ask.'
+      },
       alt: 'Already have an account? <a href="/hub/login">Sign in</a>.<br>' +
-           'By creating an account you agree to our <a href="/terms">terms</a> ' +
+           'By creating an account you also agree to our <a href="/terms">terms</a> ' +
            'and <a href="/privacy">privacy policy</a>.'
     })
   });

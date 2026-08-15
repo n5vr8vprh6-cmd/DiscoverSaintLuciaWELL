@@ -466,8 +466,22 @@ body {
   cursor: pointer;
 }
 .hub-stage-opt:hover { background: var(--paper-2); }
-.hub-stage-opt input { accent-color: var(--teal); }
 .hub-stage-opt:focus-within { outline: 2px solid var(--gold-deep); outline-offset: 1px; }
+
+/* A browser's default checkbox is 13px. The wrapping <label> makes the whole
+   row tappable, so it was never unusable — but the box itself is the thing a
+   thumb aims at, and 13px is half of what WCAG 2.5.8 asks for. Measured at
+   380px on the undertaking gate, which is the one checkbox in this product
+   somebody MUST tick before they can go anywhere.
+   Applies to the delete confirmations too, which is the right direction: those
+   are the tickboxes it matters most to hit deliberately. */
+.hub-stage-opt input[type="checkbox"] {
+  accent-color: var(--teal);
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  margin: 0;
+}
 
 .hub-note-form { margin-bottom: 1.5rem; }
 .hub-notes { list-style: none; margin: 0; padding: 0; }
@@ -562,6 +576,53 @@ body {
   }
   .hub-actions .btn { flex: 1 1 100%; justify-content: center; }
   .hub-stat-n { font-size: 1.8rem; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE UNDERTAKING GATE
+   The only screen an advisor cannot navigate away from, so it is the only one
+   that gets a narrow measure: nothing else on the page, and a line length that
+   makes five obligations genuinely readable rather than skimmed past.
+   ══════════════════════════════════════════════════════════════════════════ */
+.wrap--narrow { max-width: 44rem; }
+
+.hub-gate { padding: 2rem 1.75rem 1.75rem; }
+.hub-gate h1 { font-size: clamp(1.5rem, 3.4vw, 2rem); margin: 0.3rem 0 0.75rem; }
+
+.hub-gate-list {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+.hub-gate-list li {
+  position: relative;
+  padding-left: 1.5rem;
+  line-height: 1.6;
+  font-size: var(--fs-small);
+}
+.hub-gate-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.hub-gate-form {
+  margin: 1.75rem 0 1.25rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hairline-l);
+}
+.hub-gate-form .btn { margin-top: 1rem; }
+
+@media (max-width: 620px) {
+  .hub-gate { padding: 1.5rem 1.25rem; }
+  .hub-gate-form .btn { width: 100%; justify-content: center; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

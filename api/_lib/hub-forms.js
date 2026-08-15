@@ -50,6 +50,15 @@ function authForm(o) {
       <div class="hub-hp" aria-hidden="true">
         <label>Company<input name="company" tabindex="-1" autocomplete="off"></label>
       </div>
+      ${/* A real checkbox rather than a line of small print above the button.
+            What an advisor promises about a traveller's data is a thing they
+            agree to, and an agreement nobody had to touch is one nobody made.
+            `required` is for the person; the endpoint checks it again, because
+            an input attribute controls nothing that posts directly. */''}
+      ${o.consent ? `<label class="hub-stage-opt hub-consent-box">
+        <input type="checkbox" name="${esc(o.consent.name)}" value="yes" required>
+        <span>${o.consent.label}</span>
+      </label>` : ''}
       <button class="btn btn--gold" type="submit">${esc(o.submit)}</button>
       <p class="hub-form-status" role="status" aria-live="polite"></p>
     </form>

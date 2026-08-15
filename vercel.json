@@ -106,6 +106,10 @@
       "destination": "/api/hub?screen=journey&id=:id"
     },
     {
+      "source": "/hub/undertaking",
+      "destination": "/api/hub?screen=undertaking"
+    },
+    {
       "source": "/hub/admin",
       "destination": "/api/hub?screen=admin"
     },

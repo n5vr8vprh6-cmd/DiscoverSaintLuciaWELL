@@ -33,6 +33,8 @@ const SCREENS = {
   register: () => require('../_lib/hub-screens/register.js'),
   forgot:   () => require('../_lib/hub-screens/forgot.js'),
   reset:    () => require('../_lib/hub-screens/reset.js'),
+  /* Not guarded by requireAdvisor — it is what requireAdvisor redirects TO. */
+  undertaking: () => require('../_lib/hub-screens/undertaking.js'),
 
   /* Admin. These are ordinary screens in every respect except that their guard
      is requireAdmin rather than requireAdvisor — there is no route-level auth

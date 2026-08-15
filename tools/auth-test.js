@@ -54,12 +54,32 @@ const post = async (p, payload) => {
   r = await post('/api/auth/register', { firstName: 'A', lastName: 'B', email: EMAIL, password: 'short' });
   check('register rejects a short password', r.status === 400 && r.body.error === 'password_too_short');
 
-  r = await post('/api/auth/register', { firstName: 'A', lastName: 'B', email: EMAIL, password: PASSWORD, company: 'bot' });
+  r = await post('/api/auth/register', { firstName: 'A', lastName: 'B', email: EMAIL, password: PASSWORD, company: 'bot', undertaking: true });
   check('register honeypot answers ok and creates nothing', r.status === 200 && r.body.ok === true);
+
+  /* ── The undertaking cannot be skipped ─────────────────────────────────
+     The checkbox on the form is `required`, which stops a person but controls
+     nothing that posts directly — as this request does. An account created
+     without an accepted undertaking is an advisor holding travellers' contact
+     details under no agreement at all, which is the gap the document exists to
+     close. So the refusal is asserted here against the live endpoint rather
+     than inferred from the presence of an input. */
+  r = await post('/api/auth/register', {
+    firstName: 'A', lastName: 'B', email: EMAIL, password: PASSWORD
+  });
+  check('register REFUSES without the data undertaking',
+    r.status === 400 && r.body.error === 'undertaking_required', JSON.stringify(r.body));
+
+  r = await post('/api/auth/register', {
+    firstName: 'A', lastName: 'B', email: EMAIL, password: PASSWORD, undertaking: 'no'
+  });
+  check('and refuses a value that is not an acceptance',
+    r.status === 400 && r.body.error === 'undertaking_required', JSON.stringify(r.body));
 
   /* ── The real registration ─────────────────────────────────────────────── */
   r = await post('/api/auth/register', {
-    firstName: 'Auth', lastName: 'Test', email: EMAIL, password: PASSWORD, business: 'Test Travel'
+    firstName: 'Auth', lastName: 'Test', email: EMAIL, password: PASSWORD, business: 'Test Travel',
+    undertaking: true
   });
   /* A rate-limited mailer is now reported honestly rather than masked as
      success, so the suite can say plainly why it cannot continue. */

@@ -23,6 +23,7 @@
 'use strict';
 
 const { db, json } = require('./core.js');
+const { needsUndertaking, ACCEPT_PATH } = require('./undertaking.js');
 
 const COOKIE = 'dslw_session';
 const REFRESH = 'dslw_refresh';
@@ -185,7 +186,7 @@ async function advisorFor(req, res) {
        string is `undefined` on every Hub page — which for `role` would mean
        every admin check silently denying everyone, with nothing in the logs to
        explain it. Add columns here when a screen needs them. */
-    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at')
+    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at')
     .eq('auth_user_id', user.id)
     .maybeSingle();
   if (!data) return null;
@@ -224,7 +225,7 @@ async function advisorFor(req, res) {
 
   const { data: target } = await supabase
     .from('advisors')
-    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at')
+    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at')
     .eq('id', viewAsId)
     .maybeSingle();
   if (!target) return self;
@@ -250,9 +251,42 @@ async function advisorFor(req, res) {
    advisor on Home. That breaks the single most important journey in the
    product: the deep link in a notification email, followed on a phone,
    by someone whose session has expired. */
+/* ── The undertaking gate ─────────────────────────────────────────────────
+   An advisor who has not accepted the current Advisor Data Undertaking is sent
+   to accept it before they can reach any Hub screen. Placed here, beside the
+   other two guards, because a gate applied screen-by-screen is a gate somebody
+   forgets on the ninth screen.
+
+   THREE THINGS IT MUST NOT TRAP, and each is a way to make the Hub unusable:
+
+     · the accept screen itself, or the redirect loops forever;
+     · sign-out, which is /api/auth/logout — a separate function that never
+       calls these guards, so somebody who does not want to accept can always
+       leave rather than being held hostage by a legal document;
+     · an admin viewing as somebody. needsUndertaking() returns false while
+       viewingAs, so staff are never asked to accept on another person's
+       behalf. That acceptance would be a forgery, which is the same reason
+       007-undertaking.sql does not backfill the eleven existing advisors.
+
+   Returns true when it has redirected and the caller must stop. */
+function undertakingGate(advisor, req, res, next) {
+  if (!needsUndertaking(advisor)) return false;
+
+  const here = safeNext(next || req.url || '/hub');
+  if (here === ACCEPT_PATH || here.indexOf(ACCEPT_PATH + '?') === 0) return false;
+
+  res.statusCode = 302;
+  res.setHeader('Location', `${ACCEPT_PATH}?next=${encodeURIComponent(here)}`);
+  res.end();
+  return true;
+}
+
 async function requireAdvisor(req, res, next) {
   const advisor = await advisorFor(req, res);
-  if (advisor) return advisor;
+  if (advisor) {
+    if (undertakingGate(advisor, req, res, next)) return null;
+    return advisor;
+  }
   const target = safeNext(next || req.url || '/hub');
   res.statusCode = 302;
   res.setHeader('Location', `/hub/login?next=${encodeURIComponent(target)}`);
@@ -299,6 +333,11 @@ async function requireAdmin(req, res, next) {
     res.end();
     return null;
   }
+
+  /* Staff accept it too. An exemption for the person who wrote the document is
+     the sort of exemption that reads badly later, and Duncan holds travellers'
+     contact details like every other advisor. */
+  if (undertakingGate(advisor, req, res, next)) return null;
 
   return advisor;
 }

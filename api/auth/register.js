@@ -23,6 +23,7 @@
 const { db, json, str, esc, looksLikeEmail, body, methodGuard } = require('../_lib/core.js');
 const { anonClient, setSession } = require('../_lib/auth.js');
 const { track } = require('../_lib/encharge.js');
+const { UNDERTAKING_VERSION } = require('../_lib/undertaking.js');
 
 module.exports = async function handler(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
@@ -58,6 +59,13 @@ module.exports = async function handler(req, res) {
   if (password.length < 10) return json(res, 400, { error: 'password_too_short' });
 
   const auth = anonClient();
+  /* An account cannot exist without an accepted undertaking. Enforced on the
+     server, not by the checkbox: `required` on an input is a convenience for
+     people, not a control against anything that posts directly. */
+  if (b.undertaking !== true && String(b.undertaking) !== 'yes') {
+    return json(res, 400, { error: 'undertaking_required' });
+  }
+
   const supabase = db();
   if (!auth || !supabase) return json(res, 503, { error: 'not_configured' });
 
@@ -127,7 +135,14 @@ module.exports = async function handler(req, res) {
           website: website || null,
           registration_note: registrationNote || null,
           status: 'pending',
-          onboarding_state: 'profile'
+          onboarding_state: 'profile',
+          /* Accepted on the form they just submitted, so it is recorded here
+             rather than making them accept the same document twice. The gate in
+             api/_lib/auth.js compares against this and lets them straight
+             through; if the version is ever bumped, it stops matching and they
+             see the new one at their next sign-in. */
+          undertaking_version: UNDERTAKING_VERSION,
+          undertaking_at: new Date().toISOString()
         }).select().single();
         if (insErr) throw insErr;
 
