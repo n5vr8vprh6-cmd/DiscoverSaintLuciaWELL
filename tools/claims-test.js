@@ -149,6 +149,78 @@ const good =
   'planning conversations open this month. Start with the Journey Finder — link below.';
 ok('a REAL caption passes clean', clean(good), JSON.stringify(flagged(good)));
 
+/* ── Regressions from reading real generated copy ─────────────────────────
+   Every assertion below covers a bug this file was green for. None of them
+   could have been caught by testing that real place names are recognised —
+   they all needed the opposite test, that ordinary writing is left alone. The
+   suite ran at 37 passing while producing four false positives on a clean
+   email, which is the whole argument for reading output rather than counts. */
+const { ownNames } = require('../api/_lib/claims.js');
+const MIRA = ownNames({
+  first_name: 'Mira', last_name: 'Hall',
+  business: 'Hall & Co Travel', host_agency: 'Nexion'
+});
+const entities = (t, own) => check(t, 'foundations', own).flags
+  .filter((f) => f.pass === 'entity').map((f) => f.match);
+
+console.log('\n  False positives found in real generated copy');
+
+/* \s+ matched newlines, so a name was welded to the next paragraph's first
+   word: "…in Saint Lucia\n\nHi there" became the candidate "Saint Lucia\n\nHi". */
+ok('a candidate never spans a line break',
+  entities('Come to Saint Lucia\n\nHi there, I hope you are well.').length === 0,
+  JSON.stringify(entities('Come to Saint Lucia\n\nHi there, I hope you are well.')));
+
+/* de|du|la|le had no trailing boundary, so "de" matched inside "deserve". */
+ok('a particle does not match inside a longer word',
+  entities('You deserve a proper break.').length === 0,
+  'produced the candidate "You de"');
+ok('but a real particle name still resolves',
+  check('We can look at Anse de Sable.', 'foundations').flags
+    .filter((f) => f.pass === 'entity').length <= 1,
+  'the boundary fix must not stop de/du/la/le working at all');
+
+/* An advisor's own signature read as an unrecognised place. */
+ok('the advisor\'s own business is not an unknown place',
+  entities('Best,\nMira Hall\nHall & Co Travel', MIRA).length === 0,
+  JSON.stringify(entities('Best,\nMira Hall\nHall & Co Travel', MIRA)));
+ok('their host agency either',
+  entities('Booked through Nexion.', MIRA).length === 0);
+ok('but somebody ELSE\'s brand is still flagged',
+  entities('Booked through Wanderlust Collective.', MIRA).length > 0,
+  'if own-name suppression silenced everything it would prove nothing');
+
+/* Placeholders are instructions to the advisor, not claims. */
+ok('a [placeholder] is not a claim',
+  entities('Hi [Client Name], hope you are well.').length === 0);
+ok('and neither is our own link token',
+  entities('Have a look: {{WELL_LINK}}').length === 0);
+
+console.log('\n  Severity needs a venue word AND a name');
+ok('an invented venue is HIGH',
+  blocks('Stay at the Azure Piton Retreat.'),
+  'the classic failure — a real-sounding resort half-remembered from training data');
+ok('and is STILL high in the plural',
+  blocks('Stay at the Azure Piton Retreats.'),
+  'a plural must not be a way around the block');
+ok('an invented sanctuary is HIGH', blocks('The Coral Ridge Sanctuary is stunning.'));
+ok('a generic title-case phrase with a venue word is only advisory',
+  !blocks('Discover Wellness Retreats in Saint Lucia'),
+  'blocking a subject line teaches advisors that the warnings are wrong');
+ok('a real property is not flagged at all',
+  entities('Anse Chastanet is worth the stairs.').length === 0);
+ok('nor a real one named loosely',
+  entities('Sugar Beach has the view.').length === 0);
+
+console.log('\n  The fact bank extractor');
+ok('no vocabulary entry stringified badly',
+  FACTS.VOCABULARY.every((v) => v.indexOf('[object') === -1),
+  'eight compass terms were literally "[object Object]" and protected nothing');
+ok('the compass terms are actually there',
+  ['restore', 'move', 'explore', 'nourish'].every((w) => FACTS.VOCABULARY.includes(w)),
+  'the previous assertion passes trivially if the list is simply empty');
+ok('no vocabulary entry is blank', FACTS.VOCABULARY.every((v) => v && v.trim()));
+
 console.log('\n  ' + '─'.repeat(60));
 console.log(`  ${pass} passed, ${fail} failed\n`);
 process.exit(fail ? 1 : 0);

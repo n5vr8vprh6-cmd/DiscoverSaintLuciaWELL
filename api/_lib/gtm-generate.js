@@ -32,7 +32,7 @@
 'use strict';
 
 const { chat } = require('./openai.js');
-const { check } = require('./claims.js');
+const { check, ownNames } = require('./claims.js');
 const FACTS = require('../../content/campaign-facts.js');
 
 /* ── What the model is allowed to know ───────────────────────────────────── */
@@ -279,7 +279,7 @@ async function generateAsset(advisor, profile, rung, action, weekTheme) {
   /* The verdict, from plain code. Stored with the asset so a warning survives a
      reload — but re-run on every edit, because a cached verdict about text
      somebody has since rewritten is worse than no verdict at all. */
-  const verdict = check(body, rung);
+  const verdict = check(body, rung, ownNames(advisor));
 
   return {
     ok: true,

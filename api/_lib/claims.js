@@ -89,32 +89,81 @@ const VOCAB = new Set((FACTS.VOCABULARY || []).map((v) => v.toLowerCase()));
 const SENTENCE = new Set((FACTS.SENTENCE_WORDS || []).map((v) => v.toLowerCase()));
 const VENUE = (FACTS.VENUE_WORDS || []).map((v) => v.toLowerCase());
 
-function entityPass(text) {
+/* A capitalised run, for the purposes of "is this a place we do not know".
+
+   TWO BUGS LIVED IN THE OLD PATTERN, and both were found by reading real
+   generated copy rather than by reading the regex:
+
+     \s+ MATCHES NEWLINES. "…in Saint Lucia\n\nHi there" was read as the single
+     candidate "Saint Lucia\n\nHi" — a name welded to the first word of the next
+     paragraph, which then matched nothing in the fact bank and was duly
+     reported as an unknown place.
+
+     de|du|la|le HAD NO TRAILING BOUNDARY, so the `de` alternative matched the
+     first two letters of "deserve" and produced the candidate "You de".
+
+   Neither could be caught by a test asserting that real place names are found;
+   both needed a test asserting that ordinary prose is left alone. */
+const CANDIDATE = /\b[A-Z][a-zA-Z’']+(?:[ \t]+(?:[A-Z][a-zA-Z’']+|&|(?:de|du|la|le)\b))+/g;
+
+/* Placeholders are not claims. "[Client's Name]" is an instruction to the
+   advisor and {{WELL_LINK}} is ours; blanked to spaces so the surrounding text
+   still reads as separate runs rather than being joined across the gap. */
+function withoutPlaceholders(text) {
+  return String(text || '')
+    .replace(/\[[^\]\n]{0,80}\]/g, (m) => ' '.repeat(m.length))
+    .replace(/\{\{[^}\n]{0,80}\}\}/g, (m) => ' '.repeat(m.length));
+}
+
+/* `own` is the advisor's own identity — their name, business and host agency.
+   Flagging an advisor's own signature as an unrecognised place is the single
+   most obviously wrong thing this checker could do, and it did it. */
+function entityPass(text, own) {
   const flags = [];
-  const candidates = text.match(/\b[A-Z][a-zA-Z’']+(?:\s+(?:[A-Z][a-zA-Z’']+|&|de|du|la|le))+/g) || [];
+  const mine = new Set((own || []).map((v) => String(v || '').toLowerCase().trim()).filter(Boolean));
+  const candidates = withoutPlaceholders(text).match(CANDIDATE) || [];
 
   [...new Set(candidates)].forEach((c) => {
     const low = c.toLowerCase().trim();
     const words = low.split(/\s+/);
 
     if (VOCAB.has(low)) return;
+    /* Their own name, or any part of it standing alone. */
+    if (mine.has(low)) return;
+    if ([...mine].some((m) => m.includes(low) || low.includes(m))) return;
     /* Anything we DO know about is fine, at either granularity. */
     if (KNOWN.some((k) => k.needles.some((n) => n.includes(low) || low.includes(n)))) return;
     /* Capitalised because a sentence started, not because it names anything:
        "This Week I am opening five calls" is prose, not a resort. */
     if (words.every((w) => SENTENCE.has(w))) return;
 
-    /* SEVERITY TURNS ON WHETHER IT READS AS A VENUE. "Azure Piton Sanctuary" is
-       a resort that does not exist and must not be published. "Most People" is
-       a capitalised phrase we simply do not recognise. Blocking the second
-       would train advisors to click straight through the first. */
-    const isVenue = words.some((w) => VENUE.indexOf(w) !== -1);
+    /* SEVERITY TURNS ON TWO THINGS TOGETHER, and it needs both.
+
+       A venue word alone is not enough. "Discover Wellness Retreats" is a
+       subject line, and blocking the copy button on it teaches an advisor that
+       the warnings are wrong — after which the one that matters gets clicked
+       past too. So HIGH also requires something that reads as a NAME: a word
+       that is neither ordinary English nor the venue word itself.
+
+         Discover Wellness Retreats  venue, no proper noun   → low
+         Azure Piton Retreats        venue + "azure","piton" → HIGH
+         The Retreat                 venue, no proper noun   → low
+
+       Plurals count as their singular. Without that, an invented property
+       escaped the block simply by ending in an s — "Azure Piton Retreat" was
+       high and "Azure Piton Retreats" was low, which is not a distinction
+       anyone intended. */
+    const singular = (w) => (w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w);
+    const isVenueWord = (w) => VENUE.indexOf(w) !== -1 || VENUE.indexOf(singular(w)) !== -1;
+
+    const isVenue = words.some(isVenueWord);
+    const namesSomething = words.some((w) => !SENTENCE.has(w) && !isVenueWord(w));
 
     flags.push({
       pass: 'entity',
-      severity: isVenue ? HIGH : LOW,
+      severity: (isVenue && namesSomething) ? HIGH : LOW,
       match: c,
-      why: isVenue
+      why: (isVenue && namesSomething)
         ? `"${c}" reads as somewhere to stay and is not in the approved Saint Lucia fact ` +
           `bank. If it is real but unconfirmed it cannot be named yet; if the AI invented ` +
           `it, naming it would send a traveller somewhere that does not exist.`
@@ -179,11 +228,13 @@ function guaranteePass(text) {
    `rung` is the advisor's earned position on the claims ladder. It defaults to
    the LOWEST rung rather than the highest, because a caller who forgets to
    pass it should get the strictest check, not the loosest. */
-function check(text, rung) {
+/* `own` is optional and defaults to knowing nothing, so every existing caller
+   keeps working — it only ever removes false positives, never adds a miss. */
+function check(text, rung, own) {
   const t = String(text || '');
   const flags = [].concat(
     healthPass(t),
-    entityPass(t),
+    entityPass(t, own),
     credentialPass(t, rung || 'registered'),
     guaranteePass(t)
   );
@@ -198,4 +249,16 @@ function check(text, rung) {
   };
 }
 
-module.exports = { check, HIGH, LOW, FACTS };
+/* The advisor's own identity, in the shape entityPass wants. One place builds
+   it so the endpoint and the generator cannot disagree about whose name is
+   allowed to appear in their own signature. */
+function ownNames(advisor) {
+  const a = advisor || {};
+  return [
+    a.business, a.host_agency,
+    `${a.first_name || ''} ${a.last_name || ''}`.trim(),
+    a.first_name, a.last_name
+  ].filter((v) => String(v || '').trim().length > 1);
+}
+
+module.exports = { check, ownNames, HIGH, LOW, FACTS };

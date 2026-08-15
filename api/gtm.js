@@ -32,7 +32,7 @@ const { db, json, str, body: parseBody } = require('./_lib/core.js');
 const { requireAdvisorJson } = require('./_lib/auth.js');
 const { rung, mayRefresh, profileFor } = require('./_lib/gtm.js');
 const { generateSkeleton, generateAsset } = require('./_lib/gtm-generate.js');
-const { check } = require('./_lib/claims.js');
+const { check, ownNames } = require('./_lib/claims.js');
 const { configured, reasonText } = require('./_lib/openai.js');
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
@@ -222,7 +222,7 @@ async function actionEdit(req, res, advisor, supabase, form) {
 
   /* Re-run rather than trust the stored verdict. The flags on the row describe
      text that no longer exists. */
-  const verdict = check(text, plan ? plan.rung_at_generation : 'registered');
+  const verdict = check(text, plan ? plan.rung_at_generation : 'registered', ownNames(advisor));
 
   const { data, error } = await supabase.from('gtm_asset').update({
     body: text,
@@ -248,7 +248,7 @@ async function actionRevert(req, res, advisor, supabase, form) {
 
   const { data: plan } = await supabase
     .from('gtm_plan').select('rung_at_generation').eq('id', asset.plan_id).single();
-  const verdict = check(asset.canonical_body, plan ? plan.rung_at_generation : 'registered');
+  const verdict = check(asset.canonical_body, plan ? plan.rung_at_generation : 'registered', ownNames(advisor));
 
   const { data, error } = await supabase.from('gtm_asset').update({
     body: asset.canonical_body,

@@ -185,8 +185,19 @@ const VOCABULARY = [
 ]
   .concat(VILLAGES.map((v) => v.name.toLowerCase()))
   .concat(VILLAGES.map((v) => (v.short || v.name).toLowerCase()))
+  /* `name`, not `label` — the compass records have never had a `label`, so this
+     produced eight literal "[object Object]" entries that protected nothing.
+     Invisible for as long as it existed: a vocabulary entry that matches no
+     real text just fails to suppress a warning, and a warning that should not
+     have fired looks exactly like a warning that should have.
+     The final `|| c` keeps a plain string working if the shape ever changes. */
   .concat((guideFw.compass && guideFw.compass.map
-    ? guideFw.compass.map((c) => String(c.label || c).toLowerCase()) : []));
+    ? guideFw.compass.map((c) => String((c && (c.name || c.label)) || c).toLowerCase()) : []))
+  .concat((guideFw.continuum && guideFw.continuum.map
+    ? guideFw.continuum.map((c) => String((c && (c.name || c.label)) || c).toLowerCase()) : []))
+  /* Nothing that stringified badly, and nothing empty. A guard rather than a
+     comment, because the bug above was exactly this and went unnoticed. */
+  .filter((v) => v && v.indexOf('[object') === -1);
 
 /* A capitalised run only reads as a VENUE when it says so. "Azure Piton
    Sanctuary" is a resort that does not exist; "This Week" is a sentence
@@ -212,7 +223,32 @@ const SENTENCE_WORDS = [
   'i', 'we', 'you', 'your', 'my', 'me', 'us', 'it', 'they', 'them', 'the',
   'a', 'an', 'and', 'or', 'but', 'if', 'so', 'for', 'to', 'of', 'in', 'on',
   'at', 'by', 'with', 'from', 'about', 'am', 'is', 'are', 'was', 'were',
-  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'can', 'could'
+  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'can', 'could',
+
+  /* ── Ordinary marketing and letter-writing words ────────────────────────
+     Added after reading real generated copy, where a subject line reading
+     "Discover Wellness Retreats in Saint Lucia" was reported as an unrecognised
+     place. It is title case, which is all the pattern can see.
+
+     This is safe because the suppression requires EVERY word in the candidate
+     to be on this list, so it silences "Discover Wellness Retreats" while
+     leaving "Azure Piton Retreats" flagged — "azure" and "piton" are not here.
+     Nothing on this list is a venue word, which is the other half of why it is
+     safe: severity is decided separately and a real venue never reaches here.
+
+     The point is not tidiness. An advisor who sees four warnings on clean copy
+     learns that warnings are noise, and then clicks past the health claim. */
+  'discover', 'discovering', 'explore', 'exploring', 'wellness', 'well',
+  'travel', 'travels', 'traveller', 'journey', 'journeys', 'trip', 'trips',
+  'getaway', 'escape', 'holiday', 'holidays', 'vacation', 'break',
+  'experience', 'experiences', 'moment', 'moments', 'story', 'stories',
+  'plan', 'plans', 'planning', 'guide', 'guides', 'idea', 'ideas',
+  'welcome', 'hi', 'hello', 'hey', 'dear', 'best', 'warmly', 'regards',
+  'thanks', 'thank', 'cheers', 'subject', 'ps',
+  'island', 'islands', 'caribbean', 'sun', 'sea', 'ocean', 'water',
+  'rest', 'rested', 'slow', 'slower', 'quiet', 'calm', 'space', 'room',
+  'first', 'next', 'last', 'new', 'more', 'less', 'ready', 'let', 'lets',
+  'why', 'imagine', 'picture', 'consider', 'looking', 'thinking'
 ];
 
 const SAFE_REGISTER = [
