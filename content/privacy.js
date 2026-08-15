@@ -188,6 +188,12 @@ module.exports = {
                what was asked of the person receiving their details. */
             'Before an advisor can receive a Journey, they must accept our <a href="/advisors/data-undertaking">Advisor Data Undertaking</a>. Among other things it requires them to use your information to plan the travel you asked about, not to add you to marketing lists without asking you separately, to keep it secure, to delete it on request and tell us they have, and to report any exposure of it to us within 72 hours. This does not make them our employee or our agent, and it does not replace their own legal obligations.',
             'Sharing a Journey with an advisor does not, by itself, subscribe you to Discover Saint Lucia WELL marketing communications.',
+            /* Added 15 August 2026 with the house account. §5 described only the
+               referred route; a visitor who arrived without an advisor link now
+               has a real destination, and it is a different one — the operator
+               holds their details until an introduction is made. The wording
+               they agree to at the point of sharing says the same thing. */
+            '<strong>If you did not arrive through a particular advisor</strong>, your Journey goes to the Discover Saint Lucia WELL team rather than to an advisor. We hold it, and we introduce you to one advisor from our network of qualified Saint Lucia WELL advisors, who then contacts you. <strong>Your details reach that advisor at the point we make the introduction, and not before.</strong> From then on they are an independent advisor as described above, handling your information under their own privacy practices.',
             /* Added 15 August 2026 with the prize-draw links. The wording an
                entrant agrees to says the same thing at the moment they enter,
                and is stored with their record; this is the standing version of

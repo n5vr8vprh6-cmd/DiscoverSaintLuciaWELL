@@ -359,7 +359,13 @@
             'It is sequenced rather than assembled: rainforest before deeper reflection, movement before release, ' +
             'restoration after intensity. Guided entry before arrival, and integration after you return home.</p>' +
             '<div class="section-cta section-cta--left">' +
-              '<a class="btn btn--copper" href="/eclipse">Discover Eclipse</a>' +
+              /* A NEW TAB, because this is a detour and not a destination.
+                 Somebody who has just spent a minute building a result should
+                 be able to read about Eclipse and still have their result
+                 sitting where they left it. The primary action below is
+                 deliberately NOT treated this way: hijacking the thing a page
+                 is asking you to do is what makes a page feel untrustworthy. */
+              '<a class="btn btn--copper" href="/eclipse" target="_blank" rel="noopener">Discover Eclipse</a>' +
             '</div>' +
           '</div>' +
           '<div class="result-eclipse-mark" aria-hidden="true">' +
@@ -405,7 +411,7 @@
          result is complete and actionable even if the lookup never answers. */
       '<div class="result-actions" data-share-actions>' +
         '<a class="btn btn--gold" href="/about#contact" data-share-primary>Speak with a Saint Lucia WELL Advisor</a>' +
-        '<a class="btn btn--ghost" href="/explore#villages">Explore all six villages</a>' +
+        '<a class="btn btn--ghost" href="/explore#villages" target="_blank" rel="noopener">Explore all six villages</a>' +
         '<button type="button" class="btn btn--ghost" data-finder-restart>Start again</button>' +
       '</div>' +
       '<div class="share-panel" id="share-panel" hidden></div>' +
@@ -510,30 +516,50 @@
      Built per advisor rather than held as a constant, because the name is part
      of what is being agreed to — and the exact string is stored with the record
      (`consent_text`), so we can always show what a given person actually saw. */
+  /* ── WHAT THEY AGREE TO ───────────────────────────────────────────────
+     Two strings, because there are two genuinely different things happening
+     and pretending otherwise would make one of them false.
+
+     REFERRED: they arrived through a named advisor's link and are handing
+     their details to that person. Third-party disclosure, disclosed as such.
+
+     HOUSE: nobody referred them. Their details go to the Discover Saint Lucia
+     WELL team — the operator, not a third party — who will introduce them to
+     one advisor from the network. Saying "we are sharing this with an
+     independent advisor" at that moment would be untrue: no advisor has been
+     chosen yet.
+
+     THE HOUSE WORDING IS SEQUENCED ON PURPOSE. An earlier draft opened with
+     "share with our network" and corrected itself afterwards, which is a
+     consent you have to read twice. It now says what happens first, then what
+     happens next.
+
+     "not before" is a promise the design already keeps — the Journey sits on
+     the house account until a person presses Introduce, and that press is the
+     only thing that discloses it. Free to make, and it is the sentence that
+     makes handing over a phone number feel safe.
+
+     Whichever is shown is stored verbatim in `consent_text`, so we can always
+     produce exactly what a given person read. */
+  var CONSENT_TAIL =
+    ' Sharing your Journey does not subscribe you to marketing emails.';
+
   function shareConsent(advisorName) {
-    var who = advisorName || 'a participating Saint Lucia WELL advisor';
-    var base = 'By choosing “Share my Journey,” you agree that Discover Saint Lucia ' +
-      'WELL may share your contact information, Journey Finder result and the ' +
-      'travel details you provide with ' + who + ' so they can contact you about ' +
-      'planning your Saint Lucia journey. Your advisor is an independent travel ' +
-      'professional and handles information they receive under their own privacy ' +
-      'practices. Sharing your Journey does not subscribe you to marketing emails.';
-
-    /* ── The prize-draw sentence ──────────────────────────────────────────
-       Appended to the SAME string rather than shown separately, because
-       `consent_text` is stored verbatim and has to be a record of what this
-       person actually read. Two fields would be two records of one moment.
-
-       It says plainly who the sponsor is, and that it is not us. Discover
-       Saint Lucia WELL provides the Journey Finder; the rules, the prize and
-       the draw belong to the advisor and happen off this site. Somebody
-       deciding whether to hand over their phone number is entitled to know
-       which of those two they are dealing with. */
-    if (!attribution().sweeps) return base;
-    return base + ' You are also entering a prize draw run by ' + who +
-      '. That draw is theirs — its rules, eligibility and prize are set by ' +
-      'them, not by Discover Saint Lucia WELL, which is not the sponsor and ' +
-      'takes no part in selecting a winner.';
+    if (advisorName) {
+      return 'By choosing “Share my Journey,” you agree that Discover Saint Lucia ' +
+        'WELL may share your contact information, Journey Finder result and the ' +
+        'travel details you provide with ' + advisorName + ' so they can contact you about ' +
+        'planning your Saint Lucia journey. Your advisor is an independent travel ' +
+        'professional and handles information they receive under their own privacy ' +
+        'practices.' + CONSENT_TAIL;
+    }
+    return 'By choosing “Share my Journey,” you agree that Discover Saint Lucia ' +
+      'WELL may hold your contact information, Journey Finder result and the travel ' +
+      'details you provide, and introduce you to one advisor from our network of ' +
+      'qualified Saint Lucia WELL advisors, who will contact you about planning your ' +
+      'journey. Your details reach that advisor when we make the introduction, not ' +
+      'before. Advisors are independent travel professionals and handle information ' +
+      'they receive under their own privacy practices.' + CONSENT_TAIL;
   }
 
   function attribution() {
@@ -542,7 +568,7 @@
   }
 
   function shareForm(advisorName) {
-    var who = advisorName ? esc(advisorName) : 'a Saint Lucia WELL Advisor';
+    var who = advisorName ? esc(advisorName) : 'the Saint Lucia WELL team';
     return '' +
       '<form class="share-form" id="share-form" novalidate>' +
         '<h4 class="share-title">Share your Journey with ' + who + '</h4>' +
@@ -582,7 +608,9 @@
         '</div>' +
         '<label class="share-consent">' +
           '<input type="checkbox" name="consent" required>' +
-          '<span>' + esc(shareConsent(advisorName)) + ' See the <a href="/privacy">privacy page</a>.</span>' +
+          /* The worst of the three to lose a page over: leaving a half-filled
+             form to read a policy loses the form. */
+          '<span>' + esc(shareConsent(advisorName)) + ' See the <a href="/privacy" target="_blank" rel="noopener">privacy page</a>.</span>' +
         '</label>' +
         '<div class="share-actions">' +
           '<button class="btn btn--gold" type="submit">Share my Journey</button>' +
@@ -619,17 +647,37 @@
       track('share_opened', { attributed: !!advisorName });
     }
 
-    /* Only an attributed visitor gets the share flow. Without an advisor there
-       is nobody to send it to, so the CTA stays a link to the contact page —
-       which is a real destination, not a dead end. */
-    if (!attr.advisor) return;
+    /* ── WHO IS THIS GOING TO? ────────────────────────────────────────────
+       Asked with the referral if there is one, and without it if there is not.
+       With no parameter the endpoint answers with the house account — the
+       central pool (brief §8) — so a visitor who arrived cold now has a real
+       destination instead of a link to the contact form.
 
-    fetch('/api/advisor?slug=' + encodeURIComponent(attr.advisor))
+       THE SERVER DECIDES, and this only asks what to call it. api/share.js
+       resolves the recipient again on its own terms, so a hand-edited page
+       cannot send a Journey anywhere it was not going to go.
+
+       If the lookup fails, or no house account is configured, the CTA it was
+       rendered with stands: a link to the contact page, which is a real
+       destination and was the whole behaviour until today. */
+    var query = attr.advisor ? '?slug=' + encodeURIComponent(attr.advisor) : '';
+    fetch('/api/advisor' + query)
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
-        if (!d || !d.advisor || !d.advisor.firstName) return;
-        advisorName = d.advisor.firstName;
-        primary.textContent = 'Share my WELL Journey with ' + advisorName;
+        if (!d || !d.advisor) return;
+
+        if (d.advisor.firstName) {
+          advisorName = d.advisor.firstName;
+          primary.textContent = 'Share my WELL Journey with ' + advisorName;
+        } else if (d.advisor.house) {
+          /* advisorName stays null, which is what selects the team consent
+             wording — see shareConsent(). Nobody has been matched to them yet
+             and the copy must not imply otherwise. */
+          primary.textContent = 'Share my WELL Journey with the Saint Lucia WELL team';
+        } else {
+          return;
+        }
+
         primary.setAttribute('href', '#share-panel');
         primary.addEventListener('click', openShare);
       })

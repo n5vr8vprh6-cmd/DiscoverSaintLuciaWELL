@@ -47,4 +47,34 @@ async function activeAdvisor(supabase, ref, fields) {
   return a && a.status === 'active' ? a : null;
 }
 
-module.exports = { resolveAdvisor, activeAdvisor, REF };
+/* ── The central lead pool ────────────────────────────────────────────────
+   Consumer Engine brief §8, third rung: "No attributable advisor → central
+   Discover Saint Lucia WELL lead pool." An ordinary advisor row carrying
+   is_house (010-house-account.sql), so every screen, query and notification
+   already written works on it without a special case.
+
+   ONLY EVER A FALLBACK. Callers reach for this after a referral has failed to
+   resolve, never before — an advisor's own link must always win, or a printed
+   card quietly stops earning them anything.
+
+   Returns null when there is no house account, when it is not active, or when
+   migration 010 has not been applied. Every one of those means "carry on as
+   before": the Journey is stored unattributed exactly as it was until today,
+   and the result page keeps its contact-form CTA. The feature degrades to the
+   previous behaviour rather than failing. */
+async function houseAdvisor(supabase, fields = 'id, first_name, last_name, email, business, status, public_code') {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from('advisors').select(fields)
+    .eq('is_house', true).eq('status', 'active')
+    .maybeSingle();
+  if (error) {
+    /* 42703 — the column does not exist yet. Not worth a log line on every
+       unreferred share until the migration lands. */
+    if (String(error.code) !== '42703') console.error('houseAdvisor', error);
+    return null;
+  }
+  return data || null;
+}
+
+module.exports = { resolveAdvisor, activeAdvisor, houseAdvisor, REF };

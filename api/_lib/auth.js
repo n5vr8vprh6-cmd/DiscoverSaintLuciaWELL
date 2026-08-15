@@ -186,7 +186,7 @@ async function advisorFor(req, res) {
        string is `undefined` on every Hub page — which for `role` would mean
        every admin check silently denying everyone, with nothing in the logs to
        explain it. Add columns here when a screen needs them. */
-    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at')
+    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at, is_house')
     .eq('auth_user_id', user.id)
     .maybeSingle();
   if (!data) return null;
@@ -225,7 +225,7 @@ async function advisorFor(req, res) {
 
   const { data: target } = await supabase
     .from('advisors')
-    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at')
+    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at, is_house')
     .eq('id', viewAsId)
     .maybeSingle();
   if (!target) return self;

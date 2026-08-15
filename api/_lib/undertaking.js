@@ -38,6 +38,18 @@ function needsUndertaking(advisor) {
      advisor is asked the next time they sign in themselves. */
   if (advisor.viewingAs) return false;
 
+  /* ── THE HOUSE ACCOUNT IS STAFF, NOT AN INDEPENDENT ADVISOR ─────────────
+     Every clause of the undertaking begins from "you are an independent
+     professional and we are passing you somebody else's data". The team
+     working the central pool are the operator — the people the traveller's
+     details were given to in the first place — and they are covered by the
+     privacy policy directly.
+
+     Asking them to accept it would put a statement that is not true into the
+     one record built to prove that acceptances are real. That is a worse
+     outcome than the small amount of logic this line costs. */
+  if (advisor.is_house) return false;
+
   return advisor.undertaking_version !== UNDERTAKING_VERSION;
 }
 

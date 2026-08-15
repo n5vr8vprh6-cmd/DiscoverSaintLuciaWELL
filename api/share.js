@@ -27,7 +27,7 @@
 const {
   db, json, str, esc, looksLikeEmail, ipHash, body, methodGuard
 } = require('./_lib/core.js');
-const { activeAdvisor } = require('./_lib/advisors.js');
+const { activeAdvisor, houseAdvisor } = require('./_lib/advisors.js');
 const { resolveForEntry, alreadyEntered } = require('./_lib/sweepstakes.js');
 const { track } = require('./_lib/encharge.js');
 
@@ -110,9 +110,19 @@ module.exports = async function handler(req, res) {
     }
 
     /* Resolve the advisor. An unknown or paused reference is NOT an error —
-       the share still gets recorded, unattributed, so a person who raised
-       their hand is never dropped because a link was stale. */
-    const advisor = advisorRef ? await activeAdvisor(supabase, advisorRef) : null;
+       the share still gets recorded, so a person who raised their hand is never
+       dropped because a link was stale.
+
+       ── THE HOUSE ACCOUNT IS THE FALLBACK, AND ONLY THE FALLBACK ──────────
+       A referral that resolves always wins: an advisor's printed card must keep
+       earning them the lead. Only when there is no usable referral does the
+       Journey go to the central pool, which is brief §8's third rung.
+
+       `referred` is kept separate from `advisor` because the difference matters
+       downstream — the house account is not somebody this person chose, and the
+       consent they agreed to says so. */
+    const referred = advisorRef ? await activeAdvisor(supabase, advisorRef) : null;
+    const advisor = referred || await houseAdvisor(supabase);
 
     /* ── PRIZE-DRAW ENTRY, DECIDED HERE AND NOWHERE ELSE ──────────────────
        The client sends a code it picked up from the link. This re-resolves it
@@ -127,8 +137,8 @@ module.exports = async function handler(req, res) {
        What they are TOLD depends on this result, not on what they clicked:
        `entered` below is the truth of what was written. If the draw closed
        while they were filling in the form, they are not told they entered. */
-    const draw = (advisor && sweepsRef)
-      ? await resolveForEntry(supabase, sweepsRef, advisor.id)
+    const draw = (referred && sweepsRef)
+      ? await resolveForEntry(supabase, sweepsRef, referred.id)
       : null;
 
     /* ── ONE ENTRY PER EMAIL, PER DRAW ────────────────────────────────────
