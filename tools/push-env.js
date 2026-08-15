@@ -57,6 +57,11 @@ const OPTIONAL = [
   /* Advisor onboarding events. Without it api/_lib/encharge.js no-ops and the
      Hub behaves exactly as it does today. */
   'ENCHARGE_TOKEN',
+  /* Campaign generation. Without it api/_lib/gtm.js and the campaign screens
+     work exactly as they do today — the intake, the fact bank, the claims
+     checker and the copy-paste prompt all run with no key at all. Only the
+     generated 30-day plan needs this. */
+  'OPENAI_API_KEY',
   /* Canonical origin for links that travel in email. Falls back in code to the
      www host, which is what the site 308s to anyway. */
   'SITE_ORIGIN'
