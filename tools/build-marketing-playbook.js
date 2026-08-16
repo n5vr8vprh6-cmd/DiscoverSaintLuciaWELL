@@ -350,17 +350,38 @@ const CHANNELS = [
 let channels = CHANNELS;
 let icp = ICP;
 let edition = null;
+/* Present only once a field guide supplies them — the seed has neither, and an
+   empty array is honest about that rather than inventing a house pattern set. */
+let patterns = [];
+let channelJobs = [];
 
 if (fs.existsSync(path.join(GUIDE, 'playbook.js'))) {
   const guide = require(path.join(GUIDE, 'playbook.js'));
   edition = guide.edition || null;
+  if (Array.isArray(guide.patterns)) patterns = guide.patterns;
+  if (Array.isArray(guide.channelJobs)) channelJobs = guide.channelJobs;
 
   if (Array.isArray(guide.channels)) {
     const byName = {};
     guide.channels.forEach((c) => { if (c && c.channel) byName[c.channel] = c; });
+
     channels = CHANNELS.map((seed) => (byName[seed.channel]
       ? Object.assign({}, seed, byName[seed.channel], { source: 'field-guide' })
       : seed));
+
+    /* A researched channel the seed does not have gets APPENDED, not dropped.
+       The first version mapped over the seed only, so `youtube` — present in
+       the field guide, absent from the seed — vanished without a word. A merge
+       that silently discards research is worse than one that fails: the counts
+       still looked right, and the only symptom was a channel that never
+       appeared in a prompt. */
+    const known = {};
+    CHANNELS.forEach((c) => { known[c.channel] = true; });
+    guide.channels.forEach((c) => {
+      if (c && c.channel && !known[c.channel]) {
+        channels.push(Object.assign({}, c, { source: 'field-guide' }));
+      }
+    });
   }
   if (guide.icp) {
     icp = Object.assign({}, ICP, guide.icp, { source: 'field-guide' });
@@ -398,9 +419,12 @@ const body = banner + '\nmodule.exports = ' +
     provenance: {
       edition,
       seededChannels: seeded,
+      patternCount: patterns.length,
       generated: new Date().toISOString().slice(0, 10)
     },
     icp,
+    channelJobs,
+    patterns,
     channels
   }, null, 2) + ';\n';
 
@@ -423,6 +447,8 @@ console.log('    channels        ' + channels.length);
 console.log('    from research   ' + (channels.length - seeded));
 console.log('    still seeded    ' + seeded + (seeded === channels.length
   ? '   ← all of it. Duncan\'s field guide replaces this.' : ''));
+console.log('    patterns        ' + patterns.length + (patterns.length ? '' : '   ← none; the seed has no pattern library'));
+console.log('    channel jobs    ' + channelJobs.length);
 console.log('    ICP source      ' + icp.source);
 console.log('    edition         ' + (edition || 'none — put one at ../marketing-field-guide/content/playbook.js'));
 console.log('');

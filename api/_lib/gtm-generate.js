@@ -69,6 +69,34 @@ NEVER, WHATEVER THE PLAYBOOK SAYS:
 ${(icp.NEVER_PROMISE || []).map((s) => '  - ' + s).join('\n')}`;
 }
 
+/* ── Patterns ─────────────────────────────────────────────────────────────
+   SELECTION BEFORE GENERATION, which is the Strategist Bible's rule and the
+   right one. The skeleton picks a pattern per action from the library; the
+   asset executes the one it was given. A pattern chosen after the copy exists
+   is a label, not a structure — and it is why every caption in the pre-D3 plans
+   came out shaped the same way.
+
+   Grouped by job because that is how a plan selects: an action needs
+   recognition, or proof, or a reframe, and the pattern is the shape that
+   delivers it. */
+function patternsBlock() {
+  const list = PLAYBOOK.patterns || [];
+  if (!list.length) return '';
+
+  const byJob = {};
+  list.forEach((p) => { (byJob[p.job] = byJob[p.job] || []).push(p); });
+
+  return Object.keys(byJob).map((job) =>
+    `${job.toUpperCase()}\n` + byJob[job]
+      .map((p) => `  ${p.name} — "${p.formula}"`).join('\n')
+  ).join('\n');
+}
+
+function patternByName(name) {
+  const n = String(name || '').toLowerCase().trim();
+  return (PLAYBOOK.patterns || []).find((p) => p.name.toLowerCase() === n) || null;
+}
+
 /* The channel's own page, rendered small. `converts` and `kills` are the two
    lists the critique pass scores against, so they are stated as rules rather
    than as prose the model can admire and ignore. */
@@ -79,11 +107,18 @@ function playbookBlock(channel, kind) {
   const bullets = (arr) => (arr || []).map((s) => '  - ' + s).join('\n');
   const hooks = (p.hooks || []).map((h) =>
     `  - ${h.pattern} — ${h.why}\n      e.g. ${h.example}`).join('\n');
+  /* Surfaces matter where a channel is several environments wearing one name —
+     Instagram is the case the Bible makes, and a Reel and a Story want
+     different writing. */
+  const surfaces = (p.surfaces || []).map((s) =>
+    `  - ${s.surface} (${s.job}): ${s.works}`).join('\n');
 
-  return `HOW THIS CHANNEL ACTUALLY WORKS (${p.channel})
+  return `HOW THIS CHANNEL ACTUALLY WORKS (${p.channel})${
+  p.job ? `\nWhat this channel is FOR: ${p.job}` : ''}
 Shape:
 ${bullets(p.anatomy)}
-${hooks ? 'Openings that earn the next line:\n' + hooks + '\n' : ''}Length: ${
+${surfaces ? 'Surfaces, which are not interchangeable:\n' + surfaces + '\n' : ''}${
+  hooks ? 'Openings that earn the next line:\n' + hooks + '\n' : ''}Length: ${
   p.lengths ? p.lengths.ideal + ' (never past ' + p.lengths.max + ' ' + p.lengths.unit + ')' : 'short'}
 
 WHAT MAKES IT WORK:
@@ -233,6 +268,13 @@ plan Instagram. If the only channel is a newsletter, plan around a newsletter.
 
 ${rulesBlock(rung)}
 
+CHOOSE A PATTERN FOR EACH ACTION
+Pick from this library by the JOB the action needs doing. Use the name exactly.
+Do not use the same pattern twice in one week — a plan where every piece is
+shaped the same way reads as one piece repeated.
+
+${patternsBlock()}
+
 RETURN EXACTLY THIS JSON, no prose, no code fence:
 {
   "premise": "one sentence on the strategy, in plain language",
@@ -245,7 +287,8 @@ RETURN EXACTLY THIS JSON, no prose, no code fence:
           "title": "imperative, under 60 characters",
           "why": "one sentence on what this is for",
           "channel": "one of the advisor's channels, or \\"direct\\" for one-to-one messages",
-          "assetKind": "caption | email | sms | dm | script | outline | none"
+          "assetKind": "caption | email | sms | dm | script | outline | none",
+          "pattern": "the exact name of one pattern from the library above"
         }
       ]
     }
@@ -285,11 +328,18 @@ function normaliseSkeleton(raw) {
     theme: String(w && w.theme || '').slice(0, 60),
     actions: (Array.isArray(w && w.actions) ? w.actions : []).slice(0, 4).map((a) => {
       const kind = String(a && a.assetKind || 'none').toLowerCase().trim();
+      /* Validated against the library, not trusted. A model asked to pick from
+         a list will sometimes invent a plausible-sounding entry, and an
+         invented pattern reaches the asset prompt as an instruction nobody
+         wrote. Unknown becomes null, and the asset falls back to the channel's
+         own hooks. */
+      const named = patternByName(a && a.pattern);
       return {
         title: String(a && a.title || '').slice(0, 120),
         why: String(a && a.why || '').slice(0, 300),
         channel: String(a && a.channel || 'direct').toLowerCase().slice(0, 20),
-        assetKind: ASSET_KINDS.indexOf(kind) === -1 ? 'none' : kind
+        assetKind: ASSET_KINDS.indexOf(kind) === -1 ? 'none' : kind,
+        pattern: named ? named.name : null
       };
     }).filter((a) => a.title)
   })).filter((w) => w.actions.length);
@@ -334,6 +384,7 @@ const SHAPES = {
 
 function assetPrompt(ctx, action, rung, weekTheme, angle) {
   const book = playbookBlock(action.channel, action.assetKind);
+  const pat = patternByName(action.pattern);
   return `Write one piece of copy for this travel advisor.
 
 THE ADVISOR
@@ -349,7 +400,11 @@ Channel: ${action.channel}
 
 THE SHAPE
 ${SHAPES[action.assetKind] || SHAPES.caption}
-
+${pat ? `
+THE PATTERN THIS PIECE MUST FOLLOW
+${pat.name} — "${pat.formula}"
+Its job is ${pat.job}. Build the piece on that shape; do not quote the formula.
+` : ''}
 ${book || ''}
 ${angle && ANGLES[angle] ? `\nTHE ANGLE FOR THIS VERSION\n${ANGLES[angle]}\n` : ''}
 WHAT YOU MAY DRAW ON
@@ -455,7 +510,7 @@ Take two minutes and see what comes back: {{WELL_LINK}}`;
 
 module.exports = {
   advisorContext, modelFacts, rulesBlock,
-  playbookFor, playbookBlock, icpBlock, ANGLES, PLAYBOOK,
+  playbookFor, playbookBlock, patternsBlock, patternByName, icpBlock, ANGLES, PLAYBOOK,
   skeletonPrompt, assetPrompt, parseJson, normaliseSkeleton,
   generateSkeleton, generateAsset,
   ADVISOR_FIELDS, PROFILE_FIELDS, CHANNEL_FIELDS, ASSET_KINDS,

@@ -103,6 +103,80 @@ const ACTION = { week: 1, position: 0, title: 'Post once', why: 'signal the focu
     !/consumer_|journey_share/.test(wire),
     'the payload assertion must survive every new field');
 
+  /* ══ The Bible extract ═════════════════════════════════════════════════ */
+  console.log('\n  The Strategist Bible extract');
+  ok('the edition is recorded', /Strategist Bible/.test(P.provenance.edition || ''),
+    String(P.provenance.edition));
+  ok('the 48 micro-patterns are loaded', P.patterns.length === 48, String(P.patterns.length));
+  ok('every pattern has a name, a formula and a job',
+    P.patterns.every((p) => p.name && p.formula && p.job),
+    JSON.stringify(P.patterns.filter((p) => !p.name || !p.formula || !p.job)));
+  ok('pattern names are unique',
+    new Set(P.patterns.map((p) => p.name.toLowerCase())).size === P.patterns.length,
+    'a duplicate name makes patternByName ambiguous');
+  ok('the six channel jobs are loaded', (P.channelJobs || []).length === 6);
+  ok('the ICP came from the field guide, not the seed', P.icp.source === 'field-guide');
+  ok('the need-state dimensions came with it', (P.icp.needStateDimensions || []).length >= 8);
+  ok('and the safer-language pairs', (P.icp.saferLanguage || []).length > 0,
+    'a rule that only forbids produces copy that says nothing');
+  ok('every safer-language pair gives the sentence that IS allowed',
+    (P.icp.saferLanguage || []).every((s) => s.instead && s.say));
+
+  /* THE MERGE BUG. A channel researched but absent from the seed was silently
+     dropped — `youtube` vanished and the counts still looked right. The only
+     symptom was a channel that never appeared in a prompt. */
+  ok('a researched channel with no seed entry survives the merge',
+    P.channels.some((c) => c.channel === 'youtube'),
+    'youtube is in the field guide and not in the seed — it was being discarded');
+  ok('and the seed-only channels are still there',
+    ['dm', 'sms', 'script', 'outline'].every((n) => P.channels.some((c) => c.channel === n)),
+    'partial research must upgrade what it covers and leave the rest');
+  ok('researched channels carry their job', P.channels
+    .filter((c) => c.source === 'field-guide').every((c) => c.job),
+    'a channel without a defined job does not belong in a campaign');
+
+  /* ══ Pattern selection ═════════════════════════════════════════════════
+     Selection before generation. The skeleton picks, the asset executes. */
+  console.log('\n  Pattern selection happens before generation');
+  ok('a name resolves', G.patternByName('Common mistake').job === 'risk');
+  ok('case does not matter', G.patternByName('COMMON MISTAKE') !== null);
+  ok('an invented name resolves to null, not to the first entry',
+    G.patternByName('The Amazing Hook Formula') === null,
+    'a model asked to pick from a list will sometimes invent a plausible entry');
+
+  const shaped = G.normaliseSkeleton({ weeks: [{ week: 1, actions: [
+    { title: 'a', assetKind: 'caption', pattern: 'Common mistake' },
+    { title: 'b', assetKind: 'caption', pattern: 'Totally Invented' },
+    { title: 'c', assetKind: 'caption' }
+  ] }] });
+  ok('a real pattern survives normalisation',
+    shaped.weeks[0].actions[0].pattern === 'Common mistake');
+  ok('an invented one is dropped to null',
+    shaped.weeks[0].actions[1].pattern === null,
+    'an invented pattern reaches the asset prompt as an instruction nobody wrote');
+  ok('a missing one is null rather than undefined',
+    shaped.weeks[0].actions[2].pattern === null);
+
+  const skel = await G.generateSkeleton(ADVISOR, PROFILE, 'registered');
+  const skelWire = JSON.stringify(skel.payload);
+  ok('the skeleton prompt carries the pattern library', /RECOGNITION/.test(skelWire) &&
+    /Common mistake/.test(skelWire));
+  ok('and tells it not to repeat a pattern within a week',
+    /not to use the same pattern twice|same pattern twice/i.test(skelWire));
+
+  const withPattern = await G.generateAsset(ADVISOR, PROFILE, 'registered',
+    Object.assign({}, ACTION, { pattern: 'Common mistake' }), 'T', { critique: false });
+  ok('the asset prompt carries the chosen pattern and its formula',
+    /THE PATTERN THIS PIECE MUST FOLLOW/.test(JSON.stringify(withPattern.payload)) &&
+    /The mistake I see/.test(JSON.stringify(withPattern.payload)));
+  ok('and tells it not to quote the formula back',
+    /do not quote the formula/i.test(JSON.stringify(withPattern.payload)));
+
+  const noPattern = await G.generateAsset(ADVISOR, PROFILE, 'registered', ACTION, 'T', { critique: false });
+  ok('an action with no pattern gets no pattern section',
+    !/THE PATTERN THIS PIECE MUST FOLLOW/.test(JSON.stringify(noPattern.payload)),
+    'it falls back to the channel hooks rather than inventing a shape');
+
   /* ══ Angles ════════════════════════════════════════════════════════════ */
   console.log('\n  Angles');
   ok('four are defined', Object.keys(G.ANGLES).length === 4);
