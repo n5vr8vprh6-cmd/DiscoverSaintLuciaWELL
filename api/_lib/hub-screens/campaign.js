@@ -24,7 +24,9 @@ const {
   BANDS, FIELDS, profileFor, saveProfile, gapReport, intakePrompt, rung, mayRefresh,
   currentPlan, planRows
 } = require('../gtm.js');
-const { planSection, thinkingOverlay } = require('../campaign-blocks.js');
+const { planSection, thinkingOverlay, confidenceStrip } = require('../campaign-blocks.js');
+const { describe: describeCapacity } = require('../capacity.js');
+const LB = require('../loopback.js');
 const { configured } = require('../openai.js');
 
 const LADDER_LABEL = {
@@ -68,6 +70,12 @@ module.exports = async function handler(req, res) {
      is where you go to improve the next one. */
   const held = await currentPlan(advisor.id);
   const rows = held ? planRows(held.plan, held.assets) : [];
+
+  /* What actually happened. Only ever computed when there is a plan to measure
+     against — a report with no campaign behind it is a dashboard, and nobody
+     asked for one of those. */
+  const report = held ? await LB.forPlan(advisor, held.plan) : null;
+  const foundations = report ? LB.foundationsNote(report, advisor, profile) : null;
   const canGenerate = configured() && gaps.enoughToGenerate && !advisor.viewingAs;
 
   const body = `<div class="hub-main">
@@ -87,7 +95,10 @@ module.exports = async function handler(req, res) {
         advisor,
         planId: held.plan.id,
         premise: (held.plan.skeleton && held.plan.skeleton.premise) || '',
-        mayRefresh: canGenerate && mayRefresh(advisor)
+        mayRefresh: canGenerate && mayRefresh(advisor),
+        strip: confidenceStrip(profile, describeCapacity(profile)),
+        currentWeek: report && report.currentWeek <= 4 ? report.currentWeek : null,
+        report: reportBlock(report, foundations)
       }) : `
     ${/* No plan yet. The button is the point of the screen, so it comes first —
           and when it cannot be pressed it says why, rather than sitting greyed
@@ -100,9 +111,8 @@ module.exports = async function handler(req, res) {
         <div class="hub-actions">
           <button type="button" class="btn btn--gold" id="gtm-build">Build my 30-day plan</button>
         </div>
-        ${mayRefresh(advisor) ? '' : `<p class="hub-hint">You get one plan. Rebuilding it whenever
-          you like is part of <a href="/advisors/foundations" target="_blank" rel="noopener">Well
-          Destination Foundations</a>.</p>`}`
+        ${mayRefresh(advisor) ? '' : `<p class="hub-hint">This builds you one plan. You can edit
+          every piece of it as much as you like.</p>`}`
       : advisor.viewingAs ? `
         <p class="hub-hint">You are viewing this advisor's Hub. Generating a campaign under their
           name is not available here — it would put words in their mouth that they publish and
@@ -224,9 +234,14 @@ module.exports = async function handler(req, res) {
         a formality: describing yourself as trained when you are not is a claim about a qualification,
         and it would be your name on the post.</p>
       ${where === 'registered' ? `
-      <p class="hub-hint"><a href="/advisors/foundations" target="_blank" rel="noopener">Well Destination
-        Foundations</a> is what changes it — and it is also what turns one plan into as many as you
-        want, since ${mayRefresh(advisor) ? '' : 'right now you get one'}.</p>` : ''}
+      ${/* An explanation of why their copy says what it says, not a pitch. The
+            sentence that followed this — "and it is also what turns one plan
+            into as many as you want" — was a sales clause bolted onto a
+            factual one, on a screen where the advisor has not yet been helped
+            with anything. The selling happens once, in the loop-back, after a
+            result. */''}
+      <p class="hub-hint">That changes when the record shows
+        <a href="/advisors/foundations" target="_blank" rel="noopener">Foundations</a> is complete.</p>` : ''}
     </section>
 
   </div>
@@ -237,6 +252,48 @@ module.exports = async function handler(req, res) {
     js: ['/js/hub-campaign.js']
   });
 };
+
+/* ── The loop-back ────────────────────────────────────────────────────────
+   Rendered only when something happened. "0 visits, 0 Journeys" in week one is
+   a worse thing to show somebody than silence — it reports on a campaign they
+   have not had time to run yet and reads as a verdict on them.
+
+   THE FOUNDATIONS NOTE APPEARS HERE AND NOWHERE ELSE IN THIS FLOW, and only
+   inside the `report.anything` branch. Before a result it would be a pitch;
+   after one it is a next step attached to evidence the advisor can see. */
+function reportBlock(report, foundations) {
+  if (!report || !report.anything) return '';
+
+  const weeks = report.weeks.filter((w) => w.anything);
+  return `<section class="hub-card gtm-report">
+    <div class="hub-sweeps-head">
+      <div>
+        <h2>What happened</h2>
+        <p class="hub-hint">Through your WELL link${report.finished
+          ? ', across the month' : `, so far`}.</p>
+      </div>
+      <span class="hub-stage" data-stage="${report.totals.journeys ? 'booked' : 'new'}">${
+        report.totals.journeys} shared</span>
+    </div>
+
+    <ul class="gtm-report-weeks">
+      ${weeks.map((w) => `<li><strong>Week ${w.week}.</strong> ${esc(w.line)}</li>`).join('')}
+    </ul>
+
+    ${report.totals.journeys ? `<p class="hub-hint"><a href="/hub/journeys">See who they are</a> —
+      a Journey is somebody who asked to hear from you.</p>` : ''}
+
+    ${foundations ? `
+    <div class="gtm-report-next">
+      <p class="gtm-label">${esc(foundations.heading)}</p>
+      <p class="hub-hint">${esc(foundations.body)}</p>
+      <div class="hub-actions">
+        <a class="btn btn--ghost btn--sm" href="${esc(foundations.href)}"
+          target="_blank" rel="noopener">What Foundations covers</a>
+      </div>
+    </div>` : ''}
+  </section>`;
+}
 
 /* ── Bits ────────────────────────────────────────────────────────────────── */
 function area(name, label, value, hint) {

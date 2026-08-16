@@ -168,6 +168,57 @@ function block(week, action, advisor) {
   </article>`;
 }
 
+/* ── The confidence strip ─────────────────────────────────────────────────
+   One line naming what this plan was actually built from, and what it was not.
+
+   IT IS A PROVENANCE DISPLAY, NOT AN UPSELL WIDGET, and the difference is that
+   it renders IDENTICALLY FOR EVERY TIER. For a registered advisor the gap
+   argues for itself without a sentence of salesmanship. For a Foundations
+   graduate the same component reads as reassurance about what their plan
+   stands on. The moment it changes its tune by tier it stops being a
+   diagnostic and becomes an advert wearing one's clothes, and advisors can
+   smell that.
+
+   It is derived from what the generator actually read, not from a hand-written
+   list — a strip that claims an input the prompt never received would make the
+   one honest surface in the flow the dishonest one. */
+function confidenceStrip(profile, capacity) {
+  const p = profile || {};
+  const built = [];
+  const missing = [];
+
+  const intake = ['positioning', 'differentiator', 'icp', 'client_examples', 'specialties', 'markets']
+    .filter((f) => String(p[f] || '').trim()).length;
+  if (intake) built.push(`your intake (${intake} field${intake === 1 ? '' : 's'})`);
+  else missing.push('anything you have told us about your business');
+
+  if (p.expr_primary || p.expr_confirmed) built.push('how you create advantage');
+  else missing.push('how you create advantage');
+
+  if (p.traveller_orientation) built.push('who you sell to');
+  else missing.push('who you sell to');
+
+  const brief = p.brief_parsed && Object.keys(p.brief_parsed).length ? p.brief_parsed : null;
+  if (brief) {
+    const items = ['CLIENTS', 'MARKETS', 'OBJECTIONS', 'PROOF']
+      .reduce((n, k) => n + (brief[k] || []).length, 0);
+    built.push(`your own brief (${items} specifics)`);
+  } else {
+    missing.push('your own clients, markets and proof');
+  }
+
+  /* Always true, and worth saying — an advisor should know the destination
+     facts are not being improvised. */
+  built.push('the Saint Lucia fact bank');
+  built.push('the channel playbook');
+
+  return `<p class="gtm-provenance">
+    <strong>Built from:</strong> ${esc(built.join(' · '))}${
+    missing.length ? `<br><strong>Not built from:</strong> ${esc(missing.join(' · '))}` : ''}${
+    capacity ? `<br><span class="gtm-provenance-size">${esc(capacity.line)}</span>` : ''}
+  </p>`;
+}
+
 /* The whole kit. Weeks are sections because that is how somebody uses it —
    they open it on a Monday and want to know what this week asks of them. */
 function planSection(rows, opts) {
@@ -185,6 +236,10 @@ function planSection(rows, opts) {
       ${total ? `<span class="hub-stage" data-stage="${ready === total ? 'booked' : 'new'}">${ready}/${total} written</span>` : ''}
     </div>
 
+    ${o.strip || ''}
+
+    ${o.report ? o.report : ''}
+
     ${o.mayRefresh ? `
     <div class="gtm-plan-actions">
       <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new plan</button>
@@ -194,9 +249,10 @@ function planSection(rows, opts) {
       <a href="/advisors/foundations" target="_blank" rel="noopener">Well Destination Foundations</a>.</p>`}
 
     ${rows.map((w) => `
-    <div class="gtm-week">
+    <div class="gtm-week${o.currentWeek === w.week ? ' is-now' : ''}"${
+      o.currentWeek && o.currentWeek !== w.week ? ' data-later="1"' : ''}>
       <div class="gtm-week-head">
-        <span class="gtm-week-n">Week ${w.week}</span>
+        <span class="gtm-week-n">Week ${w.week}${o.currentWeek === w.week ? ' · this week' : ''}</span>
         <h3>${esc(w.theme)}</h3>
       </div>
       ${w.actions.map((a) => block(w.week, a, o.advisor)).join('')}
@@ -229,4 +285,7 @@ function thinkingOverlay() {
   </div>`;
 }
 
-module.exports = { planSection, block, thinkingOverlay, angleBlock, KIND_LABEL, ANGLE_LABEL };
+module.exports = {
+  planSection, block, thinkingOverlay, angleBlock, confidenceStrip,
+  KIND_LABEL, ANGLE_LABEL
+};

@@ -1237,3 +1237,59 @@ body.gtm-busy { overflow: hidden; }
   .pq-reveal-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
 }
 .pq-reveal-grid .hub-hint { margin: 0; }
+
+/* ── The loop-back, and the strip that says what a plan stands on ────────
+   Both are quiet on purpose. The report deals in single digits and presenting
+   eleven visits like analytics is how a small number is made to feel like a
+   failure. */
+.gtm-provenance {
+  font-size: var(--fs-small);
+  color: var(--muted);
+  background: var(--paper);
+  border-left: 2px solid var(--hairline-l);
+  padding: 0.7rem 0.9rem;
+  margin: 0 0 1.25rem;
+  line-height: 1.6;
+}
+.gtm-provenance strong { color: var(--ink); font-weight: 700; }
+.gtm-provenance-size { display: inline-block; margin-top: 0.35rem; }
+
+.gtm-report { border-left: 3px solid var(--teal); --card-rule: var(--teal); }
+
+/* A CARD INSIDE A CARD COMPOUNDS ITS GUTTERS. The report sits inside the plan
+   card, which sits inside .wrap — three 20px insets stacked. At 380px that
+   left the Foundations note 238px of a 380px viewport, a third of the width
+   spent on nothing. It is invisible at the 2000px this gets reviewed on.
+
+   Below the phone breakpoint a nested card gives back the horizontal inset and
+   keeps only its rule, which is what actually communicates the nesting.
+
+   The rule COLOUR goes through a variable on purpose: `.hub-card .hub-card` is
+   (0,2,0) and would quietly beat `.gtm-report`'s own (0,1,0) border-left,
+   turning the teal rule grey with nothing failing anywhere. */
+@media (max-width: 620px) {
+  .hub-card .hub-card {
+    padding: 1rem 0 0 0.9rem;
+    background: none;
+    border: 0;
+    border-left: 3px solid var(--card-rule, var(--hairline-l));
+    border-radius: 0;
+  }
+}
+.gtm-report-weeks { margin: 0.9rem 0 0; padding-left: 1.1rem; }
+.gtm-report-weeks li { margin-bottom: 0.45rem; font-size: var(--fs-small); }
+.gtm-report-weeks li:last-child { margin-bottom: 0; }
+
+.gtm-report-next {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hairline-l);
+}
+
+/* This week is where the eye should land. Later weeks stay visible — an
+   advisor wants to know what is coming — but recede. */
+.gtm-week.is-now .gtm-week-n { color: var(--ink); }
+.gtm-week.is-now .gtm-week-head { border-bottom-color: var(--gold); }
+.gtm-week[data-later] { opacity: 0.72; }
+.gtm-week[data-later]:hover,
+.gtm-week[data-later]:focus-within { opacity: 1; }
