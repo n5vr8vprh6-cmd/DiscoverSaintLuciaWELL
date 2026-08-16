@@ -114,6 +114,47 @@ async function saveProfile(advisorId, patch) {
   return { ok: true };
 }
 
+/* ── The persona ──────────────────────────────────────────────────────────
+   A SECOND ALLOW-LIST, not a wider first one. The intake form and the persona
+   capture are different surfaces writing different columns, and merging their
+   field lists would let a hand-edited intake POST set an advisor's expression
+   profile — which is exactly the class of thing account.js:100 established the
+   allow-list pattern to prevent.
+
+   `expr_confirmed` is here because the advisor sets it deliberately at the
+   reveal. `expr_primary` and `expr_secondary` are here because savePersona is
+   the only caller and it derives them itself; nothing user-supplied reaches
+   them. */
+const PERSONA_FIELDS = [
+  'persona_answers', 'expr_primary', 'expr_secondary', 'expr_confirmed',
+  'traveller_orientation', 'compass_needs', 'capacity_class', 'persona_at'
+];
+
+async function savePersona(advisorId, patch) {
+  const supabase = db();
+  if (!supabase || !advisorId) return { ok: false, error: 'not_configured' };
+
+  const row = { advisor_id: advisorId, updated_at: new Date().toISOString() };
+  PERSONA_FIELDS.forEach((f) => {
+    if (Object.prototype.hasOwnProperty.call(patch, f)) row[f] = patch[f];
+  });
+
+  const { error } = await supabase
+    .from('gtm_profile').upsert(row, { onConflict: 'advisor_id' });
+  if (error) {
+    /* Absent until migration 014. Degrades to "the capture does not save"
+       rather than to a stack trace on a screen an advisor is halfway through. */
+    const missing = ['42703', 'PGRST204', 'PGRST205', '42P01'];
+    if (missing.indexOf(String(error.code)) !== -1) {
+      console.warn('savePersona — is migration 014 applied?', error.code);
+      return { ok: false, error: 'needs_migration' };
+    }
+    console.error('savePersona', error);
+    return { ok: false, error: 'failed' };
+  }
+  return { ok: true };
+}
+
 /* ── The advisor's link ───────────────────────────────────────────────────
    Copy is STORED with the literal token {{WELL_LINK}} and the real URL is put
    in on the way out. Two reasons: the model never sees a URL it might mangle,
@@ -306,7 +347,7 @@ make marketing harder? Be blunt. I would rather know.`;
 module.exports = {
   BANDS, FIELDS, GAPS,
   rung, mayRefresh,
-  profileFor, saveProfile, currentPlan, planRows,
+  profileFor, saveProfile, savePersona, PERSONA_FIELDS, currentPlan, planRows,
   wellLink, substitute,
   gapReport, intakePrompt
 };

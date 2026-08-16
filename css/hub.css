@@ -1096,3 +1096,144 @@ body.gtm-busy { overflow: hidden; }
   font-style: italic;
 }
 .gtm-angles .hub-hint { margin: 0.4rem 0 0.6rem; }
+
+/* ── The persona capture ─────────────────────────────────────────────────
+   One question per screen. A page showing five at once reads as a form; five
+   screens showing one each read as a conversation, and each can afford to say
+   why it is asking — which is the only thing that makes a question feel worth
+   answering. */
+.wrap--narrow { max-width: 46rem; }
+
+.pq-rail {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0 0 0.5rem;
+}
+.pq-dot {
+  height: 3px;
+  flex: 1 1 0;
+  border-radius: 2px;
+  background: var(--hairline-l);
+}
+.pq-dot.is-done { background: var(--gold-deep); }
+.pq-dot.is-now  { background: var(--gold); }
+
+.pq-count {
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+/* ── Two h2s that are NOT section labels ─────────────────────────────────
+   `.hub-main h2` is the Hub's small uppercase section-label convention, and at
+   (0,1,1) it outranks a single class. Both of these are h2 for document
+   structure — the question IS the heading of its screen — but neither is a
+   label, so they need to win explicitly.
+
+   This shipped broken for exactly as long as it took to measure it: the
+   question rendered as 13px uppercase grey with 4px of letter-spacing, while
+   every structural check (twelve options, five dots, no overflow) passed. A
+   count can be right while the page is unreadable. */
+.hub-main .pq-ask {
+  font-family: var(--serif-display);
+  font-size: var(--fs-lead);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+  line-height: 1.25;
+  /* "you" has a descender and this is a display size. */
+  padding-bottom: 0.06em;
+  margin: 0 0 0.5rem;
+}
+.pq-why {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  margin: 0 0 0.25rem;
+  max-width: 52ch;
+}
+
+.pq-opts {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1.1rem 0 0;
+}
+
+/* The whole row is the target. A 14px radio is a miss waiting to happen on a
+   phone, and this is a five-screen flow where one mis-tap costs a step. */
+.pq-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.pq-opt:hover { border-color: var(--gold-deep); }
+.pq-opt input {
+  flex: none;
+  margin-top: 0.2rem;
+  accent-color: var(--gold-deep);
+  width: 1.05rem;
+  height: 1.05rem;
+}
+/* :has() drives the selected state from the input itself, so the styling
+   cannot disagree with what will actually be submitted. The .is-on class from
+   the server covers the first paint and browsers without :has(). */
+.pq-opt.is-on,
+.pq-opt:has(input:checked) {
+  border-color: var(--gold-deep);
+  background: var(--paper);
+}
+.pq-opt:has(input:focus-visible) {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 2px;
+}
+.pq-opt-body { display: block; }
+.pq-opt-label { display: block; font-size: var(--fs-small); line-height: 1.45; }
+.pq-opt-detail {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.pq-actions { margin-top: 1.25rem; align-items: center; }
+
+/* ── The reveal ──────────────────────────────────────────────────────────
+   A read, not a verdict — so it carries what this profile gets wrong beside
+   what it is good at, and the correction sits directly underneath. */
+.pq-reveal { border-left: 3px solid var(--gold); }
+.hub-main .pq-reveal-head {
+  font-family: var(--serif-display);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink);
+  line-height: 1.15;
+  padding-bottom: 0.06em;
+  margin: 0.2rem 0 0.5rem;
+}
+.pq-reveal-lead {
+  font-size: var(--fs-lead);
+  max-width: 44ch;
+  margin: 0 0 0.9rem;
+}
+.pq-reveal-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--hairline-l);
+}
+@media (min-width: 34rem) {
+  .pq-reveal-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+}
+.pq-reveal-grid .hub-hint { margin: 0; }
