@@ -219,13 +219,72 @@ function confidenceStrip(profile, capacity) {
   </p>`;
 }
 
+/* One week, rendered whole. Extracted from planSection so that the same markup
+   can appear open (this week) or inside a disclosure (the rest) without the two
+   drifting into different-looking weeks. */
+function weekBlock(w, o) {
+  return `<div class="gtm-week${o.currentWeek === w.week ? ' is-now' : ''}"${
+    o.currentWeek && o.currentWeek !== w.week ? ' data-later="1"' : ''}>
+      <div class="gtm-week-head">
+        <span class="gtm-week-n">Week ${w.week}${o.currentWeek === w.week ? ' · this week' : ''}</span>
+        <h3>${esc(w.theme)}</h3>
+      </div>
+      ${w.actions.map((a) => block(w.week, a, o.advisor)).join('')}
+    </div>`;
+}
+
+/* People who asked to hear from this advisor and have not been answered.
+   It sits with this week's actions because it outranks every one of them: a
+   plan exists to produce these, and a campaign that keeps running while the
+   replies pile up has failed at the only thing it was for. */
+function waitingLine(n) {
+  if (!n) return '';
+  return `<p class="gtm-waiting"><strong>${n === 1
+    ? 'One person is waiting to hear from you.'
+    : `${n} people are waiting to hear from you.`}</strong>
+    <a href="/hub/journeys">Answer them first</a> — they asked, which is more than
+    anything else on this list can say.</p>`;
+}
+
 /* The whole kit. Weeks are sections because that is how somebody uses it —
-   they open it on a Monday and want to know what this week asks of them. */
+   they open it on a Monday and want to know what this week asks of them.
+
+   ── WHY THIS WEEK IS THE DEFAULT ──────────────────────────────────────────
+   "A single enormous AI response is a poor product interface." Four weeks of
+   actions rendered at once is roughly nine assets and forty paragraphs, and
+   the effect on a Monday morning is not diligence but paralysis — the advisor
+   scrolls, feels behind, and closes the tab.
+
+   So the current week renders open and the rest go behind a disclosure. The
+   collapsed weeks are still in the page: <details> hides them from the eye,
+   not from the document, so Ctrl-F finds them, a screen reader can reach them
+   and printing gets the lot.
+
+   THIS ONLY APPLIES WHILE THE MONTH IS RUNNING. With no current week — the
+   month is over, or the report could not be computed — there is no "this week"
+   to focus on and everything renders flat, because showing all of it is never
+   wrong, only longer. */
 function planSection(rows, opts) {
   const o = opts || {};
   const total = rows.reduce((n, w) => n + w.actions.filter((a) => a.assetKind !== 'none').length, 0);
   const ready = rows.reduce((n, w) =>
     n + w.actions.filter((a) => a.asset && a.asset.status === 'ready').length, 0);
+
+  const now = o.currentWeek ? rows.filter((w) => w.week === o.currentWeek) : [];
+  const done = o.currentWeek ? rows.filter((w) => w.week < o.currentWeek) : [];
+  const ahead = o.currentWeek ? rows.filter((w) => w.week > o.currentWeek) : [];
+  const focused = now.length > 0;
+
+  /* The summary says how much is behind it. A disclosure that reads only
+     "Show more" asks somebody to spend a click to find out whether the click
+     was worth it. */
+  const fold = (weeks, label) => weeks.length ? `
+    <details class="gtm-more">
+      <summary>${esc(label)} <span class="gtm-more-n">${
+        weeks.length === 1 ? 'Week ' + weeks[0].week
+          : 'Weeks ' + weeks[0].week + '–' + weeks[weeks.length - 1].week}</span></summary>
+      ${weeks.map((w) => weekBlock(w, o)).join('')}
+    </details>` : '';
 
   return `<section class="hub-card gtm-plan" id="gtm-plan" data-plan="${esc(o.planId || '')}">
     <div class="hub-sweeps-head">
@@ -236,9 +295,41 @@ function planSection(rows, opts) {
       ${total ? `<span class="hub-stage" data-stage="${ready === total ? 'booked' : 'new'}">${ready}/${total} written</span>` : ''}
     </div>
 
-    ${o.strip || ''}
+    ${/* ── ORDER, AND WHY IT IS THIS ONE ──────────────────────────────────
+          Measured at 380px, the first arrangement put this week's actions
+          1717px down — nearly two phone screens under the provenance strip
+          and a 727px report. Collapsing three of the four weeks and then
+          burying the fourth is not progressive disclosure, it is the same
+          scroll with extra steps.
+
+          So the card is ordered by what the advisor came to do:
+
+            1. somebody is waiting for a reply   — a person, not a task
+            2. this week's actions               — what they opened this for
+            3. the other weeks                   — one click away
+            4. what happened                     — answers a different
+                                                   question, asked later
+            5. what it was built from            — provenance, quietest
+            6. build a new plan                  — not a Monday-morning act
+
+          Nothing moved out of the page and nothing moved into a fold; the
+          report and the strip are as present as they were. */''}
+
+    ${waitingLine(o.waiting)}
+
+    ${focused ? `
+    ${now.map((w) => weekBlock(w, o)).join('')}
+    ${fold(ahead, 'What is coming')}
+    ${fold(done, 'Already behind you')}`
+    : rows.map((w) => weekBlock(w, o)).join('')}
+
+    <p class="hub-hint">Every link in this plan is your WELL link, so anything that comes back is
+      yours. Edit freely — it is your name on it, and copy you would not have written yourself
+      reads that way.</p>
 
     ${o.report ? o.report : ''}
+
+    ${o.strip || ''}
 
     ${o.mayRefresh ? `
     <div class="gtm-plan-actions">
@@ -247,20 +338,6 @@ function planSection(rows, opts) {
     </div>` : `
     <p class="hub-hint gtm-locked">This is your plan. Rebuilding it whenever you like is part of
       <a href="/advisors/foundations" target="_blank" rel="noopener">Well Destination Foundations</a>.</p>`}
-
-    ${rows.map((w) => `
-    <div class="gtm-week${o.currentWeek === w.week ? ' is-now' : ''}"${
-      o.currentWeek && o.currentWeek !== w.week ? ' data-later="1"' : ''}>
-      <div class="gtm-week-head">
-        <span class="gtm-week-n">Week ${w.week}${o.currentWeek === w.week ? ' · this week' : ''}</span>
-        <h3>${esc(w.theme)}</h3>
-      </div>
-      ${w.actions.map((a) => block(w.week, a, o.advisor)).join('')}
-    </div>`).join('')}
-
-    <p class="hub-hint">Every link in this plan is your WELL link, so anything that comes back is
-      yours. Edit freely — it is your name on it, and copy you would not have written yourself
-      reads that way.</p>
   </section>`;
 }
 
@@ -287,5 +364,6 @@ function thinkingOverlay() {
 
 module.exports = {
   planSection, block, thinkingOverlay, angleBlock, confidenceStrip,
+  weekBlock, waitingLine,
   KIND_LABEL, ANGLE_LABEL
 };

@@ -1286,10 +1286,89 @@ body.gtm-busy { overflow: hidden; }
   border-top: 1px solid var(--hairline-l);
 }
 
+/* ── PROGRESSIVE DISCLOSURE ───────────────────────────────────────────────
+   Two folds: the weeks that are not this one, and the profile beneath a plan.
+   Both are native <details>, so they work with JavaScript off, answer Ctrl-F,
+   announce themselves to a screen reader and print open. A disclosure built
+   from a click handler and a hidden class does none of those. */
+.gtm-more,
+.hub-fold { margin: 1.5rem 0 0; }
+.hub-fold { margin-bottom: 1.25rem; }
+
+.gtm-more > summary,
+.hub-fold > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  background: var(--paper);
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--ink);
+}
+.gtm-more > summary::-webkit-details-marker,
+.hub-fold > summary::-webkit-details-marker { display: none; }
+
+/* The affordance. A disclosure with no visible control is a paragraph that
+   happens to be clickable, and nobody clicks it. */
+.gtm-more > summary::before,
+.hub-fold > summary::before {
+  content: '';
+  width: 0.5rem; height: 0.5rem;
+  border-right: 2px solid var(--teal);
+  border-bottom: 2px solid var(--teal);
+  transform: rotate(-45deg);
+  transition: transform 0.18s ease;
+  flex: none;
+  align-self: center;
+}
+.gtm-more[open] > summary::before,
+.hub-fold[open] > summary::before { transform: rotate(45deg); }
+
+.gtm-more > summary:hover,
+.hub-fold > summary:hover { border-color: var(--teal); }
+.gtm-more > summary:focus-visible,
+.hub-fold > summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+.gtm-more-n,
+.hub-fold-n {
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: auto;
+}
+.hub-fold-t { font-weight: 700; }
+
+/* The profile fold holds whole cards, which bring their own frames — so the
+   fold itself adds none, or every section would sit in a box in a box. */
+.hub-fold-body { margin-top: 1.25rem; }
+.hub-fold-body > .hub-card:last-child,
+.hub-fold-body > form:last-child { margin-bottom: 0; }
+
+/* Someone waiting for a reply outranks every action in the plan, so it is the
+   one thing above this week that is allowed to be loud. */
+.gtm-waiting {
+  margin: 1.1rem 0 0;
+  padding: 0.85rem 1rem;
+  background: var(--paper);
+  border-left: 3px solid var(--gold);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+.gtm-waiting strong { display: block; color: var(--ink); }
+
 /* This week is where the eye should land. Later weeks stay visible — an
    advisor wants to know what is coming — but recede. */
 .gtm-week.is-now .gtm-week-n { color: var(--ink); }
 .gtm-week.is-now .gtm-week-head { border-bottom-color: var(--gold); }
-.gtm-week[data-later] { opacity: 0.72; }
-.gtm-week[data-later]:hover,
-.gtm-week[data-later]:focus-within { opacity: 1; }
+
+/* [data-later] used to render at 0.72 opacity to push other weeks back. The
+   disclosure now does that job, and dimming content somebody has just chosen
+   to open is hostile — they opened it because they want to read it. The
+   attribute stays as a hook; the fade does not. */
+.gtm-week[data-later] .gtm-week-n { color: var(--muted); }

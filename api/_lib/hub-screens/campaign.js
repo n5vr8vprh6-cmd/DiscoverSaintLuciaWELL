@@ -26,6 +26,7 @@ const {
 } = require('../gtm.js');
 const { planSection, thinkingOverlay, confidenceStrip } = require('../campaign-blocks.js');
 const { describe: describeCapacity } = require('../capacity.js');
+const { waitingCount } = require('../hub-data.js');
 const LB = require('../loopback.js');
 const { configured } = require('../openai.js');
 
@@ -78,6 +79,13 @@ module.exports = async function handler(req, res) {
   const foundations = report ? LB.foundationsNote(report, advisor, profile) : null;
   const canGenerate = configured() && gaps.enoughToGenerate && !advisor.viewingAs;
 
+  /* Only asked for when there is a plan to put it beside. On the empty screen
+     the advisor has no campaign yet, and "3 people are waiting" next to a
+     Build button is a reproach rather than a prompt. */
+  const waiting = held ? await waitingCount(advisor.id) : null;
+
+  const reasoning = reasoningSections(gaps, prompt, p, where);
+
   const body = `<div class="hub-main">
   <div class="wrap">
 
@@ -98,7 +106,8 @@ module.exports = async function handler(req, res) {
         mayRefresh: canGenerate && mayRefresh(advisor),
         strip: confidenceStrip(profile, describeCapacity(profile)),
         currentWeek: report && report.currentWeek <= 4 ? report.currentWeek : null,
-        report: reportBlock(report, foundations)
+        report: reportBlock(report, foundations),
+        waiting
       }) : `
     ${/* No plan yet. The button is the point of the screen, so it comes first —
           and when it cannot be pressed it says why, rather than sitting greyed
@@ -126,6 +135,40 @@ module.exports = async function handler(req, res) {
           fill it in now and the plan will be ready the moment it is.</p>`}
     </section>`}
 
+    ${held ? `
+    ${/* ── THE REASONING, ONE CLICK BEHIND ────────────────────────────────
+          With a plan on the screen this is no longer what the page is for.
+          The advisor came to use a kit; the intake is where they go to make
+          the NEXT one better, and leaving four cards and eleven fields open
+          underneath the plan buries the thing they actually came for.
+
+          Without a plan it stays open, because then it IS the point of the
+          screen and hiding it would be hiding the only thing to do here. */''}
+    <details class="hub-fold">
+      <summary>
+        <span class="hub-fold-t">Your profile and how ready it is</span>
+        <span class="hub-fold-n">${gaps.ready}% · ${gaps.missing.length
+          ? esc(gaps.missing.length + ' thing' + (gaps.missing.length === 1 ? '' : 's') + ' would sharpen the next plan')
+          : 'nothing missing'}</span>
+      </summary>
+      <div class="hub-fold-body">
+      ${reasoning}
+      </div>
+    </details>` : reasoning}
+
+  </div>
+</div>`;
+
+  hubPage(res, {
+    path: '/hub/campaign', title: 'My Campaign', advisor, body,
+    js: ['/js/hub-campaign.js']
+  });
+};
+
+/* Everything that explains and improves the plan, as opposed to the plan
+   itself. Kept in one piece so it can be folded as one — see the call site. */
+function reasoningSections(gaps, prompt, p, where) {
+  return `
     ${/* Readiness before anything else, because it answers the only question
           somebody has on arrival: is this worth my time yet. */''}
     <section class="hub-card">
@@ -242,16 +285,8 @@ module.exports = async function handler(req, res) {
             result. */''}
       <p class="hub-hint">That changes when the record shows
         <a href="/advisors/foundations" target="_blank" rel="noopener">Foundations</a> is complete.</p>` : ''}
-    </section>
-
-  </div>
-</div>`;
-
-  hubPage(res, {
-    path: '/hub/campaign', title: 'My Campaign', advisor, body,
-    js: ['/js/hub-campaign.js']
-  });
-};
+    </section>`;
+}
 
 /* ── The loop-back ────────────────────────────────────────────────────────
    Rendered only when something happened. "0 visits, 0 Journeys" in week one is

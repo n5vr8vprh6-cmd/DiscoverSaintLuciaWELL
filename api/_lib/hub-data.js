@@ -152,7 +152,30 @@ async function addNote(advisorId, shareId, text) {
   return true;
 }
 
+/* How many people are waiting for a first reply. `new` is the stage that means
+   nobody has answered them yet — see attentionScore, where it is worth more
+   than everything else combined.
+
+   A head count rather than journeysFor(): the campaign screen needs the number
+   and nothing else, and pulling 200 rows to call .length on them would put a
+   consumer's name and email into a request that has no use for either.
+
+   Returns null, not 0, when it cannot tell. The campaign screen renders
+   nothing on null and a real sentence on a number — "0 people are waiting"
+   would otherwise be indistinguishable from a broken query. */
+async function waitingCount(advisorId) {
+  const supabase = db();
+  if (!supabase || !advisorId) return null;
+  const { count, error } = await supabase
+    .from('journey_shares')
+    .select('id', { count: 'exact', head: true })
+    .eq('advisor_id', advisorId)
+    .eq('stage', 'new');
+  if (error) { console.error('waitingCount', error); return null; }
+  return count || 0;
+}
+
 module.exports = {
   journeysFor, journeyById, notesFor, funnelFor,
-  needsAttention, attentionScore, setStage, addNote
+  needsAttention, attentionScore, setStage, addNote, waitingCount
 };
