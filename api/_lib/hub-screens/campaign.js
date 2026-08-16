@@ -27,6 +27,7 @@ const {
 const { planSection, thinkingOverlay, confidenceStrip } = require('../campaign-blocks.js');
 const { describe: describeCapacity } = require('../capacity.js');
 const { waitingCount } = require('../hub-data.js');
+const BUILDS = require('../builds.js');
 const LB = require('../loopback.js');
 const { configured } = require('../openai.js');
 
@@ -110,7 +111,12 @@ module.exports = async function handler(req, res) {
         waiting,
         /* The image brief reads the Compass needs and the traveller
            orientation off it — see image-brief.js. */
-        profile
+        profile,
+        /* null for Foundations graduates and null before migration 017. In
+           both cases the plan says nothing about a balance, because an advisor
+           who is not being metered must not be shown a meter. */
+        balanceLine: BUILDS.balanceLine(advisor),
+        packUrl: process.env.THRIVECART_BUILDPACK_URL || null
       }) : `
     ${/* No plan yet. The button is the point of the screen, so it comes first —
           and when it cannot be pressed it says why, rather than sitting greyed

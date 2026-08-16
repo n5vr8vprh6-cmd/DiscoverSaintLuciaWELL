@@ -1405,6 +1405,14 @@ body.gtm-busy { overflow: hidden; }
   list-style-position: outside;
 }
 
+/* The balance. Deliberately quiet — it is a fact about an account, not an
+   offer, and it renders for nobody who is not being metered. */
+.gtm-builds {
+  margin-top: 0.5rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
 .gtm-rights {
   margin-top: 1.25rem;
   padding: 0.85rem 1rem;

@@ -27,6 +27,7 @@
 const { esc } = require('./hub-render.js');
 const { substitute } = require('./gtm.js');
 const { imageBrief, isVisual, RIGHTS_NOTE } = require('./image-brief.js');
+const { PACK_SIZE, PACK_PRICE } = require('./builds.js');
 
 /* Kinds that go to one person's phone or inbox directly. These carry the
    consent note; a public post does not, because nobody is being messaged. */
@@ -387,13 +388,30 @@ function planSection(rows, opts) {
 
     ${o.strip || ''}
 
+    ${/* ── The balance ────────────────────────────────────────────────────
+          o.balanceLine is null for a Foundations graduate and null before
+          migration 017, and in both cases nothing is said — an advisor who is
+          not being metered should not be shown a meter, and a number we cannot
+          read should not be guessed at.
+
+          The old text here said rebuilding "is part of Well Destination
+          Foundations". That stopped being true the moment a registered advisor
+          got three builds, and a false sentence on a paid surface is worse
+          than a missing one. */''}
     ${o.mayRefresh ? `
     <div class="gtm-plan-actions">
       <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new plan</button>
       <span class="hub-hint">Your current one stays until the new one is ready.</span>
-    </div>` : `
-    <p class="hub-hint gtm-locked">This is your plan. Rebuilding it whenever you like is part of
-      <a href="/advisors/foundations" target="_blank" rel="noopener">Well Destination Foundations</a>.</p>`}
+    </div>
+    ${o.balanceLine ? `<p class="hub-hint gtm-builds">${esc(o.balanceLine)}</p>` : ''}`
+    : `
+    <p class="hub-hint gtm-locked">${o.balanceLine
+      ? esc(o.balanceLine)
+      : `This is your plan. Rebuilding it whenever you like is part of
+        <a href="/advisors/foundations" target="_blank" rel="noopener">Well Destination Foundations</a>.`}</p>
+    ${o.balanceLine && o.packUrl ? `<div class="gtm-plan-actions">
+      <a class="btn btn--gold btn--sm" href="${esc(o.packUrl)}" target="_blank" rel="noopener">Get ${PACK_SIZE} more — ${esc(PACK_PRICE)}</a>
+    </div>` : ''}`}
   </section>`;
 }
 

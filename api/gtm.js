@@ -31,6 +31,7 @@
 const { db, json, str, body: parseBody } = require('./_lib/core.js');
 const { requireAdvisorJson } = require('./_lib/auth.js');
 const { rung, mayRefresh, profileFor, substitute } = require('./_lib/gtm.js');
+const BUILDS = require('./_lib/builds.js');
 const { generateSkeleton, generateAsset, ANGLES } = require('./_lib/gtm-generate.js');
 const { check, ownNames } = require('./_lib/claims.js');
 const { configured, reasonText } = require('./_lib/openai.js');
@@ -65,9 +66,27 @@ async function actionPlan(req, res, advisor, supabase) {
     .from('gtm_plan').select('id', { count: 'exact', head: true })
     .eq('advisor_id', advisor.id).eq('status', 'ready');
 
-  /* THE GATE. One plan free; unlimited past Foundations. Checked before any
-     token is spent, and it reads the same dates the claims ladder reads. */
-  if (existing > 0 && !mayRefresh(advisor)) {
+  /* ── THE GATE ───────────────────────────────────────────────────────────
+     Three answers, not two. `metered` is false when the balance is spent,
+     true when there is one to spend, and NULL when migration 017 has not been
+     applied yet — in which case this falls back to precisely what shipped
+     before it, one plan and no rebuild.
+
+     Checked before a single token is spent. */
+  const metered = BUILDS.mayBuild(advisor);
+
+  if (metered === false) {
+    return json(res, 403, {
+      error: 'no_builds',
+      rung: level,
+      builds: 0,
+      message: `You have used your plan builds. Another ${BUILDS.PACK_SIZE} is ` +
+        `${BUILDS.PACK_PRICE}, once. Editing this plan, regenerating single pieces and ` +
+        'trying another angle stay free.'
+    });
+  }
+
+  if (metered === null && existing > 0 && !mayRefresh(advisor)) {
     return json(res, 403, {
       error: 'refresh_locked',
       rung: level,
@@ -105,6 +124,24 @@ async function actionPlan(req, res, advisor, supabase) {
     return json(res, 500, { error: 'save_failed', message: 'The plan was written but not saved. Try again.' });
   }
 
+  /* ── SPEND, AND ONLY NOW ────────────────────────────────────────────────
+     After the plan exists and is saved. A failed skeleton returned above and
+     never reached this line, which is the requirement: a generation that did
+     not produce a plan does not cost a build.
+
+     A FAILURE HERE IS SWALLOWED ON PURPOSE. The advisor has their plan; the
+     row is committed. Turning a bookkeeping error into a 500 would take away
+     something they can already see in order to protect a number only we care
+     about. It is logged loudly instead, and it errs against us — which is the
+     same direction every other judgement call in this codebase errs in.
+
+     Foundations and Immersion never reach the RPC at all. Not "reach it and
+     get ignored": their balance must never move, or somebody later reads a
+     number that has been quietly counting down against a person who is not
+     being counted. */
+  const spent = await BUILDS.spend(advisor);
+  if (!spent.ok) console.error('plan build not spent', advisor.id, spent.reason);
+
   /* Which actions still need copy, so the client knows what to ask for next.
      Flattened here rather than in the browser: the shape of a plan is a server
      concern, and a client that derives it would have to be updated in step. */
@@ -115,7 +152,12 @@ async function actionPlan(req, res, advisor, supabase) {
     });
   });
 
-  return json(res, 200, { ok: true, plan: data, pending, ms: r.ms });
+  return json(res, 200, {
+    ok: true, plan: data, pending, ms: r.ms,
+    /* null for an unmetered advisor and pre-migration alike — the client shows
+       nothing rather than showing a zero it would have to invent. */
+    builds: spent.left === undefined ? null : spent.left
+  });
 }
 
 /* ── asset ────────────────────────────────────────────────────────────────

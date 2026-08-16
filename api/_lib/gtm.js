@@ -21,6 +21,7 @@
 'use strict';
 
 const { db } = require('./core.js');
+const { mayBuild } = require('./builds.js');
 const FACTS = require('../../content/campaign-facts.js');
 
 /* Bands rather than counts — see 011-gtm.sql for why. The labels are what an
@@ -69,10 +70,18 @@ function rung(advisor) {
   return 'registered';
 }
 
-/* Unlimited refreshes past Foundations; one plan before it. The gate and the
+/* Unlimited past Foundations; a balance of builds before it. The gate and the
    ladder read the same dates, which is the point — there is one fact about an
-   advisor here, not two systems that can disagree. */
+   advisor here, not two systems that can disagree.
+
+   THE THIRD ANSWER IS "I CANNOT TELL". builds.mayBuild returns null when
+   migration 017 has not been applied, and this falls back to exactly what
+   shipped before it: one plan, no rebuild. A payment gate whose failure mode
+   is "everything is free" is worse than one that fails back to the old rules,
+   and the code reaches production before the migration does. */
 function mayRefresh(advisor) {
+  const metered = mayBuild(advisor);
+  if (metered !== null) return metered;
   return rung(advisor) !== 'registered';
 }
 
