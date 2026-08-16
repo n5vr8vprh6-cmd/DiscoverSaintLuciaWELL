@@ -127,7 +127,12 @@ async function saveProfile(advisorId, patch) {
    them. */
 const PERSONA_FIELDS = [
   'persona_answers', 'expr_primary', 'expr_secondary', 'expr_confirmed',
-  'traveller_orientation', 'compass_needs', 'capacity_class', 'persona_at'
+  'traveller_orientation', 'compass_needs', 'capacity_class', 'persona_at',
+  /* The brief belongs to the same surface — /hub/campaign/profile captures
+     both — so it shares the allow-list rather than getting a third one. The
+     rule the list enforces is "the intake form cannot write these", and that
+     is as true of a pasted brief as it is of an expression profile. */
+  'brief_raw', 'brief_parsed', 'brief_at'
 ];
 
 async function savePersona(advisorId, patch) {
