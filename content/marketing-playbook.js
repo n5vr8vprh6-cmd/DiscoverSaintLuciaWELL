@@ -18,6 +18,7 @@ module.exports = {
     "edition": "AI Marketing Strategist Bible · Canonical v1.0 · extracted 2026-08-16",
     "seededChannels": 4,
     "patternCount": 48,
+    "profileCount": 6,
     "generated": "2026-08-16"
   },
   "icp": {
@@ -361,6 +362,242 @@ module.exports = {
       "name": "Invitation",
       "formula": "Take the Journey Finder / join / reply.",
       "job": "conversion"
+    }
+  ],
+  "expressionProfiles": [
+    {
+      "key": "guide",
+      "name": "Guide",
+      "advantage": "Makes complexity understandable and reduces uncertainty.",
+      "signals": [
+        "Clear explanations",
+        "frameworks",
+        "diagnostics",
+        "Q&A",
+        "teaching moments",
+        "structured recommendations"
+      ],
+      "jobs": [
+        "education",
+        "authority",
+        "objection handling",
+        "risk reduction"
+      ],
+      "channels": [
+        "linkedin",
+        "youtube",
+        "newsletter",
+        "email"
+      ],
+      "risks": "Overexplaining, sounding clinical, and mistaking information volume for value.",
+      "growthEdge": "Use story, sensory detail or a stronger point of view to create emotional texture.",
+      "voice": "Plain, ordered, unhurried. Defines before it argues. Earns trust by removing confusion rather than by performing expertise."
+    },
+    {
+      "key": "curator",
+      "name": "Curator",
+      "advantage": "Creates value through taste, selection and reasons for choosing.",
+      "signals": [
+        "Comparative judgement",
+        "detail sensitivity",
+        "aesthetics",
+        "\"why this and not that\" explanations"
+      ],
+      "jobs": [
+        "desire",
+        "fit",
+        "proof",
+        "recommendation",
+        "luxury and value translation"
+      ],
+      "channels": [
+        "instagram",
+        "newsletter",
+        "email"
+      ],
+      "risks": "Becoming an aesthetic moodboard with weak rationale, or an undisclosed supplier bias.",
+      "growthEdge": "Show the decision criteria and the trade-offs more explicitly.",
+      "voice": "Selective and specific. Names the reason for every choice. Comfortable saying what it left out and why."
+    },
+    {
+      "key": "storyteller",
+      "name": "Storyteller",
+      "advantage": "Creates meaning through narrative, lived moments and human observation.",
+      "signals": [
+        "Memorable anecdotes",
+        "natural camera presence",
+        "emotional pacing",
+        "scenes and reflections"
+      ],
+      "jobs": [
+        "attention",
+        "desire",
+        "identity",
+        "memory",
+        "relationship"
+      ],
+      "channels": [
+        "instagram",
+        "tiktok",
+        "youtube",
+        "newsletter"
+      ],
+      "risks": "Making the advisor the protagonist of every story; embellishment; oversharing.",
+      "growthEdge": "Turn stories into useful client insight and proof.",
+      "voice": "Scenic and particular. Starts inside a moment rather than above it. One detail carries more than three adjectives."
+    },
+    {
+      "key": "connector",
+      "name": "Connector",
+      "advantage": "Creates trust and opportunity by linking people, ideas and communities.",
+      "signals": [
+        "Introductions",
+        "replies",
+        "referrals",
+        "community conversation",
+        "collaboration"
+      ],
+      "jobs": [
+        "relationship",
+        "community",
+        "referral",
+        "social proof"
+      ],
+      "channels": [
+        "facebook",
+        "linkedin",
+        "email",
+        "dm"
+      ],
+      "risks": "Invisible value — doing the relationship work without converting it into recognised expertise or an owned audience.",
+      "growthEdge": "Document the patterns, introductions and community insight, without violating anyone's privacy.",
+      "voice": "Warm and direct, addressed to one person. Sounds like the middle of a conversation rather than the start of a campaign."
+    },
+    {
+      "key": "host",
+      "name": "Host",
+      "advantage": "Creates trust by convening people and designing live participation.",
+      "signals": [
+        "Warm facilitation",
+        "event energy",
+        "group care",
+        "Q&A",
+        "rituals"
+      ],
+      "jobs": [
+        "trust compression",
+        "participation",
+        "conversion",
+        "community",
+        "referral"
+      ],
+      "channels": [
+        "facebook",
+        "email",
+        "newsletter"
+      ],
+      "risks": "Over-relying on events with weak marketing before and after; becoming the organiser rather than the expert.",
+      "growthEdge": "Turn each event into an owned content and follow-up engine.",
+      "voice": "Invitational. Assumes a room. Makes it easy to say yes and easy to bring somebody."
+    },
+    {
+      "key": "commentator",
+      "name": "Commentator",
+      "advantage": "Creates value through perspective, interpretation and informed opinion.",
+      "signals": [
+        "A strong point of view",
+        "trend synthesis",
+        "contrarian framing",
+        "editorial instinct"
+      ],
+      "jobs": [
+        "attention",
+        "authority",
+        "differentiation",
+        "reframing"
+      ],
+      "channels": [
+        "linkedin",
+        "newsletter",
+        "youtube"
+      ],
+      "risks": "Performative hot takes, overconfidence outside their expertise, unnecessary polarisation.",
+      "growthEdge": "Pair the opinion with evidence, lived judgement and a useful recommendation.",
+      "voice": "Argued. Takes a position in the first line and defends it with something seen rather than something read."
+    }
+  ],
+  "expressionBlends": [
+    {
+      "pair": [
+        "guide",
+        "curator"
+      ],
+      "expression": "Teach the decision criteria, then shortlist with explicit reasons."
+    },
+    {
+      "pair": [
+        "curator",
+        "storyteller"
+      ],
+      "expression": "Visual taste plus human narrative — strong for experiential and luxury travel."
+    },
+    {
+      "pair": [
+        "connector",
+        "host"
+      ],
+      "expression": "Community-led acquisition and intimate client events."
+    },
+    {
+      "pair": [
+        "guide",
+        "commentator"
+      ],
+      "expression": "Authority and point of view — strong for executive and corporate audiences."
+    },
+    {
+      "pair": [
+        "storyteller",
+        "host"
+      ],
+      "expression": "Live and event energy amplified through emotionally engaging content."
+    },
+    {
+      "pair": [
+        "connector",
+        "curator"
+      ],
+      "expression": "Trusted introductions plus high-fit recommendations."
+    }
+  ],
+  "travellerOrientations": [
+    {
+      "key": "primary",
+      "name": "The trip IS the reset",
+      "says": "The point of the trip is to reset, retreat or focus on wellbeing.",
+      "approach": "Lead with programme, philosophy, modality, environment and fit. The proof requirement is high — this traveller will read the detail and notice what is missing.",
+      "register": "Name the structure plainly. This is the one orientation where the wellness vocabulary is welcome, because they already use it about themselves."
+    },
+    {
+      "key": "secondary-intentional",
+      "name": "A real holiday, but they want to come back better",
+      "says": "I want a real vacation, but I also want to come back feeling better.",
+      "approach": "Integrate rest, movement, nature, connection and pacing into a broader destination story. Do not lead with a programme.",
+      "register": "Write about the trip, and let the wellbeing be how it is designed rather than what it is called. This is the largest group and the default assumption."
+    },
+    {
+      "key": "secondary-casual",
+      "name": "They like a spa and good food if it fits",
+      "says": "I like a spa, good food or yoga if it fits.",
+      "approach": "Do not force a wellness identity. Surface optional, pleasurable wellbeing-enhancing choices as part of a good holiday.",
+      "register": "Wellness is an amenity here, not a theme. Mention it the way you would mention a good restaurant."
+    },
+    {
+      "key": "sceptical",
+      "name": "They would never call it wellness",
+      "says": "I am not a wellness person.",
+      "approach": "Use concrete desired states and experiences. No category jargon at all.",
+      "register": "Never use the word. Describe the days, the quiet, the food, the water. The category name is the single fastest way to lose this reader."
     }
   ],
   "channels": [

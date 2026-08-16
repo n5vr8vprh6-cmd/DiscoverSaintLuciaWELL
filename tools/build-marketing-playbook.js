@@ -354,12 +354,22 @@ let edition = null;
    empty array is honest about that rather than inventing a house pattern set. */
 let patterns = [];
 let channelJobs = [];
+/* The six expression profiles, their blends, and the four traveller
+   orientations. Absent from the seed because they are pure research — there is
+   no sensible placeholder for "how does this advisor create advantage", and an
+   invented one would be worse than none. */
+let expressionProfiles = [];
+let expressionBlends = [];
+let travellerOrientations = [];
 
 if (fs.existsSync(path.join(GUIDE, 'playbook.js'))) {
   const guide = require(path.join(GUIDE, 'playbook.js'));
   edition = guide.edition || null;
   if (Array.isArray(guide.patterns)) patterns = guide.patterns;
   if (Array.isArray(guide.channelJobs)) channelJobs = guide.channelJobs;
+  if (Array.isArray(guide.expressionProfiles)) expressionProfiles = guide.expressionProfiles;
+  if (Array.isArray(guide.expressionBlends)) expressionBlends = guide.expressionBlends;
+  if (Array.isArray(guide.travellerOrientations)) travellerOrientations = guide.travellerOrientations;
 
   if (Array.isArray(guide.channels)) {
     const byName = {};
@@ -420,11 +430,15 @@ const body = banner + '\nmodule.exports = ' +
       edition,
       seededChannels: seeded,
       patternCount: patterns.length,
+      profileCount: expressionProfiles.length,
       generated: new Date().toISOString().slice(0, 10)
     },
     icp,
     channelJobs,
     patterns,
+    expressionProfiles,
+    expressionBlends,
+    travellerOrientations,
     channels
   }, null, 2) + ';\n';
 
@@ -449,6 +463,8 @@ console.log('    still seeded    ' + seeded + (seeded === channels.length
   ? '   ← all of it. Duncan\'s field guide replaces this.' : ''));
 console.log('    patterns        ' + patterns.length + (patterns.length ? '' : '   ← none; the seed has no pattern library'));
 console.log('    channel jobs    ' + channelJobs.length);
+console.log('    expression      ' + expressionProfiles.length + ' profiles, ' + expressionBlends.length + ' blends');
+console.log('    orientations    ' + travellerOrientations.length);
 console.log('    ICP source      ' + icp.source);
 console.log('    edition         ' + (edition || 'none — put one at ../marketing-field-guide/content/playbook.js'));
 console.log('');
