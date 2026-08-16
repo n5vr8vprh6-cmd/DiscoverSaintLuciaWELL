@@ -36,6 +36,7 @@ const { check, ownNames } = require('./claims.js');
 const FACTS = require('../../content/campaign-facts.js');
 const PLAYBOOK = require('../../content/marketing-playbook.js');
 const { personaBlock } = require('./persona.js');
+const { briefBlock, citedBlock, validCitation } = require('./brief.js');
 
 /* ── Only the relevant channel goes into a prompt ─────────────────────────
    The playbook is twelve thousand characters. Sending all of it on every asset
@@ -226,13 +227,14 @@ advisors. You are practical and unexcitable. You produce small actions a busy
 person will actually do, not content calendars they will abandon in week two.
 You return JSON and nothing else.`;
 
-function skeletonPrompt(ctx, rung, persona) {
+function skeletonPrompt(ctx, rung, persona, brief) {
   return `Plan a 30-day campaign for this travel advisor to promote wellness travel
 to Saint Lucia and collect enquiries through their personal link.
 
 THE ADVISOR
 ${JSON.stringify(ctx, null, 1)}
 ${persona || ''}
+${brief || ''}
 ${icpBlock()}
 
 ${/* THE SKELETON NEEDS THIS AS MUCH AS THE ASSETS DO, and for a while it did
@@ -300,7 +302,8 @@ RETURN EXACTLY THIS JSON, no prose, no code fence:
           "why": "one sentence on what this is for",
           "channel": "one of the advisor's channels, or \\"direct\\" for one-to-one messages",
           "assetKind": "caption | email | sms | dm | script | outline | none",
-          "pattern": "the exact name of one pattern from the library above"
+          "pattern": "the exact name of one pattern from the library above",
+          "uses": "which brief item this is built on, e.g. CLIENTS 2 — or \\"\\" if none"
         }
       ]
     }
@@ -332,7 +335,7 @@ const ASSET_KINDS = ['caption', 'email', 'sms', 'dm', 'script', 'outline', 'none
 /* Whatever comes back is shaped by us before it touches the database. A model
    that returns six weeks, or nine actions, or an assetKind it invented, must
    not be able to write a plan the Hub cannot render. */
-function normaliseSkeleton(raw) {
+function normaliseSkeleton(raw, brief) {
   if (!raw || typeof raw !== 'object' || !Array.isArray(raw.weeks)) return null;
 
   const weeks = raw.weeks.slice(0, 4).map((w, i) => ({
@@ -346,12 +349,18 @@ function normaliseSkeleton(raw) {
          wrote. Unknown becomes null, and the asset falls back to the channel's
          own hooks. */
       const named = patternByName(a && a.pattern);
+      /* VALIDATED AGAINST THE ACTUAL INVENTORY. A model asked to cite will
+         occasionally cite CLIENTS 7 from a list of two, and an invented
+         citation is worse than none — it would look, in the plan and in every
+         later measurement, exactly like the specificity we are trying to get. */
+      const cite = brief ? validCitation(brief, a && a.uses) : null;
       return {
         title: String(a && a.title || '').slice(0, 120),
         why: String(a && a.why || '').slice(0, 300),
         channel: String(a && a.channel || 'direct').toLowerCase().slice(0, 20),
         assetKind: ASSET_KINDS.indexOf(kind) === -1 ? 'none' : kind,
-        pattern: named ? named.name : null
+        pattern: named ? named.name : null,
+        uses: cite
       };
     }).filter((a) => a.title)
   })).filter((w) => w.actions.length);
@@ -364,7 +373,7 @@ async function generateSkeleton(advisor, profile, rung) {
   const ctx = advisorContext(advisor, profile);
   const r = await chat({
     system: SKELETON_SYSTEM,
-    user: skeletonPrompt(ctx, rung, personaBlock(profile)),
+    user: skeletonPrompt(ctx, rung, personaBlock(profile), briefBlock(profile && profile.brief_parsed)),
     maxTokens: 1400,
     temperature: 0.5,
     stub: STUB_SKELETON
@@ -372,7 +381,7 @@ async function generateSkeleton(advisor, profile, rung) {
 
   if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms };
 
-  const skeleton = normaliseSkeleton(parseJson(r.text));
+  const skeleton = normaliseSkeleton(parseJson(r.text), profile && profile.brief_parsed);
   if (!skeleton) {
     return { ok: false, reason: 'unparseable', payload: r.payload, ms: r.ms };
   }
@@ -394,7 +403,7 @@ const SHAPES = {
   outline: 'A short outline as bullet points. Under 120 words.'
 };
 
-function assetPrompt(ctx, action, rung, weekTheme, angle, persona) {
+function assetPrompt(ctx, action, rung, weekTheme, angle, persona, cited) {
   const book = playbookBlock(action.channel, action.assetKind);
   const pat = patternByName(action.pattern);
   return `Write one piece of copy for this travel advisor.
@@ -417,6 +426,7 @@ THE PATTERN THIS PIECE MUST FOLLOW
 ${pat.name} — "${pat.formula}"
 Its job is ${pat.job}. Build the piece on that shape; do not quote the formula.
 ` : ''}
+${cited || ''}
 ${book || ''}
 ${angle && ANGLES[angle] ? `\nTHE ANGLE FOR THIS VERSION\n${ANGLES[angle]}\n` : ''}
 WHAT YOU MAY DRAW ON
@@ -433,7 +443,8 @@ async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
   const ctx = advisorContext(advisor, profile);
   const r = await chat({
     system: ASSET_SYSTEM,
-    user: assetPrompt(ctx, action, rung, weekTheme || '', o.angle, personaBlock(profile)),
+    user: assetPrompt(ctx, action, rung, weekTheme || '', o.angle, personaBlock(profile),
+      citedBlock(profile && profile.brief_parsed, action.uses)),
     maxTokens: 700,
     temperature: 0.65,
     stub: STUB_ASSET

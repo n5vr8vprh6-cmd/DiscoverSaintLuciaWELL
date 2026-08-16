@@ -116,10 +116,23 @@ async function cleanup() {
   ok('it asks guesses to be marked', prompt.includes('[guess]'));
   ok('it bans health claims', /No health or medical claims/i.test(prompt));
   ok('it bans prices and superlatives', /No prices/i.test(prompt));
-  ok('it names the fields in our order',
-    prompt.indexOf('POSITIONING:') < prompt.indexOf('ICP:') &&
-    prompt.indexOf('ICP:') < prompt.indexOf('MARKETS:'),
-    'pasting back should be mechanical, not a translation exercise');
+  /* THIS ASSERTION CHANGED WHEN THE CONTRACT DID, and it went red the moment
+     the prompt did — which is what it was for.
+
+     It used to check that the flat fields came back in our order, because
+     pasting back was a field-by-field exercise. D2b replaced that with the
+     sectioned brief format, for a reason six live experiments established:
+     prose is read as scenery, and only labelled, individually addressable
+     items ever reach the copy. Order no longer matters — the parser accepts
+     any — so what matters now is that the prompt asks for the sections the
+     parser actually requires. api/_lib/brief.js owns that pairing and
+     tools/brief-test.js asserts it section by section. */
+  ok('it asks for the sectioned brief format',
+    /##\s*CLIENTS/.test(prompt) && /##\s*PROOF/.test(prompt),
+    'the flat POSITIONING/ICP format was replaced in D2b');
+  ok('and it explains why the shape matters',
+    /gets read as background/.test(prompt),
+    'an advisor pasting into their AI deserves to know why the headings are not optional');
 
   /* THE ONE THAT MATTERS MOST. The prompt tells the advisor's AI what they may
      claim — so it must say the SAME thing the checker enforces, or an advisor

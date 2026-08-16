@@ -331,17 +331,52 @@ RULES — THESE MATTER MORE THAN THE WRITING
 4. No prices, no availability, no awards, no superlatives.
 5. Short and specific beats long and impressive. One or two sentences a field.
 
-ANSWER IN EXACTLY THIS FORMAT
-POSITIONING: (what I sell and to whom, in one sentence)
-DIFFERENTIATOR: (why someone would choose me over another advisor)
-ICP: (my ideal client — who they are, what stage of life, what they care about)
-CLIENT EXAMPLES: (the kinds of client I already work with)
-SPECIALTIES: (what I am known for — destinations, trip types, occasions)
-MARKETS: (the cities or regions my clients actually live in)
+ANSWER IN EXACTLY THIS FORMAT, and nothing else. The headings and the dashes
+matter — this gets pasted into a system that reads them.
 
-THEN, SEPARATELY
-Tell me honestly: what is missing or unclear in my public presence that would
-make marketing harder? Be blunt. I would rather know.`;
+## VOICE
+tone: (how I sound in three or four words)
+avoid: (words, punctuation or habits I should never use)
+signature: (the move I make that others do not — how I open, what I lead with)
+
+## CLIENTS
+- who: (a real client of mine, described in a phrase — no names)
+  situation: (what was actually going on for them)
+  wanted: (what they were really after, in their words if you can)
+- who: (a second, different one)
+  situation:
+  wanted:
+
+## MARKETS
+- (a city or region my clients actually live in, and one thing about it)
+- (another)
+
+## OBJECTIONS
+- (something people say to me) → (how I answer it)
+- (another)
+
+## PROOF
+- (something I can legitimately claim — somewhere I have been, a number I can
+  stand behind, an experience I actually had)
+
+## ANGLES
+- (a positioning angle you think is genuinely mine)
+- (another)
+
+WHY THE SHAPE MATTERS
+Each item becomes something my campaign can point at individually. A paragraph
+about me gets read as background and changes nothing. "Two lawyers, both
+partners, who had not taken a week off together since 2019" becomes a message
+written to those people. Specific beats polished, every time.
+
+TWO CLIENT EXAMPLES IS THE MINIMUM. One is a coincidence. If you can only find
+one from my public material, ask me for another rather than inventing it.
+
+BEFORE YOU GIVE IT TO ME
+Read your own answer back and ask: could this brief describe a different travel
+advisor? If yes, it is not finished — go and find what is actually particular
+to me. Then tell me honestly what is missing or unclear in my public presence
+that would make marketing harder. Be blunt. I would rather know.`;
 }
 
 module.exports = {
