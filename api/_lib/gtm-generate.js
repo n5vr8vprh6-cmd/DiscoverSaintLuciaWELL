@@ -35,6 +35,7 @@ const { chat } = require('./openai.js');
 const { check, ownNames } = require('./claims.js');
 const FACTS = require('../../content/campaign-facts.js');
 const PLAYBOOK = require('../../content/marketing-playbook.js');
+const { personaBlock } = require('./persona.js');
 
 /* ── Only the relevant channel goes into a prompt ─────────────────────────
    The playbook is twelve thousand characters. Sending all of it on every asset
@@ -225,13 +226,13 @@ advisors. You are practical and unexcitable. You produce small actions a busy
 person will actually do, not content calendars they will abandon in week two.
 You return JSON and nothing else.`;
 
-function skeletonPrompt(ctx, rung) {
+function skeletonPrompt(ctx, rung, persona) {
   return `Plan a 30-day campaign for this travel advisor to promote wellness travel
 to Saint Lucia and collect enquiries through their personal link.
 
 THE ADVISOR
 ${JSON.stringify(ctx, null, 1)}
-
+${persona || ''}
 ${icpBlock()}
 
 ${/* THE SKELETON NEEDS THIS AS MUCH AS THE ASSETS DO, and for a while it did
@@ -252,10 +253,21 @@ If the answer to the second is yes, it is too vague to be worth their month.
 
 DELIBERATELY NO EXAMPLES ARE GIVEN HERE. Every example this prompt has carried
 was copied into the plan verbatim rather than learned from, which produced an
-action about somebody else's business. Build each action out of what THIS
-advisor actually told you above — the words they used for what they sell, the
-people they described, the clients they named, the markets they work in. If a
-detail of theirs can carry an action, it should.
+action about somebody else's business.
+
+USE WHAT THEY TOLD YOU. AT LEAST THREE of your actions must be built on a
+specific detail from the advisor's own description above — the clients they
+named, the cities they work in, the occasions they specialise in, the thing
+they said they refuse to do. Not the category, the detail itself.
+
+  If they mentioned two lawyers who had not taken a week off together, an
+  action can be addressed to the people in their list who look like that.
+  If they named three cities, an action can be about one of them.
+  If they said they say no a lot, an action can be about what they turn down.
+
+Before you return the JSON, read your own actions back. Any action that could
+appear word for word in a different advisor's plan is not finished — rewrite it
+using something only this advisor knows.
 
 THE SHAPE IT MUST TAKE
 Four weeks. Two to four actions per week, no more. Real actions of mixed size:
@@ -352,7 +364,7 @@ async function generateSkeleton(advisor, profile, rung) {
   const ctx = advisorContext(advisor, profile);
   const r = await chat({
     system: SKELETON_SYSTEM,
-    user: skeletonPrompt(ctx, rung),
+    user: skeletonPrompt(ctx, rung, personaBlock(profile)),
     maxTokens: 1400,
     temperature: 0.5,
     stub: STUB_SKELETON
@@ -382,14 +394,14 @@ const SHAPES = {
   outline: 'A short outline as bullet points. Under 120 words.'
 };
 
-function assetPrompt(ctx, action, rung, weekTheme, angle) {
+function assetPrompt(ctx, action, rung, weekTheme, angle, persona) {
   const book = playbookBlock(action.channel, action.assetKind);
   const pat = patternByName(action.pattern);
   return `Write one piece of copy for this travel advisor.
 
 THE ADVISOR
 ${JSON.stringify(ctx, null, 1)}
-
+${persona || ''}
 ${icpBlock()}
 
 THE ACTION IT IS FOR
@@ -421,7 +433,7 @@ async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
   const ctx = advisorContext(advisor, profile);
   const r = await chat({
     system: ASSET_SYSTEM,
-    user: assetPrompt(ctx, action, rung, weekTheme || '', o.angle),
+    user: assetPrompt(ctx, action, rung, weekTheme || '', o.angle, personaBlock(profile)),
     maxTokens: 700,
     temperature: 0.65,
     stub: STUB_ASSET

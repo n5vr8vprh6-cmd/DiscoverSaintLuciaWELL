@@ -210,6 +210,74 @@ ok('no persona produces NO block, not an empty heading',
   P.personaBlock({}) === '' && P.personaBlock(null) === '',
   'an empty heading invites a model to fill it in');
 
-console.log('\n  ' + '─'.repeat(60));
-console.log(`  ${pass} passed, ${fail} failed\n`);
-process.exit(fail ? 1 : 0);
+/* ══ It has to reach the generator ═══════════════════════════════════════
+   THE FAILURE MODE THIS SECTION EXISTS FOR: a persona that is captured,
+   stored, rendered on a pleasant reveal screen, and then quietly ignored when
+   the campaign is written. That looks like success from every angle except the
+   copy, which is the only angle that matters.
+
+   These assertions run stubbed, so they check the composed request. Whether
+   the persona changes the WORDS is a question only a live model can answer, and
+   tools/persona-live.js asks it. */
+(async () => {
+  process.env.OPENAI_STUB = '1';
+  const G = require('../api/_lib/gtm-generate.js');
+
+  console.log('\n  It reaches the generator');
+  const advisor = { first_name: 'Mira', business: 'Hall & Co', public_code: 'X' };
+  const base = { positioning: 'Slow trips', icp: 'Couples', instagram: '@x' };
+  const curator = Object.assign({}, base, {
+    expr_primary: 'curator', expr_secondary: 'host',
+    traveller_orientation: 'secondary-intentional', compass_needs: ['restore', 'reconnect']
+  });
+
+  const withP = JSON.stringify((await G.generateSkeleton(advisor, curator, 'registered')).payload);
+  const without = JSON.stringify((await G.generateSkeleton(advisor, base, 'registered')).payload);
+
+  ok('the skeleton prompt carries the persona', /HOW THIS ADVISOR CREATES ADVANTAGE/.test(withP));
+  ok('and does not when there is none', !/HOW THIS ADVISOR CREATES ADVANTAGE/.test(without),
+    'an empty heading invites a model to fill it in');
+  ok('it carries the register that changes the whole campaign', /REGISTER:/.test(withP),
+    'primary vs secondary wellness is the field that decides the language');
+  ok('it carries the two Compass needs', /Restore/.test(withP) && /Reconnect/.test(withP));
+  ok('it carries what this profile gets WRONG',
+    /characteristically gets WRONG/.test(withP),
+    'the generator should be told the failure, not only the strength');
+
+  const asset = await G.generateAsset(advisor, curator, 'registered',
+    { week: 1, position: 0, title: 't', why: 'w', channel: 'instagram', assetKind: 'caption' },
+    'T', { critique: false });
+  ok('the asset prompt carries it too',
+    /HOW THIS ADVISOR CREATES ADVANTAGE/.test(JSON.stringify(asset.payload)),
+    'a persona that reaches the plan but not the copy is half-wired');
+
+  /* Two advisors identical but for the profile must not receive the same
+     brief. This is the payload half; the output half is in persona-live.js. */
+  const storyteller = Object.assign({}, curator, {
+    expr_primary: 'storyteller', expr_secondary: null
+  });
+  const other = JSON.stringify((await G.generateSkeleton(advisor, storyteller, 'registered')).payload);
+  ok('two advisors differing ONLY in profile get different briefs',
+    withP !== other, 'if these match, the persona is decorative');
+  ok('and the difference is the profile, not noise',
+    /taste, selection/.test(withP) && /narrative, lived moments/.test(other),
+    'each brief should carry its own advantage, not a generic one');
+
+  /* The correction has to survive all the way here or storing it was theatre. */
+  const corrected = Object.assign({}, curator, { expr_confirmed: 'commentator' });
+  const fixed = JSON.stringify((await G.generateSkeleton(advisor, corrected, 'registered')).payload);
+  ok('a correction reaches the generator',
+    /perspective, interpretation/.test(fixed),
+    'the confirmed profile, not the derived one');
+  ok('and the superseded read does NOT',
+    !/They are a Curator/.test(fixed),
+    'showing a campaign built on a read the advisor rejected would be a lie about what it stands on');
+
+  ok('no consumer data slipped in with the new fields',
+    !/consumer_|journey_share/.test(withP),
+    'the payload assertion has to survive every new field');
+
+  console.log('\n  ' + '─'.repeat(60));
+  console.log(`  ${pass} passed, ${fail} failed\n`);
+  process.exit(fail ? 1 : 0);
+})();
