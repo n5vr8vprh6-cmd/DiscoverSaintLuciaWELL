@@ -1350,6 +1350,68 @@ body.gtm-busy { overflow: hidden; }
 .hub-fold-body > .hub-card:last-child,
 .hub-fold-body > form:last-child { margin-bottom: 0; }
 
+/* ── Make it yours: the shot list and the two fields the advisor writes ──── */
+.gtm-yours { margin: 0.9rem 0 0; }
+.gtm-yours > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.5rem 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--teal-ink, var(--ink));
+}
+.gtm-yours > summary::-webkit-details-marker { display: none; }
+.gtm-yours > summary::before {
+  content: '+ ';
+  color: var(--teal);
+  font-weight: 700;
+}
+.gtm-yours[open] > summary::before { content: '– '; }
+.gtm-yours > summary:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.gtm-yours-n { font-weight: 400; color: var(--muted); }
+
+.gtm-yours-part { margin: 0.9rem 0 0; }
+.gtm-yours-part .gtm-label { margin-bottom: 0.35rem; }
+
+/* The shot itself is the instruction — set as a line to read, not a note to
+   skim past. */
+.gtm-shot-line {
+  margin: 0 0 0.7rem;
+  font-family: var(--font-serif-text, inherit);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: var(--ink);
+}
+.gtm-shot-spec,
+.gtm-shot-avoid {
+  margin: 0 0 0.9rem;
+  padding-left: 1.1rem;
+  font-size: var(--fs-small);
+  color: var(--muted);
+  line-height: 1.6;
+}
+.gtm-shot-spec li,
+.gtm-shot-avoid li { margin-bottom: 0.4rem; }
+.gtm-shot-spec strong { color: var(--ink); }
+
+/* The keep-out list is a control, not a caption — claims.js cannot read a
+   photograph, so this list is the only thing standing between an advisor and
+   a health claim made by a picture. It gets the warning colour. */
+.gtm-shot-avoid {
+  border-left: 2px solid var(--coral, #EF6A4A);
+  padding: 0.15rem 0 0.15rem 1.4rem;
+  margin-left: 0;
+  list-style-position: outside;
+}
+
+.gtm-rights {
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+  background: var(--paper);
+  border-left: 2px solid var(--hairline-l);
+}
+
 /* Someone waiting for a reply outranks every action in the plan, so it is the
    one thing above this week that is allowed to be loud. */
 .gtm-waiting {

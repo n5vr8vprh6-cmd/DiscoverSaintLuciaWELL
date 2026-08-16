@@ -107,7 +107,10 @@ module.exports = async function handler(req, res) {
         strip: confidenceStrip(profile, describeCapacity(profile)),
         currentWeek: report && report.currentWeek <= 4 ? report.currentWeek : null,
         report: reportBlock(report, foundations),
-        waiting
+        waiting,
+        /* The image brief reads the Compass needs and the traveller
+           orientation off it — see image-brief.js. */
+        profile
       }) : `
     ${/* No plan yet. The button is the point of the screen, so it comes first —
           and when it cannot be pressed it says why, rather than sitting greyed

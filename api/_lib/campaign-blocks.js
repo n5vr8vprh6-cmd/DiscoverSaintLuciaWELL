@@ -26,6 +26,7 @@
 
 const { esc } = require('./hub-render.js');
 const { substitute } = require('./gtm.js');
+const { imageBrief, isVisual, RIGHTS_NOTE } = require('./image-brief.js');
 
 /* Kinds that go to one person's phone or inbox directly. These carry the
    consent note; a public post does not, because nobody is being messaged. */
@@ -110,10 +111,58 @@ function angleBlock(current) {
   </details>`;
 }
 
+/* ── The two fields the advisor writes, and the picture they have to take ──
+   FALLBACK and PERSONALIZATION are generated and stored by D4b and were never
+   rendered — the generator produced them, the database kept them, and nothing
+   put them in front of anybody. They are the two fields on the Asset Card that
+   carry information existing nowhere else, so being invisible made them worse
+   than absent: paid for on every generation and read by no one.
+
+   Personalization goes ABOVE the fallback because it is the one that improves
+   the post; the fallback is for the week the post nearly does not happen.
+
+   The image brief sits with them, behind the same disclosure. It is the part
+   an advisor needs before they can post at all, and the part nothing in this
+   product used to say a word about. */
+function makeItYours(a, action, profile) {
+  const shot = imageBrief(action, profile);
+  const personal = a && a.personalization;
+  const fallback = a && a.fallback;
+  if (!shot && !personal && !fallback) return '';
+
+  return `<details class="gtm-yours">
+    <summary>Make it yours${shot ? ' <span class="gtm-yours-n">and what to photograph</span>' : ''}</summary>
+
+    ${personal ? `<div class="gtm-yours-part">
+      <p class="gtm-label">Where to put yourself in it</p>
+      <p class="hub-hint">${esc(personal)}</p>
+    </div>` : ''}
+
+    ${shot ? `<div class="gtm-yours-part gtm-shot">
+      <p class="gtm-label">The picture</p>
+      <p class="gtm-shot-line">${esc(shot.shot)}</p>
+      <ul class="gtm-shot-spec">
+        ${shot.frame ? `<li><strong>Frame.</strong> ${esc(shot.frame.ratio)} · ${esc(shot.frame.px)}. ${esc(shot.frame.note)}</li>` : ''}
+        <li><strong>Light.</strong> ${esc(shot.light)}</li>
+      </ul>
+      <p class="gtm-label">Keep out of frame</p>
+      <ul class="gtm-shot-avoid">
+        ${shot.avoid.map((x) => `<li>${esc(x)}</li>`).join('')}
+      </ul>
+      <p class="hub-hint">${esc(shot.instead)}</p>
+    </div>` : ''}
+
+    ${fallback ? `<div class="gtm-yours-part">
+      <p class="gtm-label">If this week gets away from you</p>
+      <p class="hub-hint">${esc(fallback)}</p>
+    </div>` : ''}
+  </details>`;
+}
+
 /* One action. Some have no copy attached — "call two clients" needs a note on
    what to say, not a caption — and those render as the action alone rather than
    as an empty box implying something failed to arrive. */
-function block(week, action, advisor) {
+function block(week, action, advisor, profile) {
   const a = action.asset;
   const id = `gtm-a-${week}-${action.position}`;
   const kind = action.assetKind;
@@ -153,6 +202,7 @@ function block(week, action, advisor) {
           <button type="button" class="btn btn--ghost btn--sm gtm-revert"${
             edited ? '' : ' hidden'} data-gtm="revert">Revert</button>
         </div>
+        ${makeItYours(a, Object.assign({ week }, action), profile)}
         ${angleBlock(a.angle)}`
       : failed ? `
         <p class="gtm-failed">This piece did not come back. Nothing else in the plan
@@ -229,7 +279,7 @@ function weekBlock(w, o) {
         <span class="gtm-week-n">Week ${w.week}${o.currentWeek === w.week ? ' · this week' : ''}</span>
         <h3>${esc(w.theme)}</h3>
       </div>
-      ${w.actions.map((a) => block(w.week, a, o.advisor)).join('')}
+      ${w.actions.map((a) => block(w.week, a, o.advisor, o.profile)).join('')}
     </div>`;
 }
 
@@ -326,6 +376,12 @@ function planSection(rows, opts) {
     <p class="hub-hint">Every link in this plan is your WELL link, so anything that comes back is
       yours. Edit freely — it is your name on it, and copy you would not have written yourself
       reads that way.</p>
+
+    ${/* Once per plan, not once per asset. A warning repeated nine times is
+          wallpaper and stops being read on the second one. Only shown when
+          something in the plan actually needs a picture. */''}
+    ${rows.some((w) => w.actions.some(isVisual))
+      ? `<p class="hub-hint gtm-rights">${esc(RIGHTS_NOTE)}</p>` : ''}
 
     ${o.report ? o.report : ''}
 
