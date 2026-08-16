@@ -37,6 +37,7 @@ const FACTS = require('../../content/campaign-facts.js');
 const PLAYBOOK = require('../../content/marketing-playbook.js');
 const { personaBlock } = require('./persona.js');
 const { briefBlock, citedBlock, validCitation } = require('./brief.js');
+const { capacityBlock, enforce: enforceCapacity } = require('./capacity.js');
 
 /* ── Only the relevant channel goes into a prompt ─────────────────────────
    The playbook is twelve thousand characters. Sending all of it on every asset
@@ -227,7 +228,7 @@ advisors. You are practical and unexcitable. You produce small actions a busy
 person will actually do, not content calendars they will abandon in week two.
 You return JSON and nothing else.`;
 
-function skeletonPrompt(ctx, rung, persona, brief) {
+function skeletonPrompt(ctx, rung, persona, brief, capacity) {
   return `Plan a 30-day campaign for this travel advisor to promote wellness travel
 to Saint Lucia and collect enquiries through their personal link.
 
@@ -271,8 +272,10 @@ Before you return the JSON, read your own actions back. Any action that could
 appear word for word in a different advisor's plan is not finished — rewrite it
 using something only this advisor knows.
 
+${capacity || ''}
+
 THE SHAPE IT MUST TAKE
-Four weeks. Two to four actions per week, no more. Real actions of mixed size:
+Four weeks. Real actions of mixed size:
 messaging a short list of past clients by name, one post, one email, one
 conversation. NOT thirty social posts — that plan fails in week two and the
 advisor blames themselves.
@@ -373,7 +376,8 @@ async function generateSkeleton(advisor, profile, rung) {
   const ctx = advisorContext(advisor, profile);
   const r = await chat({
     system: SKELETON_SYSTEM,
-    user: skeletonPrompt(ctx, rung, personaBlock(profile), briefBlock(profile && profile.brief_parsed)),
+    user: skeletonPrompt(ctx, rung, personaBlock(profile),
+      briefBlock(profile && profile.brief_parsed), capacityBlock(profile)),
     maxTokens: 1400,
     temperature: 0.5,
     stub: STUB_SKELETON
@@ -381,7 +385,11 @@ async function generateSkeleton(advisor, profile, rung) {
 
   if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms };
 
-  const skeleton = normaliseSkeleton(parseJson(r.text), profile && profile.brief_parsed);
+  const parsedSkeleton = normaliseSkeleton(parseJson(r.text), profile && profile.brief_parsed);
+  /* The prompt asks for the size; this makes it true. Across this release the
+     model has returned six weeks when told four and nine actions when told
+     four — a ceiling that is only requested is a suggestion. */
+  const skeleton = enforceCapacity(parsedSkeleton, profile);
   if (!skeleton) {
     return { ok: false, reason: 'unparseable', payload: r.payload, ms: r.ms };
   }
@@ -434,8 +442,16 @@ ${JSON.stringify(modelFacts(), null, 1)}
 
 ${rulesBlock(rung)}
 
-Return the copy only. No preamble, no notes, no explanation, no quotation marks
-around the whole thing.`;
+Return the copy, then a line of three dashes, then two short notes:
+
+<the copy itself>
+---
+FALLBACK: the smaller version of this, for the week they are too busy. Same job,
+much less work. One sentence describing what to do instead.
+YOURS: the one place they should add their own opinion, a client's actual words
+or something only they would know. Name the spot, do not write it for them.
+
+No preamble, no quotation marks around the copy, nothing after the two notes.`;
 }
 
 async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
@@ -452,7 +468,12 @@ async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
 
   if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms };
 
-  let body = String(r.text || '').trim().replace(/^["“](.*)["”]$/s, '$1').trim();
+  /* THE COPY IS TAKEN FIRST AND THE EXTRAS ARE OPTIONAL. Asking for JSON would
+     put the publishable text behind a parse that can fail; a trailing block
+     cannot take the copy down with it. A missing or malformed tail costs a
+     fallback note, not a caption. */
+  const split = splitTail(r.text);
+  let body = split.body;
   if (!body) return { ok: false, reason: 'empty', payload: r.payload, ms: r.ms };
 
   /* ── The critique pass ──────────────────────────────────────────────────
@@ -484,6 +505,9 @@ async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
   return {
     ok: true,
     body,
+    fallback: split.fallback,
+    personalization: split.personalization,
+    card: cardFor(action, profile, verdict),
     flags: verdict.flags,
     severity: verdict.high ? 'high' : verdict.flags.length ? 'low' : 'none',
     copyable: verdict.copyable,
@@ -499,6 +523,55 @@ async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
       completion_tokens: (a.completion_tokens || 0) + (u.completion_tokens || 0),
       total_tokens: (a.total_tokens || 0) + (u.total_tokens || 0)
     }), {}) : null
+  };
+}
+
+/* ── The asset card tail ──────────────────────────────────────────────────
+   Everything after a line of three dashes. Tolerant: a missing tail, a
+   reordered one, or a model that forgot the dashes entirely all leave the copy
+   whole and the notes null. */
+const TAIL_RULE = /\n\s*-{3,}\s*\n/;
+const FALLBACK_LINE = /^\s*FALLBACK\s*:\s*(.+?)\s*$/im;
+const YOURS_LINE = /^\s*YOURS\s*:\s*(.+?)\s*$/im;
+
+function splitTail(text) {
+  const raw = String(text || '').trim();
+  const at = raw.search(TAIL_RULE);
+
+  /* No rule means no tail, and the whole response is the copy. That is the
+     common failure and it must cost nothing. */
+  const body = (at === -1 ? raw : raw.slice(0, at)).trim()
+    .replace(/^["“]([\s\S]*)["”]$/, '$1').trim();
+  const tail = at === -1 ? '' : raw.slice(at);
+
+  const grab = (re) => {
+    const m = tail.match(re);
+    return m ? m[1].trim().slice(0, 400) : null;
+  };
+  return { body, fallback: grab(FALLBACK_LINE), personalization: grab(YOURS_LINE) };
+}
+
+/* ── The rest of the Asset Card, DERIVED rather than generated ────────────
+   The Bible's card has seventeen fields. Most already exist somewhere in this
+   system, and deriving beats generating: it costs no tokens, it cannot
+   hallucinate, and it cannot drift from the thing it describes. */
+function cardFor(action, profile, verdict) {
+  const pat = patternByName(action && action.pattern);
+  const book = playbookFor(action && action.channel, action && action.assetKind);
+  const orient = (PLAYBOOK.travellerOrientations || [])
+    .find((o) => o.key === (profile && profile.traveller_orientation));
+
+  return {
+    /* The pattern the skeleton chose already carries the job it does. */
+    job: pat ? pat.job : null,
+    /* A citation pointing at PROOF is the proof source, by construction. */
+    proofSource: /^PROOF/i.test(String(action && action.uses || '')) ? action.uses : null,
+    /* The channel knows what success looks like on it; likes are not it. */
+    successSignal: book ? book.metrics : null,
+    audienceState: orient ? orient.name : null,
+    /* claims.js has already said what needs checking before this goes out. */
+    complianceNote: (verdict.flags || []).length
+      ? (verdict.flags || []).map((f) => f.match).join(' · ') : null
   };
 }
 
@@ -534,6 +607,7 @@ Take two minutes and see what comes back: {{WELL_LINK}}`;
 module.exports = {
   advisorContext, modelFacts, rulesBlock,
   playbookFor, playbookBlock, patternsBlock, patternByName, icpBlock, ANGLES, PLAYBOOK,
+  splitTail, cardFor,
   skeletonPrompt, assetPrompt, parseJson, normaliseSkeleton,
   generateSkeleton, generateAsset,
   ADVISOR_FIELDS, PROFILE_FIELDS, CHANNEL_FIELDS, ASSET_KINDS,

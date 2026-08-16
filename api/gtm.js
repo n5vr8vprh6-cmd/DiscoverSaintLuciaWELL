@@ -181,6 +181,8 @@ async function actionAsset(req, res, advisor, supabase, form) {
 
   Object.assign(row, {
     angle: r.angle || null,
+    fallback: r.fallback || null,
+    personalization: r.personalization || null,
     body: r.body,
     /* Written once, on first generation, and never overwritten by an edit.
        A forced regeneration DOES move it: the new text becomes the thing you
@@ -215,6 +217,12 @@ async function actionAsset(req, res, advisor, supabase, form) {
    assuming one covers the other is how the log fills up. */
 const UNKNOWN_COLUMN = ['PGRST204', '42703'];
 
+/* Columns added by a migration this deploy may be ahead of. Dropped in one go
+   on an unknown-column error, rather than one at a time — the error names at
+   most one column, so probing individually would take a round trip per
+   migration and still not tell us which others are missing. */
+const RECENT_COLUMNS = ['angle', 'fallback', 'personalization'];
+
 async function upsertAsset(supabase, existing, row) {
   const write = (r) => (existing
     ? supabase.from('gtm_asset').update(r).eq('id', existing.id)
@@ -222,10 +230,12 @@ async function upsertAsset(supabase, existing, row) {
 
   let { data, error } = await write(row);
 
-  if (error && UNKNOWN_COLUMN.indexOf(String(error.code)) !== -1 && 'angle' in row) {
-    console.warn('gtm_asset.angle missing — is migration 013 applied? Writing without it.');
+  if (error && UNKNOWN_COLUMN.indexOf(String(error.code)) !== -1 &&
+      RECENT_COLUMNS.some((c) => c in row)) {
+    console.warn('gtm_asset is missing a recent column — are migrations 013 and 016 applied? ' +
+      'Writing without ' + RECENT_COLUMNS.filter((c) => c in row).join(', ') + '.');
     const without = Object.assign({}, row);
-    delete without.angle;
+    RECENT_COLUMNS.forEach((c) => { delete without[c]; });
     ({ data, error } = await write(without));
   }
 
@@ -299,6 +309,8 @@ function publicAsset(row, advisor) {
     body: substitute(row.body, advisor),
     severity: row.severity,
     angle: row.angle || null,
+    fallback: row.fallback || null,
+    personalization: row.personalization || null,
     flags: row.flags || [],
     copyable: row.severity !== 'high',
     edited: row.body !== row.canonical_body,
