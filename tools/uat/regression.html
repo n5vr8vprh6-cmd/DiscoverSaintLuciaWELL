@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>138 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>139 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">138</b></span>
+      <span class="t-left">Untested <b id="n-left">139</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -194,11 +194,11 @@ header.top {
     <h2>Setup</h2>
     <p class="role-note">Do these first or half the pass is meaningless.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 7 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 8 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Before you start <span class="area-n">7</span></summary>
+    <summary>Before you start <span class="area-n">8</span></summary>
     
 <article class="case" id="case-S-01" data-id="S-01" data-role="setup"
    data-pri="1" data-hash="1e84a7v"
@@ -263,11 +263,11 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-03" data-id="S-03" data-role="setup"
-   data-pri="1" data-hash="nakhub"
-   data-title="Prove plus-addressing actually delivers" data-expect="It arrives." data-area="Before you start">
+   data-pri="1" data-hash="1apksng"
+   data-title="Fix the split MX before trusting any email case" data-expect="One clear primary. Not two records both at preference 10." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-03</span>
-    <h4>Prove plus-addressing actually delivers</h4>
+    <h4>Fix the split MX before trusting any email case</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
@@ -275,10 +275,10 @@ header.top {
   
   
 
-  <ol class="steps"><li>Send an ordinary email to concierge+uat1@discoversaintluciawell.com from anywhere</li><li>Check the concierge inbox</li></ol>
+  <ol class="steps"><li>Look up the MX records for discoversaintluciawell.com</li><li>Decide whether the AWS SES inbound endpoint is deliberate</li><li>If not, remove it. If it is, give the two records DIFFERENT priorities</li></ol>
 
-  <p class="expect"><strong>Expect</strong> It arrives.</p>
-  <p class="why"><strong>Why this matters</strong> Everything below assumes it does. Purelymail handles this domain&#39;s mail and not every provider passes &quot;+&quot; subaddressing through — if it silently drops, A-08 and D-03 fail for a reason that has nothing to do with the product, and you spend an hour on it.</p>
+  <p class="expect"><strong>Expect</strong> One clear primary. Not two records both at preference 10.</p>
+  <p class="why"><strong>Why this matters</strong> Equal priority means senders choose at random, so roughly half of everything sent to this domain goes to Purelymail and half to inbound-smtp.us-east-1.amazonaws.com. If SES has no receipt rule for these addresses that half is dropped — which would mean advisor replies to journeys@ are already being lost, quietly, in production. This surfaced from a failed UAT case and matters far more than the UAT case did.</p>
 
   <div class="marks" role="group" aria-label="Result for S-03">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -294,22 +294,22 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-04" data-id="S-04" data-role="setup"
-   data-pri="1" data-hash="h8ys3v"
-   data-title="Create two test advisor accounts" data-expect="Both appear active, and both approval emails arrive at the concierge inbox." data-area="Before you start">
+   data-pri="1" data-hash="lhgegu"
+   data-title="Prove both test addresses actually receive mail" data-expect="All four arrive. Four sends, not two — see below." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-04</span>
-    <h4>Create two test advisor accounts</h4>
+    <h4>Prove both test addresses actually receive mail</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> S-03 confirmed</p>
+  
   
 
-  <ol class="steps"><li>Register concierge+uat1@discoversaintluciawell.com — this one stays Registered</li><li>Register concierge+uat2@discoversaintluciawell.com — this one gets Foundations later</li><li>Approve both from /hub/admin/advisors</li></ol>
+  <ol class="steps"><li>Create uat1@discoversaintluciawell.com and uat2@discoversaintluciawell.com as real aliases in Purelymail</li><li>Send an ordinary email to each</li><li>Send to each a SECOND time</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Both appear active, and both approval emails arrive at the concierge inbox.</p>
-  <p class="why"><strong>Why this matters</strong> One address per role, both on our own domain, both greppable at teardown. We send from journeys@ so there is no sender/recipient collision.</p>
+  <p class="expect"><strong>Expect</strong> All four arrive. Four sends, not two — see below.</p>
+  <p class="why"><strong>Why this matters</strong> Two sends each because this domain answers with TWO MX records at equal priority, so senders pick one at random and a single send proves nothing. Subaddressing (concierge+uat1@) was tried first and failed, but that test was a coin flip and settled nothing either. Real aliases remove the question, which is what a test dependency should do — UAT should not be where you discover your mail routing.</p>
 
   <div class="marks" role="group" aria-label="Result for S-04">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -325,22 +325,22 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-05" data-id="S-05" data-role="setup"
-   data-pri="1" data-hash="1j4gg3j"
-   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start">
+   data-pri="1" data-hash="1vu5pea"
+   data-title="Create two test advisor accounts" data-expect="Both appear active, and both approval emails arrive." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-05</span>
-    <h4>Grant Foundations to the second test advisor</h4>
+    <h4>Create two test advisor accounts</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  
+  <p class="needs"><strong>Needs first:</strong> S-04 confirmed</p>
   
 
-  <ol class="steps"><li>Open /hub/admin/advisors, choose concierge+uat2</li><li>Use the foundations_set action</li></ol>
+  <ol class="steps"><li>Register uat1@discoversaintluciawell.com — this one stays Registered</li><li>Register uat2@discoversaintluciawell.com — this one gets Foundations later</li><li>Approve both from /hub/admin/advisors</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Their record shows a Foundations date.</p>
-  <p class="why"><strong>Why this matters</strong> Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.</p>
+  <p class="expect"><strong>Expect</strong> Both appear active, and both approval emails arrive.</p>
+  <p class="why"><strong>Why this matters</strong> One address per role, both on our own domain, both greppable at teardown. We send from journeys@ so there is no sender/recipient collision.</p>
 
   <div class="marks" role="group" aria-label="Result for S-05">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -356,22 +356,22 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-06" data-id="S-06" data-role="setup"
-   data-pri="2" data-hash="iizp1w"
-   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start">
+   data-pri="1" data-hash="1vzvqoi"
+   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-06</span>
-    <h4>Note the starting row counts</h4>
-    <span class="pri pri--2">P2</span>
+    <h4>Grant Foundations to the second test advisor</h4>
+    <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
   
   
 
-  <ol class="steps"><li>In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits</li></ol>
+  <ol class="steps"><li>Open /hub/admin/advisors, choose uat2@discoversaintluciawell.com</li><li>Use the foundations_set action</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Four numbers written down.</p>
-  <p class="why"><strong>Why this matters</strong> Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.</p>
+  <p class="expect"><strong>Expect</strong> Their record shows a Foundations date.</p>
+  <p class="why"><strong>Why this matters</strong> Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.</p>
 
   <div class="marks" role="group" aria-label="Result for S-06">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -387,10 +387,41 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-07" data-id="S-07" data-role="setup"
-   data-pri="2" data-hash="1geazho"
-   data-title="Have a WELL link and a second browser ready" data-expect="Two independent sessions, one signed in and one not." data-area="Before you start">
+   data-pri="2" data-hash="iizp1w"
+   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-07</span>
+    <h4>Note the starting row counts</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Four numbers written down.</p>
+  <p class="why"><strong>Why this matters</strong> Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.</p>
+
+  <div class="marks" role="group" aria-label="Result for S-07">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-S-08" data-id="S-08" data-role="setup"
+   data-pri="2" data-hash="11ch37j"
+   data-title="Have a WELL link and a second browser ready" data-expect="Two independent sessions, one signed in and one not." data-area="Before you start">
+  <div class="case-head">
+    <span class="cid">S-08</span>
     <h4>Have a WELL link and a second browser ready</h4>
     <span class="pri pri--2">P2</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
@@ -399,12 +430,12 @@ header.top {
   
   
 
-  <ol class="steps"><li>Copy the WELL link from /hub for concierge+uat1</li><li>Open a private window or a different browser for the consumer role</li></ol>
+  <ol class="steps"><li>Copy the WELL link from /hub for uat1@discoversaintluciawell.com</li><li>Open a private window or a different browser for the consumer role</li></ol>
 
   <p class="expect"><strong>Expect</strong> Two independent sessions, one signed in and one not.</p>
   <p class="why"><strong>Why this matters</strong> Consumer cases must run with no Hub session. Testing them in the signed-in window silently exercises a different code path.</p>
 
-  <div class="marks" role="group" aria-label="Result for S-07">
+  <div class="marks" role="group" aria-label="Result for S-08">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -842,8 +873,8 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-C-13" data-id="C-13" data-role="consumer"
-   data-pri="1" data-hash="1wvops6"
-   data-title="Sharing with a specific advisor reaches that advisor" data-expect="The Journey appears under concierge+uat1 at /hub/journeys, not under anybody else." data-area="Sharing">
+   data-pri="1" data-hash="7xkzjt"
+   data-title="Sharing with a specific advisor reaches that advisor" data-expect="The Journey appears under uat1@discoversaintluciawell.com at /hub/journeys, not under anybody else." data-area="Sharing">
   <div class="case-head">
     <span class="cid">C-13</span>
     <h4>Sharing with a specific advisor reaches that advisor</h4>
@@ -851,12 +882,12 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> The WELL link for concierge+uat1</p>
+  <p class="needs"><strong>Needs first:</strong> The WELL link for uat1@discoversaintluciawell.com</p>
   
 
   <ol class="steps"><li>Open the WELL link</li><li>Complete the Finder</li><li>Share the result, first name ZZTest</li></ol>
 
-  <p class="expect"><strong>Expect</strong> The Journey appears under concierge+uat1 at /hub/journeys, not under anybody else.</p>
+  <p class="expect"><strong>Expect</strong> The Journey appears under uat1@discoversaintluciawell.com at /hub/journeys, not under anybody else.</p>
   <p class="why"><strong>Why this matters</strong> Attribution is the product. A Journey landing on the wrong advisor is worse than losing it.</p>
 
   <div class="marks" role="group" aria-label="Result for C-13">
@@ -939,7 +970,7 @@ header.top {
     <summary>WELL link <span class="area-n">2</span></summary>
     
 <article class="case" id="case-C-16" data-id="C-16" data-role="consumer"
-   data-pri="1" data-hash="1rgsbj"
+   data-pri="1" data-hash="1x6efrm"
    data-title="A WELL link resolves and records a visit" data-expect="It lands on the Journey page and the visit count increases." data-area="WELL link">
   <div class="case-head">
     <span class="cid">C-16</span>
@@ -948,10 +979,10 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> The WELL link for concierge+uat1</p>
+  <p class="needs"><strong>Needs first:</strong> The WELL link for uat1@discoversaintluciawell.com</p>
   
 
-  <ol class="steps"><li>Open the WELL link in a private window</li><li>Note the time</li><li>Check /hub as concierge+uat1</li></ol>
+  <ol class="steps"><li>Open the WELL link in a private window</li><li>Note the time</li><li>Check /hub as uat1@discoversaintluciawell.com</li></ol>
 
   <p class="expect"><strong>Expect</strong> It lands on the Journey page and the visit count increases.</p>
   <p class="why"><strong>Why this matters</strong> Visits are the first number in the funnel and the input to the whole loop-back report.</p>
@@ -1142,7 +1173,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-A-02" data-id="A-02" data-role="advisor"
-   data-pri="2" data-hash="1afy6qt"
+   data-pri="2" data-hash="i8wka3"
    data-title="Registration refuses a duplicate email" data-expect="A clear refusal, and no second account is created." data-area="Registration">
   <div class="case-head">
     <span class="cid">A-02</span>
@@ -1154,7 +1185,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Register again with concierge+uat1@discoversaintluciawell.com</li></ol>
+  <ol class="steps"><li>Register again with uat1@discoversaintluciawell.com</li></ol>
 
   <p class="expect"><strong>Expect</strong> A clear refusal, and no second account is created.</p>
   <p class="why"><strong>Why this matters</strong> Two accounts on one email splits their Journeys across records neither of them can see whole.</p>
@@ -1270,7 +1301,7 @@ header.top {
     <summary>Sign in <span class="area-n">5</span></summary>
     
 <article class="case" id="case-A-06" data-id="A-06" data-role="advisor"
-   data-pri="1" data-hash="s3g4kc"
+   data-pri="1" data-hash="1gsa0vj"
    data-title="Sign in works and lands on the Hub" data-expect="Lands on /hub with their name shown." data-area="Sign in">
   <div class="case-head">
     <span class="cid">A-06</span>
@@ -1282,7 +1313,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Open /hub/login</li><li>Sign in as concierge+uat1</li></ol>
+  <ol class="steps"><li>Open /hub/login</li><li>Sign in as uat1@discoversaintluciawell.com</li></ol>
 
   <p class="expect"><strong>Expect</strong> Lands on /hub with their name shown.</p>
   <p class="why"><strong>Why this matters</strong> Everything else in this group depends on it.</p>
@@ -1332,7 +1363,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-A-08" data-id="A-08" data-role="advisor"
-   data-pri="2" data-hash="c0fi3b"
+   data-pri="2" data-hash="1tfwd0q"
    data-title="Forgot password sends a working reset" data-expect="The email arrives, the link works once, the new password signs in." data-area="Sign in">
   <div class="case-head">
     <span class="cid">A-08</span>
@@ -1344,7 +1375,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Use /hub/forgot for concierge+uat1</li><li>Open the email</li><li>Set a new password</li></ol>
+  <ol class="steps"><li>Use /hub/forgot for uat1@discoversaintluciawell.com</li><li>Open the email</li><li>Set a new password</li></ol>
 
   <p class="expect"><strong>Expect</strong> The email arrives, the link works once, the new password signs in.</p>
   <p class="why"><strong>Why this matters</strong> Advisors will forget. A broken reset is a support burden that arrives one person at a time.</p>
@@ -1495,7 +1526,7 @@ header.top {
     <summary>Journeys <span class="area-n">6</span></summary>
     
 <article class="case" id="case-A-13" data-id="A-13" data-role="advisor"
-   data-pri="1" data-hash="1lq20rm"
+   data-pri="1" data-hash="1rfrjw5"
    data-title="A shared Journey appears with the traveller&#39;s answers" data-expect="Their name, contact details, timing and the answers they gave." data-area="Journeys">
   <div class="case-head">
     <span class="cid">A-13</span>
@@ -1507,7 +1538,7 @@ header.top {
   <p class="needs"><strong>Needs first:</strong> C-13 completed</p>
   
 
-  <ol class="steps"><li>Open /hub/journeys as concierge+uat1</li><li>Open the ZZTest Journey</li></ol>
+  <ol class="steps"><li>Open /hub/journeys as uat1@discoversaintluciawell.com</li><li>Open the ZZTest Journey</li></ol>
 
   <p class="expect"><strong>Expect</strong> Their name, contact details, timing and the answers they gave.</p>
   <p class="why"><strong>Why this matters</strong> This is what the advisor actually sells from. Missing answers make the follow-up generic.</p>
@@ -1685,7 +1716,7 @@ header.top {
     <summary>Campaign · intake <span class="area-n">4</span></summary>
     
 <article class="case" id="case-A-19" data-id="A-19" data-role="advisor"
-   data-pri="1" data-hash="gl0fvi"
+   data-pri="1" data-hash="c7dwi9"
    data-title="The campaign screen loads with no plan" data-expect="A build section, a readiness percentage, the copy-paste prompt and the intake form, all open." data-area="Campaign · intake">
   <div class="case-head">
     <span class="cid">A-19</span>
@@ -1697,7 +1728,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Open /hub/campaign as concierge+uat1</li></ol>
+  <ol class="steps"><li>Open /hub/campaign as uat1@discoversaintluciawell.com</li></ol>
 
   <p class="expect"><strong>Expect</strong> A build section, a readiness percentage, the copy-paste prompt and the intake form, all open.</p>
   <p class="why"><strong>Why this matters</strong> With no plan this screen IS the intake. If the form were folded away here there would be nothing to do.</p>
@@ -2691,7 +2722,7 @@ header.top {
     <summary>Console <span class="area-n">2</span></summary>
     
 <article class="case" id="case-D-01" data-id="D-01" data-role="admin"
-   data-pri="1" data-hash="7tqv2y"
+   data-pri="1" data-hash="1epn80d"
    data-title="The admin console is reachable only by an admin" data-expect="Refused or redirected — not rendered." data-area="Console">
   <div class="case-head">
     <span class="cid">D-01</span>
@@ -2703,7 +2734,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Open /hub/admin as concierge+uat1 (not an admin)</li></ol>
+  <ol class="steps"><li>Open /hub/admin as uat1@discoversaintluciawell.com (not an admin)</li></ol>
 
   <p class="expect"><strong>Expect</strong> Refused or redirected — not rendered.</p>
   <p class="why"><strong>Why this matters</strong> The console can delete people and grant training. It is the highest-value target in the product.</p>
@@ -2850,7 +2881,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-D-06" data-id="D-06" data-role="admin"
-   data-pri="2" data-hash="rr5noy"
+   data-pri="2" data-hash="zwf30l"
    data-title="Setting and clearing Foundations changes what they may claim" data-expect="The claims ladder follows the date in both directions." data-area="Advisors">
   <div class="case-head">
     <span class="cid">D-06</span>
@@ -2862,7 +2893,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Use foundations_set on concierge+uat2</li><li>Check their campaign screen</li><li>Then foundations_clear</li></ol>
+  <ol class="steps"><li>Use foundations_set on uat2@discoversaintluciawell.com</li><li>Check their campaign screen</li><li>Then foundations_clear</li></ol>
 
   <p class="expect"><strong>Expect</strong> The claims ladder follows the date in both directions.</p>
   <p class="why"><strong>Why this matters</strong> The ladder governs what their published copy may say about their qualifications. It has to follow the record exactly.</p>
@@ -3573,7 +3604,7 @@ header.top {
     <summary>Claims ladder <span class="area-n">1</span></summary>
     
 <article class="case" id="case-G-05" data-id="G-05" data-role="guard"
-   data-pri="1" data-hash="1l80srt"
+   data-pri="1" data-hash="kcfto"
    data-title="A registered advisor is described as Registered" data-expect="Registered — not Foundations, not trained." data-area="Claims ladder">
   <div class="case-head">
     <span class="cid">G-05</span>
@@ -3585,7 +3616,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>As concierge+uat1, read &quot;What you may say about yourself&quot;</li></ol>
+  <ol class="steps"><li>As uat1@discoversaintluciawell.com, read &quot;What you may say about yourself&quot;</li></ol>
 
   <p class="expect"><strong>Expect</strong> Registered — not Foundations, not trained.</p>
   <p class="why"><strong>Why this matters</strong> Describing yourself as trained when you are not is a claim about a qualification, published under their name.</p>
@@ -3806,7 +3837,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-G-12" data-id="G-12" data-role="guard"
-   data-pri="1" data-hash="1vcggaq"
+   data-pri="1" data-hash="7gqkt1"
    data-title="A Foundations advisor is unlimited and shown no meter" data-expect="Never refused, and the number never moves." data-area="Build gate">
   <div class="case-head">
     <span class="cid">G-12</span>
@@ -3815,10 +3846,10 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> Migration 017 applied · concierge+uat2 with Foundations</p>
+  <p class="needs"><strong>Needs first:</strong> Migration 017 applied · uat2@discoversaintluciawell.com with Foundations</p>
   
 
-  <ol class="steps"><li>Build several plans as concierge+uat2</li><li>Check plan_builds in Supabase before and after</li></ol>
+  <ol class="steps"><li>Build several plans as uat2@discoversaintluciawell.com</li><li>Check plan_builds in Supabase before and after</li></ol>
 
   <p class="expect"><strong>Expect</strong> Never refused, and the number never moves.</p>
   <p class="why"><strong>Why this matters</strong> Not &quot;spent and ignored&quot; — the number must not change, or somebody later reads a balance that has been counting down against a person who is not being counted.</p>
@@ -4635,8 +4666,8 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-T-05" data-id="T-05" data-role="teardown"
-   data-pri="1" data-hash="1ll21qj"
-   data-title="The counts are back where they started" data-expect="Back to the S-06 numbers, allowing for anything real that arrived during the day." data-area="Cleanup">
+   data-pri="1" data-hash="ebrvxo"
+   data-title="The counts are back where they started" data-expect="Back to the S-07 numbers, allowing for anything real that arrived during the day." data-area="Cleanup">
   <div class="case-head">
     <span class="cid">T-05</span>
     <h4>The counts are back where they started</h4>
@@ -4644,12 +4675,12 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> S-06 recorded</p>
+  <p class="needs"><strong>Needs first:</strong> S-07 recorded</p>
   
 
   <ol class="steps"><li>Re-count advisors, journey_shares, gtm_plan and campaign_visits</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Back to the S-06 numbers, allowing for anything real that arrived during the day.</p>
+  <p class="expect"><strong>Expect</strong> Back to the S-07 numbers, allowing for anything real that arrived during the day.</p>
   <p class="why"><strong>Why this matters</strong> This is the only way to know the cleanup actually worked. This project has already had to purge six test Journeys once.</p>
 
   <div class="marks" role="group" aria-label="Result for T-05">

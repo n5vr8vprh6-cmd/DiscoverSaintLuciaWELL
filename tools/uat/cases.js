@@ -26,6 +26,20 @@
 
 const SITE = 'https://www.discoversaintluciawell.com';
 
+/* ── THE TWO TEST ADVISOR ADDRESSES, IN ONE PLACE ────────────────────────
+   Change these two lines and rebuild; every case follows.
+
+   They were concierge+uat1@ / concierge+uat2@ until that failed on 17 Aug. The cause is not
+   settled: discoversaintluciawell.com publishes TWO MX records at equal
+   priority — mailserver.purelymail.com and inbound-smtp.us-east-1.amazonaws.com
+   — so senders pick one at random and roughly half of all inbound mail goes to
+   each. A single send to each address proves nothing against a coin flip.
+
+   Real aliases sidestep the question entirely, which is what a test dependency
+   should do: UAT should not be the thing that discovers your mail routing. */
+const UAT1 = 'uat1@discoversaintluciawell.com';
+const UAT2 = 'uat2@discoversaintluciawell.com';
+
 const ROLES = [
   { key: 'setup',    label: 'Setup',        note: 'Do these first or half the pass is meaningless.' },
   { key: 'consumer', label: 'Consumer',     note: 'A traveller who has never heard of us. Use a second browser or a private window with no Hub session.' },
@@ -55,37 +69,46 @@ const CASES = [
   why: 'This was wired and proven on 17 Aug against real ThriveCart payloads. It is here so a broken redeploy or a cleared environment variable is caught before four other cases fail mysteriously.' },
 
 { id: 'S-03', role: 'setup', priority: 1, area: 'Before you start',
-  title: 'Prove plus-addressing actually delivers',
-  steps: ['Send an ordinary email to concierge+uat1@discoversaintluciawell.com from anywhere',
-          'Check the concierge inbox'],
-  expect: 'It arrives.',
-  why: 'Everything below assumes it does. Purelymail handles this domain\'s mail and not every provider passes "+" subaddressing through — if it silently drops, A-08 and D-03 fail for a reason that has nothing to do with the product, and you spend an hour on it.' },
+  title: 'Fix the split MX before trusting any email case',
+  steps: ['Look up the MX records for discoversaintluciawell.com',
+          'Decide whether the AWS SES inbound endpoint is deliberate',
+          'If not, remove it. If it is, give the two records DIFFERENT priorities'],
+  expect: 'One clear primary. Not two records both at preference 10.',
+  why: 'Equal priority means senders choose at random, so roughly half of everything sent to this domain goes to Purelymail and half to inbound-smtp.us-east-1.amazonaws.com. If SES has no receipt rule for these addresses that half is dropped — which would mean advisor replies to journeys@ are already being lost, quietly, in production. This surfaced from a failed UAT case and matters far more than the UAT case did.' },
 
 { id: 'S-04', role: 'setup', priority: 1, area: 'Before you start',
-  title: 'Create two test advisor accounts',
-  needs: ['S-03 confirmed'],
-  steps: ['Register concierge+uat1@discoversaintluciawell.com — this one stays Registered',
-          'Register concierge+uat2@discoversaintluciawell.com — this one gets Foundations later',
-          'Approve both from /hub/admin/advisors'],
-  expect: 'Both appear active, and both approval emails arrive at the concierge inbox.',
-  why: 'One address per role, both on our own domain, both greppable at teardown. We send from journeys@ so there is no sender/recipient collision.' },
+  title: 'Prove both test addresses actually receive mail',
+  steps: [`Create ${UAT1} and ${UAT2} as real aliases in Purelymail`,
+          'Send an ordinary email to each',
+          'Send to each a SECOND time'],
+  expect: 'All four arrive. Four sends, not two — see below.',
+  why: 'Two sends each because this domain answers with TWO MX records at equal priority, so senders pick one at random and a single send proves nothing. Subaddressing (concierge+uat1@) was tried first and failed, but that test was a coin flip and settled nothing either. Real aliases remove the question, which is what a test dependency should do — UAT should not be where you discover your mail routing.' },
 
 { id: 'S-05', role: 'setup', priority: 1, area: 'Before you start',
+  title: 'Create two test advisor accounts',
+  needs: ['S-04 confirmed'],
+  steps: [`Register ${UAT1} — this one stays Registered`,
+          `Register ${UAT2} — this one gets Foundations later`,
+          'Approve both from /hub/admin/advisors'],
+  expect: 'Both appear active, and both approval emails arrive.',
+  why: 'One address per role, both on our own domain, both greppable at teardown. We send from journeys@ so there is no sender/recipient collision.' },
+
+{ id: 'S-06', role: 'setup', priority: 1, area: 'Before you start',
   title: 'Grant Foundations to the second test advisor',
-  steps: ['Open /hub/admin/advisors, choose concierge+uat2',
+  steps: [`Open /hub/admin/advisors, choose ${UAT2}`,
           'Use the foundations_set action'],
   expect: 'Their record shows a Foundations date.',
   why: 'Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.' },
 
-{ id: 'S-06', role: 'setup', priority: 2, area: 'Before you start',
+{ id: 'S-07', role: 'setup', priority: 2, area: 'Before you start',
   title: 'Note the starting row counts',
   steps: ['In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits'],
   expect: 'Four numbers written down.',
   why: 'Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.' },
 
-{ id: 'S-07', role: 'setup', priority: 2, area: 'Before you start',
+{ id: 'S-08', role: 'setup', priority: 2, area: 'Before you start',
   title: 'Have a WELL link and a second browser ready',
-  steps: ['Copy the WELL link from /hub for concierge+uat1',
+  steps: [`Copy the WELL link from /hub for ${UAT1}`,
           'Open a private window or a different browser for the consumer role'],
   expect: 'Two independent sessions, one signed in and one not.',
   why: 'Consumer cases must run with no Hub session. Testing them in the signed-in window silently exercises a different code path.' },
@@ -166,9 +189,9 @@ const CASES = [
 
 { id: 'C-13', role: 'consumer', priority: 1, area: 'Sharing',
   title: 'Sharing with a specific advisor reaches that advisor',
-  needs: ['The WELL link for concierge+uat1'],
+  needs: [`The WELL link for ${UAT1}`],
   steps: ['Open the WELL link', 'Complete the Finder', 'Share the result, first name ZZTest'],
-  expect: 'The Journey appears under concierge+uat1 at /hub/journeys, not under anybody else.',
+  expect: `The Journey appears under ${UAT1} at /hub/journeys, not under anybody else.`,
   why: 'Attribution is the product. A Journey landing on the wrong advisor is worse than losing it.' },
 
 { id: 'C-14', role: 'consumer', priority: 2, area: 'Sharing',
@@ -186,9 +209,9 @@ const CASES = [
 
 { id: 'C-16', role: 'consumer', priority: 1, area: 'WELL link',
   title: 'A WELL link resolves and records a visit',
-  needs: ['The WELL link for concierge+uat1'],
+  needs: [`The WELL link for ${UAT1}`],
   steps: ['Open the WELL link in a private window', 'Note the time',
-          'Check /hub as concierge+uat1'],
+          `Check /hub as ${UAT1}`],
   expect: 'It lands on the Journey page and the visit count increases.',
   why: 'Visits are the first number in the funnel and the input to the whole loop-back report.' },
 
@@ -233,7 +256,7 @@ const CASES = [
 
 { id: 'A-02', role: 'advisor', priority: 2, area: 'Registration',
   title: 'Registration refuses a duplicate email',
-  steps: ['Register again with concierge+uat1@discoversaintluciawell.com'],
+  steps: [`Register again with ${UAT1}`],
   expect: 'A clear refusal, and no second account is created.',
   why: 'Two accounts on one email splits their Journeys across records neither of them can see whole.' },
 
@@ -257,7 +280,7 @@ const CASES = [
 
 { id: 'A-06', role: 'advisor', priority: 1, area: 'Sign in',
   title: 'Sign in works and lands on the Hub',
-  steps: ['Open /hub/login', 'Sign in as concierge+uat1'],
+  steps: ['Open /hub/login', `Sign in as ${UAT1}`],
   expect: 'Lands on /hub with their name shown.',
   why: 'Everything else in this group depends on it.' },
 
@@ -269,7 +292,7 @@ const CASES = [
 
 { id: 'A-08', role: 'advisor', priority: 2, area: 'Sign in',
   title: 'Forgot password sends a working reset',
-  steps: ['Use /hub/forgot for concierge+uat1', 'Open the email', 'Set a new password'],
+  steps: [`Use /hub/forgot for ${UAT1}`, 'Open the email', 'Set a new password'],
   expect: 'The email arrives, the link works once, the new password signs in.',
   why: 'Advisors will forget. A broken reset is a support burden that arrives one person at a time.' },
 
@@ -300,7 +323,7 @@ const CASES = [
 { id: 'A-13', role: 'advisor', priority: 1, area: 'Journeys',
   title: 'A shared Journey appears with the traveller\'s answers',
   needs: ['C-13 completed'],
-  steps: ['Open /hub/journeys as concierge+uat1', 'Open the ZZTest Journey'],
+  steps: [`Open /hub/journeys as ${UAT1}`, 'Open the ZZTest Journey'],
   expect: 'Their name, contact details, timing and the answers they gave.',
   why: 'This is what the advisor actually sells from. Missing answers make the follow-up generic.' },
 
@@ -337,7 +360,7 @@ const CASES = [
 
 { id: 'A-19', role: 'advisor', priority: 1, area: 'Campaign · intake',
   title: 'The campaign screen loads with no plan',
-  steps: ['Open /hub/campaign as concierge+uat1'],
+  steps: [`Open /hub/campaign as ${UAT1}`],
   expect: 'A build section, a readiness percentage, the copy-paste prompt and the intake form, all open.',
   why: 'With no plan this screen IS the intake. If the form were folded away here there would be nothing to do.' },
 
@@ -527,7 +550,7 @@ const CASES = [
 /* ══ ADMIN ═══════════════════════════════════════════════════════════════ */
 { id: 'D-01', role: 'admin', priority: 1, area: 'Console',
   title: 'The admin console is reachable only by an admin',
-  steps: ['Open /hub/admin as concierge+uat1 (not an admin)'],
+  steps: [`Open /hub/admin as ${UAT1} (not an admin)`],
   expect: 'Refused or redirected — not rendered.',
   why: 'The console can delete people and grant training. It is the highest-value target in the product.' },
 
@@ -557,7 +580,7 @@ const CASES = [
 
 { id: 'D-06', role: 'admin', priority: 2, area: 'Advisors',
   title: 'Setting and clearing Foundations changes what they may claim',
-  steps: ['Use foundations_set on concierge+uat2', 'Check their campaign screen', 'Then foundations_clear'],
+  steps: [`Use foundations_set on ${UAT2}`, 'Check their campaign screen', 'Then foundations_clear'],
   expect: 'The claims ladder follows the date in both directions.',
   why: 'The ladder governs what their published copy may say about their qualifications. It has to follow the record exactly.' },
 
@@ -690,7 +713,7 @@ const CASES = [
 
 { id: 'G-05', role: 'guard', priority: 1, area: 'Claims ladder',
   title: 'A registered advisor is described as Registered',
-  steps: ['As concierge+uat1, read "What you may say about yourself"'],
+  steps: [`As ${UAT1}, read "What you may say about yourself"`],
   expect: 'Registered — not Foundations, not trained.',
   why: 'Describing yourself as trained when you are not is a claim about a qualification, published under their name.' },
 
@@ -734,8 +757,8 @@ const CASES = [
 
 { id: 'G-12', role: 'guard', priority: 1, area: 'Build gate',
   title: 'A Foundations advisor is unlimited and shown no meter',
-  needs: ['Migration 017 applied', 'concierge+uat2 with Foundations'],
-  steps: ['Build several plans as concierge+uat2', 'Check plan_builds in Supabase before and after'],
+  needs: ['Migration 017 applied', `${UAT2} with Foundations`],
+  steps: [`Build several plans as ${UAT2}`, 'Check plan_builds in Supabase before and after'],
   expect: 'Never refused, and the number never moves.',
   why: 'Not "spent and ignored" — the number must not change, or somebody later reads a balance that has been counting down against a person who is not being counted.' },
 
@@ -892,9 +915,9 @@ const CASES = [
 
 { id: 'T-05', role: 'teardown', priority: 1, area: 'Cleanup',
   title: 'The counts are back where they started',
-  needs: ['S-06 recorded'],
+  needs: ['S-07 recorded'],
   steps: ['Re-count advisors, journey_shares, gtm_plan and campaign_visits'],
-  expect: 'Back to the S-06 numbers, allowing for anything real that arrived during the day.',
+  expect: 'Back to the S-07 numbers, allowing for anything real that arrived during the day.',
   why: 'This is the only way to know the cleanup actually worked. This project has already had to purge six test Journeys once.' },
 
 { id: 'T-06', role: 'teardown', priority: 2, area: 'Cleanup',
