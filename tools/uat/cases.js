@@ -29,16 +29,17 @@ const SITE = 'https://www.discoversaintluciawell.com';
 /* ── THE TWO TEST ADVISOR ADDRESSES, IN ONE PLACE ────────────────────────
    Change these two lines and rebuild; every case follows.
 
-   They were concierge+uat1@ / concierge+uat2@ until that failed on 17 Aug. The cause is not
-   settled: discoversaintluciawell.com publishes TWO MX records at equal
-   priority — mailserver.purelymail.com and inbound-smtp.us-east-1.amazonaws.com
-   — so senders pick one at random and roughly half of all inbound mail goes to
-   each. A single send to each address proves nothing against a coin flip.
+   SUBADDRESSING WORKS. Purelymail enables it by default on custom domains.
+   The first attempt at these addresses failed on 17 Aug and it was tempting to
+   blame the + — but the domain was publishing two MX records at EQUAL
+   priority at the time, Purelymail and an AWS SES inbound endpoint, so senders
+   picked one at random and roughly half of everything was dropped. The +uat1
+   message almost certainly landed on SES.
 
-   Real aliases sidestep the question entirely, which is what a test dependency
-   should do: UAT should not be the thing that discovers your mail routing. */
-const UAT1 = 'uat1@discoversaintluciawell.com';
-const UAT2 = 'uat2@discoversaintluciawell.com';
+   One send to each address, against a coin flip, could never have told those
+   two explanations apart. The fix was the MX priority, not the address. */
+const UAT1 = 'concierge+uat1@discoversaintluciawell.com';
+const UAT2 = 'concierge+uat2@discoversaintluciawell.com';
 
 const ROLES = [
   { key: 'setup',    label: 'Setup',        note: 'Do these first or half the pass is meaningless.' },
@@ -78,11 +79,12 @@ const CASES = [
 
 { id: 'S-04', role: 'setup', priority: 1, area: 'Before you start',
   title: 'Prove both test addresses actually receive mail',
-  steps: [`Create ${UAT1} and ${UAT2} as real aliases in Purelymail`,
-          'Send an ordinary email to each',
-          'Send to each a SECOND time'],
-  expect: 'All four arrive. Four sends, not two — see below.',
-  why: 'Two sends each because this domain answers with TWO MX records at equal priority, so senders pick one at random and a single send proves nothing. Subaddressing (concierge+uat1@) was tried first and failed, but that test was a coin flip and settled nothing either. Real aliases remove the question, which is what a test dependency should do — UAT should not be where you discover your mail routing.' },
+  needs: ['S-03 done, and give the 4-hour MX TTL time to expire'],
+  steps: [`Send an ordinary email to ${UAT1}`,
+          `Send one to ${UAT2}`,
+          'Send to each a SECOND time, from a different provider if you can'],
+  expect: 'All four arrive in the concierge inbox.',
+  why: 'Purelymail enables subaddressing by default, so these should work — they failed on 17 Aug only because the domain was answering with two MX records at equal priority and half of everything was being dropped. Two sends each because one send against a routing fault proves nothing, which is the mistake that first sent us hunting the wrong cause.' },
 
 { id: 'S-05', role: 'setup', priority: 1, area: 'Before you start',
   title: 'Create two test advisor accounts',
