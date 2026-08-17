@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>139 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>140 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">139</b></span>
+      <span class="t-left">Untested <b id="n-left">140</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -194,11 +194,11 @@ header.top {
     <h2>Setup</h2>
     <p class="role-note">Do these first or half the pass is meaningless.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 8 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 9 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Before you start <span class="area-n">8</span></summary>
+    <summary>Before you start <span class="area-n">9</span></summary>
     
 <article class="case" id="case-S-01" data-id="S-01" data-role="setup"
    data-pri="1" data-hash="1e84a7v"
@@ -325,8 +325,8 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-05" data-id="S-05" data-role="setup"
-   data-pri="1" data-hash="fggwcm"
-   data-title="Create two test advisor accounts" data-expect="Both appear active, and both approval emails arrive." data-area="Before you start">
+   data-pri="1" data-hash="1d3ei9d"
+   data-title="Create two test advisor accounts" data-expect="Both go to pending, both approve cleanly, and both can then sign in. NO approval email — see below." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-05</span>
     <h4>Create two test advisor accounts</h4>
@@ -339,8 +339,8 @@ header.top {
 
   <ol class="steps"><li>Register concierge+uat1@discoversaintluciawell.com — this one stays Registered</li><li>Register concierge+uat2@discoversaintluciawell.com — this one gets Foundations later</li><li>Approve both from /hub/admin/advisors</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Both appear active, and both approval emails arrive.</p>
-  <p class="why"><strong>Why this matters</strong> One address per role, both on our own domain, both greppable at teardown. We send from journeys@ so there is no sender/recipient collision.</p>
+  <p class="expect"><strong>Expect</strong> Both go to pending, both approve cleanly, and both can then sign in. NO approval email — see below.</p>
+  <p class="why"><strong>Why this matters</strong> One address per role, both greppable at teardown. Approval sends NO email from this system: it fires an Encharge event called advisor_activated, and the &quot;you are live&quot; message is meant to come from an Encharge flow that has not been built yet. Expect silence here. A-08 is the case that actually tests deliverability, because password reset is one of only two things that go through Resend.</p>
 
   <div class="marks" role="group" aria-label="Result for S-05">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -356,22 +356,22 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-06" data-id="S-06" data-role="setup"
-   data-pri="1" data-hash="1xubhxo"
-   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start">
+   data-pri="2" data-hash="xayq6n"
+   data-title="Check the Encharge events are arriving" data-expect="Both events present against both people, with the right properties." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-06</span>
-    <h4>Grant Foundations to the second test advisor</h4>
-    <span class="pri pri--1">P1 · smoke</span>
+    <h4>Check the Encharge events are arriving</h4>
+    <span class="pri pri--2">P2</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
   
   
 
-  <ol class="steps"><li>Open /hub/admin/advisors, choose concierge+uat2@discoversaintluciawell.com</li><li>Use the foundations_set action</li></ol>
+  <ol class="steps"><li>Open Encharge and find the two advisors just registered</li><li>Look for the events advisor_registered and advisor_activated</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Their record shows a Foundations date.</p>
-  <p class="why"><strong>Why this matters</strong> Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.</p>
+  <p class="expect"><strong>Expect</strong> Both events present against both people, with the right properties.</p>
+  <p class="why"><strong>Why this matters</strong> The Hub fires these and never checks anybody received them. If the token is stale or the events are silently rejected, the entire onboarding sequence is dead and nothing in the product would ever say so — which is exactly what &quot;no approval email&quot; looked like today.</p>
 
   <div class="marks" role="group" aria-label="Result for S-06">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -387,22 +387,22 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-07" data-id="S-07" data-role="setup"
-   data-pri="2" data-hash="iizp1w"
-   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start">
+   data-pri="1" data-hash="1xubhxo"
+   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-07</span>
-    <h4>Note the starting row counts</h4>
-    <span class="pri pri--2">P2</span>
+    <h4>Grant Foundations to the second test advisor</h4>
+    <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
   
   
 
-  <ol class="steps"><li>In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits</li></ol>
+  <ol class="steps"><li>Open /hub/admin/advisors, choose concierge+uat2@discoversaintluciawell.com</li><li>Use the foundations_set action</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Four numbers written down.</p>
-  <p class="why"><strong>Why this matters</strong> Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.</p>
+  <p class="expect"><strong>Expect</strong> Their record shows a Foundations date.</p>
+  <p class="why"><strong>Why this matters</strong> Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.</p>
 
   <div class="marks" role="group" aria-label="Result for S-07">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -418,10 +418,41 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-08" data-id="S-08" data-role="setup"
+   data-pri="2" data-hash="iizp1w"
+   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start">
+  <div class="case-head">
+    <span class="cid">S-08</span>
+    <h4>Note the starting row counts</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Four numbers written down.</p>
+  <p class="why"><strong>Why this matters</strong> Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.</p>
+
+  <div class="marks" role="group" aria-label="Result for S-08">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-S-09" data-id="S-09" data-role="setup"
    data-pri="2" data-hash="77j6gp"
    data-title="Have a WELL link and a second browser ready" data-expect="Two independent sessions, one signed in and one not." data-area="Before you start">
   <div class="case-head">
-    <span class="cid">S-08</span>
+    <span class="cid">S-09</span>
     <h4>Have a WELL link and a second browser ready</h4>
     <span class="pri pri--2">P2</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
@@ -435,7 +466,7 @@ header.top {
   <p class="expect"><strong>Expect</strong> Two independent sessions, one signed in and one not.</p>
   <p class="why"><strong>Why this matters</strong> Consumer cases must run with no Hub session. Testing them in the signed-in window silently exercises a different code path.</p>
 
-  <div class="marks" role="group" aria-label="Result for S-08">
+  <div class="marks" role="group" aria-label="Result for S-09">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -2788,8 +2819,8 @@ header.top {
     <summary>Advisors <span class="area-n">8</span></summary>
     
 <article class="case" id="case-D-03" data-id="D-03" data-role="admin"
-   data-pri="1" data-hash="165cqyw"
-   data-title="Approving an advisor activates them and emails them" data-expect="Status active, an audit entry, and the activation email arrives." data-area="Advisors">
+   data-pri="1" data-hash="6lhkjt"
+   data-title="Approving an advisor activates them and emails them" data-expect="Status active, an audit entry, and an advisor_activated event in Encharge. NO email from us — that flow does not exist yet." data-area="Advisors">
   <div class="case-head">
     <span class="cid">D-03</span>
     <h4>Approving an advisor activates them and emails them</h4>
@@ -2802,7 +2833,7 @@ header.top {
 
   <ol class="steps"><li>Open /hub/admin/advisors</li><li>Approve a pending account</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Status active, an audit entry, and the activation email arrives.</p>
+  <p class="expect"><strong>Expect</strong> Status active, an audit entry, and an advisor_activated event in Encharge. NO email from us — that flow does not exist yet.</p>
   <p class="why"><strong>Why this matters</strong> Approval is the moment their link starts working, and the email is what tells them so.</p>
 
   <div class="marks" role="group" aria-label="Result for D-03">
@@ -4666,8 +4697,8 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-T-05" data-id="T-05" data-role="teardown"
-   data-pri="1" data-hash="ebrvxo"
-   data-title="The counts are back where they started" data-expect="Back to the S-07 numbers, allowing for anything real that arrived during the day." data-area="Cleanup">
+   data-pri="1" data-hash="163ls3x"
+   data-title="The counts are back where they started" data-expect="Back to the S-08 numbers, allowing for anything real that arrived during the day." data-area="Cleanup">
   <div class="case-head">
     <span class="cid">T-05</span>
     <h4>The counts are back where they started</h4>
@@ -4675,12 +4706,12 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> S-07 recorded</p>
+  <p class="needs"><strong>Needs first:</strong> S-08 recorded</p>
   
 
   <ol class="steps"><li>Re-count advisors, journey_shares, gtm_plan and campaign_visits</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Back to the S-07 numbers, allowing for anything real that arrived during the day.</p>
+  <p class="expect"><strong>Expect</strong> Back to the S-08 numbers, allowing for anything real that arrived during the day.</p>
   <p class="why"><strong>Why this matters</strong> This is the only way to know the cleanup actually worked. This project has already had to purge six test Journeys once.</p>
 
   <div class="marks" role="group" aria-label="Result for T-05">
