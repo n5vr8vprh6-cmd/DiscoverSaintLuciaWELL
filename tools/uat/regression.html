@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>144 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>145 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">144</b></span>
+      <span class="t-left">Untested <b id="n-left">145</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -486,7 +486,7 @@ header.top {
     <h2>Consumer</h2>
     <p class="role-note">A traveller who has never heard of us. Use a second browser or a private window with no Hub session.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 24 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 25 recorded</p>
   </div>
   
   <details class="area" open>
@@ -742,7 +742,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Journey Finder <span class="area-n">6</span></summary>
+    <summary>Journey Finder <span class="area-n">7</span></summary>
     
 <article class="case" id="case-C-06" data-id="C-06" data-role="consumer"
    data-pri="1" data-hash="7q743u"
@@ -887,6 +887,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> F1 added this deliberately. Marketing WELL to somebody who does not call themselves a wellness traveller is most of the addressable market.</p>
 
   <div class="marks" role="group" aria-label="Result for C-10">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-C-25" data-id="C-25" data-role="consumer"
+   data-pri="2" data-hash="84iu2h"
+   data-title="Every village is reachable, and no one question decides the result" data-expect="Exits 0. Every village is the closest match at least 8% of the time, and no question flips the result more than 90% of the time. It exits 2 instead if it has stopped agreeing with the scorer in js/journey.js." data-area="Journey Finder">
+  <div class="case-head">
+    <span class="cid">C-25</span>
+    <h4>Every village is reachable, and no one question decides the result</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>From discover-saint-lucia-well/: node tools/finder-coverage.js --check</li><li>Read the report, not only the exit code — passing the floor is not the same as the balance being right</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Exits 0. Every village is the closest match at least 8% of the time, and no question flips the result more than 90% of the time. It exits 2 instead if it has stopped agreeing with the scorer in js/journey.js.</p>
+  <p class="why"><strong>Why this matters</strong> Weights are what a copy pass nudges and nobody re-measures. A village nobody reaches is an anchor property nobody is shown — and place already decides 82% of results, so there is less margin here than the numbers suggest.</p>
+
+  <div class="marks" role="group" aria-label="Result for C-25">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>

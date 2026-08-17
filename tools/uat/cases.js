@@ -207,6 +207,20 @@ const CASES = [
   expect: 'The sceptical run does not require the traveller to adopt wellness as an identity.',
   why: 'F1 added this deliberately. Marketing WELL to somebody who does not call themselves a wellness traveller is most of the addressable market.' },
 
+/* Added after C-09 was run. C-09 asks whether the answers matter; this asks
+   the question clicking through cannot — whether all six villages are
+   REACHABLE. Duncan ran the Finder several times by hand and never once saw
+   Longevity. That is an absence, and an absence is invisible to a manual pass:
+   a skewed quiz still returns a village and still looks like it works. Hence a
+   command rather than a click-through — 2,160 combinations is small enough to
+   count every one. */
+{ id: 'C-25', role: 'consumer', priority: 2, area: 'Journey Finder',
+  title: 'Every village is reachable, and no one question decides the result',
+  steps: ['From discover-saint-lucia-well/: node tools/finder-coverage.js --check',
+          'Read the report, not only the exit code — passing the floor is not the same as the balance being right'],
+  expect: 'Exits 0. Every village is the closest match at least 8% of the time, and no question flips the result more than 90% of the time. It exits 2 instead if it has stopped agreeing with the scorer in js/journey.js.',
+  why: 'Weights are what a copy pass nudges and nobody re-measures. A village nobody reaches is an anchor property nobody is shown — and place already decides 82% of results, so there is less margin here than the numbers suggest.' },
+
 { id: 'C-11', role: 'consumer', priority: 1, area: 'Sharing',
   title: 'The result link restores the same result',
   steps: ['Complete the Finder', 'Copy the URL including the #r= hash',
