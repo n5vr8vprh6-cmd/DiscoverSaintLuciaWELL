@@ -354,6 +354,12 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(2rem, 4vw, 3.5rem) clamp(2rem, 4vw, 4rem);
 }
+/* Four peers read as two rows of two, never as three and a straggler. Every
+   other lens on this site carries three or six items, so the orphan only
+   appeared when /advisors/hub gained a fourth — at desktop, which is the width
+   this gets reviewed at. Emitted by lens() in lib/components.js when there are
+   exactly four, so it cannot be forgotten on the next one. */
+.lens-grid--four { grid-template-columns: repeat(2, 1fr); }
 .lens-item { border-top: 1px solid var(--hairline-l); padding-top: 1.4rem; }
 .lens-item h3 {
   font-family: var(--sans);

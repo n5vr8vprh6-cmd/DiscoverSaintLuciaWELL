@@ -125,8 +125,14 @@ module.exports = {
 
              The Travel Advisor Hub is that thing. The referral link and the QR
              code exist and work; creative does not, so this text no longer
-             promises it. Say what shipped, not what was planned. */
-          text: 'Your own WELL link and QR code, and a Hub where the Journeys people share with you arrive — so you can put the destination in front of your own audience and see who responds.',
+             promises it. Say what shipped, not what was planned.
+
+             2026-08-17: creative shipped. Release D added the 30-day campaign —
+             a plan of small actions with the copy written for each one, checked
+             for health claims before it can be copied. The line above was right
+             to omit it and is now right to include it, by the same rule. The
+             advisor designation is the only rung still genuinely unbuilt. */
+          text: 'Your own WELL link and QR code, a 30-day campaign with the copy already written, and a Hub where the Journeys people share with you arrive — so you can put the destination in front of your own audience and see who responds.',
           cta: { label: 'Open your Hub', href: '/advisors/hub' }
         },
         {

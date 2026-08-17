@@ -155,6 +155,14 @@ const CASES = [
   expect: 'All four open a ThriveCart checkout in a new tab, Standard at 97 and VIP at ,497 — matching the prices on our page.',
   why: 'All four pointed at #enroll until 17 Aug, which scrolled to a block whose own buttons linked to themselves. There was no way to buy Foundations at all. Prices are checked against the cart because two numbers in two systems drift, and the one an advisor is charged is the one that matters.' },
 
+{ id: 'C-23', role: 'consumer', priority: 2, area: 'Public pages',
+  title: 'The recruitment pages describe the product that exists',
+  steps: ['Open /advisors/hub and read the What is in it list',
+          'Open /advisors and read the Activate step',
+          'Search both pages for "in development"'],
+  expect: 'Four things listed on the Hub page including the 30-day campaign; the campaign named in Activate; the only in-development claim left is the advisor designation.',
+  why: 'Both pages said campaign creative was still being built for weeks after it shipped, so the site described a smaller product than it has to the people deciding whether to sign up. Stale claims decay in both directions and the flattering direction is the one nobody checks.' },
+
 { id: 'C-05', role: 'consumer', priority: 2, area: 'Public pages',
   title: 'The policy pages load and are current',
   steps: ['Visit /privacy, /terms, /accessibility'],

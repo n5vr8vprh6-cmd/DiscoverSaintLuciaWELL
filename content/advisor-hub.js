@@ -20,10 +20,16 @@
    consumer never has one. The header eyebrow says "For travel advisors" partly
    for that reason.
 
-   ONLY WHAT EXISTS. The link, the QR code, the Journeys and the briefing are
-   built and deployed. Campaign creative, the advisor designation and AI
-   assistance are not, and the pathway on /advisors still honestly calls them
-   "In development". Nothing on this page hints otherwise.
+   ONLY WHAT EXISTS. The link, the QR code, the Journeys, the briefing and the
+   30-day campaign are built and deployed. The advisor designation is not, and
+   the pathway on /advisors still honestly calls it "In development". Nothing
+   on this page hints otherwise.
+
+   The campaign moved into that first list on 2026-08-17. It had been listed as
+   unbuilt since this page was written, which was true then and stopped being
+   true when Release D shipped — leaving the site describing a smaller product
+   than the one it has. The rule that put campaign creative in the second list
+   is the same rule that now moves it to the first: say what shipped.
    ========================================================================== */
 'use strict';
 
@@ -103,11 +109,26 @@ module.exports = {
       type: 'lens',
       id: 'inside',
       eyebrow: 'What’s in it',
-      headline: 'Three things, and they all exist today.',
+      headline: 'Four things, and they all exist today.',
       items: [
         {
           title: 'Your WELL link and QR code',
           text: 'An opaque link — no name in the address — and a QR code generated from it. Put them in a newsletter, on a card, or in a message to ten people you already know.'
+        },
+        {
+          /* Second, not last. The order is the order somebody uses them: you
+             get a link, you need something to put around it, then people
+             arrive, then you read them. The campaign is how the link gets in
+             front of anybody, so it belongs before the arrivals.
+
+             The second sentence is load-bearing. It sets the expectation before
+             an advisor meets the gate, and it corrects the misreading that
+             matters most — that editing costs something. An advisor who thinks
+             editing is metered will not edit, and unedited AI copy published
+             under their own name is the exact failure the whole feature is
+             built to avoid. */
+          title: 'A 30-day campaign, written for you',
+          text: 'Four weeks of small actions with the words already written — posts, emails, what to say on a call — each one pointing at your WELL link. Three plans to start with; editing every word of them is free and always will be.'
         },
         {
           title: 'Your Journeys',
@@ -118,7 +139,7 @@ module.exports = {
           text: 'Not a quiz dump. What they asked for in plain sentences, their own words where they wrote any, and a few questions worth asking — assembled only from what they actually answered.'
         }
       ],
-      closing: 'What you see is what has been built. Campaign creative and the advisor designation are still in development, and the pathway says so.'
+      closing: 'What you see is what has been built. The advisor designation is still in development, and the pathway says so.'
     },
 
     {
