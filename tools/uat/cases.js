@@ -163,6 +163,14 @@ const CASES = [
   expect: 'Four things listed on the Hub page including the 30-day campaign; the campaign named in Activate; the only in-development claim left is the advisor designation.',
   why: 'Both pages said campaign creative was still being built for weeks after it shipped, so the site described a smaller product than it has to the people deciding whether to sign up. Stale claims decay in both directions and the flattering direction is the one nobody checks.' },
 
+{ id: 'C-24', role: 'consumer', priority: 1, area: 'Public pages',
+  title: 'The Hub hero can be acted on, and shows what is inside',
+  steps: ['Open /advisors/hub without scrolling',
+          'Press Create your Hub, then go back and press Sign in',
+          'Scroll one section and look at the briefing screenshot'],
+  expect: 'Both buttons are visible in the first screen and land on /hub/register and /hub/login. The screenshot shows a briefing with an obviously invented traveller.',
+  why: 'The hero had no action at all — both buttons existed only in the sticky bar and at the very bottom of a long page. The screenshot must come from tools/hub-preview.js fixtures; a screenshot of a live Hub would publish a real traveller name, email and travel plans.' },
+
 { id: 'C-05', role: 'consumer', priority: 2, area: 'Public pages',
   title: 'The policy pages load and are current',
   steps: ['Visit /privacy, /terms, /accessibility'],

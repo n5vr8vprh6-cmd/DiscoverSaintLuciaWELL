@@ -78,7 +78,63 @@ module.exports = {
       eyebrow: 'Free · For travel advisors',
       headline: 'Where the people who answer your link <em>arrive.</em>',
       lead: 'The WELL Journey Finder asks a traveller four questions about how they want to feel. When someone completes it through your link and chooses to share the result, it lands in your Hub — with what they actually asked for, not just an email address.',
-      meta: ['Free', 'No card', 'Yours in about a minute']
+      meta: ['Free', 'No card', 'Yours in about a minute'],
+      /* Both buttons already existed — in the sticky header and again in the
+         final CTA — so somebody convinced by the first screen had to hunt the
+         bar or scroll the whole page to act on it. Register first, because
+         this page exists to create Hubs; Sign in second, because a returning
+         advisor knows where they are going and will find it either way. */
+      actions: [
+        { label: 'Create your Hub', href: '/hub/register' },
+        { label: 'Sign in', href: '/hub/login' }
+      ]
+    },
+
+    /* ── WHAT IT LOOKS LIKE ──────────────────────────────────────────────
+       The page describes a briefing well and never showed one. For a tool
+       whose argument is "this is not a lead list", the screen that proves it
+       was the one thing missing.
+
+       THE SCREENSHOT IS FIXTURE DATA, NOT A REAL HUB. It comes from
+       tools/hub-preview.js, which renders the real handlers against invented
+       people at example.com precisely so nothing can be mistaken for a
+       traveller. A screenshot of a live Hub would publish somebody's name,
+       email and travel plans. Never take one. */
+    {
+      type: 'split',
+      id: 'inside-look',
+      skin: 'paper',
+      flip: true,
+      eyebrow: 'What arrives',
+      headline: 'A person, not a form submission.',
+      body: [
+        'This is what lands when somebody finishes the Finder through your link and chooses to share it. Not a score, not a lead card — what they asked for in plain sentences, their own words where they wrote any, and a few questions worth asking before you speak.',
+        'You have this before the first call. Most first calls start with less.'
+      ],
+      /* figure() serves ONE jpg+webp pair — no srcset — so `base` and `widths`
+         would be fields nothing reads. The other split images on the site use
+         the 960 derivative; this one uses 1440 because it is a screenshot of
+         small text rather than a photograph, and 1.4x on a retina column turns
+         the briefing into mush. 52 KB as WebP, which is what almost everyone
+         will get.
+
+         TO REGENERATE:
+           node tools/hub-preview.js                     (fixture data)
+           preview_start discover-saint-lucia-well       (serves dist/ on 4602)
+           chrome --headless --disable-gpu --hide-scrollbars \
+             --force-device-scale-factor=2 --window-size=1200,900 \
+             --screenshot=out.png \
+             http://localhost:4602/_hub-preview/journey.html
+           crop 156px off the top (the consumer nav), resize to 1440 wide,
+           save jpg q82 + webp q82 into assets/hub/ */
+      img: {
+        src: '/assets/hub/hub-briefing-1440.jpg',
+        w: 1440, h: 986,
+        alt: 'A Journey briefing in the Hub: what the traveller asked for in plain sentences, their own words, and the stage they are at.',
+        caption: 'An example briefing — invented traveller, invented details'
+      },
+      cta: { label: 'Create your Hub', href: '/hub/register' },
+      ctaVariant: 'gold'
     },
 
     /* Why it exists, before what is in it. An advisor deciding whether to
