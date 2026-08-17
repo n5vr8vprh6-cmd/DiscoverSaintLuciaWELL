@@ -147,6 +147,14 @@ const CASES = [
   expect: 'All six render; /foundations redirects to /advisors/foundations.',
   why: 'These are the recruitment funnel. The redirect is in vercel.json and is the sort of thing that breaks unnoticed.' },
 
+{ id: 'C-22', role: 'consumer', priority: 1, area: 'Public pages',
+  title: 'Both Foundations buy buttons reach a live checkout',
+  steps: ['Open /advisors/foundations',
+          'Press Enroll on the Standard card, and again in the final CTA',
+          'Press Get VIP in both places too'],
+  expect: 'All four open a ThriveCart checkout in a new tab, Standard at 97 and VIP at ,497 — matching the prices on our page.',
+  why: 'All four pointed at #enroll until 17 Aug, which scrolled to a block whose own buttons linked to themselves. There was no way to buy Foundations at all. Prices are checked against the cart because two numbers in two systems drift, and the one an advisor is charged is the one that matters.' },
+
 { id: 'C-05', role: 'consumer', priority: 2, area: 'Public pages',
   title: 'The policy pages load and are current',
   steps: ['Visit /privacy, /terms, /accessibility'],

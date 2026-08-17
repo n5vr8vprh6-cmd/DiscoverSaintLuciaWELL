@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>141 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>142 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">141</b></span>
+      <span class="t-left">Untested <b id="n-left">142</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -486,11 +486,11 @@ header.top {
     <h2>Consumer</h2>
     <p class="role-note">A traveller who has never heard of us. Use a second browser or a private window with no Hub session.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 21 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 22 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Public pages <span class="area-n">5</span></summary>
+    <summary>Public pages <span class="area-n">6</span></summary>
     
 <article class="case" id="case-C-01" data-id="C-01" data-role="consumer"
    data-pri="1" data-hash="16aszv4"
@@ -604,6 +604,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> These are the recruitment funnel. The redirect is in vercel.json and is the sort of thing that breaks unnoticed.</p>
 
   <div class="marks" role="group" aria-label="Result for C-04">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-C-22" data-id="C-22" data-role="consumer"
+   data-pri="1" data-hash="1551ryv"
+   data-title="Both Foundations buy buttons reach a live checkout" data-expect="All four open a ThriveCart checkout in a new tab, Standard at 97 and VIP at ,497 — matching the prices on our page." data-area="Public pages">
+  <div class="case-head">
+    <span class="cid">C-22</span>
+    <h4>Both Foundations buy buttons reach a live checkout</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Open /advisors/foundations</li><li>Press Enroll on the Standard card, and again in the final CTA</li><li>Press Get VIP in both places too</li></ol>
+
+  <p class="expect"><strong>Expect</strong> All four open a ThriveCart checkout in a new tab, Standard at 97 and VIP at ,497 — matching the prices on our page.</p>
+  <p class="why"><strong>Why this matters</strong> All four pointed at #enroll until 17 Aug, which scrolled to a block whose own buttons linked to themselves. There was no way to buy Foundations at all. Prices are checked against the cart because two numbers in two systems drift, and the one an advisor is charged is the one that matters.</p>
+
+  <div class="marks" role="group" aria-label="Result for C-22">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
