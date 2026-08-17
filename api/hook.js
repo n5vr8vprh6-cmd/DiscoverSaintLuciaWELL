@@ -109,8 +109,27 @@ module.exports = async function handler(req, res) {
 
   if (!constantEquals(offered, secret)) {
     /* Nothing is recorded: an unauthenticated request must not be able to
-       write rows into the ledger. Logged, so a misconfiguration is visible. */
-    console.error('hook: secret did not match — granted nothing, recorded nothing');
+       write rows into the ledger. Logged, so a misconfiguration is visible.
+
+       ── WHY THIS LOGS A SHAPE ────────────────────────────────────────────
+       "Secret did not match" told us ThriveCart had called and been refused,
+       and nothing else — not whether the query string survived being saved,
+       not whether the secret was in the body under a name we do not read. A
+       rejected webhook is the one case with NO row to inspect afterwards, so
+       the log line is the only evidence there will ever be.
+
+       Only OUR OWN vocabulary is logged: whether a query string was present,
+       which of the field names we already look for appeared, and how many
+       fields arrived. No values, and no attacker-supplied strings. */
+    const shape = [
+      url.search ? 'query:yes' : 'query:no',
+      'bodyFields:' + Object.keys(body).length,
+      'secretFieldsPresent:' + (['thrivecart_secret', 'secret', 'x-thrivecart-secret']
+        .filter((n) => body[n] !== undefined).join(',') || 'none'),
+      'productFieldsPresent:' + (['product_id', 'base_product', 'product', 'item_id']
+        .filter((n) => body[n] !== undefined).join(',') || 'none')
+    ].join(' ');
+    console.error('hook: secret did not match — granted nothing, recorded nothing · ' + shape);
     return received('unauthorised');
   }
 
