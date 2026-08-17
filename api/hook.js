@@ -150,6 +150,22 @@ module.exports = async function handler(req, res) {
   const email = normaliseEmail(pick(body, ['customer[email]', 'customer_email', 'email', 'buyer_email']));
   const product = String(pick(body, ['product_id', 'base_product', 'product', 'item_id']) || '');
 
+  /* ── A SANDBOX ORDER MOVES NO REAL BALANCE ──────────────────────────────
+     The first successful test purchase granted three real builds against a
+     real advisor, on an order where no money moved. ThriveCart says so itself:
+     mode:"test". Nothing here had thought to look.
+
+     The exposure is small but it is the wrong shape: while a product sits in
+     test mode its checkout URL still works, so anyone who found that URL could
+     mint themselves build packs for nothing. A payment integration should not
+     depend on a product never being left in the wrong mode.
+
+     So a test order is RECORDED — it is still evidence, and it is how you
+     confirm the wiring works — and it grants nothing. The cost is that the
+     grant path can only be proven with a live purchase, which is the right way
+     round for the one place money changes hands. */
+  const isTest = /^(1|true|test|yes)$/i.test(String(pick(body, ['mode', 'test_mode', 'sandbox']) || ''));
+
   /* No id, nothing to be idempotent against. Recorded under a synthetic id so
      the arrival is still visible, and granted nothing. */
   if (!eventId) {
@@ -182,6 +198,14 @@ module.exports = async function handler(req, res) {
       raw: redact(body) });
     console.error('hook: product not the build pack', product, 'expected', expected || '(unset)');
     return json(res, 200, { ok: true, granted: 0, reason: 'product_mismatch' });
+  }
+
+  if (isTest) {
+    await BUILDS.record({ provider: PROVIDER, eventId, kind, email, delta: 0,
+      note: 'Sandbox order — recorded so you can confirm the wiring, but no money moved so no builds were granted.',
+      raw: redact(body) });
+    console.log('hook: sandbox order recorded, nothing granted', kind, email);
+    return json(res, 200, { ok: true, granted: 0, reason: 'test_mode' });
   }
 
   const advisor = await advisorByEmail(email);

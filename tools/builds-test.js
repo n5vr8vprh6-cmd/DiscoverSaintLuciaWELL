@@ -186,6 +186,39 @@ const post = async (body, env) => {
   ok('an event kind we do not act on is ignored, not errored',
     ignored.statusCode === 200 && ignored.payload.reason === 'ignored_kind');
 
+  /* ══ A SANDBOX ORDER MOVES NO REAL BALANCE ═══════════════════════════════
+     The first successful test purchase granted three real builds against a
+     real advisor on an order where no money moved. ThriveCart announced it —
+     mode:"test" — and nothing looked. While a product sits in test mode its
+     checkout URL still works, so anyone who found it could mint build packs. */
+  const sandbox = await post(
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-sandbox',
+      product_id: 'buildpack', mode: 'test', customer: { email: 'nobody@example.invalid' } },
+    { secret: 'right', product: 'buildpack' });
+  ok('a sandbox order grants nothing',
+    sandbox.statusCode === 200 && sandbox.payload.granted === 0
+      && sandbox.payload.reason === 'test_mode',
+    'no money moved, so no balance may move');
+  /* It must still be RECORDED — that is how you confirm the wiring works
+     without money moving. Checked against the table, not asserted at. */
+  const sdb = db();
+  if (sdb) {
+    const { data: row } = await sdb.from('purchase_events')
+      .select('builds_delta, note').eq('event_id', 'selftest-sandbox').maybeSingle();
+    ok('but it IS recorded, with a delta of zero',
+      row && row.builds_delta === 0 && /Sandbox/i.test(row.note || ''),
+      row ? JSON.stringify(row) : 'no row written');
+  } else {
+    skipped('but it IS recorded, with a delta of zero', 'no database');
+  }
+
+  const live = await post(
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-live-mode',
+      product_id: 'buildpack', mode: 'live', customer: { email: 'nobody@example.invalid' } },
+    { secret: 'right', product: 'buildpack' });
+  ok('a live order is NOT treated as a sandbox one', live.payload.reason !== 'test_mode',
+    'the guard must not swallow real purchases');
+
   /* ══ THE SECRET MUST NEVER REACH THE DATABASE ══════════════════════════
      The handler stores the raw body so a disputed payment can be reconstructed
      — and the body carries the shared secret that authenticates the webhook.
