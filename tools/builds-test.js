@@ -120,7 +120,7 @@ const post = async (body, env) => {
     'a helpful error here is a hint for whoever is guessing');
 
   const noProduct = await post(
-    { event: 'order.success', thrivecart_secret: 'right', order_id: 'o1', product_id: 'foundations' },
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-o1', product_id: 'foundations' },
     { secret: 'right', product: 'buildpack' });
   ok('a purchase of something else grants nothing',
     noProduct.statusCode === 200 && noProduct.payload.granted === 0,
@@ -128,14 +128,14 @@ const post = async (body, env) => {
   ok('and the reason is product_mismatch', noProduct.payload.reason === 'product_mismatch');
 
   const unset = await post(
-    { event: 'order.success', thrivecart_secret: 'right', order_id: 'o2', product_id: 'buildpack' },
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-o2', product_id: 'buildpack' },
     { secret: 'right', product: null });
   ok('with no product configured, nothing is granted',
     unset.payload.granted === 0 && unset.payload.reason === 'product_mismatch',
     'fails closed: money features do not guess');
 
   const ignored = await post(
-    { event: 'order.viewed', thrivecart_secret: 'right', order_id: 'o3' }, { secret: 'right' });
+    { event: 'order.viewed', thrivecart_secret: 'right', order_id: 'selftest-o3' }, { secret: 'right' });
   ok('an event kind we do not act on is ignored, not errored',
     ignored.statusCode === 200 && ignored.payload.reason === 'ignored_kind');
 
@@ -201,6 +201,25 @@ const post = async (body, env) => {
       'providers retry precisely when the first attempt worked and the response was lost');
     await supabase.from('purchase_events').delete().eq('event_id', eid);
     await set(3);
+  }
+
+  /* ══ IT CLEANS UP AFTER ITSELF ═════════════════════════════════════════
+     The webhook cases above go through the REAL handler, and the handler
+     records every arrival — including the ones it refuses, deliberately, so a
+     payment is never lost. Before migration 017 that wrote nothing because the
+     table did not exist, so this was invisible. The moment the table appeared,
+     every run of this file started leaving rows in the ledger.
+
+     purchase_events is what anyone will reach for when money is disputed. Test
+     rows sitting in it are a trap for whoever looks next — the same thing the
+     teardown group of the UAT plan exists to prevent, and it caught me first. */
+  if (supabase) {
+    const { error: ce } = await supabase.from('purchase_events').delete()
+      .or('event_id.like.selftest-%,provider.eq.test');
+    ok('the run leaves no rows in the ledger', !ce, ce && ce.message);
+    const { count: left } = await supabase.from('purchase_events')
+      .select('id', { count: 'exact', head: true }).like('event_id', 'selftest-%');
+    ok('and none survive the sweep', !left, String(left));
   }
 
   console.log('\n  ' + '─'.repeat(60));
