@@ -103,7 +103,11 @@ module.exports = {
     {
       type: 'split',
       id: 'inside-look',
-      skin: 'paper',
+      /* Sand, not paper. The screenshot is a cream interface and the page was
+         cream underneath it — one value apart, measured. Sand also breaks a
+         2,300px run of three consecutive paper sections through the middle of
+         the page, which is where it read as flat. */
+      skin: 'sand',
       flip: true,
       eyebrow: 'What arrives',
       headline: 'A person, not a form submission.',
@@ -130,6 +134,7 @@ module.exports = {
       img: {
         src: '/assets/hub/hub-briefing-1440.jpg',
         w: 1440, h: 986,
+        ui: true,
         alt: 'A Journey briefing in the Hub: what the traveller asked for in plain sentences, their own words, and the stage they are at.',
         caption: 'An example briefing — invented traveller, invented details'
       },

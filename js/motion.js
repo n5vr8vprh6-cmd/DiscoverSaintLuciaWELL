@@ -135,7 +135,12 @@
      with six identities should not all catch the light the same way.
      ══════════════════════════════════════════════════════════════════════ */
   if (finePointer) {
-    document.querySelectorAll('.village-card, .prop-card, .tile-grid li').forEach(function (card) {
+    /* .photo--ui is the framed product screenshot on /advisors/hub. It earns
+       the tilt for the reason the village cards do — it has a real edge and a
+       shadow, so catching the light reads as depth rather than as a text block
+       wobbling. Borderless copy blocks are deliberately left out; they get a
+       lift instead. */
+    document.querySelectorAll('.village-card, .prop-card, .tile-grid li, .photo--ui').forEach(function (card) {
       card.setAttribute('data-tilt', '');
       var raf = 0;
       card.addEventListener('pointermove', function (e) {

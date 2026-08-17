@@ -361,6 +361,36 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
    exactly four, so it cannot be forgotten on the next one. */
 .lens-grid--four { grid-template-columns: repeat(2, 1fr); }
 .lens-item { border-top: 1px solid var(--hairline-l); padding-top: 1.4rem; }
+
+/* A UI SCREENSHOT NEEDS AN EDGE; A PHOTOGRAPH DOES NOT.
+   The Hub briefing shot is a cream interface on a cream page — its own bottom
+   pixel measured rgb(251,248,240) against a section of rgb(251,248,241), one
+   value apart, with no border and no shadow to separate them. It did not read
+   as a window, it read as a smudge.
+
+   Opt-in, because .photo is shared with six pages of photography where a
+   border would be wrong — a photograph brings its own edges. Shadow tinted to
+   the ink rather than black, per the house rule that a shadow takes the hue of
+   what it falls on. */
+.photo--ui .photo-frame-media {
+  border: 1px solid var(--hairline-l);
+  border-radius: 3px;
+  box-shadow:
+    0 2px 4px rgba(18, 48, 47, 0.05),
+    0 14px 36px rgba(18, 48, 47, 0.11);
+}
+
+/* The four things were inert text. A lift and a warmed hairline is enough to
+   say "these are objects" without turning an editorial list into a card grid.
+   Gated on body[data-motion="ready"] like every other transition here, so
+   reduced-motion gets the colour change and none of the movement. */
+body[data-motion="ready"] .lens-item {
+  transition: transform .35s var(--ease-out-quint), border-color .35s var(--ease-out-quint);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lens-item:hover { border-top-color: var(--teal); }
+  body[data-motion="ready"] .lens-item:hover { transform: translateY(-3px); }
+}
 .lens-item h3 {
   font-family: var(--sans);
   font-size: 0.78rem;
