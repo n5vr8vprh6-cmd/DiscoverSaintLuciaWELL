@@ -317,6 +317,14 @@ const CASES = [
   expect: 'Both land on the login screen.',
   why: 'Advisors work on shared and borrowed machines.' },
 
+{ id: 'A-50', role: 'advisor', priority: 2, area: 'Hub home',
+  title: 'The prominent Copy button actually copies',
+  steps: ['Open /hub as an advisor with no visits yet',
+          'Press the gold "Copy your WELL link" button under Next',
+          'Paste somewhere'],
+  expect: 'The link is on the clipboard and the button says Copied. It does not scroll you to a second Copy button.',
+  why: 'It used to be an anchor to the input holding the link, so you pressed copy twice to copy once. Nothing errored and no test could catch it — valid markup, working anchor, reachable link, and a button whose label promised something it did not do. Found in UAT on 17 Aug.' },
+
 { id: 'A-11', role: 'advisor', priority: 1, area: 'Hub home',
   title: 'The Hub home shows the WELL link and the funnel',
   steps: ['Open /hub'],

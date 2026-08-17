@@ -72,7 +72,7 @@ module.exports = async function handler(req, res) {
               { label: 'See all Journeys', href: '/hub/journeys' })
           : emptyState('No Journeys yet.',
               'When someone completes the Finder through your link and chooses to share it, they land here.',
-              { label: 'Copy your WELL link', href: '#well-link' })}
+              { label: 'Copy your WELL link', copy: '#well-link' })}
     </section>
 
   </div>
@@ -124,21 +124,37 @@ function nextBestAction(advisor, funnel, journeys) {
   } else if (funnel.completions > 0 && funnel.shares === 0) {
     title = 'People are finishing the Finder but not sharing.';
     note = 'They are interested enough to answer four questions. Try putting the link somewhere it comes with your recommendation rather than on its own.';
-    cta = { label: 'See your campaign', href: '#well-link' };
+    cta = { label: 'Copy your WELL link', copy: '#well-link' };
   } else if (funnel.visits === 0) {
     title = 'Your link has not been used yet.';
     note = 'Start with ten people you already know. It works better than a broadcast, and it is quicker.';
-    cta = { label: 'Copy your WELL link', href: '#well-link' };
+    cta = { label: 'Copy your WELL link', copy: '#well-link' };
   } else {
     title = 'Keep the link moving.';
     note = 'Traffic is arriving. The next Journey usually comes from the next place you put it.';
     cta = { label: 'See all Journeys', href: '/hub/journeys' };
   }
 
+  /* ── A BUTTON THAT SAYS COPY MUST COPY ──────────────────────────────────
+     This used to be an anchor to #well-link for every case, so the most
+     prominent button on the Hub — "Copy your WELL link" — scrolled you to an
+     input with a second Copy button beside it, and you pressed copy twice to
+     copy once.
+
+     Nothing errored and no test could have caught it: the markup was valid,
+     the anchor worked, the link was reachable. It was simply a button whose
+     label promised something the button did not do, which is its own kind of
+     broken. Found by Duncan in UAT S-09.
+
+     A `copy` cta reuses the same data-copy handler as the input's own button,
+     so there is one clipboard implementation with one set of fallbacks rather
+     than two that can drift. */
   return `<section class="hub-nba">
     <p class="eyebrow eyebrow--gold">Next</p>
     <h2>${esc(title)}</h2>
     <p>${esc(note)}</p>
-    <a class="btn btn--gold" href="${esc(cta.href)}">${esc(cta.label)}</a>
+    ${cta.copy
+      ? `<button class="btn btn--gold" type="button" data-copy="${esc(cta.copy)}">${esc(cta.label)}</button>`
+      : `<a class="btn btn--gold" href="${esc(cta.href)}">${esc(cta.label)}</a>`}
   </section>`;
 }

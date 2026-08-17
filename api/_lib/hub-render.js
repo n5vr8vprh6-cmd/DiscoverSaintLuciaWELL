@@ -66,11 +66,22 @@ function pageHead(eyebrow, title, lead) {
 
 /* Empty states here always carry an action. V2 §19 is explicit that a blank
    dashboard is a failure of the product, not a neutral state. */
+/* A cta is either { label, href } to go somewhere, or { label, copy } to put
+   something on the clipboard — the latter renders a button wired to the same
+   data-copy handler in js/hub.js that every other Copy button uses, so there
+   is one clipboard implementation with one set of fallbacks.
+
+   Added because "Copy your WELL link" was an anchor to the input holding the
+   link, which meant pressing copy twice to copy once. */
 function emptyState(title, body, cta) {
+  const action = !cta ? ''
+    : cta.copy
+      ? `<button class="btn btn--gold" type="button" data-copy="${esc(cta.copy)}">${esc(cta.label)}</button>`
+      : `<a class="btn btn--gold" href="${esc(cta.href)}">${esc(cta.label)}</a>`;
   return `<div class="hub-empty">
     <h3>${esc(title)}</h3>
     <p>${esc(body)}</p>
-    ${cta ? `<a class="btn btn--gold" href="${esc(cta.href)}">${esc(cta.label)}</a>` : ''}
+    ${action}
   </div>`;
 }
 

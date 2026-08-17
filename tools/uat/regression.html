@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>140 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>141 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">140</b></span>
+      <span class="t-left">Untested <b id="n-left">141</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -1166,7 +1166,7 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 49 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 50 recorded</p>
   </div>
   
   <details class="area" open>
@@ -1488,8 +1488,39 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Hub home <span class="area-n">2</span></summary>
+    <summary>Hub home <span class="area-n">3</span></summary>
     
+<article class="case" id="case-A-50" data-id="A-50" data-role="advisor"
+   data-pri="2" data-hash="17at83o"
+   data-title="The prominent Copy button actually copies" data-expect="The link is on the clipboard and the button says Copied. It does not scroll you to a second Copy button." data-area="Hub home">
+  <div class="case-head">
+    <span class="cid">A-50</span>
+    <h4>The prominent Copy button actually copies</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Open /hub as an advisor with no visits yet</li><li>Press the gold &quot;Copy your WELL link&quot; button under Next</li><li>Paste somewhere</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The link is on the clipboard and the button says Copied. It does not scroll you to a second Copy button.</p>
+  <p class="why"><strong>Why this matters</strong> It used to be an anchor to the input holding the link, so you pressed copy twice to copy once. Nothing errored and no test could catch it — valid markup, working anchor, reachable link, and a button whose label promised something it did not do. Found in UAT on 17 Aug.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-50">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
 <article class="case" id="case-A-11" data-id="A-11" data-role="advisor"
    data-pri="1" data-hash="bgdnci"
    data-title="The Hub home shows the WELL link and the funnel" data-expect="Their WELL link, a QR code, and counts for visits, Journeys started and shared." data-area="Hub home">
