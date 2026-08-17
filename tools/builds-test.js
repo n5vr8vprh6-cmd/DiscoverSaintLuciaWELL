@@ -139,6 +139,36 @@ const post = async (body, env) => {
   ok('an event kind we do not act on is ignored, not errored',
     ignored.statusCode === 200 && ignored.payload.reason === 'ignored_kind');
 
+  /* ══ THE SECRET MUST NEVER REACH THE DATABASE ══════════════════════════
+     The handler stores the raw body so a disputed payment can be reconstructed
+     — and the body carries the shared secret that authenticates the webhook.
+     Stored, it would sit in plaintext forever in the table most likely to be
+     read by somebody investigating a payment, and anybody who read it could
+     forge purchases.
+
+     Caught by feeding a realistic payload through the reader and seeing the
+     secret printed back. This asserts the fix rather than the observation. */
+  console.log('\n  The shared secret never reaches the ledger');
+  const src = require('fs').readFileSync(require('path').join(__dirname, '../api/hook.js'), 'utf8');
+  ok('every stored body goes through redact()',
+    !/raw:\s*body\b/.test(src) && /raw:\s*redact\(body\)/.test(src),
+    'a single un-redacted call site is the whole leak');
+
+  const redact = eval('(' + (src.match(/function redact\(body\)[\s\S]*?\n}/) || [])[0] + ')');
+  const SECRETISH = /secret|password|passwd|token|api[_-]?key|signature|authorization/i;
+  const sample = redact({
+    event: 'order.success', thrivecart_secret: 'the-real-secret', order_id: 'x',
+    base_product: '42', customer: { email: 'a@b.c', api_key: 'nested' }
+  });
+  ok('the secret is redacted', sample.thrivecart_secret === '[redacted]');
+  ok('and so is a nested one', sample.customer.api_key === '[redacted]',
+    'a webhook body is not flat, and a shallow scrub would miss this');
+  ok('everything else survives verbatim',
+    sample.base_product === '42' && sample.customer.email === 'a@b.c' && sample.order_id === 'x',
+    'redacting too much would defeat the reason the body is kept at all');
+  ok('no secret-shaped value is left anywhere',
+    !JSON.stringify(sample).includes('the-real-secret'));
+
   /* ══ THE DATABASE HALF ═════════════════════════════════════════════════ */
   console.log('\n  The balance itself');
   const supabase = db();

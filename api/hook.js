@@ -36,9 +36,12 @@
    I do not have ThriveCart's payload in front of me, and guessing a single
    exact shape would produce an endpoint that silently matches nothing. So it
    accepts JSON or form encoding, looks for each field under several documented
-   spellings, and stores the whole raw body either way. The first real webhook
-   will show exactly what arrives, and `raw` is what makes tightening this a
-   five-minute job rather than an investigation.
+   spellings, and stores the body either way. The first real webhook will show
+   exactly what arrives, and `raw` is what makes tightening this a five-minute
+   job rather than an investigation. `node tools/read-webhook.js` prints it.
+
+   THE STORED BODY IS REDACTED FIRST — see redact() below. Everything survives
+   except the shared secret, which must never reach the database.
    ========================================================================== */
 'use strict';
 
@@ -80,7 +83,7 @@ module.exports = async function handler(req, res) {
     await BUILDS.record({
       provider: PROVIDER, eventId: 'no-id-' + Date.now(), kind, email,
       delta: 0, note: 'No event id in the payload — cannot be made idempotent, so nothing was granted.',
-      raw: body
+      raw: redact(body)
     });
     console.error('hook: no event id', kind, email);
     return json(res, 200, { ok: true, granted: 0, reason: 'no_event_id' });
@@ -91,7 +94,7 @@ module.exports = async function handler(req, res) {
 
   if (!isPaid && !isRefund) {
     await BUILDS.record({ provider: PROVIDER, eventId, kind, email, delta: 0,
-      note: 'Event kind not one we act on.', raw: body });
+      note: 'Event kind not one we act on.', raw: redact(body) });
     return json(res, 200, { ok: true, granted: 0, reason: 'ignored_kind' });
   }
 
@@ -103,7 +106,7 @@ module.exports = async function handler(req, res) {
       note: expected
         ? `Product "${product}" is not the build pack (${expected}) — nothing granted.`
         : 'THRIVECART_BUILDPACK_ID is not set, so no purchase can be identified as a build pack.',
-      raw: body });
+      raw: redact(body) });
     console.error('hook: product not the build pack', product, 'expected', expected || '(unset)');
     return json(res, 200, { ok: true, granted: 0, reason: 'product_mismatch' });
   }
@@ -121,7 +124,7 @@ module.exports = async function handler(req, res) {
     advisorId: advisor ? advisor.id : null,
     delta: advisor ? delta : 0,
     note: advisor ? null : 'No advisor with this email — nobody was credited. Somebody paid; settle by hand.',
-    raw: body
+    raw: redact(body)
   });
 
   if (!rec.ok) {
@@ -176,6 +179,32 @@ function pick(body, names) {
 }
 
 const normaliseEmail = (v) => (v ? String(v).trim().toLowerCase().slice(0, 320) : null);
+
+/* ── NEVER STORE THE SECRET ───────────────────────────────────────────────
+   The raw body is kept because the first question when money goes wrong is
+   "what exactly did they send us". But the body CONTAINS the shared secret
+   that authenticates the webhook, and writing it to purchase_events would
+   park it in plaintext, permanently, in the one table most likely to be read
+   by somebody investigating a payment — and anyone who read it could forge
+   purchases at will.
+
+   So the secret is stripped before the body is stored. Everything else is kept
+   verbatim. Matched by pattern rather than by exact key, because the cost of
+   redacting one field too many is a slightly less complete record, and the
+   cost of missing one is a leaked credential. */
+const SECRETISH = /secret|password|passwd|token|api[_-]?key|signature|authorization/i;
+
+function redact(body) {
+  if (!body || typeof body !== 'object') return body;
+  const out = Array.isArray(body) ? [] : {};
+  Object.keys(body).forEach((k) => {
+    const v = body[k];
+    if (SECRETISH.test(k)) out[k] = '[redacted]';
+    else if (v && typeof v === 'object') out[k] = redact(v);
+    else out[k] = v;
+  });
+  return out;
+}
 
 /* Constant time, and length is compared first without leaking through an early
    return that differs in timing — timingSafeEqual throws on a length mismatch,
