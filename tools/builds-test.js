@@ -145,6 +145,25 @@ const post = async (body, env) => {
   await hook({ method: 'POST', url: '/api/hook?k=wrong', headers: {},
     body: { event: 'order.viewed', order_id: 'selftest-url2' } }, viaUrlBad);
   ok('and a wrong one in the query string does not', viaUrlBad.payload.reason === 'unauthorised');
+
+  /* THE ONE THAT COST A DAY. ThriveCart's real payload carries its own
+     `thrivecart_secret` field AND the ?k= we configured. Taking the FIRST
+     credential present meant the body value shadowed the query string, did
+     not match, and the correctly-configured secret was never consulted.
+     ANY matching credential must authenticate. */
+  const shadowed = mkRes();
+  await hook({ method: 'POST', url: '/api/hook?k=url-secret', headers: {},
+    body: { event: 'order.viewed', order_id: 'selftest-shadow',
+            thrivecart_secret: 'a-DIFFERENT-secret-the-provider-sends' } }, shadowed);
+  ok('a non-matching body secret does not shadow a matching one in the URL',
+    shadowed.payload.reason === 'ignored_kind',
+    'the first credential found is not the same thing as any credential that matches');
+
+  const bothWrong = mkRes();
+  await hook({ method: 'POST', url: '/api/hook?k=also-wrong', headers: {},
+    body: { event: 'order.viewed', order_id: 'selftest-both',
+            thrivecart_secret: 'wrong-too' } }, bothWrong);
+  ok('but two wrong credentials still fail', bothWrong.payload.reason === 'unauthorised');
   delete process.env.THRIVECART_SECRET;
 
   const noProduct = await post(

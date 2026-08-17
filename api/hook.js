@@ -97,17 +97,29 @@ module.exports = async function handler(req, res) {
     return received('not_configured');
   }
 
-  /* The secret may arrive in the body OR in the URL. ThriveCart's own field is
-     `thrivecart_secret`; the query-string form is the fallback for providers
-     that do not offer a secret word at all, and it is why the webhook URL
-     itself should be treated as a credential. */
-  const url = new URL(req.url || '/', 'https://x');
-  const offered = pick(body, ['thrivecart_secret', 'secret', 'x-thrivecart-secret'])
-    || url.searchParams.get('k')
-    || url.searchParams.get('secret')
-    || req.headers['x-thrivecart-secret'];
+  /* ── ANY MATCHING CREDENTIAL AUTHENTICATES, NOT THE FIRST ONE FOUND ──────
+     The secret can arrive by several routes and this used to take the FIRST
+     one present, which is a different thing entirely. ThriveCart's real
+     payload turned out to carry a `thrivecart_secret` field AND the ?k= we
+     configured; the body value won the `||` chain, did not match, and the
+     correctly-configured query string was never consulted. A non-matching
+     credential shadowed a matching one, and the log said only "secret did not
+     match" — true, and useless.
 
-  if (!constantEquals(offered, secret)) {
+     So: collect every candidate and accept if ANY of them matches. Written
+     without an early return so the work does not vary with how many
+     candidates happen to be present. */
+  const url = new URL(req.url || '/', 'https://x');
+  const candidates = [
+    body.thrivecart_secret, body.secret, body['x-thrivecart-secret'],
+    url.searchParams.get('k'), url.searchParams.get('secret'),
+    req.headers['x-thrivecart-secret']
+  ].filter((v) => v !== undefined && v !== null && v !== '');
+
+  let authenticated = false;
+  candidates.forEach((c) => { if (constantEquals(c, secret)) authenticated = true; });
+
+  if (!authenticated) {
     /* Nothing is recorded: an unauthenticated request must not be able to
        write rows into the ledger. Logged, so a misconfiguration is visible.
 
