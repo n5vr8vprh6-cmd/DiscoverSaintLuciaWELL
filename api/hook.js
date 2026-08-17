@@ -5,12 +5,21 @@
    standard for everything below: it fails closed, it never trusts the body
    about who anybody is, and it writes down every single thing that arrives.
 
+   ── WHAT "FAILS CLOSED" MEANS HERE ────────────────────────────────────────
+   It means NOTHING IS EVER GRANTED unless the secret matches, the product is
+   the build pack, and the event is one we act on. It does NOT mean the request
+   fails: a webhook that returns 4xx/5xx to everything cannot even be saved in
+   ThriveCart, which validates the URL first — the original version of this
+   file made the integration impossible to set up. Anything we cannot act on
+   returns 200 having done nothing, and 5xx is kept for our own failures, where
+   a retry is the right answer.
+
    ── IT FAILS CLOSED, FOUR WAYS ────────────────────────────────────────────
-   1. NO SECRET CONFIGURED, NO SERVICE. If THRIVECART_SECRET is unset the
-      endpoint refuses everything. An unconfigured payment webhook that accepts
-      requests is an open endpoint for granting paid goods.
+   1. NO SECRET CONFIGURED, NOTHING GRANTED. If THRIVECART_SECRET is unset the
+      endpoint acknowledges and grants nothing, loudly, in the log.
    2. THE SECRET IS COMPARED IN CONSTANT TIME. A byte-by-byte early return
-      leaks the secret to anybody patient enough to measure.
+      leaks the secret to anybody patient enough to measure. An unauthenticated
+      request is also recorded NOWHERE — otherwise anyone could fill the ledger.
    3. AN UNRECOGNISED PRODUCT GRANTS NOTHING. Duncan sells more than one thing
       through ThriveCart. A Foundations purchase must not quietly hand out
       build packs, so the product has to match THRIVECART_BUILDPACK_ID — and
@@ -56,20 +65,53 @@ const PAID = ['order.success', 'order_success', 'purchase', 'order.completed', '
 const REFUNDED = ['order.refund', 'order_refund', 'refund', 'order.chargeback', 'rebill.failed'];
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') return json(res, 405, { error: 'method' });
+  /* ── 2xx MEANS "RECEIVED", NOT "ACTED ON" ────────────────────────────────
+     The first version answered 405 to a GET and 503 while the secret was
+     unset, which was wrong in a way that only showed up against the real
+     provider: ThriveCart validates the URL before it will save the webhook,
+     the probe never saw a 2xx, and the integration could not be set up at all.
+     Failing closed had been implemented as failing the request, and those are
+     not the same thing.
 
-  const secret = process.env.THRIVECART_SECRET;
-  if (!secret) {
-    console.error('hook: THRIVECART_SECRET is not set — refusing every request');
-    return json(res, 503, { error: 'not_configured' });
+     What must fail closed is GRANTING. So every request we cannot act on now
+     returns 200 having granted nothing — which is what the product-mismatch
+     and ignored-kind paths already did — and 5xx is reserved for the cases
+     where WE failed at something a retry could fix. An unauthenticated request
+     is still recorded nowhere and still moves no balance.
+
+     It also leaks less: a uniform 200 tells somebody probing this endpoint
+     nothing about whether they guessed the secret. */
+  const received = (reason, extra) =>
+    json(res, 200, Object.assign({ ok: true, granted: 0, reason }, extra || {}));
+
+  if (req.method !== 'POST') {
+    /* A validation probe, or somebody in a browser. Does nothing, says so. */
+    return json(res, 200, { ok: true, endpoint: 'thrivecart-webhook', method: 'POST' });
   }
 
-  const body = await readBody(req);
-  if (!body) return json(res, 400, { error: 'unreadable' });
+  const secret = process.env.THRIVECART_SECRET;
+  const body = (await readBody(req)) || {};
 
-  if (!constantEquals(pick(body, ['thrivecart_secret', 'secret', 'x-thrivecart-secret']), secret)) {
-    /* Deliberately says nothing about why. */
-    return json(res, 401, { error: 'unauthorised' });
+  if (!secret) {
+    console.error('hook: THRIVECART_SECRET is not set — received a webhook and granted nothing');
+    return received('not_configured');
+  }
+
+  /* The secret may arrive in the body OR in the URL. ThriveCart's own field is
+     `thrivecart_secret`; the query-string form is the fallback for providers
+     that do not offer a secret word at all, and it is why the webhook URL
+     itself should be treated as a credential. */
+  const url = new URL(req.url || '/', 'https://x');
+  const offered = pick(body, ['thrivecart_secret', 'secret', 'x-thrivecart-secret'])
+    || url.searchParams.get('k')
+    || url.searchParams.get('secret')
+    || req.headers['x-thrivecart-secret'];
+
+  if (!constantEquals(offered, secret)) {
+    /* Nothing is recorded: an unauthenticated request must not be able to
+       write rows into the ledger. Logged, so a misconfiguration is visible. */
+    console.error('hook: secret did not match — granted nothing, recorded nothing');
+    return received('unauthorised');
   }
 
   const eventId = pick(body, ['event_id', 'order_id', 'invoice_id', 'id', 'transaction_id']);

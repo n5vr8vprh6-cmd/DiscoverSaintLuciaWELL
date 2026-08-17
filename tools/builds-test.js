@@ -107,17 +107,45 @@ const post = async (body, env) => {
 };
 
 (async () => {
+  /* ── 2xx OR THE INTEGRATION CANNOT BE SET UP ─────────────────────────────
+     ThriveCart validates the webhook URL before it will save it and refuses
+     anything that is not 2xx. The first version answered 405 to the probe and
+     503 while the secret was unset, so the webhook could not be saved at all —
+     failing closed had been implemented as failing the request.
+
+     These assertions are the record of that: the endpoint must ACKNOWLEDGE
+     everything and GRANT almost nothing. */
   const g = mkRes(); await hook({ method: 'GET', headers: {} }, g);
-  ok('GET is 405', g.statusCode === 405);
+  ok('a GET is 2xx so the provider can validate the URL', g.statusCode === 200,
+    'ThriveCart will not save a webhook whose URL does not answer 2xx');
+  ok('and it does nothing', g.payload.granted === undefined && !g.payload.error);
 
   const noSecret = await post({ event: 'order.success' }, { secret: null });
-  ok('with no secret configured it refuses EVERYTHING', noSecret.statusCode === 503,
-    'an unconfigured payment webhook that accepts requests is an open endpoint for paid goods');
+  ok('unconfigured: acknowledged, nothing granted',
+    noSecret.statusCode === 200 && noSecret.payload.granted === 0
+      && noSecret.payload.reason === 'not_configured',
+    'the endpoint has to be savable before the secret can ever be set on it');
 
   const wrong = await post({ event: 'order.success', thrivecart_secret: 'nope' }, { secret: 'right' });
-  ok('a wrong secret is 401', wrong.statusCode === 401);
-  ok('and it says nothing about why', !/secret|length|expected/i.test(JSON.stringify(wrong.payload)),
-    'a helpful error here is a hint for whoever is guessing');
+  ok('a wrong secret grants nothing', wrong.statusCode === 200 && wrong.payload.granted === 0
+    && wrong.payload.reason === 'unauthorised');
+  ok('and it says nothing about why', !/secret|length|expected|match/i.test(JSON.stringify(wrong.payload)),
+    'a uniform response tells somebody probing this endpoint nothing about whether they guessed');
+
+  /* THE SECRET MAY ARRIVE IN THE URL. Some providers offer no secret field at
+     all, which makes the webhook URL itself the credential. */
+  const viaUrl = mkRes();
+  process.env.THRIVECART_SECRET = 'url-secret';
+  await hook({ method: 'POST', url: '/api/hook?k=url-secret', headers: {},
+    body: { event: 'order.viewed', order_id: 'selftest-url' } }, viaUrl);
+  ok('a secret in the query string authenticates too',
+    viaUrl.payload.reason === 'ignored_kind',
+    'it got past the secret check, which is the point — the kind is why it stopped');
+  const viaUrlBad = mkRes();
+  await hook({ method: 'POST', url: '/api/hook?k=wrong', headers: {},
+    body: { event: 'order.viewed', order_id: 'selftest-url2' } }, viaUrlBad);
+  ok('and a wrong one in the query string does not', viaUrlBad.payload.reason === 'unauthorised');
+  delete process.env.THRIVECART_SECRET;
 
   const noProduct = await post(
     { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-o1', product_id: 'foundations' },
