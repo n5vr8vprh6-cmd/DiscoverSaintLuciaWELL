@@ -293,6 +293,18 @@ const CASES = [
   expect: 'Every option is tappable, nothing is clipped, the result is readable.',
   why: 'Most of this traffic will arrive from a QR code, which means a phone, in a venue, one-handed.' },
 
+/* Split out of C-21, which found it. The compass was the one thing on the
+   Finder that clipped on a phone, and it clipped for a structural reason
+   rather than a styling one — so it gets a check of its own that does not
+   depend on anyone happening to look at the left-hand edge. */
+{ id: 'C-26', role: 'consumer', priority: 3, area: 'Journey Finder',
+  title: 'The compass fits on a phone, on the home page and on the result',
+  steps: ['node tools/compass-fit.js --check',
+          'On a phone, look at the compass on the home page and again on a Finder result',
+          'CELEBRATE is the one to check — it is the longest word and it sits on the left'],
+  expect: 'Exits 0, and no direction is cut off by the edge of the screen at any width.',
+  why: 'The viewBox is computed from the label size, so the two must stay in one file. A font-size added in CSS would win over the attribute and put the word back off the screen with nothing to error on — which is exactly how this shipped the first time.' },
+
 /* ══ ADVISOR ═════════════════════════════════════════════════════════════ */
 { id: 'A-01', role: 'advisor', priority: 1, area: 'Registration',
   title: 'Registration accepts a complete application',

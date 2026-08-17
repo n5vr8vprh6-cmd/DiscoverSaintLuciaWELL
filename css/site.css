@@ -426,7 +426,11 @@ body[data-motion="ready"] .lens-item {
   gap: clamp(2.5rem, 6vw, 6rem);
   align-items: center;
 }
-.compass-figure { max-width: 560px; width: 100%; margin-inline: auto; }
+/* 663, not 560. The viewBox now contains the labels as well as the ring
+   (lib/components.js, C-21), so the same container width draws a smaller ring.
+   Raised in proportion — 560 x 734/620 — to keep the ring the size it was
+   wherever the column is wide enough to allow it. */
+.compass-figure { max-width: 663px; width: 100%; margin-inline: auto; }
 .compass { width: 100%; height: auto; overflow: visible; }
 .compass-ring {
   fill: none;
@@ -435,9 +439,13 @@ body[data-motion="ready"] .lens-item {
 }
 .compass-ring--inner { stroke-dasharray: 3 7; }
 .compass-tick { stroke: var(--gold); stroke-width: 1.2; opacity: .75; }
+/* No font-size here on purpose. It is a `font-size` ATTRIBUTE on each <text>,
+   set by compass(), because the viewBox is computed from it — a size declared
+   in CSS could drift away from the box drawn around it, and the symptom of
+   that drift is a clipped word (C-21). A rule here would win over the
+   attribute, so adding one back would silently re-open the bug. */
 .compass-label {
   font-family: var(--sans);
-  font-size: 21px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   fill: var(--paper);
@@ -1256,7 +1264,9 @@ html[data-finder="app"] .result-head { margin-bottom: clamp(1.5rem, 3vw, 2.25rem
    .compass-label is `fill: var(--paper)` and .compass-ring strokes
    --hairline-d, both tuned for section--ink on the homepage. Dropped onto the
    result card unchanged, the labels are paper on paper — an empty circle. */
-.result-compass-figure { margin-inline: auto; max-width: 22rem; width: 100%; }
+/* 27.7rem, not 22: this ring is drawn at label size 24, so its viewBox is
+   780 wide against the ring's own 620. Same compensation as .compass-figure. */
+.result-compass-figure { margin-inline: auto; max-width: 27.7rem; width: 100%; }
 
 /* NO ENTRANCE ANIMATION HERE.
    The homepage compass draws itself as you scroll to it: rings stroke on,
@@ -1283,7 +1293,7 @@ body[data-motion="ready"] .result-compass-figure .compass-tick {
   transform: none;
   animation: none;
 }
-.result-compass-figure .compass-label { fill: var(--ink); font-size: 24px; }
+.result-compass-figure .compass-label { fill: var(--ink); }  /* size is an attribute — see .compass-label */
 .result-compass-figure .compass-ring { stroke: var(--hairline-l); }
 .result-compass-figure .compass-center { fill: var(--muted); }
 .result-compass-figure .compass.is-probed .compass-center { fill: var(--muted); }
@@ -2423,7 +2433,7 @@ body[data-motion="ready"] .settled {
   .village-block--wide .village-themes-title { margin-top: 1.8rem; }
   .village-block--wide .village-block-media img { aspect-ratio: 16 / 10; }
   .split-media { max-width: 480px; }
-  .compass-figure { max-width: 420px; }
+  .compass-figure { max-width: 497px; }  /* 420 x 734/620 — see .compass-figure */
   .village-blocks { gap: clamp(3rem, 8vw, 4.5rem); }
   .tile-grid { grid-template-columns: repeat(2, 1fr); }
   .checklist-wrap { grid-template-columns: 1fr; }

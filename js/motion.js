@@ -261,11 +261,17 @@
         if (e.pointerType !== 'mouse') return;
 
         /* Cursor into the SVG's own coordinate space, so the maths is
-           independent of how the figure is scaled at this viewport. */
+           independent of how the figure is scaled at this viewport.
+
+           `vb.x +` is load-bearing and was NOT here originally, because the
+           viewBox used to start at 0 and the omission cost nothing. It starts
+           at -91 now (C-21 widened it to contain the labels), and without this
+           term every reading was off by 91 units — pointing at one direction
+           and lighting its neighbour, with nothing to throw. */
         var box = compass.getBoundingClientRect();
         var vb = compass.viewBox.baseVal;
-        var x = (e.clientX - box.left) / box.width * vb.width;
-        var y = (e.clientY - box.top) / box.height * vb.height;
+        var x = vb.x + (e.clientX - box.left) / box.width * vb.width;
+        var y = vb.y + (e.clientY - box.top) / box.height * vb.height;
 
         /* Nothing lights in the dead centre — the ring is the instrument, the
            middle is the brand mark. 132 clears the inner ring at r=122. */
