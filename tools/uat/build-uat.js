@@ -321,7 +321,7 @@ header.top {
     <ul>
       <li><strong>Real emails send</strong> through Resend, and Encharge events fire on registration and approval.</li>
       <li><strong>Every plan build costs real money</strong> at OpenAI. Budget a few dollars for the Campaign group.</li>
-      <li>Register test advisors as <code>duncan+uat1@phinklife.org</code>, <code>+uat2</code> … — they deliver to your real inbox and stay greppable.</li>
+      <li>Register test advisors as <code>concierge+uat1@discoversaintluciawell.com</code>, <code>+uat2</code> … — they deliver to the concierge inbox and stay greppable. We send <em>from</em> <code>journeys@</code>, so there is no collision.</li>
       <li>Give every test traveller the first name <code>ZZTest</code>. It sorts to the bottom of every list and matches nothing real.</li>
       <li><strong>Do the Teardown group at the end.</strong> This project has already had to purge six test Journeys once.</li>
     </ul>

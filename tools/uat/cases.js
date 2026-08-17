@@ -48,37 +48,44 @@ const CASES = [
   why: 'D7 shipped but is inert without it. Until this runs, every build-pack case is testing the old gate rather than the new one.' },
 
 { id: 'S-02', role: 'setup', priority: 1, area: 'Before you start',
-  title: 'Set the ThriveCart environment variables',
-  steps: ['Add THRIVECART_SECRET, THRIVECART_BUILDPACK_ID and THRIVECART_BUILDPACK_URL to .env',
-          'node tools/push-env.js',
-          'Redeploy'],
-  expect: 'POST to /api/hook with no body returns 401 rather than 503.',
-  why: '503 means the secret is still unset and the webhook is refusing everything — which is correct, but it means a real purchase would grant nothing.' },
+  title: 'Confirm the ThriveCart wiring is still live',
+  steps: ['POST anything to /api/hook — curl, or the browser console',
+          'Check .env still holds all three THRIVECART_ values'],
+  expect: 'A 200 with reason "unauthorised". NOT "not_configured", which would mean the secret never reached Vercel.',
+  why: 'This was wired and proven on 17 Aug against real ThriveCart payloads. It is here so a broken redeploy or a cleared environment variable is caught before four other cases fail mysteriously.' },
 
 { id: 'S-03', role: 'setup', priority: 1, area: 'Before you start',
-  title: 'Create two test advisor accounts',
-  steps: ['Register duncan+uat1@phinklife.org — this one stays Registered',
-          'Register duncan+uat2@phinklife.org — this one gets Foundations later',
-          'Approve both from /hub/admin/advisors'],
-  expect: 'Both appear active, both receive their approval email at Duncan\'s real inbox.',
-  why: 'Plus-addressing gives unique addresses that still deliver, so reset and approval emails can actually be read — and every test account is one grep away at teardown.' },
+  title: 'Prove plus-addressing actually delivers',
+  steps: ['Send an ordinary email to concierge+uat1@discoversaintluciawell.com from anywhere',
+          'Check the concierge inbox'],
+  expect: 'It arrives.',
+  why: 'Everything below assumes it does. Purelymail handles this domain\'s mail and not every provider passes "+" subaddressing through — if it silently drops, A-08 and D-03 fail for a reason that has nothing to do with the product, and you spend an hour on it.' },
 
 { id: 'S-04', role: 'setup', priority: 1, area: 'Before you start',
+  title: 'Create two test advisor accounts',
+  needs: ['S-03 confirmed'],
+  steps: ['Register concierge+uat1@discoversaintluciawell.com — this one stays Registered',
+          'Register concierge+uat2@discoversaintluciawell.com — this one gets Foundations later',
+          'Approve both from /hub/admin/advisors'],
+  expect: 'Both appear active, and both approval emails arrive at the concierge inbox.',
+  why: 'One address per role, both on our own domain, both greppable at teardown. We send from journeys@ so there is no sender/recipient collision.' },
+
+{ id: 'S-05', role: 'setup', priority: 1, area: 'Before you start',
   title: 'Grant Foundations to the second test advisor',
-  steps: ['Open /hub/admin/advisors, choose duncan+uat2',
+  steps: ['Open /hub/admin/advisors, choose concierge+uat2',
           'Use the foundations_set action'],
   expect: 'Their record shows a Foundations date.',
   why: 'Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.' },
 
-{ id: 'S-05', role: 'setup', priority: 2, area: 'Before you start',
+{ id: 'S-06', role: 'setup', priority: 2, area: 'Before you start',
   title: 'Note the starting row counts',
   steps: ['In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits'],
   expect: 'Four numbers written down.',
   why: 'Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.' },
 
-{ id: 'S-06', role: 'setup', priority: 2, area: 'Before you start',
+{ id: 'S-07', role: 'setup', priority: 2, area: 'Before you start',
   title: 'Have a WELL link and a second browser ready',
-  steps: ['Copy the WELL link from /hub for duncan+uat1',
+  steps: ['Copy the WELL link from /hub for concierge+uat1',
           'Open a private window or a different browser for the consumer role'],
   expect: 'Two independent sessions, one signed in and one not.',
   why: 'Consumer cases must run with no Hub session. Testing them in the signed-in window silently exercises a different code path.' },
@@ -159,9 +166,9 @@ const CASES = [
 
 { id: 'C-13', role: 'consumer', priority: 1, area: 'Sharing',
   title: 'Sharing with a specific advisor reaches that advisor',
-  needs: ['The WELL link for duncan+uat1'],
+  needs: ['The WELL link for concierge+uat1'],
   steps: ['Open the WELL link', 'Complete the Finder', 'Share the result, first name ZZTest'],
-  expect: 'The Journey appears under duncan+uat1 at /hub/journeys, not under anybody else.',
+  expect: 'The Journey appears under concierge+uat1 at /hub/journeys, not under anybody else.',
   why: 'Attribution is the product. A Journey landing on the wrong advisor is worse than losing it.' },
 
 { id: 'C-14', role: 'consumer', priority: 2, area: 'Sharing',
@@ -179,9 +186,9 @@ const CASES = [
 
 { id: 'C-16', role: 'consumer', priority: 1, area: 'WELL link',
   title: 'A WELL link resolves and records a visit',
-  needs: ['The WELL link for duncan+uat1'],
+  needs: ['The WELL link for concierge+uat1'],
   steps: ['Open the WELL link in a private window', 'Note the time',
-          'Check /hub as duncan+uat1'],
+          'Check /hub as concierge+uat1'],
   expect: 'It lands on the Journey page and the visit count increases.',
   why: 'Visits are the first number in the funnel and the input to the whole loop-back report.' },
 
@@ -226,7 +233,7 @@ const CASES = [
 
 { id: 'A-02', role: 'advisor', priority: 2, area: 'Registration',
   title: 'Registration refuses a duplicate email',
-  steps: ['Register again with duncan+uat1@phinklife.org'],
+  steps: ['Register again with concierge+uat1@discoversaintluciawell.com'],
   expect: 'A clear refusal, and no second account is created.',
   why: 'Two accounts on one email splits their Journeys across records neither of them can see whole.' },
 
@@ -250,7 +257,7 @@ const CASES = [
 
 { id: 'A-06', role: 'advisor', priority: 1, area: 'Sign in',
   title: 'Sign in works and lands on the Hub',
-  steps: ['Open /hub/login', 'Sign in as duncan+uat1'],
+  steps: ['Open /hub/login', 'Sign in as concierge+uat1'],
   expect: 'Lands on /hub with their name shown.',
   why: 'Everything else in this group depends on it.' },
 
@@ -262,7 +269,7 @@ const CASES = [
 
 { id: 'A-08', role: 'advisor', priority: 2, area: 'Sign in',
   title: 'Forgot password sends a working reset',
-  steps: ['Use /hub/forgot for duncan+uat1', 'Open the email', 'Set a new password'],
+  steps: ['Use /hub/forgot for concierge+uat1', 'Open the email', 'Set a new password'],
   expect: 'The email arrives, the link works once, the new password signs in.',
   why: 'Advisors will forget. A broken reset is a support burden that arrives one person at a time.' },
 
@@ -293,7 +300,7 @@ const CASES = [
 { id: 'A-13', role: 'advisor', priority: 1, area: 'Journeys',
   title: 'A shared Journey appears with the traveller\'s answers',
   needs: ['C-13 completed'],
-  steps: ['Open /hub/journeys as duncan+uat1', 'Open the ZZTest Journey'],
+  steps: ['Open /hub/journeys as concierge+uat1', 'Open the ZZTest Journey'],
   expect: 'Their name, contact details, timing and the answers they gave.',
   why: 'This is what the advisor actually sells from. Missing answers make the follow-up generic.' },
 
@@ -330,7 +337,7 @@ const CASES = [
 
 { id: 'A-19', role: 'advisor', priority: 1, area: 'Campaign · intake',
   title: 'The campaign screen loads with no plan',
-  steps: ['Open /hub/campaign as duncan+uat1'],
+  steps: ['Open /hub/campaign as concierge+uat1'],
   expect: 'A build section, a readiness percentage, the copy-paste prompt and the intake form, all open.',
   why: 'With no plan this screen IS the intake. If the form were folded away here there would be nothing to do.' },
 
@@ -520,7 +527,7 @@ const CASES = [
 /* ══ ADMIN ═══════════════════════════════════════════════════════════════ */
 { id: 'D-01', role: 'admin', priority: 1, area: 'Console',
   title: 'The admin console is reachable only by an admin',
-  steps: ['Open /hub/admin as duncan+uat1 (not an admin)'],
+  steps: ['Open /hub/admin as concierge+uat1 (not an admin)'],
   expect: 'Refused or redirected — not rendered.',
   why: 'The console can delete people and grant training. It is the highest-value target in the product.' },
 
@@ -550,7 +557,7 @@ const CASES = [
 
 { id: 'D-06', role: 'admin', priority: 2, area: 'Advisors',
   title: 'Setting and clearing Foundations changes what they may claim',
-  steps: ['Use foundations_set on duncan+uat2', 'Check their campaign screen', 'Then foundations_clear'],
+  steps: ['Use foundations_set on concierge+uat2', 'Check their campaign screen', 'Then foundations_clear'],
   expect: 'The claims ladder follows the date in both directions.',
   why: 'The ladder governs what their published copy may say about their qualifications. It has to follow the record exactly.' },
 
@@ -683,7 +690,7 @@ const CASES = [
 
 { id: 'G-05', role: 'guard', priority: 1, area: 'Claims ladder',
   title: 'A registered advisor is described as Registered',
-  steps: ['As duncan+uat1, read "What you may say about yourself"'],
+  steps: ['As concierge+uat1, read "What you may say about yourself"'],
   expect: 'Registered — not Foundations, not trained.',
   why: 'Describing yourself as trained when you are not is a claim about a qualification, published under their name.' },
 
@@ -727,8 +734,8 @@ const CASES = [
 
 { id: 'G-12', role: 'guard', priority: 1, area: 'Build gate',
   title: 'A Foundations advisor is unlimited and shown no meter',
-  needs: ['Migration 017 applied', 'duncan+uat2 with Foundations'],
-  steps: ['Build several plans as duncan+uat2', 'Check plan_builds in Supabase before and after'],
+  needs: ['Migration 017 applied', 'concierge+uat2 with Foundations'],
+  steps: ['Build several plans as concierge+uat2', 'Check plan_builds in Supabase before and after'],
   expect: 'Never refused, and the number never moves.',
   why: 'Not "spent and ignored" — the number must not change, or somebody later reads a balance that has been counting down against a person who is not being counted.' },
 
@@ -740,14 +747,14 @@ const CASES = [
 
 { id: 'G-14', role: 'guard', priority: 2, area: 'Webhook',
   title: 'The webhook refuses without the right secret',
-  steps: ['POST anything to /api/hook with no secret, then with a wrong one'],
-  expect: '503 before configuration, 401 after — and the error says nothing about why.',
-  why: 'This is the only endpoint money passes through. A helpful error is a hint for whoever is guessing.' },
+  steps: ['POST to /api/hook with no secret, then with a wrong one, then with ?k=wrong'],
+  expect: 'All three return 200 with reason "unauthorised", granted 0, and no row in purchase_events.',
+  why: 'It answers 200 so ThriveCart can validate the URL at all — failing closed means granting nothing, not failing the request. The uniform reply also tells somebody probing it nothing about whether they guessed. Nothing is recorded, or anyone could fill the ledger.' },
 
 { id: 'G-15', role: 'guard', priority: 2, area: 'Webhook',
   title: 'A real purchase adds three, and a replay adds nothing',
   needs: ['ThriveCart configured'],
-  steps: ['Make a real $9 purchase', 'Check the balance and purchase_events', 'Have ThriveCart resend the webhook'],
+  steps: ['Take the product OUT of test mode', 'Make a real $9 purchase', 'Check the balance and purchase_events', 'Have ThriveCart resend the webhook'],
   expect: 'Balance +3 once. The replay is recorded as a replay and adds nothing.',
   why: 'Providers retry precisely when the first attempt worked and the response was lost. Without this, every lost response doubles somebody\'s purchase.' },
 
@@ -756,6 +763,20 @@ const CASES = [
   steps: ['Check purchase_events after any non-build-pack purchase'],
   expect: 'Recorded with a note and a delta of zero.',
   why: 'More than one thing sells through ThriveCart. A Foundations sale must not quietly hand out build packs — and must not vanish either.' },
+
+{ id: 'G-21', role: 'guard', priority: 1, area: 'Webhook',
+  title: 'A sandbox order grants nothing',
+  steps: ['With the product in test mode, complete a sandbox purchase',
+          'Check the advisor\'s plan_builds and purchase_events'],
+  expect: 'A row recorded with a note and a delta of 0. The balance does not move.',
+  why: 'The first successful test purchase granted three real builds on an order where no money moved — ThriveCart said mode:"test" in a payload of 77 fields and nothing looked. A product\'s checkout URL keeps working while it sits in test mode, so anyone who found it could mint build packs for free.' },
+
+{ id: 'G-22', role: 'guard', priority: 2, area: 'Webhook',
+  title: 'The shared secret is never stored',
+  steps: ['After any webhook arrives, open its row in purchase_events',
+          'Look at raw.thrivecart_secret'],
+  expect: '"[redacted]". Search the whole row for the live secret and find nothing.',
+  why: 'The raw body is kept so a disputed payment can be reconstructed, and it carries the credential that authenticates the webhook. Stored in plaintext it would sit in the table most likely to be opened — and exported — while investigating a payment.' },
 
 { id: 'G-17', role: 'guard', priority: 1, area: 'Access',
   title: 'Signed out, every Hub route redirects to login',
@@ -851,7 +872,7 @@ const CASES = [
 
 { id: 'T-02', role: 'teardown', priority: 1, area: 'Cleanup',
   title: 'Delete the test advisors',
-  steps: ['For each duncan+uat account, use delete and choose erase',
+  steps: ['For each concierge+uat account, use delete and choose erase',
           'Confirm the impact statement matches what you created'],
   expect: 'Accounts gone, Journeys handled as chosen.',
   why: 'Test advisors left active are real accounts with working WELL links pointing at nobody.' },
@@ -871,9 +892,9 @@ const CASES = [
 
 { id: 'T-05', role: 'teardown', priority: 1, area: 'Cleanup',
   title: 'The counts are back where they started',
-  needs: ['S-05 recorded'],
+  needs: ['S-06 recorded'],
   steps: ['Re-count advisors, journey_shares, gtm_plan and campaign_visits'],
-  expect: 'Back to the S-05 numbers, allowing for anything real that arrived during the day.',
+  expect: 'Back to the S-06 numbers, allowing for anything real that arrived during the day.',
   why: 'This is the only way to know the cleanup actually worked. This project has already had to purge six test Journeys once.' },
 
 { id: 'T-06', role: 'teardown', priority: 2, area: 'Cleanup',

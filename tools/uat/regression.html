@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>135 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>138 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">135</b></span>
+      <span class="t-left">Untested <b id="n-left">138</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -182,7 +182,7 @@ header.top {
     <ul>
       <li><strong>Real emails send</strong> through Resend, and Encharge events fire on registration and approval.</li>
       <li><strong>Every plan build costs real money</strong> at OpenAI. Budget a few dollars for the Campaign group.</li>
-      <li>Register test advisors as <code>duncan+uat1@phinklife.org</code>, <code>+uat2</code> … — they deliver to your real inbox and stay greppable.</li>
+      <li>Register test advisors as <code>concierge+uat1@discoversaintluciawell.com</code>, <code>+uat2</code> … — they deliver to the concierge inbox and stay greppable. We send <em>from</em> <code>journeys@</code>, so there is no collision.</li>
       <li>Give every test traveller the first name <code>ZZTest</code>. It sorts to the bottom of every list and matches nothing real.</li>
       <li><strong>Do the Teardown group at the end.</strong> This project has already had to purge six test Journeys once.</li>
     </ul>
@@ -194,11 +194,11 @@ header.top {
     <h2>Setup</h2>
     <p class="role-note">Do these first or half the pass is meaningless.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 6 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 7 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Before you start <span class="area-n">6</span></summary>
+    <summary>Before you start <span class="area-n">7</span></summary>
     
 <article class="case" id="case-S-01" data-id="S-01" data-role="setup"
    data-pri="1" data-hash="1e84a7v"
@@ -232,11 +232,11 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-02" data-id="S-02" data-role="setup"
-   data-pri="1" data-hash="1i0407w"
-   data-title="Set the ThriveCart environment variables" data-expect="POST to /api/hook with no body returns 401 rather than 503." data-area="Before you start">
+   data-pri="1" data-hash="1josxtk"
+   data-title="Confirm the ThriveCart wiring is still live" data-expect="A 200 with reason &quot;unauthorised&quot;. NOT &quot;not_configured&quot;, which would mean the secret never reached Vercel." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-02</span>
-    <h4>Set the ThriveCart environment variables</h4>
+    <h4>Confirm the ThriveCart wiring is still live</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
@@ -244,10 +244,10 @@ header.top {
   
   
 
-  <ol class="steps"><li>Add THRIVECART_SECRET, THRIVECART_BUILDPACK_ID and THRIVECART_BUILDPACK_URL to .env</li><li>node tools/push-env.js</li><li>Redeploy</li></ol>
+  <ol class="steps"><li>POST anything to /api/hook — curl, or the browser console</li><li>Check .env still holds all three THRIVECART_ values</li></ol>
 
-  <p class="expect"><strong>Expect</strong> POST to /api/hook with no body returns 401 rather than 503.</p>
-  <p class="why"><strong>Why this matters</strong> 503 means the secret is still unset and the webhook is refusing everything — which is correct, but it means a real purchase would grant nothing.</p>
+  <p class="expect"><strong>Expect</strong> A 200 with reason &quot;unauthorised&quot;. NOT &quot;not_configured&quot;, which would mean the secret never reached Vercel.</p>
+  <p class="why"><strong>Why this matters</strong> This was wired and proven on 17 Aug against real ThriveCart payloads. It is here so a broken redeploy or a cleared environment variable is caught before four other cases fail mysteriously.</p>
 
   <div class="marks" role="group" aria-label="Result for S-02">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -263,11 +263,11 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-03" data-id="S-03" data-role="setup"
-   data-pri="1" data-hash="gdk0hs"
-   data-title="Create two test advisor accounts" data-expect="Both appear active, both receive their approval email at Duncan&#39;s real inbox." data-area="Before you start">
+   data-pri="1" data-hash="nakhub"
+   data-title="Prove plus-addressing actually delivers" data-expect="It arrives." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-03</span>
-    <h4>Create two test advisor accounts</h4>
+    <h4>Prove plus-addressing actually delivers</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
@@ -275,10 +275,10 @@ header.top {
   
   
 
-  <ol class="steps"><li>Register duncan+uat1@phinklife.org — this one stays Registered</li><li>Register duncan+uat2@phinklife.org — this one gets Foundations later</li><li>Approve both from /hub/admin/advisors</li></ol>
+  <ol class="steps"><li>Send an ordinary email to concierge+uat1@discoversaintluciawell.com from anywhere</li><li>Check the concierge inbox</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Both appear active, both receive their approval email at Duncan&#39;s real inbox.</p>
-  <p class="why"><strong>Why this matters</strong> Plus-addressing gives unique addresses that still deliver, so reset and approval emails can actually be read — and every test account is one grep away at teardown.</p>
+  <p class="expect"><strong>Expect</strong> It arrives.</p>
+  <p class="why"><strong>Why this matters</strong> Everything below assumes it does. Purelymail handles this domain&#39;s mail and not every provider passes &quot;+&quot; subaddressing through — if it silently drops, A-08 and D-03 fail for a reason that has nothing to do with the product, and you spend an hour on it.</p>
 
   <div class="marks" role="group" aria-label="Result for S-03">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -294,22 +294,22 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-04" data-id="S-04" data-role="setup"
-   data-pri="1" data-hash="1jryo6h"
-   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start">
+   data-pri="1" data-hash="h8ys3v"
+   data-title="Create two test advisor accounts" data-expect="Both appear active, and both approval emails arrive at the concierge inbox." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-04</span>
-    <h4>Grant Foundations to the second test advisor</h4>
+    <h4>Create two test advisor accounts</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  
+  <p class="needs"><strong>Needs first:</strong> S-03 confirmed</p>
   
 
-  <ol class="steps"><li>Open /hub/admin/advisors, choose duncan+uat2</li><li>Use the foundations_set action</li></ol>
+  <ol class="steps"><li>Register concierge+uat1@discoversaintluciawell.com — this one stays Registered</li><li>Register concierge+uat2@discoversaintluciawell.com — this one gets Foundations later</li><li>Approve both from /hub/admin/advisors</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Their record shows a Foundations date.</p>
-  <p class="why"><strong>Why this matters</strong> Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.</p>
+  <p class="expect"><strong>Expect</strong> Both appear active, and both approval emails arrive at the concierge inbox.</p>
+  <p class="why"><strong>Why this matters</strong> One address per role, both on our own domain, both greppable at teardown. We send from journeys@ so there is no sender/recipient collision.</p>
 
   <div class="marks" role="group" aria-label="Result for S-04">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -325,22 +325,22 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-05" data-id="S-05" data-role="setup"
-   data-pri="2" data-hash="iizp1w"
-   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start">
+   data-pri="1" data-hash="1j4gg3j"
+   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-05</span>
-    <h4>Note the starting row counts</h4>
-    <span class="pri pri--2">P2</span>
+    <h4>Grant Foundations to the second test advisor</h4>
+    <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
   
   
 
-  <ol class="steps"><li>In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits</li></ol>
+  <ol class="steps"><li>Open /hub/admin/advisors, choose concierge+uat2</li><li>Use the foundations_set action</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Four numbers written down.</p>
-  <p class="why"><strong>Why this matters</strong> Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.</p>
+  <p class="expect"><strong>Expect</strong> Their record shows a Foundations date.</p>
+  <p class="why"><strong>Why this matters</strong> Half the guards are about what changes at that rung — unlimited builds, a different claims ladder, no Foundations note. Without a trained account they cannot be tested.</p>
 
   <div class="marks" role="group" aria-label="Result for S-05">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -356,10 +356,41 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-S-06" data-id="S-06" data-role="setup"
-   data-pri="2" data-hash="xj9yqe"
-   data-title="Have a WELL link and a second browser ready" data-expect="Two independent sessions, one signed in and one not." data-area="Before you start">
+   data-pri="2" data-hash="iizp1w"
+   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-06</span>
+    <h4>Note the starting row counts</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>In Supabase, count rows in advisors, journey_shares, gtm_plan, campaign_visits</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Four numbers written down.</p>
+  <p class="why"><strong>Why this matters</strong> Teardown is only verifiable against a before. Without this you are guessing whether the database came back to where it started.</p>
+
+  <div class="marks" role="group" aria-label="Result for S-06">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-S-07" data-id="S-07" data-role="setup"
+   data-pri="2" data-hash="1geazho"
+   data-title="Have a WELL link and a second browser ready" data-expect="Two independent sessions, one signed in and one not." data-area="Before you start">
+  <div class="case-head">
+    <span class="cid">S-07</span>
     <h4>Have a WELL link and a second browser ready</h4>
     <span class="pri pri--2">P2</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
@@ -368,12 +399,12 @@ header.top {
   
   
 
-  <ol class="steps"><li>Copy the WELL link from /hub for duncan+uat1</li><li>Open a private window or a different browser for the consumer role</li></ol>
+  <ol class="steps"><li>Copy the WELL link from /hub for concierge+uat1</li><li>Open a private window or a different browser for the consumer role</li></ol>
 
   <p class="expect"><strong>Expect</strong> Two independent sessions, one signed in and one not.</p>
   <p class="why"><strong>Why this matters</strong> Consumer cases must run with no Hub session. Testing them in the signed-in window silently exercises a different code path.</p>
 
-  <div class="marks" role="group" aria-label="Result for S-06">
+  <div class="marks" role="group" aria-label="Result for S-07">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -811,8 +842,8 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-C-13" data-id="C-13" data-role="consumer"
-   data-pri="1" data-hash="1lfys0"
-   data-title="Sharing with a specific advisor reaches that advisor" data-expect="The Journey appears under duncan+uat1 at /hub/journeys, not under anybody else." data-area="Sharing">
+   data-pri="1" data-hash="1wvops6"
+   data-title="Sharing with a specific advisor reaches that advisor" data-expect="The Journey appears under concierge+uat1 at /hub/journeys, not under anybody else." data-area="Sharing">
   <div class="case-head">
     <span class="cid">C-13</span>
     <h4>Sharing with a specific advisor reaches that advisor</h4>
@@ -820,12 +851,12 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> The WELL link for duncan+uat1</p>
+  <p class="needs"><strong>Needs first:</strong> The WELL link for concierge+uat1</p>
   
 
   <ol class="steps"><li>Open the WELL link</li><li>Complete the Finder</li><li>Share the result, first name ZZTest</li></ol>
 
-  <p class="expect"><strong>Expect</strong> The Journey appears under duncan+uat1 at /hub/journeys, not under anybody else.</p>
+  <p class="expect"><strong>Expect</strong> The Journey appears under concierge+uat1 at /hub/journeys, not under anybody else.</p>
   <p class="why"><strong>Why this matters</strong> Attribution is the product. A Journey landing on the wrong advisor is worse than losing it.</p>
 
   <div class="marks" role="group" aria-label="Result for C-13">
@@ -908,7 +939,7 @@ header.top {
     <summary>WELL link <span class="area-n">2</span></summary>
     
 <article class="case" id="case-C-16" data-id="C-16" data-role="consumer"
-   data-pri="1" data-hash="1e4rc6h"
+   data-pri="1" data-hash="1rgsbj"
    data-title="A WELL link resolves and records a visit" data-expect="It lands on the Journey page and the visit count increases." data-area="WELL link">
   <div class="case-head">
     <span class="cid">C-16</span>
@@ -917,10 +948,10 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> The WELL link for duncan+uat1</p>
+  <p class="needs"><strong>Needs first:</strong> The WELL link for concierge+uat1</p>
   
 
-  <ol class="steps"><li>Open the WELL link in a private window</li><li>Note the time</li><li>Check /hub as duncan+uat1</li></ol>
+  <ol class="steps"><li>Open the WELL link in a private window</li><li>Note the time</li><li>Check /hub as concierge+uat1</li></ol>
 
   <p class="expect"><strong>Expect</strong> It lands on the Journey page and the visit count increases.</p>
   <p class="why"><strong>Why this matters</strong> Visits are the first number in the funnel and the input to the whole loop-back report.</p>
@@ -1111,7 +1142,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-A-02" data-id="A-02" data-role="advisor"
-   data-pri="2" data-hash="1oivgya"
+   data-pri="2" data-hash="1afy6qt"
    data-title="Registration refuses a duplicate email" data-expect="A clear refusal, and no second account is created." data-area="Registration">
   <div class="case-head">
     <span class="cid">A-02</span>
@@ -1123,7 +1154,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Register again with duncan+uat1@phinklife.org</li></ol>
+  <ol class="steps"><li>Register again with concierge+uat1@discoversaintluciawell.com</li></ol>
 
   <p class="expect"><strong>Expect</strong> A clear refusal, and no second account is created.</p>
   <p class="why"><strong>Why this matters</strong> Two accounts on one email splits their Journeys across records neither of them can see whole.</p>
@@ -1239,7 +1270,7 @@ header.top {
     <summary>Sign in <span class="area-n">5</span></summary>
     
 <article class="case" id="case-A-06" data-id="A-06" data-role="advisor"
-   data-pri="1" data-hash="oojbuu"
+   data-pri="1" data-hash="s3g4kc"
    data-title="Sign in works and lands on the Hub" data-expect="Lands on /hub with their name shown." data-area="Sign in">
   <div class="case-head">
     <span class="cid">A-06</span>
@@ -1251,7 +1282,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Open /hub/login</li><li>Sign in as duncan+uat1</li></ol>
+  <ol class="steps"><li>Open /hub/login</li><li>Sign in as concierge+uat1</li></ol>
 
   <p class="expect"><strong>Expect</strong> Lands on /hub with their name shown.</p>
   <p class="why"><strong>Why this matters</strong> Everything else in this group depends on it.</p>
@@ -1301,7 +1332,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-A-08" data-id="A-08" data-role="advisor"
-   data-pri="2" data-hash="alg4yp"
+   data-pri="2" data-hash="c0fi3b"
    data-title="Forgot password sends a working reset" data-expect="The email arrives, the link works once, the new password signs in." data-area="Sign in">
   <div class="case-head">
     <span class="cid">A-08</span>
@@ -1313,7 +1344,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Use /hub/forgot for duncan+uat1</li><li>Open the email</li><li>Set a new password</li></ol>
+  <ol class="steps"><li>Use /hub/forgot for concierge+uat1</li><li>Open the email</li><li>Set a new password</li></ol>
 
   <p class="expect"><strong>Expect</strong> The email arrives, the link works once, the new password signs in.</p>
   <p class="why"><strong>Why this matters</strong> Advisors will forget. A broken reset is a support burden that arrives one person at a time.</p>
@@ -1464,7 +1495,7 @@ header.top {
     <summary>Journeys <span class="area-n">6</span></summary>
     
 <article class="case" id="case-A-13" data-id="A-13" data-role="advisor"
-   data-pri="1" data-hash="1y1f4to"
+   data-pri="1" data-hash="1lq20rm"
    data-title="A shared Journey appears with the traveller&#39;s answers" data-expect="Their name, contact details, timing and the answers they gave." data-area="Journeys">
   <div class="case-head">
     <span class="cid">A-13</span>
@@ -1476,7 +1507,7 @@ header.top {
   <p class="needs"><strong>Needs first:</strong> C-13 completed</p>
   
 
-  <ol class="steps"><li>Open /hub/journeys as duncan+uat1</li><li>Open the ZZTest Journey</li></ol>
+  <ol class="steps"><li>Open /hub/journeys as concierge+uat1</li><li>Open the ZZTest Journey</li></ol>
 
   <p class="expect"><strong>Expect</strong> Their name, contact details, timing and the answers they gave.</p>
   <p class="why"><strong>Why this matters</strong> This is what the advisor actually sells from. Missing answers make the follow-up generic.</p>
@@ -1654,7 +1685,7 @@ header.top {
     <summary>Campaign · intake <span class="area-n">4</span></summary>
     
 <article class="case" id="case-A-19" data-id="A-19" data-role="advisor"
-   data-pri="1" data-hash="1rupzyg"
+   data-pri="1" data-hash="gl0fvi"
    data-title="The campaign screen loads with no plan" data-expect="A build section, a readiness percentage, the copy-paste prompt and the intake form, all open." data-area="Campaign · intake">
   <div class="case-head">
     <span class="cid">A-19</span>
@@ -1666,7 +1697,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Open /hub/campaign as duncan+uat1</li></ol>
+  <ol class="steps"><li>Open /hub/campaign as concierge+uat1</li></ol>
 
   <p class="expect"><strong>Expect</strong> A build section, a readiness percentage, the copy-paste prompt and the intake form, all open.</p>
   <p class="why"><strong>Why this matters</strong> With no plan this screen IS the intake. If the form were folded away here there would be nothing to do.</p>
@@ -2660,7 +2691,7 @@ header.top {
     <summary>Console <span class="area-n">2</span></summary>
     
 <article class="case" id="case-D-01" data-id="D-01" data-role="admin"
-   data-pri="1" data-hash="18t43ic"
+   data-pri="1" data-hash="7tqv2y"
    data-title="The admin console is reachable only by an admin" data-expect="Refused or redirected — not rendered." data-area="Console">
   <div class="case-head">
     <span class="cid">D-01</span>
@@ -2672,7 +2703,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Open /hub/admin as duncan+uat1 (not an admin)</li></ol>
+  <ol class="steps"><li>Open /hub/admin as concierge+uat1 (not an admin)</li></ol>
 
   <p class="expect"><strong>Expect</strong> Refused or redirected — not rendered.</p>
   <p class="why"><strong>Why this matters</strong> The console can delete people and grant training. It is the highest-value target in the product.</p>
@@ -2819,7 +2850,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-D-06" data-id="D-06" data-role="admin"
-   data-pri="2" data-hash="jqs96k"
+   data-pri="2" data-hash="rr5noy"
    data-title="Setting and clearing Foundations changes what they may claim" data-expect="The claims ladder follows the date in both directions." data-area="Advisors">
   <div class="case-head">
     <span class="cid">D-06</span>
@@ -2831,7 +2862,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Use foundations_set on duncan+uat2</li><li>Check their campaign screen</li><li>Then foundations_clear</li></ol>
+  <ol class="steps"><li>Use foundations_set on concierge+uat2</li><li>Check their campaign screen</li><li>Then foundations_clear</li></ol>
 
   <p class="expect"><strong>Expect</strong> The claims ladder follows the date in both directions.</p>
   <p class="why"><strong>Why this matters</strong> The ladder governs what their published copy may say about their qualifications. It has to follow the record exactly.</p>
@@ -3403,7 +3434,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 20 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 22 recorded</p>
   </div>
   
   <details class="area" open>
@@ -3542,7 +3573,7 @@ header.top {
     <summary>Claims ladder <span class="area-n">1</span></summary>
     
 <article class="case" id="case-G-05" data-id="G-05" data-role="guard"
-   data-pri="1" data-hash="nn4a8j"
+   data-pri="1" data-hash="1l80srt"
    data-title="A registered advisor is described as Registered" data-expect="Registered — not Foundations, not trained." data-area="Claims ladder">
   <div class="case-head">
     <span class="cid">G-05</span>
@@ -3554,7 +3585,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>As duncan+uat1, read &quot;What you may say about yourself&quot;</li></ol>
+  <ol class="steps"><li>As concierge+uat1, read &quot;What you may say about yourself&quot;</li></ol>
 
   <p class="expect"><strong>Expect</strong> Registered — not Foundations, not trained.</p>
   <p class="why"><strong>Why this matters</strong> Describing yourself as trained when you are not is a claim about a qualification, published under their name.</p>
@@ -3775,7 +3806,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-G-12" data-id="G-12" data-role="guard"
-   data-pri="1" data-hash="8af418"
+   data-pri="1" data-hash="1vcggaq"
    data-title="A Foundations advisor is unlimited and shown no meter" data-expect="Never refused, and the number never moves." data-area="Build gate">
   <div class="case-head">
     <span class="cid">G-12</span>
@@ -3784,10 +3815,10 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> Migration 017 applied · duncan+uat2 with Foundations</p>
+  <p class="needs"><strong>Needs first:</strong> Migration 017 applied · concierge+uat2 with Foundations</p>
   
 
-  <ol class="steps"><li>Build several plans as duncan+uat2</li><li>Check plan_builds in Supabase before and after</li></ol>
+  <ol class="steps"><li>Build several plans as concierge+uat2</li><li>Check plan_builds in Supabase before and after</li></ol>
 
   <p class="expect"><strong>Expect</strong> Never refused, and the number never moves.</p>
   <p class="why"><strong>Why this matters</strong> Not &quot;spent and ignored&quot; — the number must not change, or somebody later reads a balance that has been counting down against a person who is not being counted.</p>
@@ -3838,11 +3869,11 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Webhook <span class="area-n">3</span></summary>
+    <summary>Webhook <span class="area-n">5</span></summary>
     
 <article class="case" id="case-G-14" data-id="G-14" data-role="guard"
-   data-pri="2" data-hash="ncch32"
-   data-title="The webhook refuses without the right secret" data-expect="503 before configuration, 401 after — and the error says nothing about why." data-area="Webhook">
+   data-pri="2" data-hash="376u4k"
+   data-title="The webhook refuses without the right secret" data-expect="All three return 200 with reason &quot;unauthorised&quot;, granted 0, and no row in purchase_events." data-area="Webhook">
   <div class="case-head">
     <span class="cid">G-14</span>
     <h4>The webhook refuses without the right secret</h4>
@@ -3853,10 +3884,10 @@ header.top {
   
   
 
-  <ol class="steps"><li>POST anything to /api/hook with no secret, then with a wrong one</li></ol>
+  <ol class="steps"><li>POST to /api/hook with no secret, then with a wrong one, then with ?k=wrong</li></ol>
 
-  <p class="expect"><strong>Expect</strong> 503 before configuration, 401 after — and the error says nothing about why.</p>
-  <p class="why"><strong>Why this matters</strong> This is the only endpoint money passes through. A helpful error is a hint for whoever is guessing.</p>
+  <p class="expect"><strong>Expect</strong> All three return 200 with reason &quot;unauthorised&quot;, granted 0, and no row in purchase_events.</p>
+  <p class="why"><strong>Why this matters</strong> It answers 200 so ThriveCart can validate the URL at all — failing closed means granting nothing, not failing the request. The uniform reply also tells somebody probing it nothing about whether they guessed. Nothing is recorded, or anyone could fill the ledger.</p>
 
   <div class="marks" role="group" aria-label="Result for G-14">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -3872,7 +3903,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-G-15" data-id="G-15" data-role="guard"
-   data-pri="2" data-hash="a2dnqk"
+   data-pri="2" data-hash="1vve23l"
    data-title="A real purchase adds three, and a replay adds nothing" data-expect="Balance +3 once. The replay is recorded as a replay and adds nothing." data-area="Webhook">
   <div class="case-head">
     <span class="cid">G-15</span>
@@ -3884,7 +3915,7 @@ header.top {
   <p class="needs"><strong>Needs first:</strong> ThriveCart configured</p>
   
 
-  <ol class="steps"><li>Make a real $9 purchase</li><li>Check the balance and purchase_events</li><li>Have ThriveCart resend the webhook</li></ol>
+  <ol class="steps"><li>Take the product OUT of test mode</li><li>Make a real $9 purchase</li><li>Check the balance and purchase_events</li><li>Have ThriveCart resend the webhook</li></ol>
 
   <p class="expect"><strong>Expect</strong> Balance +3 once. The replay is recorded as a replay and adds nothing.</p>
   <p class="why"><strong>Why this matters</strong> Providers retry precisely when the first attempt worked and the response was lost. Without this, every lost response doubles somebody&#39;s purchase.</p>
@@ -3921,6 +3952,68 @@ header.top {
   <p class="why"><strong>Why this matters</strong> More than one thing sells through ThriveCart. A Foundations sale must not quietly hand out build packs — and must not vanish either.</p>
 
   <div class="marks" role="group" aria-label="Result for G-16">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-21" data-id="G-21" data-role="guard"
+   data-pri="1" data-hash="aqi4en"
+   data-title="A sandbox order grants nothing" data-expect="A row recorded with a note and a delta of 0. The balance does not move." data-area="Webhook">
+  <div class="case-head">
+    <span class="cid">G-21</span>
+    <h4>A sandbox order grants nothing</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>With the product in test mode, complete a sandbox purchase</li><li>Check the advisor&#39;s plan_builds and purchase_events</li></ol>
+
+  <p class="expect"><strong>Expect</strong> A row recorded with a note and a delta of 0. The balance does not move.</p>
+  <p class="why"><strong>Why this matters</strong> The first successful test purchase granted three real builds on an order where no money moved — ThriveCart said mode:&quot;test&quot; in a payload of 77 fields and nothing looked. A product&#39;s checkout URL keeps working while it sits in test mode, so anyone who found it could mint build packs for free.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-21">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-22" data-id="G-22" data-role="guard"
+   data-pri="2" data-hash="mfc8kk"
+   data-title="The shared secret is never stored" data-expect="&quot;[redacted]&quot;. Search the whole row for the live secret and find nothing." data-area="Webhook">
+  <div class="case-head">
+    <span class="cid">G-22</span>
+    <h4>The shared secret is never stored</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>After any webhook arrives, open its row in purchase_events</li><li>Look at raw.thrivecart_secret</li></ol>
+
+  <p class="expect"><strong>Expect</strong> &quot;[redacted]&quot;. Search the whole row for the live secret and find nothing.</p>
+  <p class="why"><strong>Why this matters</strong> The raw body is kept so a disputed payment can be reconstructed, and it carries the credential that authenticates the webhook. Stored in plaintext it would sit in the table most likely to be opened — and exported — while investigating a payment.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-22">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -4449,7 +4542,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-T-02" data-id="T-02" data-role="teardown"
-   data-pri="1" data-hash="x94l55"
+   data-pri="1" data-hash="557fj"
    data-title="Delete the test advisors" data-expect="Accounts gone, Journeys handled as chosen." data-area="Cleanup">
   <div class="case-head">
     <span class="cid">T-02</span>
@@ -4461,7 +4554,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>For each duncan+uat account, use delete and choose erase</li><li>Confirm the impact statement matches what you created</li></ol>
+  <ol class="steps"><li>For each concierge+uat account, use delete and choose erase</li><li>Confirm the impact statement matches what you created</li></ol>
 
   <p class="expect"><strong>Expect</strong> Accounts gone, Journeys handled as chosen.</p>
   <p class="why"><strong>Why this matters</strong> Test advisors left active are real accounts with working WELL links pointing at nobody.</p>
@@ -4542,8 +4635,8 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-T-05" data-id="T-05" data-role="teardown"
-   data-pri="1" data-hash="tt85ka"
-   data-title="The counts are back where they started" data-expect="Back to the S-05 numbers, allowing for anything real that arrived during the day." data-area="Cleanup">
+   data-pri="1" data-hash="1ll21qj"
+   data-title="The counts are back where they started" data-expect="Back to the S-06 numbers, allowing for anything real that arrived during the day." data-area="Cleanup">
   <div class="case-head">
     <span class="cid">T-05</span>
     <h4>The counts are back where they started</h4>
@@ -4551,12 +4644,12 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> S-05 recorded</p>
+  <p class="needs"><strong>Needs first:</strong> S-06 recorded</p>
   
 
   <ol class="steps"><li>Re-count advisors, journey_shares, gtm_plan and campaign_visits</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Back to the S-05 numbers, allowing for anything real that arrived during the day.</p>
+  <p class="expect"><strong>Expect</strong> Back to the S-06 numbers, allowing for anything real that arrived during the day.</p>
   <p class="why"><strong>Why this matters</strong> This is the only way to know the cleanup actually worked. This project has already had to purge six test Journeys once.</p>
 
   <div class="marks" role="group" aria-label="Result for T-05">
