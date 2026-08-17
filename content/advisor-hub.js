@@ -136,7 +136,18 @@ module.exports = {
         w: 1440, h: 986,
         ui: true,
         alt: 'A Journey briefing in the Hub: what the traveller asked for in plain sentences, their own words, and the stage they are at.',
-        caption: 'An example briefing — invented traveller, invented details'
+        caption: 'An example briefing — invented traveller, invented details',
+        /* The walkthrough layers over this still, which stays the poster and
+           the LCP element. ambient-video.js keeps the poster on screens under
+           820px, for reduced-motion and for Save-Data — so a phone never pays
+           for a 13s screencast it could not read anyway.
+
+           No webm: VP9 came out 2.16 MB against H.264's 0.85 on this file, and
+           the first source a browser can play is the one it takes. Measured,
+           per the rule ambientVideo's own comment states.
+
+           Regenerate with tools/build-hub-walkthrough.py. */
+        video: { mp4: '/assets/video/hub-walkthrough.mp4' }
       },
       cta: { label: 'Create your Hub', href: '/hub/register' },
       ctaVariant: 'gold'
