@@ -71,7 +71,13 @@
     not_configured:       'The Hub is not available at the moment. Please try again shortly.',
     rate_limited:         'That is a few too many attempts. Please wait a little and try again.',
     undertaking_required: 'Please read and agree to the Advisor Data Undertaking to create an account.',
-    migration_pending:    'Accounts cannot be created just now. Please try again shortly.'
+    migration_pending:    'Accounts cannot be created just now. Please try again shortly.',
+    /* Immersion waiting list. `email_invalid` and `name_required` above already
+       cover two of its cases — shared deliberately, so one wording change fixes
+       every form rather than one of them. */
+    phone_required:       'Please add a phone number.',
+    company_required:     'Please add your company name.',
+    unavailable:          'The waiting list is unavailable just now. Please try again shortly.'
   };
 
   document.addEventListener('submit', function (e) {

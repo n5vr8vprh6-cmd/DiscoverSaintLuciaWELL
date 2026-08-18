@@ -79,9 +79,27 @@
   padding-block: clamp(4.5rem, 9vw, 8.5rem);
 }
 
-/* Hairline between two consecutive light sections keeps the rhythm legible
-   without drawing a rule the eye has to step over. */
-.section--paper + .section--paper { padding-top: 0; }
+/* ── TWO SECTIONS OF ONE COLOUR ARE VISUALLY ONE SECTION ─────────────────
+   Section padding buys a boundary. When the skin changes, the colour marks it
+   and the space reads as separation. When the skin does NOT change, there is
+   no boundary to mark and the doubled padding reads as a hole in the page.
+
+   This existed for paper alone and was right; it was simply never extended.
+   Eclipse is where the omission showed, because Eclipse is the only page whose
+   sections are all one skin — eight in a row, so seven boundaries paid twice
+   for a change of colour that never came. `node tools/section-rhythm.js`
+   prints every page's runs, which is how that got from an impression to a
+   number: every other page has at most two such boundaries; Eclipse has seven.
+
+   Collapsing to 0 rather than to some reduced value is deliberate, and it is
+   what the paper rule already did: the previous section's bottom padding is
+   the whole gap, so the space between two same-skin sections is exactly the
+   space above the first one. One number, not two. */
+.section--paper   + .section--paper,
+.section--sand    + .section--sand,
+.section--ink     + .section--ink,
+.section--eclipse + .section--eclipse,
+.section.dark     + .section.dark { padding-top: 0; }
 
 /* Widths that contain DISPLAY type are set in rem, never in ch.
    `ch` resolves against the element's own font-size — on a wrapper inheriting
@@ -536,6 +554,20 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
 }
 .footer-grid--conversion { grid-template-columns: 1.4fr repeat(3, 1fr); }
 .footer-brand-mark { display: flex; align-items: center; gap: 0.7rem; }
+/* Stacked beside the ring, the same shape as the header lockup's .brand-words
+   — so the two ends of an advisor page carry the same mark in the same
+   arrangement rather than two arrangements of the same parts. */
+.footer-brand-words { display: flex; flex-direction: column; line-height: 1.15; }
+.footer-context {
+  font-family: var(--sans);
+  font-size: 0.64rem;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  /* --mist, not the header's --muted: this footer sits on --ink, where muted
+     drops below the contrast the label needs to be readable at 0.64rem. */
+  color: var(--mist);
+  margin: 2px 0 0;
+}
 .footer-brand .wordmark {
   font-family: var(--sans);
   font-size: 0.84rem;

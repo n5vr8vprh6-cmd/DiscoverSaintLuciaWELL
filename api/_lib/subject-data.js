@@ -55,7 +55,7 @@ async function findSubject(email) {
   const norm = String(email || '').trim().toLowerCase();
   if (!supabase || !norm) return null;
 
-  const [shares, advisor] = await Promise.all([
+  const [shares, advisor, waiting] = await Promise.all([
     supabase.from('journey_shares')
       .select('id, created_at, advisor_id, answers, villages, consumer_first, consumer_last, ' +
               'consumer_email, consumer_phone, timing, travel_window, context, stage, ' +
@@ -65,10 +65,27 @@ async function findSubject(email) {
     supabase.from('advisors')
       .select('id, first_name, last_name, email, business, status, role, public_code, created_at')
       .eq('email', norm)
-      .maybeSingle()
+      .maybeSingle(),
+    /* Added with migration 018. A store of personal data this module does not
+       know about is a store that survives an erasure request while this screen
+       reports success — which is worse than having no screen, because it turns
+       a person's request into a false assurance. Every future table lands here
+       in the same change that creates it. */
+    supabase.from('immersion_waitlist')
+      .select('id, created_at, first_name, last_name, email, phone, company, host_agency, source')
+      .ilike('email', norm)
   ]);
 
   if (shares.error) { console.error('findSubject shares', shares.error); return null; }
+  /* 42P01 = migration 018 has not been run on this environment. Not fatal to
+     the lookup, but it must be loud: a silent empty result here reads exactly
+     like "we hold nothing", which is the one answer that must never be
+     guessed. */
+  if (waiting.error && (waiting.error.code === '42P01' || waiting.error.code === 'PGRST205')) {
+    console.error('findSubject: immersion_waitlist is missing — run db/migrations/018.');
+  } else if (waiting.error) {
+    console.error('findSubject waitlist', waiting.error);
+  }
 
   const rows = shares.data || [];
 
@@ -103,6 +120,7 @@ async function findSubject(email) {
       notes: notes.filter((n) => n.share_id === r.id)
     })),
     advisorAccount: advisor.data || null,
+    waitlist: (waiting.error ? [] : (waiting.data || [])),
     /* Held for rate limiting only, never the address itself, and not reversible
        — but it IS derived from them, so an honest access response says so
        rather than quietly omitting it. */
@@ -202,7 +220,26 @@ async function eraseSubject(email) {
 
   const { data: rows } = await supabase
     .from('journey_shares').select('id, advisor_id').eq('consumer_email', norm);
-  if (!rows || !rows.length) return { ok: false, error: 'nothing_held' };
+
+  /* Deleted FIRST and counted separately, because somebody may be on the
+     waiting list without ever having completed the Finder — in which case
+     `rows` is empty and the old code returned 'nothing_held' while a row with
+     their name, email and phone number sat in another table. */
+  const { data: waitRows } = await supabase
+    .from('immersion_waitlist').select('id').ilike('email', norm);
+  let waitlistRemoved = 0;
+  if (waitRows && waitRows.length) {
+    const { error: wErr } = await supabase
+      .from('immersion_waitlist').delete().in('id', waitRows.map((w) => w.id));
+    if (wErr) { console.error('eraseSubject waitlist', wErr); return { ok: false, error: 'failed' }; }
+    waitlistRemoved = waitRows.length;
+  }
+
+  if (!rows || !rows.length) {
+    return waitlistRemoved
+      ? { ok: true, journeys: 0, notes: 0, orphans: 0, advisors: 0, waitlist: waitlistRemoved }
+      : { ok: false, error: 'nothing_held' };
+  }
 
   const { data: notes } = await supabase
     .from('advisor_notes').select('id').in('share_id', rows.map((r) => r.id));
@@ -226,7 +263,8 @@ async function eraseSubject(email) {
     journeys: rows.length,
     notes: (notes || []).length,
     orphans,
-    advisors: [...new Set(rows.map((r) => r.advisor_id).filter(Boolean))].length
+    advisors: [...new Set(rows.map((r) => r.advisor_id).filter(Boolean))].length,
+    waitlist: waitlistRemoved
   };
 }
 

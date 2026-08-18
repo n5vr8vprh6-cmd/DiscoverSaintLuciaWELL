@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>146 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>152 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">146</b></span>
+      <span class="t-left">Untested <b id="n-left">152</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -1321,7 +1321,7 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 50 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 53 recorded</p>
   </div>
   
   <details class="area" open>
@@ -2926,13 +2926,110 @@ header.top {
   </label>
 </article>
   </details>
+  <details class="area" open>
+    <summary>Immersion <span class="area-n">3</span></summary>
+    
+<article class="case" id="case-A-51" data-id="A-51" data-role="advisor"
+   data-pri="2" data-hash="1nnvp2y"
+   data-title="The waiting list accepts a real advisor" data-expect="A confirmation screen, an email that promises no date, no price and no place, and a notification to Duncan." data-area="Immersion">
+  <div class="case-head">
+    <span class="cid">A-51</span>
+    <h4>The waiting list accepts a real advisor</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>/advisors/immersion → Dates and investment → Join the waiting list</li><li>Fill it in with your own details and submit</li><li>Check the confirmation email, and check the notification arrived</li></ol>
+
+  <p class="expect"><strong>Expect</strong> A confirmation screen, an email that promises no date, no price and no place, and a notification to Duncan.</p>
+  <p class="why"><strong>Why this matters</strong> This replaced a dead &quot;[ to be confirmed ]&quot; label. The one question an interested advisor actually has now has somewhere to go.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-51">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-52" data-id="A-52" data-role="advisor"
+   data-pri="3" data-hash="149g9cm"
+   data-title="Joining twice does not create two of you" data-expect="One row, carrying the newer phone number." data-area="Immersion">
+  <div class="case-head">
+    <span class="cid">A-52</span>
+    <h4>Joining twice does not create two of you</h4>
+    <span class="pri pri--3">P3</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Submit the same email address again with a different phone number</li><li>Look at /hub/admin/waitlist as an admin</li></ol>
+
+  <p class="expect"><strong>Expect</strong> One row, carrying the newer phone number.</p>
+  <p class="why"><strong>Why this matters</strong> Filling a form twice because you were not sure it worked is the commonest real behaviour. Two rows means two emails from Duncan later.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-52">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-53" data-id="A-53" data-role="advisor"
+   data-pri="3" data-hash="1pl9653"
+   data-title="The waiting list works without JavaScript" data-expect="Both render a page — a confirmation, and the form again with the error above it. Never a bare 400." data-area="Immersion">
+  <div class="case-head">
+    <span class="cid">A-53</span>
+    <h4>The waiting list works without JavaScript</h4>
+    <span class="pri pri--3">P3</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Disable JavaScript</li><li>Submit the form</li><li>Then submit it with a broken email address</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Both render a page — a confirmation, and the form again with the error above it. Never a bare 400.</p>
+  <p class="why"><strong>Why this matters</strong> A form that needs JavaScript to join a waiting list is a form that quietly loses people, and nobody would ever hear about it.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-53">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
 </section>
 <section class="role" id="role-admin" data-role="admin">
   <div class="role-head">
     <h2>Admin</h2>
     <p class="role-note">The console. Destructive actions live here.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 23 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 24 recorded</p>
   </div>
   
   <details class="area" open>
@@ -3676,13 +3773,48 @@ header.top {
   </label>
 </article>
   </details>
+  <details class="area" open>
+    <summary>Immersion <span class="area-n">1</span></summary>
+    
+<article class="case" id="case-D-24" data-id="D-24" data-role="admin"
+   data-pri="2" data-hash="vh4q1a"
+   data-title="The waiting list is readable and exportable" data-expect="Everyone who joined, newest first, and a CSV whose accents and commas survive Excel." data-area="Immersion">
+  <div class="case-head">
+    <span class="cid">D-24</span>
+    <h4>The waiting list is readable and exportable</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>/hub/admin → Immersion waiting list</li><li>Check the count is what you expect</li><li>Export CSV and open it in Excel</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Everyone who joined, newest first, and a CSV whose accents and commas survive Excel.</p>
+  <p class="why"><strong>Why this matters</strong> Nobody works a waiting list inside a web table — it goes into a mail tool. The export is the feature; the screen is proof it is growing.</p>
+
+  <div class="marks" role="group" aria-label="Result for D-24">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
 </section>
 <section class="role" id="role-guard" data-role="guard">
   <div class="role-head">
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 22 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 24 recorded</p>
   </div>
   
   <details class="area" open>
@@ -4398,6 +4530,72 @@ header.top {
   <p class="why"><strong>Why this matters</strong> The only thing standing between a stuck button and a large OpenAI bill.</p>
 
   <div class="marks" role="group" aria-label="Result for G-20">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
+  <details class="area" open>
+    <summary>Immersion <span class="area-n">2</span></summary>
+    
+<article class="case" id="case-G-23" data-id="G-23" data-role="guard"
+   data-pri="1" data-hash="1e26ces"
+   data-title="A non-admin advisor cannot reach the waiting list" data-expect="Redirected both times. No list, and no file." data-area="Immersion">
+  <div class="case-head">
+    <span class="cid">G-23</span>
+    <h4>A non-admin advisor cannot reach the waiting list</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Sign in as an ordinary advisor</li><li>Type /hub/admin/waitlist into the address bar</li><li>Then try /hub/admin/waitlist?export=csv</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Redirected both times. No list, and no file.</p>
+  <p class="why"><strong>Why this matters</strong> The Hub router does no route-level auth — the guard inside that one screen is the only thing protecting a list of named people with phone numbers. And the export must not be reachable by a path the page guard does not cover.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-23">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-24" data-id="G-24" data-role="guard"
+   data-pri="2" data-hash="1yhvnga"
+   data-title="A waiting-list entrant can be found and erased" data-expect="Found and reported as held before; gone after." data-area="Immersion">
+  <div class="case-head">
+    <span class="cid">G-24</span>
+    <h4>A waiting-list entrant can be found and erased</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Join the waiting list with a test address that has never used the Finder</li><li>/hub/admin/subject → search that address</li><li>Erase, then search again</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Found and reported as held before; gone after.</p>
+  <p class="why"><strong>Why this matters</strong> A store of personal data the subject-rights screen cannot see is worse than no screen at all — it turns a deletion request into a false assurance. Somebody who only joined this list has no Journey, which is exactly the case that used to report &quot;nothing held&quot;.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-24">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>

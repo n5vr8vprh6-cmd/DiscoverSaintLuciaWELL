@@ -616,6 +616,27 @@ const CASES = [
   why: 'A draw has to be administrable outside the product when it comes time to actually pick somebody.' },
 
 /* ══ ADMIN ═══════════════════════════════════════════════════════════════ */
+{ id: 'A-51', role: 'advisor', priority: 2, area: 'Immersion',
+  title: 'The waiting list accepts a real advisor',
+  steps: ['/advisors/immersion → Dates and investment → Join the waiting list',
+          'Fill it in with your own details and submit',
+          'Check the confirmation email, and check the notification arrived'],
+  expect: 'A confirmation screen, an email that promises no date, no price and no place, and a notification to Duncan.',
+  why: 'This replaced a dead "[ to be confirmed ]" label. The one question an interested advisor actually has now has somewhere to go.' },
+
+{ id: 'A-52', role: 'advisor', priority: 3, area: 'Immersion',
+  title: 'Joining twice does not create two of you',
+  steps: ['Submit the same email address again with a different phone number',
+          'Look at /hub/admin/waitlist as an admin'],
+  expect: 'One row, carrying the newer phone number.',
+  why: 'Filling a form twice because you were not sure it worked is the commonest real behaviour. Two rows means two emails from Duncan later.' },
+
+{ id: 'A-53', role: 'advisor', priority: 3, area: 'Immersion',
+  title: 'The waiting list works without JavaScript',
+  steps: ['Disable JavaScript', 'Submit the form', 'Then submit it with a broken email address'],
+  expect: 'Both render a page — a confirmation, and the form again with the error above it. Never a bare 400.',
+  why: 'A form that needs JavaScript to join a waiting list is a form that quietly loses people, and nobody would ever hear about it.' },
+
 { id: 'D-01', role: 'admin', priority: 1, area: 'Console',
   title: 'The admin console is reachable only by an admin',
   steps: [`Open /hub/admin as ${UAT1} (not an admin)`],
@@ -755,6 +776,14 @@ const CASES = [
   why: 'A stated retention period we do not honour, or two places saying different things, is worse than saying nothing.' },
 
 /* ══ GUARDS ══════════════════════════════════════════════════════════════ */
+{ id: 'D-24', role: 'admin', priority: 2, area: 'Immersion',
+  title: 'The waiting list is readable and exportable',
+  steps: ['/hub/admin → Immersion waiting list',
+          'Check the count is what you expect',
+          'Export CSV and open it in Excel'],
+  expect: 'Everyone who joined, newest first, and a CSV whose accents and commas survive Excel.',
+  why: 'Nobody works a waiting list inside a web table — it goes into a mail tool. The export is the feature; the screen is proof it is growing.' },
+
 { id: 'G-01', role: 'guard', priority: 1, area: 'Claims',
   title: 'A serious health claim disables the Copy button',
   steps: ['Edit a caption to say something like "this retreat cures anxiety"', 'Save'],
@@ -894,6 +923,22 @@ const CASES = [
   why: 'The only thing standing between a stuck button and a large OpenAI bill.' },
 
 /* ══ CROSS-CUTTING ═══════════════════════════════════════════════════════ */
+{ id: 'G-23', role: 'guard', priority: 1, area: 'Immersion',
+  title: 'A non-admin advisor cannot reach the waiting list',
+  steps: ['Sign in as an ordinary advisor',
+          'Type /hub/admin/waitlist into the address bar',
+          'Then try /hub/admin/waitlist?export=csv'],
+  expect: 'Redirected both times. No list, and no file.',
+  why: 'The Hub router does no route-level auth — the guard inside that one screen is the only thing protecting a list of named people with phone numbers. And the export must not be reachable by a path the page guard does not cover.' },
+
+{ id: 'G-24', role: 'guard', priority: 2, area: 'Immersion',
+  title: 'A waiting-list entrant can be found and erased',
+  steps: ['Join the waiting list with a test address that has never used the Finder',
+          '/hub/admin/subject → search that address',
+          'Erase, then search again'],
+  expect: 'Found and reported as held before; gone after.',
+  why: 'A store of personal data the subject-rights screen cannot see is worse than no screen at all — it turns a deletion request into a false assurance. Somebody who only joined this list has no Journey, which is exactly the case that used to report "nothing held".' },
+
 { id: 'X-01', role: 'cross', priority: 1, area: 'Layout',
   title: 'The Hub works at 380px',
   steps: ['At 380px wide, walk /hub, /hub/journeys, /hub/campaign and the persona capture'],

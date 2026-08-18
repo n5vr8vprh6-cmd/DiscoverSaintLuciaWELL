@@ -41,6 +41,12 @@ const SCREENS = {
   /* Not guarded by requireAdvisor — it is what requireAdvisor redirects TO. */
   undertaking: () => require('../_lib/hub-screens/undertaking.js'),
 
+  /* PUBLIC on purpose, and the only screen here that is. An advisor asking to
+     hear when the Immersion runs may well not have a Hub account, and putting
+     a sign-in in front of a waiting list would be charging admission to a
+     queue. It writes to its own table and reads nothing. */
+  waitlist: () => require('../_lib/hub-screens/waitlist.js'),
+
   /* Admin. These are ordinary screens in every respect except that their guard
      is requireAdmin rather than requireAdvisor — there is no route-level auth
      here, so each screen's own guard is the only thing protecting it. */
@@ -51,6 +57,7 @@ const SCREENS = {
   adminNew:       () => require('../_lib/hub-screens/admin-new.js'),
   adminImport:    () => require('../_lib/hub-screens/admin-import.js'),
   adminSubject:   () => require('../_lib/hub-screens/admin-subject.js'),
+  adminWaitlist:  () => require('../_lib/hub-screens/admin-waitlist.js'),
   /* Unguarded on purpose — see the file. */
   viewasExit:     () => require('../_lib/hub-screens/viewas-exit.js')
 };

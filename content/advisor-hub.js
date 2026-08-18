@@ -76,7 +76,13 @@ module.exports = {
     {
       type: 'pageHeader',
       eyebrow: 'Free · For travel advisors',
-      headline: 'Where the people who answer your link <em>arrive.</em>',
+      /* Was "Where the people who answer your link arrive." — which leans on
+         "your link" before the page has said what the link is, so the first
+         sentence an advisor reads asks them to already know something. The
+         lead underneath introduces it properly, so the headline can lead with
+         the payoff instead and let the link be explained where there is room
+         to explain it. */
+      headline: 'Meet your travellers <em>before the first call.</em>',
       lead: 'The WELL Journey Finder asks a traveller four questions about how they want to feel. When someone completes it through your link and chooses to share the result, it lands in your Hub — with what they actually asked for, not just an email address.',
       meta: ['Free', 'No card', 'Yours in about a minute'],
       /* Both buttons already existed — in the sticky header and again in the

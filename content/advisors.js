@@ -141,11 +141,14 @@ module.exports = {
           text: 'Ongoing education and resources as the destination programme matures, so what you learned does not go stale.',
           status: 'Ongoing'
         }
-      ],
-      /* Was "Steps four and five are described as they are being built."
-         Five shipped; only four has not. The sentence has to keep pace with
-         what is true, or the page's honesty becomes decorative. */
-      footnote: 'Step four is described as it is being built. Nothing on this page is bookable that does not yet exist.'
+      ]
+      /* No footnote. It read "Step four is described as it is being built.
+         Nothing on this page is bookable that does not yet exist." — which was
+         true, and which the Demonstrate rung already says structurally by
+         carrying `status: 'In development'` as a visible badge. Saying it
+         twice, once as a badge and once as small print, made the page sound
+         more uncertain than it is. The badge is the load-bearing half: remove
+         THAT and the honesty goes with it. */
     },
 
     /* ── WHAT THE ISLAND GIVES YOU TO SELL ──────────────────────────────── */

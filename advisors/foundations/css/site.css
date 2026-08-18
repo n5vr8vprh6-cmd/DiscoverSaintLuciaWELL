@@ -855,6 +855,21 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
 }
 /* the layer this page is actually selling */
 .layers .layer--this { border-top-color: var(--gold); border-top-width: 2px; }
+/* Single column, and the emphasis panel turns into a fault. The negative
+   margin-top pulls it over the item above, and its own padding pushes its
+   heading 22px right of the other two — so the last item reads as indented and
+   arbitrarily separated rather than highlighted. Measured, not guessed.
+
+   Keep the panel, lose the misalignment: no upward pull, and bleed the
+   background outward by exactly the padding so the text returns to the same
+   left edge as its siblings while the highlight still reads. */
+@media (max-width: 820px) {
+  .layers .layer--this {
+    margin-top: 0;
+    margin-inline: -1.4rem;
+    padding-inline: 1.4rem;
+  }
+}
 
 /* ── Voices (markup lives commented-out in index.html until real quotes) ── */
 .voices {
@@ -1003,6 +1018,16 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
   font-family: var(--sans); font-size: 0.68rem; letter-spacing: 0.26em;
   text-transform: uppercase; color: var(--mist); text-align: center; padding: 1rem;
 }
+/* THE PICTURE MUST BE TOLD TO FILL. `.portrait` is a centring flex container
+   and the flex item is <picture>, not <img> — so with align-items:center the
+   picture is never stretched, its box is sized by the image inside it, and the
+   img's own width:100%/height:100% then resolve against that box rather than
+   against the frame. Every portrait rendered at its natural size and
+   object-fit:cover never got to do anything: Robin's 200x200 source floated
+   small in a 350x438 frame, Duncan's 720x960 overflowed and was clipped. One
+   rule, opposite symptoms. Same class of bug as the <picture> note in the
+   consumer site's hero CSS. */
+.person .portrait picture { display: block; width: 100%; height: 100%; }
 .person .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
 /* institutional card: the brand mark stands in for a portrait */
 .person .portrait--mark { background: var(--ink); }
@@ -1016,6 +1041,25 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
 }
 @media (max-width: 800px) { .people { grid-template-columns: 1fr; max-width: 26rem; } }
 /* four named faculty: destination sales, industry, journey design, wellness */
+/* two named facilitators: the people who actually stand at the front of the
+   room. Everyone else moved to .behind below, which is the treatment this page
+   already used for named participation that is not teaching. */
+.people--two { grid-template-columns: repeat(2, 1fr); max-width: 44rem; }
+@media (max-width: 640px) { .people--two { grid-template-columns: 1fr; max-width: 26rem; } }
+
+/* ── Who stands behind it ─────────────────────────────────────────────────
+   Deliberately quieter than the facilitators above. The hierarchy is the
+   honesty: these people and their organisations are genuinely involved, and
+   none of them teach, so they are named at a weight that says so without
+   anybody having to read a disclaimer. */
+.behind { margin-top: clamp(2.5rem, 5vw, 3.5rem); }
+.behind-head {
+  font-family: var(--sans); font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--gold-deep); margin: 0 0 0.4rem;
+}
+.section--ink .behind-head { color: var(--gold); }
+
 .people--four { grid-template-columns: repeat(4, 1fr); }
 @media (max-width: 1040px) { .people--four { grid-template-columns: repeat(2, 1fr); max-width: none; } }
 @media (max-width: 640px) { .people--four { grid-template-columns: 1fr; max-width: 26rem; } }
@@ -1026,6 +1070,14 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
   margin-top: clamp(2rem, 4vw, 3rem); padding-top: 1.5rem;
   border-top: 1px solid var(--hairline-l); max-width: 68ch;
 }
+/* `flex: none` on the AVATAR is on the wrong element: the flex item here is
+   the <picture> wrapping it, not the <img>. So the picture shrank — a block
+   box's min-content width does not defend a replaced child — and the base
+   reset's `max-width: 100%` then crushed the 64px image down with it. Measured
+   before the fix: 18x64 for Giselle, 14x64 for a 760x950 source. It had been
+   squashed on the live page all along; putting three of these in a row is what
+   made it obvious. The rule below stays for the img's own sizing. */
+.strategic-partner picture { display: block; flex: none; }
 .strategic-partner-avatar {
   width: 64px; height: 64px; flex: none; border-radius: 50%;
   object-fit: cover; object-position: 50% 20%;

@@ -105,10 +105,11 @@ module.exports = async function handler(req, res) {
 
     ${!q ? '' : !looksLikeEmail(q) ? `
     <section class="hub-card"><p class="hub-hint">That is not an email address.</p></section>`
-    : !found || (!found.journeys.length && !found.advisorAccount) ? `
+    : !found || (!found.journeys.length && !found.advisorAccount && !(found.waitlist || []).length) ? `
     <section class="hub-card">
       <h2>Nothing held</h2>
-      <p class="hub-hint">No Journey and no advisor account for <strong>${esc(q)}</strong>.
+      <p class="hub-hint">No Journey, no advisor account and no waiting-list entry for
+        <strong>${esc(q)}</strong>.
         That is itself a complete answer to an access request — tell them so plainly, and
         that nothing needed deleting.</p>
     </section>`
@@ -136,6 +137,19 @@ function renderFound(f) {
         Deleting that account is done there, where the choice about their clients' Journeys
         is put to you properly.</p>` : ''}
     </section>
+
+    ${(f.waitlist || []).length ? `
+    <section class="hub-card">
+      <h2>${f.waitlist.length === 1 ? 'On the Immersion waiting list' : `${f.waitlist.length} waiting-list entries`}</h2>
+      ${f.waitlist.map((w) => `<p class="hub-hint">
+        Joined ${esc(String(w.created_at).slice(0, 10))} ·
+        ${esc(`${w.first_name || ''} ${w.last_name || ''}`.trim())} ·
+        ${esc(w.phone || 'no phone')} ·
+        ${esc(w.company || 'no company')}${w.host_agency ? ' · ' + esc(w.host_agency) : ''}
+      </p>`).join('')}
+      <p class="hub-hint">A request to be told when Immersion dates exist. Nobody on that list
+        has been promised anything. Erasing below removes these rows too.</p>
+    </section>` : ''}
 
     ${f.journeys.map(journeyCard).join('')}
 

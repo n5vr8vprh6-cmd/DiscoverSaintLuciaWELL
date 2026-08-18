@@ -108,6 +108,7 @@ module.exports = async function handler(req, res) {
       <p class="hub-hint">Somebody writes in asking what you have about them, or asks you to
         delete it. The Privacy Policy promises an answer within 30 days.</p>
       <p class="hub-more"><a href="/hub/admin/subject">Answer a privacy request →</a></p>
+      <p class="hub-more"><a href="/hub/admin/waitlist">Immersion waiting list →</a></p>
 
       ${retention.months === null ? `
       <p class="hub-hint hub-hint--bad">Retention is not configured — migration 006 has not been

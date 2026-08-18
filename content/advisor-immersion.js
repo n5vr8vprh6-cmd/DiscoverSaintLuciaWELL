@@ -140,9 +140,13 @@ module.exports = {
         },
         {
           title: 'Dates and investment',
-          text: 'Cohort dates, price and group size for the Immersion.',
-          /* Not confirmed anywhere we can cite — stated as pending, not invented. */
-          label: '[ to be confirmed ]'
+          text: 'Cohort dates, price and group size are still being set. Leave your details and you will hear them first.',
+          /* Was a dead "[ to be confirmed ]" — honest, but it made the third
+             route the only one on the page that did nothing. The dates are
+             still genuinely unset, so this does not invent them; it offers the
+             one action that IS available when the answer is "not yet". */
+          label: 'Join the waiting list →',
+          href: '/advisors/immersion/waitlist'
         }
       ]
     },

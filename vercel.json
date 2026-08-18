@@ -162,6 +162,14 @@
       "destination": "/api/hub?screen=viewasExit"
     },
     {
+      "source": "/advisors/immersion/waitlist",
+      "destination": "/api/hub?screen=waitlist"
+    },
+    {
+      "source": "/hub/admin/waitlist",
+      "destination": "/api/hub?screen=adminWaitlist"
+    },
+    {
       "source": "/well/:code",
       "destination": "/api/well?code=:code"
     },

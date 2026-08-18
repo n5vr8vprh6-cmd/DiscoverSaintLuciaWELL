@@ -177,7 +177,7 @@ module.exports = {
       {
         title: 'Resources',
         links: [
-          { label: 'Faculty',                href: '#facilitators' },
+          { label: 'Who teaches it',        href: '#facilitators' },
           { label: 'FAQ',                    href: '#faq' },
           { label: 'Complimentary briefing', href: '/advisors/intro' }
         ]

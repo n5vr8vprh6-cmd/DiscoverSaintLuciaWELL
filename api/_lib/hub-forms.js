@@ -46,9 +46,18 @@ function authForm(o) {
       <div class="hub-form-grid">
         ${(o.fields || []).map(field).join('\n        ')}
       </div>
-      <!-- Same honeypot as the consumer share form. -->
+      ${/* Same honeypot as the consumer share form, and named `company`
+            because that is a field a bot expects to fill.
+
+            WHICH BECAME A PROBLEM the moment a form needed a REAL company
+            field: an advisor typing their agency name into `company` would
+            have been read as a bot and dropped silently, with a form that
+            looked like it worked. So the name is now a parameter. It defaults
+            to `company`, so every existing form and every existing endpoint
+            check is unchanged; the waiting list passes something else and uses
+            `company_name` for the answer it actually wants. */''}
       <div class="hub-hp" aria-hidden="true">
-        <label>Company<input name="company" tabindex="-1" autocomplete="off"></label>
+        <label>${esc(o.hpLabel || 'Company')}<input name="${esc(o.hp || 'company')}" tabindex="-1" autocomplete="off"></label>
       </div>
       ${/* A real checkbox rather than a line of small print above the button.
             What an advisor promises about a traveller's data is a thing they
