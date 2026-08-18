@@ -1218,8 +1218,8 @@ header.top {
     <summary>WELL link <span class="area-n">2</span></summary>
     
 <article class="case" id="case-C-16" data-id="C-16" data-role="consumer"
-   data-pri="1" data-hash="1ynmt1o"
-   data-title="A WELL link resolves and records a visit" data-expect="It lands on the Journey page and the visit count increases." data-area="WELL link">
+   data-pri="1" data-hash="178oevg"
+   data-title="A WELL link resolves and records a visit" data-expect="It lands on the site with ?advisor= in the address, and Visits is one higher than the number you wrote down." data-area="WELL link">
   <div class="case-head">
     <span class="cid">C-16</span>
     <h4>A WELL link resolves and records a visit</h4>
@@ -1230,10 +1230,10 @@ header.top {
   <p class="needs"><strong>Needs first:</strong> The WELL link for concierge+uat1@discoversaintluciawell.com</p>
   
 
-  <ol class="steps"><li>Open the WELL link in a private window</li><li>Note the time</li><li>Check /hub as concierge+uat1@discoversaintluciawell.com</li></ol>
+  <ol class="steps"><li>Sign in as concierge+uat1@discoversaintluciawell.com, open /hub and WRITE DOWN the Visits number</li><li>Close every private window you have open — this matters, see below</li><li>Open a NEW private window and paste the WELL link</li><li>Confirm the address bar shows /?advisor=&lt;code&gt; after the redirect</li><li>Back in /hub as concierge+uat1@discoversaintluciawell.com, refresh</li></ol>
 
-  <p class="expect"><strong>Expect</strong> It lands on the Journey page and the visit count increases.</p>
-  <p class="why"><strong>Why this matters</strong> Visits are the first number in the funnel and the input to the whole loop-back report.</p>
+  <p class="expect"><strong>Expect</strong> It lands on the site with ?advisor= in the address, and Visits is one higher than the number you wrote down.</p>
+  <p class="why"><strong>Why this matters</strong> Visits are the first number in the funnel and the input to the whole loop-back report. The window steps are not fussiness: a visit is counted once per browsing context, so pasting the link into a private tab you already had open is SUPPOSED to record nothing — and is indistinguishable from a link that does not work.</p>
 
   <div class="marks" role="group" aria-label="Result for C-16">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>

@@ -265,13 +265,27 @@ const CASES = [
   expect: 'It does not promise a reply within a timeframe nobody has committed to, and does not claim the data is shared more widely than it is.',
   why: 'This copy was corrected once already for saying "share with our network". A confirmation that overpromises is the first broken promise.' },
 
+/* Rewritten after it "failed". It had not: the visit recorded correctly, on
+   the right advisor, at the moment expected. The case simply could not tell a
+   working link from a broken one, because a visit fires ONCE PER BROWSING
+   CONTEXT — js/attribution.js sets a sessionStorage flag so somebody reading
+   six pages is one visit, not six — and "open the WELL link in a private
+   window" does not distinguish a fresh tab from the private tab that has been
+   open since the last test. Reusing one records nothing, by design, and looks
+   exactly like a dead link.
+
+   Verified in a browser: first load pings once, reloading in the same tab
+   pings zero times, clearing sessionStorage pings again. */
 { id: 'C-16', role: 'consumer', priority: 1, area: 'WELL link',
   title: 'A WELL link resolves and records a visit',
   needs: [`The WELL link for ${UAT1}`],
-  steps: ['Open the WELL link in a private window', 'Note the time',
-          `Check /hub as ${UAT1}`],
-  expect: 'It lands on the Journey page and the visit count increases.',
-  why: 'Visits are the first number in the funnel and the input to the whole loop-back report.' },
+  steps: [`Sign in as ${UAT1}, open /hub and WRITE DOWN the Visits number`,
+          'Close every private window you have open — this matters, see below',
+          'Open a NEW private window and paste the WELL link',
+          'Confirm the address bar shows /?advisor=<code> after the redirect',
+          `Back in /hub as ${UAT1}, refresh`],
+  expect: 'It lands on the site with ?advisor= in the address, and Visits is one higher than the number you wrote down.',
+  why: 'Visits are the first number in the funnel and the input to the whole loop-back report. The window steps are not fussiness: a visit is counted once per browsing context, so pasting the link into a private tab you already had open is SUPPOSED to record nothing — and is indistinguishable from a link that does not work.' },
 
 { id: 'C-17', role: 'consumer', priority: 3, area: 'WELL link',
   title: 'An unknown WELL code fails gracefully',
