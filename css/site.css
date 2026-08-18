@@ -422,36 +422,25 @@ body[data-motion="ready"] .lens-item {
    ══════════════════════════════════════════════════════════════════════════ */
 .compass-wrap {
   display: grid;
-  /* 1.45, not 1. The figure column carries a drawing that is now 734 units
-     wide where the ring alone was 620 (C-21), so an even split drew the ring
-     smaller than it used to be. 734/620 = 1.184, and giving the figure 1.184x
-     of what a 1:1 split would have handed it works out at 1.45 : 1.
+  /* 1.4, not 1. The figure column carries a drawing 724 units wide where the
+     ring alone is 620, so an even split would draw the ring smaller than it
+     has always been. 724/620 = 1.168, and giving the figure 1.168x of what a
+     1:1 split hands it works out at 1.4 : 1.
 
      Chosen as a RATIO rather than a pixel width so it holds at every width
-     rather than only at the one it was tuned on: measured, the ring comes back
-     to 303px at 2000 and to 235px at 1024 — both exactly what they were before
-     the viewBox grew. Below 940px the columns become one and this stops
-     applying; the phone case is handled by .compass-figure's own max-width.
-
-     The copy column pays about 50px at 2000px, where the figure hits its
-     max-width and stops using the room. That is the trade, and a slightly
-     narrower measure is the cheaper half of it. */
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+     rather than only at the one it was tuned on: measured, the ring sits at
+     303px at 2000 and 235px at 1024 — the sizes it had before the viewBox
+     ever grew. Below 940px the columns become one and this stops applying;
+     the phone case is handled by .compass-figure's own max-width. */
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: clamp(2.5rem, 6vw, 6rem);
   align-items: center;
 }
-/* 663, not 560. The viewBox now contains the labels as well as the ring
-   (lib/components.js, C-21), so the same container width draws a smaller ring.
-   Raised in proportion — 560 x 734/620 — to keep the ring the size it was
+/* 654, not 560. The viewBox contains the labels as well as the ring
+   (lib/components.js), so the same container width draws a smaller ring.
+   Raised in proportion — 560 x 724/620 — to keep the ring the size it was
    wherever the column is wide enough to allow it. */
-/* `auto 0`, not `auto`: at wide widths the 1.45fr track is a little larger
-   than the figure's own cap, and centring the figure in that slack pushed the
-   measured gap between diagram and copy from 96px to 122. Sitting it against
-   the inner edge keeps the gap the designed one and puts the slack on the
-   left, which is where the drawing needs it — CELEBRATE reaches further left
-   than any label reaches right, so the ring's optical centre is right of its
-   geometric one. Re-centred at the single-column breakpoint below. */
-.compass-figure { max-width: 663px; width: 100%; margin-inline: auto 0; }
+.compass-figure { max-width: 654px; width: 100%; margin-inline: auto; }
 .compass { width: 100%; height: auto; overflow: visible; }
 .compass-ring {
   fill: none;
@@ -1285,9 +1274,9 @@ html[data-finder="app"] .result-head { margin-bottom: clamp(1.5rem, 3vw, 2.25rem
    .compass-label is `fill: var(--paper)` and .compass-ring strokes
    --hairline-d, both tuned for section--ink on the homepage. Dropped onto the
    result card unchanged, the labels are paper on paper — an empty circle. */
-/* 27.7rem, not 22: this ring is drawn at label size 24, so its viewBox is
-   780 wide against the ring's own 620. Same compensation as .compass-figure. */
-.result-compass-figure { margin-inline: auto; max-width: 27.7rem; width: 100%; }
+/* 27.1rem, not 22: this ring is drawn at label size 24, so its viewBox is
+   764 wide against the ring's own 620. Same compensation as .compass-figure. */
+.result-compass-figure { margin-inline: auto; max-width: 27.1rem; width: 100%; }
 
 /* NO ENTRANCE ANIMATION HERE.
    The homepage compass draws itself as you scroll to it: rings stroke on,
@@ -2454,7 +2443,7 @@ body[data-motion="ready"] .settled {
   .village-block--wide .village-themes-title { margin-top: 1.8rem; }
   .village-block--wide .village-block-media img { aspect-ratio: 16 / 10; }
   .split-media { max-width: 480px; }
-  .compass-figure { max-width: 497px; margin-inline: auto; }  /* 420 x 734/620; centred again now the columns are one */
+  .compass-figure { max-width: 490px; }  /* 420 x 724/620 — see .compass-figure */
   .village-blocks { gap: clamp(3rem, 8vw, 4.5rem); }
   .tile-grid { grid-template-columns: repeat(2, 1fr); }
   .checklist-wrap { grid-template-columns: 1fr; }

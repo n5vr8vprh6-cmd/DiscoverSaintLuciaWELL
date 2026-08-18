@@ -298,12 +298,13 @@ const CASES = [
    rather than a styling one — so it gets a check of its own that does not
    depend on anyone happening to look at the left-hand edge. */
 { id: 'C-26', role: 'consumer', priority: 3, area: 'Journey Finder',
-  title: 'The compass fits on a phone, on the home page and on the result',
+  title: 'The compass is centred and uncut, on the home page and on the result',
   steps: ['node tools/compass-fit.js --check',
           'On a phone, look at the compass on the home page and again on a Finder result',
-          'CELEBRATE is the one to check — it is the longest word and it sits on the left'],
-  expect: 'Exits 0, and no direction is cut off by the edge of the screen at any width.',
-  why: 'The viewBox is computed from the label size, so the two must stay in one file. A font-size added in CSS would win over the attribute and put the word back off the screen with nothing to error on — which is exactly how this shipped the first time.' },
+          'Check two things: nothing cut off at the left edge, and the rings sitting centred on the screen',
+          'CELEBRATE is the tell for both — the longest word, on the left, and the reason the box was lopsided'],
+  expect: 'Exits 0. No direction is cut off at any width, and the ring is centred rather than sitting a little right of middle.',
+  why: 'Two silent faults, one cause. The viewBox is computed from the label size and the letter-spacing, so all three have to stay in one file — declare either in CSS and it wins over the attribute, with nothing to error on. And a box fitted to a lopsided drawing is a lopsided box: nothing clips, the mark just sits off-centre, which on concentric circles is exactly what a careful eye catches first.' },
 
 /* ══ ADVISOR ═════════════════════════════════════════════════════════════ */
 { id: 'A-01', role: 'advisor', priority: 1, area: 'Registration',

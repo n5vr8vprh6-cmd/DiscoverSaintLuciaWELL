@@ -962,11 +962,11 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-C-26" data-id="C-26" data-role="consumer"
-   data-pri="3" data-hash="1r1urqd"
-   data-title="The compass fits on a phone, on the home page and on the result" data-expect="Exits 0, and no direction is cut off by the edge of the screen at any width." data-area="Journey Finder">
+   data-pri="3" data-hash="1vbjowm"
+   data-title="The compass is centred and uncut, on the home page and on the result" data-expect="Exits 0. No direction is cut off at any width, and the ring is centred rather than sitting a little right of middle." data-area="Journey Finder">
   <div class="case-head">
     <span class="cid">C-26</span>
-    <h4>The compass fits on a phone, on the home page and on the result</h4>
+    <h4>The compass is centred and uncut, on the home page and on the result</h4>
     <span class="pri pri--3">P3</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
@@ -974,10 +974,10 @@ header.top {
   
   
 
-  <ol class="steps"><li>node tools/compass-fit.js --check</li><li>On a phone, look at the compass on the home page and again on a Finder result</li><li>CELEBRATE is the one to check — it is the longest word and it sits on the left</li></ol>
+  <ol class="steps"><li>node tools/compass-fit.js --check</li><li>On a phone, look at the compass on the home page and again on a Finder result</li><li>Check two things: nothing cut off at the left edge, and the rings sitting centred on the screen</li><li>CELEBRATE is the tell for both — the longest word, on the left, and the reason the box was lopsided</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Exits 0, and no direction is cut off by the edge of the screen at any width.</p>
-  <p class="why"><strong>Why this matters</strong> The viewBox is computed from the label size, so the two must stay in one file. A font-size added in CSS would win over the attribute and put the word back off the screen with nothing to error on — which is exactly how this shipped the first time.</p>
+  <p class="expect"><strong>Expect</strong> Exits 0. No direction is cut off at any width, and the ring is centred rather than sitting a little right of middle.</p>
+  <p class="why"><strong>Why this matters</strong> Two silent faults, one cause. The viewBox is computed from the label size and the letter-spacing, so all three have to stay in one file — declare either in CSS and it wins over the attribute, with nothing to error on. And a box fitted to a lopsided drawing is a lopsided box: nothing clips, the mark just sits off-centre, which on concentric circles is exactly what a careful eye catches first.</p>
 
   <div class="marks" role="group" aria-label="Result for C-26">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
