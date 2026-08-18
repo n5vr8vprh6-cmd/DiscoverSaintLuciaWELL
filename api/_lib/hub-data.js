@@ -68,16 +68,28 @@ async function notesFor(advisorId, shareId) {
    only; no answers, nothing identifying. */
 async function funnelFor(advisorId) {
   const supabase = db();
-  if (!supabase) return { visits: 0, completions: 0, shares: 0 };
+  if (!supabase) return { visits: 0, completions: 0, shares: 0, lastVisitAt: null };
   const count = async (table) => {
     const { count: n } = await supabase
       .from(table).select('id', { count: 'exact', head: true }).eq('advisor_id', advisorId);
     return n || 0;
   };
-  const [visits, completions, shares] = await Promise.all([
-    count('campaign_visits'), count('finder_completions'), count('journey_shares')
+  /* WHEN, not just how many. Three totals answer "has any of this worked ever"
+     and cannot answer "did the thing I just did land" — which is the question
+     an advisor actually asks after putting their link somewhere, and the one
+     that had Duncan reasonably concluding a working link was broken. A visit
+     counts once per browsing context, so "nothing happened" and "nothing NEW
+     happened" look identical without a timestamp. */
+  const [visits, completions, shares, last] = await Promise.all([
+    count('campaign_visits'), count('finder_completions'), count('journey_shares'),
+    supabase.from('campaign_visits')
+      .select('created_at').eq('advisor_id', advisorId)
+      .order('created_at', { ascending: false }).limit(1).maybeSingle()
   ]);
-  return { visits, completions, shares };
+  return {
+    visits, completions, shares,
+    lastVisitAt: (last && last.data && last.data.created_at) || null
+  };
 }
 
 /* ── Needs Attention ──────────────────────────────────────────────────────

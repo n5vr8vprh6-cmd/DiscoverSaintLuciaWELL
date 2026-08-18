@@ -680,6 +680,19 @@ body {
 
 .hub-funnel--tight { margin: 1rem 0 1.25rem; }
 
+/* Sits directly under the three totals, because it is the sentence that makes
+   them readable: without it, "0 visits" and "no NEW visits" look the same, and
+   an advisor who has just put their link somewhere cannot tell whether it
+   worked. Pulled up against the grid — the grid carries 1.5rem of bottom
+   margin for the block that normally follows it. */
+.hub-funnel-when {
+  margin: -1rem 0 1.5rem;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  color: var(--muted);
+  max-width: 62ch;
+}
+
 /* A finished draw is a row, not a card — see the row() comment in the screen.
    The list itself is .hub-journeys, reused wholesale from the Journeys screen. */
 .hub-archive { margin-top: 0.25rem; }

@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>156 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>157 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">156</b></span>
+      <span class="t-left">Untested <b id="n-left">157</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -1383,9 +1383,44 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 53 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 54 recorded</p>
   </div>
   
+  <details class="area" open>
+    <summary>Campaign <span class="area-n">1</span></summary>
+    
+<article class="case" id="case-A-54" data-id="A-54" data-role="advisor"
+   data-pri="3" data-hash="70vu37"
+   data-title="The Hub says when the last visit was, not just how many" data-expect="&quot;Last visit just now.&quot; Before any visit exists, the line is absent rather than saying never." data-area="Campaign">
+  <div class="case-head">
+    <span class="cid">A-54</span>
+    <h4>The Hub says when the last visit was, not just how many</h4>
+    <span class="pri pri--3">P3</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Open /hub and read the line under the three campaign numbers</li><li>Open your WELL link in a NEW private window, then refresh /hub</li></ol>
+
+  <p class="expect"><strong>Expect</strong> &quot;Last visit just now.&quot; Before any visit exists, the line is absent rather than saying never.</p>
+  <p class="why"><strong>Why this matters</strong> Three totals answer &quot;has this ever worked&quot; and cannot answer &quot;did the thing I just did land&quot; — which is what an advisor asks after putting their link somewhere. Without it, &quot;no visits&quot; and &quot;no NEW visits&quot; look identical, which is exactly how a working link read as broken during UAT.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-54">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
   <details class="area" open>
     <summary>Registration <span class="area-n">5</span></summary>
     

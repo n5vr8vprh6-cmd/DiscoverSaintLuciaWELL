@@ -110,7 +110,29 @@ function since(iso) {
   return months === 1 ? 'a month ago' : months + ' months ago';
 }
 
+/* since() answers "how long has this been sitting there" and rounds to days,
+   which is right for a Journey that arrived on Tuesday. It is wrong for "did
+   the thing I just did register" — a visit ninety minutes ago and one this
+   morning both read as "today", which is exactly the question a person is
+   asking when they check.
+
+   So this one keeps minutes and hours, and hands over to since() once a day
+   has passed and precision stops mattering. Deliberately a second function
+   rather than a change to the first: every "Joined 3 days ago" on the admin
+   screens reads correctly today and should keep reading that way. */
+function ago(iso) {
+  if (!iso) return '';
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins === 1) return 'a minute ago';
+  if (mins < 60) return mins + ' minutes ago';
+  const hours = Math.floor(mins / 60);
+  if (hours === 1) return 'an hour ago';
+  if (hours < 24) return hours + ' hours ago';
+  return since(iso);
+}
+
 module.exports = {
   hubPage, esc, pageHead, emptyState,
-  STAGES, STAGE_LABEL, WINDOW_LABEL, WINDOW_ORDER, since
+  STAGES, STAGE_LABEL, WINDOW_LABEL, WINDOW_ORDER, since, ago
 };

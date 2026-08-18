@@ -9,7 +9,7 @@
 'use strict';
 
 const { requireAdvisor } = require('../auth.js');
-const { hubPage, esc, emptyState, STAGE_LABEL, WINDOW_LABEL, since } = require('../hub-render.js');
+const { hubPage, esc, emptyState, STAGE_LABEL, WINDOW_LABEL, since, ago } = require('../hub-render.js');
 const { journeysFor, funnelFor, needsAttention } = require('../hub-data.js');
 const { maskJourneys } = require('../hub-mask.js');
 /* The Finder's own count, so the advice an advisor reads here cannot
@@ -53,6 +53,10 @@ module.exports = async function handler(req, res) {
         ${step('Finder completions', funnel.completions, 'finished the Journey Finder')}
         ${step('Journeys shared', funnel.shares, 'chose to share with you')}
       </div>
+      ${funnel.lastVisitAt ? `
+      <p class="hub-funnel-when">Last visit ${esc(ago(funnel.lastVisitAt))}.
+        A visit is counted once per person per browsing session, so opening your
+        own link again in the same window will not add one.</p>` : ''}
       <div class="hub-link">
         <label class="hub-field-label" for="well-link">Your WELL link</label>
         <div class="hub-link-row">

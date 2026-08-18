@@ -332,6 +332,13 @@ const CASES = [
   why: 'Two silent faults, one cause. The viewBox is computed from the label size and the letter-spacing, so all three have to stay in one file — declare either in CSS and it wins over the attribute, with nothing to error on. And a box fitted to a lopsided drawing is a lopsided box: nothing clips, the mark just sits off-centre, which on concentric circles is exactly what a careful eye catches first.' },
 
 /* ══ ADVISOR ═════════════════════════════════════════════════════════════ */
+{ id: 'A-54', role: 'advisor', priority: 3, area: 'Campaign',
+  title: 'The Hub says when the last visit was, not just how many',
+  steps: ['Open /hub and read the line under the three campaign numbers',
+          'Open your WELL link in a NEW private window, then refresh /hub'],
+  expect: '"Last visit just now." Before any visit exists, the line is absent rather than saying never.',
+  why: 'Three totals answer "has this ever worked" and cannot answer "did the thing I just did land" — which is what an advisor asks after putting their link somewhere. Without it, "no visits" and "no NEW visits" look identical, which is exactly how a working link read as broken during UAT.' },
+
 { id: 'A-01', role: 'advisor', priority: 1, area: 'Registration',
   title: 'Registration accepts a complete application',
   steps: ['Open /hub/register', 'Fill first name, last name, email, business, host agency, website, "Have we met?", password',
