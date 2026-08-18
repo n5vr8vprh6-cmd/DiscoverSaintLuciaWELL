@@ -201,11 +201,22 @@ const CASES = [
   expect: 'The two results differ in villages and in register.',
   why: 'If the result barely moves, the six questions are decoration and the whole premise is false.' },
 
+/* Rewritten. It used to say "run once as wellness-first, run again as
+   sceptical or incidental" and compare the two results — which cannot pass:
+   js/journey.js never reads `orientation`, so both runs render a byte-identical
+   result screen, and the words "sceptical" and "incidental" appear nowhere in
+   the options. The behaviour is real; it was being looked for in the wrong
+   window. Orientation carries no scoring weights on purpose — it changes what
+   is proposed inside a village, never which village — and it surfaces in the
+   ADVISOR's briefing, where it belongs, since it is guidance for the person
+   making the call rather than something to show the traveller. */
 { id: 'C-10', role: 'consumer', priority: 2, area: 'Journey Finder',
-  title: 'The wellness orientation changes the register, not just the content',
-  steps: ['Run once as wellness-first', 'Run again as sceptical or incidental'],
-  expect: 'The sceptical run does not require the traveller to adopt wellness as an identity.',
-  why: 'F1 added this deliberately. Marketing WELL to somebody who does not call themselves a wellness traveller is most of the addressable market.' },
+  title: 'The wellness orientation changes the register, not the villages',
+  steps: ['Complete the Finder through your own WELL link, answering Q4 "A beautiful vacation, with wellness woven in"',
+          'Share it, then run it again changing ONLY Q4 to "A wellness-led journey with real depth" — hold the other five answers identical',
+          'Share that one too, then open both briefings in /hub/journeys side by side'],
+  expect: 'The same three villages both times. A different "They are after…" line, and a different second question in the call prompts — "What would make this feel like a holiday first?" against "Have you done something like this before?"',
+  why: 'Two things at once. An advisor who opens a call talking about depth and protocols loses the person who just wants a good holiday that leaves them rested, and that person is most of the addressable market — so the Finder captures how somebody wants to be SPOKEN TO. And the villages must NOT move, because this question is about register, not destination.' },
 
 /* Added after C-09 was run. C-09 asks whether the answers matter; this asks
    the question clicking through cannot — whether all six villages are

@@ -13,6 +13,9 @@
 'use strict';
 
 const { VILLAGES, EXPERIENCES, byKey } = require('./villages.js');
+/* The Finder's own count, so this promo cannot promise a different number
+   of questions from the page it is promoting. */
+const { countWord } = require('./journey.js');
 const SITE = require('./site.js');
 
 module.exports = {
@@ -110,7 +113,7 @@ module.exports = {
       type: 'finalCta',
       id: 'begin',
       headline: 'Which of these is yours?',
-      lead: 'Four questions, about a minute, and the villages that answer what you actually need.',
+      lead: `${countWord.charAt(0).toUpperCase() + countWord.slice(1)} questions, about a minute, and the villages that answer what you actually need.`,
       secondary: { label: 'Go deeper: Eclipse', href: '/eclipse' },
       video: { webm: '/assets/video/cta-dawn-loop.webm', mp4: '/assets/video/cta-dawn-loop.mp4' },
       img: {

@@ -33,6 +33,10 @@
    ========================================================================== */
 'use strict';
 
+/* Counted from the Finder itself. This page told advisors it asks four
+   questions for as long as it has asked six. */
+const { countWord } = require('./journey.js');
+
 module.exports = {
   key: 'advisor-hub',
   path: '/advisors/hub',
@@ -83,7 +87,7 @@ module.exports = {
          the payoff instead and let the link be explained where there is room
          to explain it. */
       headline: 'Meet your travellers <em>before the first call.</em>',
-      lead: 'The WELL Journey Finder asks a traveller four questions about how they want to feel. When someone completes it through your link and chooses to share the result, it lands in your Hub — with what they actually asked for, not just an email address.',
+      lead: `The WELL Journey Finder asks a traveller ${countWord} questions about how they want to feel. When someone completes it through your link and chooses to share the result, it lands in your Hub — with what they actually asked for, not just an email address.`,
       meta: ['Free', 'No card', 'Yours in about a minute'],
       /* Both buttons already existed — in the sticky header and again in the
          final CTA — so somebody convinced by the first screen had to hunt the
@@ -217,7 +221,11 @@ module.exports = {
           text: 'Not a quiz dump. What they asked for in plain sentences, their own words where they wrote any, and a few questions worth asking — assembled only from what they actually answered.'
         }
       ],
-      closing: 'What you see is what has been built. The advisor designation is still in development, and the pathway says so.'
+      /* No closing line. It read "What you see is what has been built. The
+         advisor designation is still in development, and the pathway says so."
+         — a defence against a doubt the four items above it do not raise, and
+         /advisors already carries the In development badge on the rung it
+         belongs to. */
     },
 
     {

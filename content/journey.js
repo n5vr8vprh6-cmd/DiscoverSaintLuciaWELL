@@ -154,7 +154,34 @@ const QUESTIONS = [
   }
 ];
 
+/* ── HOW MANY QUESTIONS, IN WORDS ────────────────────────────────────────────
+   Counted, never typed. The copy said "four questions" on the page lead, the
+   meta chip, the launch screen, the meta description, the /explore promo and
+   the Hub — and the Finder has asked SIX since F1 added `place` and
+   `orientation`. Every one of those lines was written when four was true and
+   none of them knew the array had changed underneath it.
+
+   So the number comes from the array, the same way the brochure's folios and
+   the compass viewBox come from their own data. Adding a seventh question
+   updates six pieces of copy and this comment stops being a warning about a
+   thing that can happen again.
+
+   Spelled out because these read as prose rather than as data — "Six
+   questions, about a minute" — and the map covers only counts a quiz could
+   plausibly have. Anything outside it falls back to the numeral, which is
+   ugly enough to be noticed and still true, rather than printing undefined. */
+const QUESTION_COUNT = QUESTIONS.length;
+const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+               'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const COUNT_WORD = WORDS[QUESTION_COUNT] || String(QUESTION_COUNT);
+const Count = COUNT_WORD.charAt(0).toUpperCase() + COUNT_WORD.slice(1);
+
 module.exports = {
+  /* Exported for the three other files that describe the Finder — build.js
+     reads named page fields only, so these ride along unread by it. */
+  questionCount: QUESTION_COUNT,
+  countWord: COUNT_WORD,
+
   key: 'journey',
   path: '/journey',
   /* Still the destination layout: the server sends the ordinary page, header
@@ -166,7 +193,7 @@ module.exports = {
   appShell: true,
   surface: 'consumer',
   title: 'Find My WELL Journey — Discover Saint Lucia WELL',
-  description: 'Answer four questions and see which of Saint Lucia’s six wellness villages match what you actually need — with the experiences and places inside them.',
+  description: `Answer ${COUNT_WORD} questions and see which of Saint Lucia’s six wellness villages match what you actually need — with the experiences and places inside them.`,
   ogTitle: 'Find My WELL Journey',
   js: ['/js/journey.js'],
 
@@ -202,8 +229,8 @@ module.exports = {
       type: 'pageHeader',
       eyebrow: 'The WELL Journey Finder',
       headline: 'Begin with how you want to feel.',
-      lead: 'Four questions, about a minute, and the parts of Saint Lucia that answer what you actually need.',
-      meta: ['Four questions', 'About a minute', 'No account']
+      lead: `${Count} questions, about a minute, and the parts of Saint Lucia that answer what you actually need.`,
+      meta: [`${Count} questions`, 'About a minute', 'No account']
     },
 
     {
@@ -222,7 +249,7 @@ module.exports = {
          other than Exit — once someone has started, we stop inviting them to
          leave. */
       launchHeadline: 'Begin with how you want to feel.',
-      launchLead: 'Four questions. About a minute. We match what you are looking for with the parts of Saint Lucia that fit.',
+      launchLead: `${Count} questions. About a minute. We match what you are looking for with the parts of Saint Lucia that fit.`,
       beginLabel: 'Begin',
 
       /* ONE trust statement, not three.

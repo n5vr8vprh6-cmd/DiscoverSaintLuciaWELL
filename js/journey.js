@@ -248,7 +248,7 @@
      Which directions the answers leaned toward — NAMED, NOT MEASURED.
 
      We do hold real weighted totals and could render "Restore ●●●●●". We do
-     not, on purpose. Dots imply a measurement, and four questions cannot
+     not, on purpose. Dots imply a measurement, and six questions cannot
      support one: the difference between a four and a five would be an artefact
      of how the weights were hand-tuned, not something we learned about the
      person. Naming the directions is the honest version of the same signal —

@@ -154,6 +154,59 @@ Sitemap: ${SITE.domain}/sitemap.xml
 `, 'utf8');
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   THE COUNT AUDIT — does the site still agree with itself about the Finder?
+   --------------------------------------------------------------------------
+   Every consumer-facing line saying how many questions the Finder asks is now
+   derived from the array in content/journey.js, so those six cannot drift.
+   This catches the SEVENTH: a number typed into a new page, a deck line pasted
+   in, a rewrite that spells it out again by hand.
+
+   It reads the EMITTED HTML rather than the content modules, because that is
+   what a visitor reads — and because a claim can arrive through rawBody or a
+   component without ever existing in a content file as a whole sentence.
+
+   "one question per screen" describes the interface rather than the length,
+   and is the reason for the `per` exclusion. It is named here instead of
+   sitting as an unexplained gap in a regex, so anyone widening the pattern
+   later knows what they are re-admitting.
+   ══════════════════════════════════════════════════════════════════════════ */
+function auditQuestionCount() {
+  const { questionCount, countWord } = require('./content/journey.js');
+  const CLAIM = /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+questions?\b(?!\s+per\b)/gi;
+  const wrong = [];
+
+  (function walk(dir) {
+    fs.readdirSync(dir, { withFileTypes: true }).forEach((e) => {
+      const f = path.join(dir, e.name);
+      if (e.isDirectory()) return walk(f);
+      if (!e.name.endsWith('.html')) return;
+      const html = fs.readFileSync(f, 'utf8');
+      let m;
+      CLAIM.lastIndex = 0;
+      while ((m = CLAIM.exec(html))) {
+        if (m[1].toLowerCase() === countWord || m[1] === String(questionCount)) continue;
+        wrong.push({
+          file: path.relative(ROOT, f).replace(/\\/g, '/'),
+          said: m[0].trim(),
+          around: html.slice(Math.max(0, m.index - 60), m.index + 60).replace(/\s+/g, ' ')
+        });
+      }
+    });
+  }(DIST));
+
+  if (!wrong.length) return;
+
+  console.error(`\n  BUILD FAILED — the Finder asks ${questionCount} questions, and the site says otherwise:\n`);
+  wrong.forEach((w) => {
+    console.error(`    ${w.file}  says "${w.said}"`);
+    console.error(`      …${w.around}…\n`);
+  });
+  console.error('  Do not retype the number. content/journey.js exports `countWord` and');
+  console.error('  `questionCount`, both derived from the questions array itself.\n');
+  process.exit(1);
+}
+
 /* ── Run ────────────────────────────────────────────────────────────────── */
 function main() {
   if (process.argv.includes('--clean') && fs.existsSync(DIST)) {
@@ -195,6 +248,11 @@ function main() {
 
   buildRedirect('/foundations', '/advisors/foundations');
   buildSitemap(PAGES);
+
+  /* After the write, not before it: the audit reads what actually shipped.
+     Exiting non-zero here fails the Vercel build, so a wrong number cannot
+     reach the site even though the file is already on disk locally. */
+  auditQuestionCount();
 
   console.log(`\n  css ${css} · js ${js} · assets ${assets} files copied`);
   console.log(`  ${PAGES.length} pages, ${Math.round(total / 1024)} KB HTML → dist/\n`);

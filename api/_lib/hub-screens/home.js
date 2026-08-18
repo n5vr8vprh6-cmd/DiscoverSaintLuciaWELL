@@ -12,6 +12,9 @@ const { requireAdvisor } = require('../auth.js');
 const { hubPage, esc, emptyState, STAGE_LABEL, WINDOW_LABEL, since } = require('../hub-render.js');
 const { journeysFor, funnelFor, needsAttention } = require('../hub-data.js');
 const { maskJourneys } = require('../hub-mask.js');
+/* The Finder's own count, so the advice an advisor reads here cannot
+   describe a different Finder from the one their link points at. */
+const { countWord } = require('../../../content/journey.js');
 
 module.exports = async function handler(req, res) {
   const advisor = await requireAdvisor(req, res, '/hub');
@@ -123,7 +126,7 @@ function nextBestAction(advisor, funnel, journeys) {
     cta = { label: 'Open the newest', href: '/hub/journeys?view=attention' };
   } else if (funnel.completions > 0 && funnel.shares === 0) {
     title = 'People are finishing the Finder but not sharing.';
-    note = 'They are interested enough to answer four questions. Try putting the link somewhere it comes with your recommendation rather than on its own.';
+    note = `They are interested enough to answer ${countWord} questions. Try putting the link somewhere it comes with your recommendation rather than on its own.`;
     cta = { label: 'Copy your WELL link', copy: '#well-link' };
   } else if (funnel.visits === 0) {
     title = 'Your link has not been used yet.';
