@@ -213,15 +213,27 @@ module.exports = async function handler(req, res) {
 
      Each id is OPTIONAL and each fails closed on its own: an unset pack id
      cannot identify a pack purchase, an unset Foundations id cannot identify a
-     Foundations one, and neither absence affects the other. */
-  const packId = process.env.THRIVECART_BUILDPACK_ID;
-  const foundationsId = process.env.THRIVECART_FOUNDATIONS_ID;
-  const isPack = Boolean(packId) && String(packId) === product;
-  const isFoundations = Boolean(foundationsId) && String(foundationsId) === product;
+     Foundations one, and neither absence affects the other.
+
+     ── EACH SETTING TAKES A LIST ──────────────────────────────────────────
+     Foundations sells as two products — Standard and VIP — and both entitle
+     the buyer to exactly the same thing here: unlimited campaigns. VIP's extra
+     is a strategy session and an audit, which happen off this platform and
+     which this system has no business modelling.
+
+     So the value is comma-separated: THRIVECART_FOUNDATIONS_ID=9,10. Payment
+     plans and any future variant go in the same list rather than needing a
+     third environment variable and a third branch. */
+  const packIds = idList(process.env.THRIVECART_BUILDPACK_ID);
+  const foundationsIds = idList(process.env.THRIVECART_FOUNDATIONS_ID);
+  const isPack = packIds.indexOf(product) !== -1;
+  const isFoundations = foundationsIds.indexOf(product) !== -1;
 
   if (!isPack && !isFoundations) {
-    const known = [packId ? `pack ${packId}` : null, foundationsId ? `Foundations ${foundationsId}` : null]
-      .filter(Boolean).join(', ');
+    const known = [
+      packIds.length ? `pack ${packIds.join('/')}` : null,
+      foundationsIds.length ? `Foundations ${foundationsIds.join('/')}` : null
+    ].filter(Boolean).join(', ');
     await BUILDS.record({ provider: PROVIDER, eventId, kind, email, delta: 0,
       note: known
         ? `Product "${product}" is not one of ours (${known}) — nothing granted.`
@@ -313,6 +325,17 @@ module.exports = async function handler(req, res) {
 };
 
 /* ── Bits ──────────────────────────────────────────────────────────────── */
+
+/* One setting, one or more product ids. Foundations is two products
+   (Standard and VIP) and both grant the same thing, so the value is a list.
+
+   EMPTY ENTRIES ARE DROPPED, which is what makes this fail closed: an unset or
+   blank variable yields [], indexOf on [] is -1, and nothing matches. The
+   previous shape leaned on Boolean(id) for that; a list has to be explicit
+   about it or a trailing comma would let "" match a product id of "". */
+function idList(value) {
+  return String(value || '').split(',').map((s) => s.trim()).filter(Boolean);
+}
 
 async function advisorByEmail(email) {
   if (!email) return null;

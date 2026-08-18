@@ -268,6 +268,36 @@ const post = async (body, env) => {
     packOnly.payload.granted === 0 && packOnly.payload.reason === 'product_mismatch',
     'the same fail-closed shape the pack already had, per product');
 
+  /* ── ONE SETTING, SEVERAL PRODUCT IDS ────────────────────────────────
+     Foundations sells as Standard (9) and VIP (10), and both entitle the buyer
+     to the same thing here. Duncan's real values, so this is the configuration
+     that ships rather than a shape invented for the test. */
+  for (const id of ['9', '10']) {
+    const variant = await post(
+      { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-v' + id,
+        product_id: id, mode: 'test' },
+      { secret: 'right', product: 'buildpack', foundations: '9,10' });
+    ok('product ' + id + ' is recognised as Foundations',
+      variant.payload.reason === 'test_mode',
+      'it got past the product check — got ' + variant.payload.reason);
+  }
+
+  const notInList = await post(
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-v11',
+      product_id: '11', mode: 'test' },
+    { secret: 'right', product: 'buildpack', foundations: '9,10' });
+  ok('and a product NOT in the list still grants nothing',
+    notInList.payload.reason === 'product_mismatch',
+    'a list must not become a wildcard');
+
+  const blankList = await post(
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-v-blank',
+      product_id: '', mode: 'test' },
+    { secret: 'right', product: null, foundations: ',' });
+  ok('a list of nothing but separators matches nothing',
+    blankList.payload.reason === 'product_mismatch',
+    'empty entries are dropped, or an absent product id would match an empty setting');
+
   const ignored = await post(
     { event: 'order.viewed', thrivecart_secret: 'right', order_id: 'selftest-o3' }, { secret: 'right' });
   ok('an event kind we do not act on is ignored, not errored',

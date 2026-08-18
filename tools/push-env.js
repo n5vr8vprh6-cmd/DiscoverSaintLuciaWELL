@@ -82,9 +82,10 @@ const OPTIONAL = [
   'THRIVECART_BUILDPACK_ID',
   'THRIVECART_BUILDPACK_URL',
   /* Foundations, through the same ThriveCart account and the same endpoint.
-     Optional and fails closed on its own: without it a Foundations order is
-     recorded as an unrecognised product and grants nothing, which is the same
-     shape as an unset pack id. */
+     A COMMA-SEPARATED LIST — 9,10 — because Foundations sells as Standard and
+     VIP and both grant the same thing here. Optional and fails closed on its
+     own: without it a Foundations order is recorded as an unrecognised product
+     and grants nothing, the same shape as an unset pack id. */
   'THRIVECART_FOUNDATIONS_ID'
 ];
 
