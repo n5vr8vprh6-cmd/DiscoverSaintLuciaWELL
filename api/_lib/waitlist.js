@@ -55,10 +55,29 @@ function validate(input) {
 }
 
 /* ── Write ───────────────────────────────────────────────────────────────────
-   Upsert on the case-insensitive email index from migration 018. `updated_at`
-   is set explicitly because the column has a default, not a trigger — a
-   default only fires on insert, so without this an updated row would keep
-   claiming it was last touched on the day it was created. */
+   INSERT, AND UPDATE IF THAT COLLIDES — rather than the upsert this started as.
+
+   Migration 018's uniqueness lives in a unique index on `lower(email)`, which
+   is a FUNCTIONAL index, and PostgREST's on_conflict parameter takes column
+   names only. So `.upsert(row, { onConflict: 'email' })` failed with 42P10,
+   "no unique or exclusion constraint matching the ON CONFLICT specification" —
+   on every submission, including the first. Nothing about the form looked
+   wrong; it simply never wrote.
+
+   The tempting fix was to weaken the index to a plain `unique (email)` so the
+   upsert could name it. That trades a guarantee for a convenience: the
+   functional index catches A@x.com and a@x.com as one person even if this
+   module ever stops lowercasing, and it was verified doing exactly that —
+   23505 on a case variant — before this was rewritten. The index stays and the
+   code does the work.
+
+   The race is real and handled. Two simultaneous first submissions both
+   insert, one wins, the loser takes 23505 and falls through to the update:
+   the same outcome an upsert would reach, arrived at honestly.
+
+   `updated_at` is set explicitly because the column has a default rather than
+   a trigger — a default only fires on insert, so an updated row would
+   otherwise keep claiming it was last touched on the day it was created. */
 async function join(input, req) {
   /* VALIDATE BEFORE LOOKING AT THE DATABASE. It was the other way round, and
      the consequence was that somebody who mistyped their email address was
@@ -77,11 +96,27 @@ async function join(input, req) {
     updated_at: new Date().toISOString()
   });
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('immersion_waitlist')
-    .upsert(row, { onConflict: 'email', ignoreDuplicates: false })
+    .insert(row)
     .select('id, created_at')
     .maybeSingle();
+
+  /* 23505 = they are already on the list. That is not an error to anybody:
+     update what they have just told us and answer exactly as the first
+     submission did, without disclosing that they were already here — which is
+     their business, not the page's. Matched with ilike so a different
+     capitalisation still finds them, the same way the index does. */
+  if (error && error.code === '23505') {
+    const again = await supabase
+      .from('immersion_waitlist')
+      .update(row)
+      .ilike('email', v.fields.email)
+      .select('id, created_at')
+      .maybeSingle();
+    data = again.data;
+    error = again.error;
+  }
 
   if (error) {
     /* BOTH codes, because the one that actually arrives is PostgREST's, not
