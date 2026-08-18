@@ -1454,6 +1454,66 @@ body.gtm-busy { overflow: hidden; }
   color: var(--muted);
 }
 
+/* ── The offer at the end of a campaign ───────────────────────────
+   It has to read as an offer and not as a wall, so it sits on sand like any
+   other card rather than getting a colour of its own. Nothing here introduces
+   a hue: the only accent is the gold rule already used by .hub-notice.
+
+   The free line comes FIRST and stays quiet — it is the true, larger half of
+   what this section says, and an advisor who reads a price first stops
+   reading. */
+.gtm-next {
+  margin-top: 1.5rem;
+  border-top: 2px solid var(--gold);
+}
+.gtm-next-free {
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--hairline-l);
+}
+.gtm-next h3 { margin: 0 0 0.5rem; }
+
+/* ── The claims ladder, as a before and after ──────────────────────
+   Two stacked blocks rather than side-by-side columns: at 380px a two-column
+   comparison becomes two unreadable columns, and this one reads as a sequence
+   anyway — what you may say now, then what you could say. */
+.gtm-ladder-now,
+.gtm-ladder-after {
+  margin-top: 1.1rem;
+  padding: 0.9rem 1rem;
+  background: var(--paper);
+  border-left: 2px solid var(--hairline-l);
+}
+.gtm-ladder-after { border-left-color: var(--gold); }
+.gtm-ladder-now ul,
+.gtm-ladder-after ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+}
+.gtm-ladder-now li,
+.gtm-ladder-after li { margin: 0.25rem 0; }
+
+/* What is currently forbidden. Struck through rather than coloured red — the
+   point is "the copy will not say this", not "you did something wrong". */
+.gtm-ladder-no li {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.gtm-covers { margin: 0.75rem 0 1.25rem; }
+.gtm-covers dt { font-weight: 600; margin-top: 0.85rem; }
+.gtm-covers dd { margin: 0.2rem 0 0; color: var(--muted); }
+
+/* The downsell. Quieter than the offer above it on purpose: somebody arrives
+   here having just declined something, and a second pitch at the same volume
+   reads as pressure. */
+.gtm-downsell {
+  margin-top: 1.5rem;
+  background: var(--paper);
+}
+.gtm-downsell h2 { font-size: var(--fs-h3); }
+
 .gtm-rights {
   margin-top: 1.25rem;
   padding: 0.85rem 1rem;

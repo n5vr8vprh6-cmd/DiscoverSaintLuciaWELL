@@ -1,9 +1,29 @@
 /* ============================================================================
    BUILDS — the balance, and the only two things that move it
    ----------------------------------------------------------------------------
-   Three plan builds for a registered advisor, three more for nine dollars.
+   ONE COMPLETE CAMPAIGN for a registered advisor, three more for nine dollars.
    Foundations and Immersion are unlimited and their balance is never read and
    never spent.
+
+   ── WHAT A CAMPAIGN COSTS, MEASURED ───────────────────────────────────────
+   Not guessed. Against the real prompt builders at published gpt-4o-mini rates:
+
+     one build (the skeleton)         1 call     $0.0013
+     one asset, or one rewrite        2 calls    $0.0018   (copy + critique)
+     a whole 10-asset campaign       21 calls    $0.019
+     a whole 16-asset campaign       33 calls    $0.030
+
+   So a BUILD is four to eleven per cent of the campaign it starts, and the
+   free tier costs between one and three cents. That is the whole reason the
+   free campaign is COMPLETE rather than sampled: every asset, every edit,
+   every rewrite, every angle, uncounted and forever. An advisor who has
+   rewritten one post four times until it finally sounds like them has felt
+   what the training teaches, and that demonstration costs us a nickel.
+
+   The only real exposure is a script, and a script is a rate limit rather than
+   a price. (Today that limit does not bind on rewrites at all — countSince()
+   in api/gtm.js reads created_at and a regeneration UPDATES the row. Known,
+   written down, and deliberately not fixed here.)
 
    ── WHY A PACK AND NOT A SUBSCRIPTION ─────────────────────────────────────
    Duncan's reasoning, and it is right: Foundations graduates are trained to
@@ -12,6 +32,15 @@
    A pack of three is bought once, spent when it is worth spending, and never
    has to be cancelled. It also puts a real decision in front of the advisor at
    the moment they are deciding whether the last plan was any good.
+
+   ── THE PACK IS THE DOWNSELL, NOT THE OFFER ───────────────────────────────
+   Foundations is what the plan builder is for. The pack exists for the advisor
+   who says no to the training and still wants to keep working — which is why
+   three-for-nine and not one-for-nine: it has to read as generous at the
+   moment somebody has just declined something else, not as a toll.
+
+   FREE_BUILDS is 1 and PACK_SIZE is 3 on purpose. They are not the same
+   number and should not be made to match.
 
    ── SPEND HAPPENS AFTER SUCCESS, AND THAT IS A DELIBERATE TRADE ───────────
    Two orderings were available.
@@ -45,8 +74,16 @@ const MISSING = ['42703', '42P01', 'PGRST204', 'PGRST205'];
 const isMissing = (e) => e && MISSING.indexOf(String(e.code)) !== -1;
 
 const PACK_SIZE = 3;
-const FREE_BUILDS = 3;
 const PACK_PRICE = '$9';
+
+/* ONE, down from three. Three was never spendable — the balance was invisible
+   to every Hub screen until the session query was fixed, so no advisor has
+   ever seen or spent one of these.
+
+   THIS DOES NOT TAKE ANYTHING BACK. Migration 017 defaulted every existing
+   advisor to 3 and grant() adds rather than sets, so everybody already on the
+   platform keeps what they have. This is what a NEW registration is given. */
+const FREE_BUILDS = 1;
 
 /* Unlimited, and the balance is not even looked at. Kept as one function so
    there is one answer to "is this advisor metered" rather than a condition
@@ -158,19 +195,36 @@ async function record(event) {
 /* What the advisor is told. Written here rather than in the screen so the
    webhook, the gate and the Hub cannot describe the same balance differently.
 
-   No padlock vocabulary — see loopback.js. It states a number and a price. */
+   No padlock vocabulary — see loopback.js. It states a number and a price.
+
+   ── "CAMPAIGN", NOT "BUILD" ───────────────────────────────────────────────
+   A build is a thing our server does. A campaign is a thing an advisor has.
+   The word had leaked out of the code and into the screen, where it asked
+   somebody to spend a unit they had no picture of — and the count it named was
+   invisible anyway, since plan_builds was not in the session query.
+
+   ── THE SENTENCE THAT MATTERS IS THE SECOND ONE ───────────────────────────
+   Every state says what is free, because what is free is nearly everything:
+   editing, regenerating, and all four angles, on every piece, forever. That is
+   0.18 of a cent a time and it is where the value of this tool actually lives.
+   An advisor who does not know it is free will ration it, and the rationing
+   costs them more than it saves us. */
 function balanceLine(advisor) {
   if (unmetered(advisor)) return null;
   const n = balance(advisor);
   if (n === null) return null;
+
+  /* Out. This line is deliberately NOT a sales pitch — the offer that follows
+     it in campaign-blocks.js is. Saying the price twice, once flatly and once
+     properly, would make the proper one read as a repeat. */
   if (n === 0) {
-    return `You have used your plan builds. Another ${PACK_SIZE} is ${PACK_PRICE}, once — ` +
-      'not a subscription. Editing, regenerating single pieces and trying another angle ' +
-      'all stay free and always did.';
+    return 'This is your campaign, and everything in it stays yours to work on — ' +
+      'editing, rewriting and trying another angle on any piece are free and always were.';
   }
+
   return n === 1
-    ? 'One plan build left. Editing any piece of this plan is free and does not use it.'
-    : `${n} plan builds left. Editing any piece of this plan is free and does not use one.`;
+    ? 'One more campaign to build when you want it. Reworking this one costs nothing.'
+    : `${n} more campaigns to build when you want them. Reworking this one costs nothing.`;
 }
 
 module.exports = {

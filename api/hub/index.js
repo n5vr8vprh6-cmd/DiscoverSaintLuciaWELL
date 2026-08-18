@@ -32,6 +32,7 @@ const SCREENS = {
   account:  () => require('../_lib/hub-screens/account.js'),
   campaign: () => require('../_lib/hub-screens/campaign.js'),
   campaignProfile: () => require('../_lib/hub-screens/campaign-profile.js'),
+  campaignMore: () => require('../_lib/hub-screens/campaign-more.js'),
   sweepstakes:       () => require('../_lib/hub-screens/sweepstakes.js'),
   sweepstakesDetail: () => require('../_lib/hub-screens/sweepstakes-detail.js'),
   login:    () => require('../_lib/hub-screens/login.js'),

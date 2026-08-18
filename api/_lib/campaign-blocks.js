@@ -27,7 +27,6 @@
 const { esc } = require('./hub-render.js');
 const { substitute } = require('./gtm.js');
 const { imageBrief, isVisual, RIGHTS_NOTE } = require('./image-brief.js');
-const { PACK_SIZE, PACK_PRICE } = require('./builds.js');
 
 /* Kinds that go to one person's phone or inbox directly. These carry the
    consent note; a public post does not, because nobody is being messaged. */
@@ -106,8 +105,8 @@ function angleBlock(current) {
 
   return `<details class="gtm-angles">
     <summary>Try another angle${current ? ` <span class="gtm-angle-now">now: ${esc(ANGLE_LABEL[current] || current)}</span>` : ''}</summary>
-    <p class="hub-hint">Rewrites this one piece from a different starting point. It does not
-      cost you a build — you already paid for this plan.</p>
+    <p class="hub-hint">Rewrites this one piece from a different starting point. It costs
+      you nothing and there is no limit on it — this campaign is yours.</p>
     <div class="gtm-actions">${buttons}</div>
   </details>`;
 }
@@ -388,31 +387,68 @@ function planSection(rows, opts) {
 
     ${o.strip || ''}
 
-    ${/* ── The balance ────────────────────────────────────────────────────
-          o.balanceLine is null for a Foundations graduate and null before
-          migration 017, and in both cases nothing is said — an advisor who is
-          not being metered should not be shown a meter, and a number we cannot
-          read should not be guessed at.
+    ${nextCampaign(o)}
+  </section>`;
+}
 
-          The old text here said rebuilding "is part of Well Destination
-          Foundations". That stopped being true the moment a registered advisor
-          got three builds, and a false sentence on a paid surface is worse
-          than a missing one. */''}
-    ${o.mayRefresh ? `
+/* ── What happens after this campaign ───────────────────────────────────────
+   THREE STATES, and for a long time only the worst one ever rendered. The
+   session query did not select plan_builds, foundations_at or immersion_at
+   (see api/_lib/auth.js), so balanceLine() returned null and mayRefresh() fell
+   through to a rung that was always `registered`. Every advisor — graduate,
+   paying, or brand new — landed on the same flat fallback sentence, which is
+   what Duncan found at the bottom of his plan.
+
+   ── ONE PRICE AT A TIME ────────────────────────────────────────────────────
+   The exhausted state shows Foundations and nothing else. The $9 pack lives
+   one click behind "not right now", on /hub/campaign/more.
+
+   Two prices side by side is a comparison, and a comparison between $697 and
+   $9 has one obvious answer that is not the one we want an advisor to reach
+   thoughtlessly. One offer, then a smaller one after a decline, is an offer.
+
+   ── THE GRADUATE SEES NOTHING ──────────────────────────────────────────────
+   No meter, no upsell, no sentence about a programme they have already paid
+   for and completed. This is a state, deliberately rendered as empty, not an
+   oversight — and it is the one that has never once worked. */
+function nextCampaign(o) {
+  /* Unlimited: a graduate, or a balance we genuinely cannot read (before
+     migration 017). Saying nothing is right in both cases — one has earned it
+     and the other must not be guessed at. */
+  if (!o.balanceLine) {
+    return o.mayRefresh ? `
     <div class="gtm-plan-actions">
-      <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new plan</button>
+      <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new campaign</button>
+      <span class="hub-hint">Your current one stays until the new one is ready.</span>
+    </div>` : '';
+  }
+
+  /* Campaigns in hand. The button, and the count under it. */
+  if (o.mayRefresh) {
+    return `
+    <div class="gtm-plan-actions">
+      <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new campaign</button>
       <span class="hub-hint">Your current one stays until the new one is ready.</span>
     </div>
-    ${o.balanceLine ? `<p class="hub-hint gtm-builds">${esc(o.balanceLine)}</p>` : ''}`
-    : `
-    <p class="hub-hint gtm-locked">${o.balanceLine
-      ? esc(o.balanceLine)
-      : `This is your plan. Rebuilding it whenever you like is part of
-        <a href="/advisors/foundations" target="_blank" rel="noopener">Well Destination Foundations</a>.`}</p>
-    ${o.balanceLine && o.packUrl ? `<div class="gtm-plan-actions">
-      <a class="btn btn--gold btn--sm" href="${esc(o.packUrl)}" target="_blank" rel="noopener">Get ${PACK_SIZE} more — ${esc(PACK_PRICE)}</a>
-    </div>` : ''}`}
-  </section>`;
+    <p class="hub-hint gtm-builds">${esc(o.balanceLine)}</p>`;
+  }
+
+  /* Out. The offer — and it opens by saying what is still free, because that
+     is true, it is most of the value here, and an advisor who reads a price
+     first stops reading. */
+  return `
+    <section class="hub-card gtm-next">
+      <p class="hub-hint gtm-next-free">${esc(o.balanceLine)}</p>
+      <h3>Where a campaign like this goes next</h3>
+      <p>This one was written under the claims you may make as a registered
+        advisor. <strong>Well Destination Foundations</strong> changes what the
+        next one is allowed to say about you — and gives you unlimited
+        campaigns to say it in.</p>
+      <div class="gtm-plan-actions">
+        <a class="btn btn--gold btn--sm" href="/hub/campaign/more">What Foundations changes</a>
+        <a class="hub-more" href="/hub/campaign/more#more-campaigns">Not right now — I just want to build more campaigns</a>
+      </div>
+    </section>`;
 }
 
 /* The overlay while a plan is being built. It says what it is doing because

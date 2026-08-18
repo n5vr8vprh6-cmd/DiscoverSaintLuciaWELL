@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>159 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>162 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">159</b></span>
+      <span class="t-left">Untested <b id="n-left">162</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -3973,7 +3973,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 26 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 29 recorded</p>
   </div>
   
   <details class="area" open>
@@ -4311,11 +4311,11 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Build gate <span class="area-n">3</span></summary>
+    <summary>Build gate <span class="area-n">6</span></summary>
     
 <article class="case" id="case-G-11" data-id="G-11" data-role="guard"
-   data-pri="1" data-hash="xslxo1"
-   data-title="The balance counts down and blocks at zero" data-expect="At zero, building is refused with the $9 pack offered; editing and angles still work." data-area="Build gate">
+   data-pri="1" data-hash="h86bf8"
+   data-title="The balance counts down and blocks at zero" data-expect="At zero, building is refused and the offer appears at the end of the plan; editing, regenerating and all four angles still work." data-area="Build gate">
   <div class="case-head">
     <span class="cid">G-11</span>
     <h4>The balance counts down and blocks at zero</h4>
@@ -4323,13 +4323,13 @@ header.top {
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
 
-  <p class="needs"><strong>Needs first:</strong> Migration 017 applied</p>
+  <p class="needs"><strong>Needs first:</strong> Migration 017 applied · Migration 020 applied</p>
   
 
-  <ol class="steps"><li>Note the balance</li><li>Build a plan</li><li>Check it decreased by exactly one</li><li>Exhaust it</li></ol>
+  <ol class="steps"><li>Note the balance</li><li>Build a campaign</li><li>Check it decreased by exactly one</li><li>Exhaust it</li></ol>
 
-  <p class="expect"><strong>Expect</strong> At zero, building is refused with the $9 pack offered; editing and angles still work.</p>
-  <p class="why"><strong>Why this matters</strong> One plan must cost exactly one build. Two plans for one build gives the product away; two builds for one plan overcharges somebody.</p>
+  <p class="expect"><strong>Expect</strong> At zero, building is refused and the offer appears at the end of the plan; editing, regenerating and all four angles still work.</p>
+  <p class="why"><strong>Why this matters</strong> One campaign must cost exactly one. Two campaigns for one gives the product away; two spent for one overcharges somebody.</p>
 
   <div class="marks" role="group" aria-label="Result for G-11">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -4344,12 +4344,105 @@ header.top {
     <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
   </label>
 </article>
+<article class="case" id="case-G-27" data-id="G-27" data-role="guard"
+   data-pri="1" data-hash="2lertg"
+   data-title="The balance is VISIBLE — the bug that hid the whole feature" data-expect="One of the two. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;" data-area="Build gate">
+  <div class="case-head">
+    <span class="cid">G-27</span>
+    <h4>The balance is VISIBLE — the bug that hid the whole feature</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> Migration 017 applied</p>
+  
+
+  <ol class="steps"><li>Open /hub/campaign with a plan already built</li><li>Scroll to the very bottom of the plan</li><li>Confirm you see either a count of campaigns left or the offer</li></ol>
+
+  <p class="expect"><strong>Expect</strong> One of the two. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;</p>
+  <p class="why"><strong>Why this matters</strong> That sentence is the fallback for &quot;we cannot read this advisor at all&quot;, and for weeks EVERY advisor got it: auth.js did not select plan_builds, so the balance was undefined and D7 never rendered once. If it comes back, the session query has lost a column again — run node tools/session-columns-test.js.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-27">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-28" data-id="G-28" data-role="guard"
+   data-pri="1" data-hash="1a3o1gi"
+   data-title="Rewriting is free at zero, and says so" data-expect="All of it works, and the line above the offer says editing and rewriting are free." data-area="Build gate">
+  <div class="case-head">
+    <span class="cid">G-28</span>
+    <h4>Rewriting is free at zero, and says so</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> An advisor at plan_builds = 0 with a plan</p>
+  
+
+  <ol class="steps"><li>Edit a piece of copy and save</li><li>Regenerate a piece</li><li>Try all four angles on one piece</li><li>Revert it</li></ol>
+
+  <p class="expect"><strong>Expect</strong> All of it works, and the line above the offer says editing and rewriting are free.</p>
+  <p class="why"><strong>Why this matters</strong> The free tier is ONE COMPLETE campaign, not a sample. A rewrite costs us 0.18 of a cent; an advisor who thinks it costs money will ration it, and unedited copy is the failure this product exists to prevent.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-28">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-29" data-id="G-29" data-role="guard"
+   data-pri="2" data-hash="1clop5c"
+   data-title="Foundations is offered before the $9 pack, never beside it" data-expect="The plan screen names no price at all. /hub/campaign/more leads with Foundations and its price; the $9 pack is further down, at the #more-campaigns anchor the decline link points to." data-area="Build gate">
+  <div class="case-head">
+    <span class="cid">G-29</span>
+    <h4>Foundations is offered before the $9 pack, never beside it</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>At zero, read the bottom of the plan</li><li>Follow &quot;What Foundations changes&quot;</li><li>Then follow &quot;Not right now&quot;</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The plan screen names no price at all. /hub/campaign/more leads with Foundations and its price; the $9 pack is further down, at the #more-campaigns anchor the decline link points to.</p>
+  <p class="why"><strong>Why this matters</strong> The builder exists to sell the training; the pack is the downsell. Two prices side by side is a comparison, and $9 against $697 answers itself.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-29">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
 <article class="case" id="case-G-12" data-id="G-12" data-role="guard"
-   data-pri="1" data-hash="jbmzkf"
-   data-title="A Foundations advisor is unlimited and shown no meter" data-expect="Never refused, and the number never moves." data-area="Build gate">
+   data-pri="1" data-hash="1lqpicl"
+   data-title="A Foundations advisor is unlimited, shown no meter AND no upsell" data-expect="Never refused, the number never moves, and nothing anywhere tries to sell them the programme they completed." data-area="Build gate">
   <div class="case-head">
     <span class="cid">G-12</span>
-    <h4>A Foundations advisor is unlimited and shown no meter</h4>
+    <h4>A Foundations advisor is unlimited, shown no meter AND no upsell</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
@@ -4357,9 +4450,9 @@ header.top {
   <p class="needs"><strong>Needs first:</strong> Migration 017 applied · concierge+uat2@discoversaintluciawell.com with Foundations</p>
   
 
-  <ol class="steps"><li>Build several plans as concierge+uat2@discoversaintluciawell.com</li><li>Check plan_builds in Supabase before and after</li></ol>
+  <ol class="steps"><li>Build several plans as concierge+uat2@discoversaintluciawell.com</li><li>Check plan_builds in Supabase before and after</li><li>Read the bottom of the plan: no balance, no offer, no Foundations sentence</li><li>Open /hub/campaign/more directly — it must redirect to /hub/campaign</li></ol>
 
-  <p class="expect"><strong>Expect</strong> Never refused, and the number never moves.</p>
+  <p class="expect"><strong>Expect</strong> Never refused, the number never moves, and nothing anywhere tries to sell them the programme they completed.</p>
   <p class="why"><strong>Why this matters</strong> Not &quot;spent and ignored&quot; — the number must not change, or somebody later reads a balance that has been counting down against a person who is not being counted.</p>
 
   <div class="marks" role="group" aria-label="Result for G-12">

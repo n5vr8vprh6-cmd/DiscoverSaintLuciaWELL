@@ -173,6 +173,28 @@ async function userFor(req, res) {
   return null;
 }
 
+/* ── What the Hub can see about you ───────────────────────────────────────
+   An explicit column list, not select('*'). A column missing from this string
+   is `undefined` on every Hub page — which for `role` would mean every admin
+   check silently denying everyone, with nothing in the logs to explain it.
+
+   THREE COLUMNS WERE MISSING FROM IT FOR WEEKS, and the comment that used to
+   sit here said "add columns here when a screen needs them" — which is a
+   reminder, and reminders are what failed. 017 added `plan_builds`, and the
+   whole build-pack feature then read `undefined`: no balance line, no rebuild
+   button, no pack CTA, from the day it shipped. `foundations_at` and
+   `immersion_at` were worse than invisible — rung() reads only those two
+   dates, so every advisor in the Hub was `registered`, and a Foundations
+   graduate generated copy forbidden from saying they had been trained. It
+   failed CLOSED, under-claiming rather than over-claiming, which is exactly
+   why it survived so long.
+
+   So it is one constant now (the two loaders below cannot drift), and
+   tools/session-columns-test.js asserts that everything read off an advisor
+   in api/_lib is actually in here. The next migration gets a failing test
+   rather than a silent undefined. */
+const SESSION_COLUMNS = 'id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at, is_house, plan_builds, foundations_at, immersion_at';
+
 /* The advisor row for the signed-in user, or null. Every Hub read goes through
    here, so there is exactly one place that decides who you are. */
 async function advisorFor(req, res) {
@@ -186,7 +208,7 @@ async function advisorFor(req, res) {
        string is `undefined` on every Hub page — which for `role` would mean
        every admin check silently denying everyone, with nothing in the logs to
        explain it. Add columns here when a screen needs them. */
-    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at, is_house')
+    .select(SESSION_COLUMNS)
     .eq('auth_user_id', user.id)
     .maybeSingle();
   if (!data) return null;
@@ -225,7 +247,7 @@ async function advisorFor(req, res) {
 
   const { data: target } = await supabase
     .from('advisors')
-    .select('id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at, is_house')
+    .select(SESSION_COLUMNS)
     .eq('id', viewAsId)
     .maybeSingle();
   if (!target) return self;

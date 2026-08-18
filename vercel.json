@@ -118,6 +118,10 @@
       "destination": "/api/hub?screen=campaignProfile"
     },
     {
+      "source": "/hub/campaign/more",
+      "destination": "/api/hub?screen=campaignMore"
+    },
+    {
       "source": "/hub/campaign",
       "destination": "/api/hub?screen=campaign"
     },

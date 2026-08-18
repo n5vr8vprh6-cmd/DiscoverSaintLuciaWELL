@@ -71,19 +71,49 @@ ok('and they are shown no balance line at all', BUILDS.balanceLine(FOUND(0)) ===
 
 /* ══ WHAT THE ADVISOR IS TOLD ════════════════════════════════════════════ */
 console.log('\n  What it says');
-ok('one is singular', /One plan build left/.test(BUILDS.balanceLine(REG(1))));
-ok('three is plural', /3 plan builds left/.test(BUILDS.balanceLine(REG(3))));
-ok('exhausted names the price once', /\$9, once/.test(BUILDS.balanceLine(REG(0))));
-ok('and says it is not a subscription', /not a subscription/.test(BUILDS.balanceLine(REG(0))),
-  'the whole reason for a pack instead of a plan is that nobody has to remember to cancel it');
-ok('it says what stays free', /Editing/.test(BUILDS.balanceLine(REG(0))),
-  'an advisor who thinks editing costs money will not edit, and unedited copy is the failure mode');
+ok('one is singular', /One more campaign/.test(BUILDS.balanceLine(REG(1))));
+ok('three is plural', /3 more campaigns/.test(BUILDS.balanceLine(REG(3))));
+
+/* ── "CAMPAIGN", NEVER "BUILD" ───────────────────────────────────────────
+   A build is a thing our server does; a campaign is a thing the advisor has.
+   The old copy asked somebody to spend a unit they had no picture of. */
+ok('no state uses "build" as a NOUN',
+  [0, 1, 3].every((n) => !/\bbuilds\b|\bbuild (left|remaining)\b/i.test(BUILDS.balanceLine(REG(n)) || '')),
+  'internal vocabulary had leaked onto the screen: "One plan build left". ' +
+  'The verb is fine and wanted — "campaigns to build" is what an advisor does.');
+
+/* ── EVERY STATE SAYS WHAT IS FREE ───────────────────────────────────────
+   Editing and rewriting are 0.18 of a cent each and are where the value of
+   this tool actually lives. An advisor who does not know they are free will
+   ration them, and the rationing costs them more than it saves us. */
+ok('every state says the current campaign is free to rework',
+  [0, 1, 3].every((n) => /free|costs nothing/i.test(BUILDS.balanceLine(REG(n)) || '')),
+  'unedited copy is the failure mode this product exists to prevent');
+
+/* ── THE EXHAUSTED LINE NAMES NO PRICE ───────────────────────────────────
+   It used to. The offer that now follows it in campaign-blocks.js does the
+   selling, and a price stated flatly just above a real offer makes the real
+   one read as a repeat. One price at a time, and not this one. */
+ok('exhausted does NOT name a price', !/\$/.test(BUILDS.balanceLine(REG(0))),
+  'the offer below it names the price; this line sets up why the offer is worth reading');
+ok('and does not read as a wall', !/used (up|all)|no more|out of/i.test(BUILDS.balanceLine(REG(0))),
+  'it opens on what the advisor still has, because that is the larger true thing');
 
 /* NO PADLOCK VOCABULARY — the same rule as loopback.js. */
 const PADLOCK = /unlock|upgrade|premium|locked|gated|pro plan/i;
 ok('no padlock vocabulary anywhere in the copy',
   [0, 1, 3].every((n) => !PADLOCK.test(BUILDS.balanceLine(REG(n)) || '')),
   '"unlock" frames the product as withholding something it has chosen not to give');
+
+/* ══ THE FREE TIER IS ONE, THE PACK IS THREE ═════════════════════════════ */
+console.log('\n  One free campaign, three for nine dollars');
+ok('a new registration is given one', BUILDS.FREE_BUILDS === 1,
+  'complete rather than sampled: every asset, and unlimited rewriting after that');
+ok('the pack is still three', BUILDS.PACK_SIZE === 3,
+  'it is the DOWNSELL from Foundations and has to read as generous after a decline');
+ok('they are deliberately different numbers', BUILDS.FREE_BUILDS !== BUILDS.PACK_SIZE,
+  'somebody will eventually try to make these match — they should not');
+ok('the price is unchanged', BUILDS.PACK_PRICE === '$9');
 
 /* ══ THE WEBHOOK, WITHOUT TOUCHING THE DATABASE ══════════════════════════ */
 console.log('\n  The webhook refuses before it does anything');
