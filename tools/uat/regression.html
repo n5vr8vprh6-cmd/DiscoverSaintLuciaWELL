@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>167 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>170 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">167</b></span>
+      <span class="t-left">Untested <b id="n-left">170</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -1383,11 +1383,11 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 57 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 60 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Campaign <span class="area-n">2</span></summary>
+    <summary>Campaign <span class="area-n">5</span></summary>
     
 <article class="case" id="case-A-54" data-id="A-54" data-role="advisor"
    data-pri="3" data-hash="70vu37"
@@ -1439,6 +1439,99 @@ header.top {
   <p class="why"><strong>Why this matters</strong> loopback.js: &quot;before a result there is no argument, only a pitch.&quot; An advisor can exhaust their campaign in week one with nothing to show, and selling training to them then is the guard eroding. Somebody stuck should be offered the way to keep working.</p>
 
   <div class="marks" role="group" aria-label="Result for A-57">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-58" data-id="A-58" data-role="advisor"
+   data-pri="2" data-hash="k42xzb"
+   data-title="The upsell page argues from YOUR campaign, not from a rule" data-expect="It opens on what YOUR campaign was built from: how many intake answers you gave, how it was sized, your readiness figure. Then at most two gaps you actually have, each with what it costs in copy you have already read, and the claims rung last." data-area="Campaign">
+  <div class="case-head">
+    <span class="cid">A-58</span>
+    <h4>The upsell page argues from YOUR campaign, not from a rule</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> An advisor at zero campaigns</p>
+  
+
+  <ol class="steps"><li>At zero, open /hub/campaign/more</li><li>Read the first card without scrolling</li><li>Check the numbered list against what your profile actually has</li></ol>
+
+  <p class="expect"><strong>Expect</strong> It opens on what YOUR campaign was built from: how many intake answers you gave, how it was sized, your readiness figure. Then at most two gaps you actually have, each with what it costs in copy you have already read, and the claims rung last.</p>
+  <p class="why"><strong>Why this matters</strong> The first version led with a claims-permission table: 1,038px of the 2,715px page, accurate and cold, never once mentioning the campaign the reader had just spent an evening in. If it reads as a generic pitch again, the personalisation has stopped working.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-58">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-59" data-id="A-59" data-role="advisor"
+   data-pri="1" data-hash="1byols4"
+   data-title="An advisor who HAS done the work is not told they have not" data-expect="None. The headline reads &quot;nearly everything it can use&quot;, and the only consequence left is what their copy may claim." data-area="Campaign">
+  <div class="case-head">
+    <span class="cid">A-59</span>
+    <h4>An advisor who HAS done the work is not told they have not</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> An advisor with a saved Brand Profile, at zero campaigns</p>
+  
+
+  <ol class="steps"><li>Open /hub/campaign/more as that advisor</li><li>Look for any mention of missing clients, markets or proof</li></ol>
+
+  <p class="expect"><strong>Expect</strong> None. The headline reads &quot;nearly everything it can use&quot;, and the only consequence left is what their copy may claim.</p>
+  <p class="why"><strong>Why this matters</strong> Telling somebody who spent an hour on a Brand Profile that their campaign has nothing of their clients in it is the fastest way to lose them, and it is the worst failure this page can have.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-59">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-60" data-id="A-60" data-role="advisor"
+   data-pri="2" data-hash="1250r5u"
+   data-title="Nothing on the empty screen describes a campaign you never built" data-expect="The heading matches the body. Never &quot;Build your plan&quot; above a paragraph saying you cannot, and never &quot;This is your campaign&quot; to somebody without one." data-area="Campaign">
+  <div class="case-head">
+    <span class="cid">A-60</span>
+    <h4>Nothing on the empty screen describes a campaign you never built</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>As an advisor at zero who has never built a plan, open /hub/campaign</li><li>Read the card heading and the line under it</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The heading matches the body. Never &quot;Build your plan&quot; above a paragraph saying you cannot, and never &quot;This is your campaign&quot; to somebody without one.</p>
+  <p class="why"><strong>Why this matters</strong> Both shipped and Duncan photographed them. balanceLine was written for the foot of an existing plan and selected by the balance alone, so it described a campaign that did not exist.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-60">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>

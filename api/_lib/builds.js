@@ -258,17 +258,36 @@ async function record(event) {
    0.18 of a cent a time and it is where the value of this tool actually lives.
    An advisor who does not know it is free will ration it, and the rationing
    costs them more than it saves us. */
-function balanceLine(advisor) {
+/* ── hasPlan, BECAUSE EVERY STATE HERE TALKED ABOUT A CAMPAIGN ────────────
+   These sentences were written for the foot of a plan, and then reused on the
+   empty screen, which is selected by the BALANCE and not by the situation. So
+   an advisor at zero who had never built anything was told "This is your
+   campaign, and everything in it stays yours to work on" — about a campaign
+   that does not exist. Duncan hit it as uat3 and sent a screenshot.
+
+   Default true, so every existing caller keeps the wording it had. */
+function balanceLine(advisor, hasPlan) {
   if (unmetered(advisor)) return null;
   const n = balance(advisor);
   if (n === null) return null;
+  const held = hasPlan !== false;
 
   /* Out. This line is deliberately NOT a sales pitch — the offer that follows
      it in campaign-blocks.js is. Saying the price twice, once flatly and once
      properly, would make the proper one read as a repeat. */
   if (n === 0) {
-    return 'This is your campaign, and everything in it stays yours to work on — ' +
-      'editing, rewriting and trying another angle on any piece are free and always were.';
+    return held
+      ? 'This is your campaign, and everything in it stays yours to work on — ' +
+        'editing, rewriting and trying another angle on any piece are free and always were.'
+      : 'You have used the campaign that comes with your account.';
+  }
+
+  /* Nothing to rework yet, so the half of the sentence about reworking would
+     be an instruction for a screen they are not on. */
+  if (!held) {
+    return n === 1
+      ? 'One campaign to build, whenever you are ready.'
+      : `${n} campaigns to build, whenever you are ready.`;
   }
 
   return n === 1

@@ -45,6 +45,15 @@ const auth = require('../api/_lib/auth.js');
 let CURRENT = null;
 auth.requireAdvisor = async () => CURRENT;
 
+/* The page reads the advisor's profile and their plan, and its whole argument
+   is built from what it finds. Both are stubbed here — patched BEFORE the
+   screen is required, because the screen destructures them at load time. */
+const gtm = require('../api/_lib/gtm.js');
+let PROFILE = {};
+let PLAN = null;
+gtm.profileFor = async () => PROFILE;
+gtm.currentPlan = async () => PLAN;
+
 const screen = require('../api/_lib/hub-screens/campaign-more.js');
 const { planSection } = require('../api/_lib/campaign-blocks.js');
 const FACTS = require('../content/campaign-facts.js');
@@ -60,10 +69,12 @@ function fakeRes() {
   };
 }
 
-async function renderMore(advisor) {
+async function renderMore(advisor, profile) {
   CURRENT = advisor;
+  PROFILE = profile || {};
   const res = fakeRes();
   await screen({ url: '/hub/campaign/more', headers: {} }, res);
+  PROFILE = {};
   return res;
 }
 
@@ -93,9 +104,17 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
     FACTS.CLAIMS_LADDER.registered.mayNot.every((c) => html.indexOf(c) !== -1),
     'the "before" half of a before-and-after');
 
+  /* The INTENT, not the phrasing. This asserted the exact words "free,
+     unlimited" and went red the moment the sentence was tightened — a test
+     that pins wording stops people improving copy. What must stay true is that
+     the page opens on what is still free, before it asks for anything. */
+  const opening = html.slice(0, html.indexOf('gtm-costs') === -1 ? 4000 : html.indexOf('gtm-costs'));
   ok('it opens by saying the current campaign stays free',
-    /free, unlimited/i.test(html) && /editing, rewriting/i.test(html),
+    /\bfree\b/i.test(opening) && /unlimited/i.test(opening) && /editing/i.test(opening),
     'an advisor who reads a price first stops reading');
+  ok('and says it BEFORE naming any price',
+    opening.indexOf('$') === -1,
+    'the free half is the larger true thing and has to land first');
 
   /* ── One price at a time ──────────────────────────────────────────────── */
   section('One offer, then the other');
@@ -141,6 +160,85 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
   ok('is sent back to their campaign, not sold to',
     grad.statusCode === 302 && grad.headers.location === '/hub/campaign',
     'got ' + grad.statusCode + ' ' + (grad.headers.location || ''));
+
+  /* ── FOUR PROFILES, FOUR DIFFERENT PAGES ──────────────────────────
+     The point of the rebuild. The old page said the same thing to everybody
+     because it argued from a rule; this one argues from the reader's own row,
+     so the consequences it names have to CHANGE with that row — and an advisor
+     who has done the work must not be told they have not.
+
+     The worst failure this can have is telling somebody with a full Brand
+     Profile that their campaign has nothing of their clients in it. */
+  section('Four profiles, four different pages');
+
+  const SIX = {
+    positioning: 'Slow trips', differentiator: 'I walked them', icp: 'Couples at forty',
+    client_examples: 'Two lawyers', specialties: 'Caribbean', markets: 'Toronto'
+  };
+  const PROFILES = {
+    empty: {},
+    intake: Object.assign({}, SIX),
+    persona: Object.assign({}, SIX, { expr_primary: 'craft', traveller_orientation: 'restorative' }),
+    full: Object.assign({}, SIX, {
+      expr_primary: 'craft', traveller_orientation: 'restorative',
+      brief_parsed: { CLIENTS: ['a', 'b'], MARKETS: ['c'], PROOF: ['d'] }
+    })
+  };
+
+  const pages = {};
+  for (const k of Object.keys(PROFILES)) {
+    pages[k] = (await renderMore(REGISTERED, PROFILES[k])).body;
+  }
+
+  ok('all four render differently', new Set(Object.values(pages)).size === 4,
+    'if any two match, the page is not reading the profile it claims to');
+
+  const costs = (h) => (h.match(/gtm-cost-what/g) || []).length;
+  /* CAPPED AT TWO GAPS PLUS THE RUNG. Measured at 4,361px with all four
+     rendered; each item is a structural ~370px, and four numbered grievances
+     in a column reads as a list of somebody's failings rather than as
+     recognition. The order in CONSEQUENCES is by how much the gap is felt, so
+     the two that survive the cap are the two worth naming. */
+  ok('the list is capped at three',
+    Object.values(pages).every((h) => costs(h) <= 3),
+    'empty ' + costs(pages.empty) + ', intake ' + costs(pages.intake));
+  ok('an empty profile is shown the cap',
+    costs(pages.empty) === 3 && costs(pages.intake) === 3,
+    'empty ' + costs(pages.empty) + ', intake ' + costs(pages.intake));
+  ok('a persona profile is shown fewer', costs(pages.persona) === 2,
+    'got ' + costs(pages.persona) + ' — the missing brief, and the rung');
+  ok('a full profile is shown only the rung', costs(pages.full) === 1,
+    'got ' + costs(pages.full));
+
+  /* THE ONE THAT MATTERS MOST. */
+  ok('a full-brief advisor is NEVER told they lack their own clients',
+    pages.full.indexOf('Your own clients, markets and proof') === -1 &&
+    !/could belong to any advisor/.test(pages.full),
+    'telling somebody who spent an hour on a Brand Profile that they have not ' +
+    'done it is the fastest way to lose them');
+  ok('and their headline changes to match',
+    /nearly everything it can use/.test(pages.full) &&
+    /without the part that makes it yours/.test(pages.empty),
+    'the opening sentence has to agree with the list under it');
+
+  ok('every page still reaches the offer and the pack',
+    Object.values(pages).every((h) =>
+      h.indexOf('Enrol in Foundations') !== -1 && h.indexOf('id="more-campaigns"') !== -1),
+    'the argument shrinks with the gaps; the offer does not disappear with them');
+
+  /* ── The bridge is the same for everybody, and must be exact ─────────── */
+  section('The bridge quotes the curriculum, not us');
+  const DAY_ONE = 'Understand the forces reshaping travel demand, then claim your place: ' +
+    'the specialty and ideal client that set you apart.';
+  ok('Day One is quoted verbatim from the programme page',
+    marketing.indexOf(DAY_ONE) !== -1,
+    'the sentence this page attributes to the curriculum is not on the curriculum');
+  ok('and the page actually carries it',
+    Object.values(pages).every((h) => h.indexOf(DAY_ONE.slice(0, 60)) !== -1));
+  ok('the deliverables are the confirmed ones', ['The WELL Compass Discovery Script',
+    'Client-Matching Matrix', '90-Day Activation Plan'].every((d) =>
+      pages.empty.indexOf(d) !== -1 && marketing.indexOf(d) !== -1),
+    'each name must appear on the marketing page too');
 
   /* ── Paid, but not yet trained ──────────────────────────────────
      The state 021 creates. They own everything this page sells, so it must not
@@ -301,9 +399,25 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
 
   const fresh = await renderCampaign({ id: 'f', first_name: 'Wren', status: 'active', plan_builds: 1 });
   ok('an advisor with one campaign and no plan is told so',
-    /One more campaign/.test(fresh),
+    /One campaign to build/.test(fresh),
     'the count used to render only inside the plan card, so before your first plan ' +
     'there was no number anywhere');
+
+  /* ── NOTHING ON THE EMPTY SCREEN DESCRIBES A CAMPAIGN THEY DO NOT HAVE ────
+     balanceLine's wording was written for the foot of a plan and selected by
+     the BALANCE, so uat3 — zero campaigns, none ever built — was told "This is
+     your campaign, and everything in it stays yours to work on". Duncan
+     photographed it. hasPlan=false is the fix. */
+  ok('and is never told "this is your campaign" before building one',
+    !/This is your campaign/.test(fresh) && !/This is your campaign/.test(atZero),
+    'it described a campaign that did not exist');
+  ok('nor offered something to rework',
+    !/Reworking this one/.test(fresh),
+    'there is nothing on that screen to rework');
+  ok('the heading matches what the body says',
+    !(/Build your plan/.test(atZero) && /have used the campaign/.test(atZero)),
+    'the h2 sat outside the branch, so "Build your plan" headed a paragraph ' +
+    'explaining that they could not');
 
   /* ── Something to look at ─────────────────────────────────────────────── */
   if (WRITE) {

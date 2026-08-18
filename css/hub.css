@@ -1454,6 +1454,72 @@ body.gtm-busy { overflow: hidden; }
   color: var(--muted);
 }
 
+/* ── /hub/campaign/more ─ their campaign, read back ───────────────────
+   The page opens on facts about the reader rather than on an offer, so this
+   block is styled as a summary and not as a hero: no gold, no accent rule, the
+   same card as everything else. The persuasion is that the numbers are theirs.
+
+   Nothing here introduces a colour. */
+/* No font-size here. .hub-main h1 already sets the clamp AND carries the
+   descender-clearance fix that had to be made across the whole Hub; overriding
+   the size would quietly reintroduce the clipping. Margin only. */
+.gtm-readback h1 { margin: 0 0 0.75rem; }
+
+.gtm-readback-facts {
+  margin: 1.25rem 0 0;
+  border-top: 1px solid var(--hairline-l);
+}
+.gtm-readback-facts > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--hairline-l);
+}
+.gtm-readback-facts dt {
+  flex: 0 0 7.5rem;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gtm-readback-facts dd {
+  flex: 1 1 12rem;
+  margin: 0;
+}
+
+/* ── What each gap costs ───────────────────────────────────────
+   Numbered, because the count is the argument — an advisor who is missing three
+   things should see three. The Foundations answer is indented under each cost
+   rather than gathered into a list of its own, so a benefit never appears
+   without the problem it belongs to directly above it. */
+.gtm-costs {
+  margin: 0;
+  padding-left: 1.3rem;
+}
+.gtm-costs > li { margin: 1.4rem 0 0; }
+.gtm-costs > li:first-child { margin-top: 0.5rem; }
+
+.gtm-cost-what {
+  margin: 0 0 0.3rem;
+  font-weight: 600;
+}
+.gtm-cost-cost { margin: 0 0 0.5rem; }
+.gtm-cost-closes {
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  background: var(--paper);
+  border-left: 2px solid var(--gold);
+  font-size: var(--fs-small);
+}
+
+/* The bridge. The one section that is an argument rather than a fact, so it
+   gets the sand background to mark the change of register. */
+.gtm-bridge { background: var(--paper); }
+.gtm-bridge p { margin: 0 0 0.9rem; }
+.gtm-bridge p:last-child { margin-bottom: 0; }
+
 /* ── The two chips on the plan header ─────────────────────────────
    They wrap to a second line rather than shrinking, because "2 CAMPAIGNS LEFT"
    truncated to "2 CAMPAI…" would be worse than a taller header. */

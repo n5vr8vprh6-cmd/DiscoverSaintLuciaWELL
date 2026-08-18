@@ -155,10 +155,17 @@ module.exports = async function handler(req, res) {
           either — telling them to would be sending them down a corridor with
           a locked door at the end. */''}
     <section class="hub-card gtm-start">
-      <h2>Build your plan</h2>
+      ${/* THE HEADING FOLLOWS THE BRANCH. It used to sit outside it, so an
+            advisor at zero read "Build your plan" over a paragraph explaining
+            that they could not — the heading promising what the body denied,
+            which is what Duncan photographed. */''}
+      <h2>${outOfCampaigns ? 'Your campaigns' : 'Build your plan'}</h2>
       ${outOfCampaigns ? `
-        <p class="hub-hint">${esc(BUILDS.balanceLine(advisor) || '')}</p>
-        <p>Building a new one is what needs a campaign in hand — and you have used yours.</p>
+        ${/* hasPlan false: this advisor has never built one, so nothing here
+              may describe "this campaign" or offer to rework it. */''}
+        <p class="hub-hint">${esc(BUILDS.balanceLine(advisor, false) || '')}</p>
+        <p>Building another needs a campaign in hand. Everything you have already
+          made stays yours to edit and rewrite, free, whenever you like.</p>
         <div class="hub-actions">
           <a class="btn btn--gold" href="/hub/campaign/more">What comes next</a>
           <a class="hub-more" href="/hub/campaign/more#more-campaigns">Not right now — I just want to build more campaigns</a>
@@ -191,7 +198,7 @@ module.exports = async function handler(req, res) {
             The exhausted branch already says its own version, so it is excluded
             rather than repeated. */''}
       ${countChip && !outOfCampaigns
-        ? `<p class="hub-hint gtm-builds">${esc(BUILDS.balanceLine(advisor) || '')}</p>` : ''}
+        ? `<p class="hub-hint gtm-builds">${esc(BUILDS.balanceLine(advisor, false) || '')}</p>` : ''}
     </section>`}
 
     ${held ? `

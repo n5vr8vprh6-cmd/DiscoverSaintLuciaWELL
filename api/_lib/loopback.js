@@ -173,13 +173,23 @@ function foundationsNote(report, advisor, profile) {
 
   return {
     heading: 'What would make the next month better',
+    /* ── "PRODUCES A BRAND PROFILE" WAS A SHADE TOO STRONG ─────────────────
+       The old wording said Foundations Day 1 "produces a Brand Profile the
+       campaign engine reads directly". The curriculum says Day One settles
+       positioning, ideal client and differentiation — which is what the Brand
+       Profile HOLDS, but the advisor still fills it in afterwards.
+
+       A small overstatement, and exactly the class of claim this project
+       polices in advisors' own copy. It says what Day One settles now, and
+       where those answers go. */
     body: hasBrief
       ? 'You have given this campaign your own clients and proof, and it shows in the copy. ' +
-        'Foundations Day 1 produces a Brand Profile the campaign engine reads directly — the ' +
-        'same idea, one level deeper. Graduates also build campaigns without limit.'
+        'Foundations Day 1 settles the positioning and ideal client your Brand Profile rests ' +
+        'on — the profile the campaign reads directly, one level deeper. Graduates also ' +
+        'build campaigns without limit.'
       : 'This month was built from five answers and the Saint Lucia fact bank. The campaign ' +
-        'reads a Brand Profile directly when there is one, and Foundations Day 1 is where that ' +
-        'gets built. Graduates also build campaigns without limit.',
+        'reads your Brand Profile directly when there is one, and Foundations Day 1 is where ' +
+        'the answers that fill it get settled. Graduates also build campaigns without limit.',
     /* The short page rather than the long one. /advisors/foundations is written
        for somebody who has never met any of this; the reader here has a month
        of their own results in front of them and one question — what would be
