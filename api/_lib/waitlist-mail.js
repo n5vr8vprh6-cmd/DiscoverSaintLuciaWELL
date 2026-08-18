@@ -26,12 +26,38 @@ const { esc } = require('./core.js');
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
-/* Where the notification goes. Falls back to the sender, so a deployment that
-   has configured Resend at all always has somewhere to put this rather than
-   dropping it — a signup nobody hears about is the failure this exists to
-   prevent. */
+/* Where the notification goes.
+
+   IT USED TO FALL BACK TO NOTIFY_FROM, which was wrong in the specific way the
+   comment claimed to prevent. NOTIFY_FROM is journeys@ — a SENDING identity,
+   not a mailbox anybody opens — so the first real signup mailed the sender from
+   the sender, and Duncan never saw it. A notification delivered to an unread
+   address is the same as no notification, minus the ability to notice.
+
+   So the fallback is gone. Unset means unset, and it says so loudly once per
+   signup, naming the variable, rather than pretending to have told somebody. */
 function noticeTo() {
-  return process.env.WAITLIST_NOTIFY_TO || process.env.NOTIFY_FROM || '';
+  const to = String(process.env.WAITLIST_NOTIFY_TO || '').trim();
+  if (!to) {
+    console.error('waitlist: WAITLIST_NOTIFY_TO is not set — nobody is being '
+      + 'told about signups. The row IS saved; go and look at /hub/admin/waitlist.');
+    return '';
+  }
+  /* Self-addressed mail is both useless and a spam signal. Refuse rather than
+     quietly send it into the void again. */
+  if (to.toLowerCase() === addressOnly(process.env.NOTIFY_FROM).toLowerCase()) {
+    console.error('waitlist: WAITLIST_NOTIFY_TO is the same address as NOTIFY_FROM '
+      + '(' + to + '). That is a sending identity, not a mailbox — set it to one '
+      + 'somebody reads.');
+    return '';
+  }
+  return to;
+}
+
+/* NOTIFY_FROM is a display-name form: `Saint Lucia WELL <journeys@…>`. */
+function addressOnly(v) {
+  const m = /<([^>]+)>/.exec(String(v || ''));
+  return (m ? m[1] : String(v || '')).trim();
 }
 
 async function send(mail) {
@@ -44,10 +70,43 @@ async function send(mail) {
 
   const { Resend } = require('resend');
   const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
-    from, to: mail.to, replyTo: mail.replyTo, subject: mail.subject, html: mail.html
+    from,
+    to: mail.to,
+    replyTo: mail.replyTo,
+    subject: mail.subject,
+    html: mail.html,
+    /* A plain-text alternative, always. HTML-only is one of the cheapest spam
+       signals there is, and this one landed in a spam folder on its first real
+       send. Derived from the HTML rather than written twice, so the two cannot
+       drift into saying different things. */
+    text: mail.text || toText(mail.html),
+    /* One-click off the list. Correct on its own terms — somebody on a waiting
+       list should be able to leave it without composing a request — and it is
+       also what Gmail and Yahoo now look for. mailto rather than a URL because
+       there is no unsubscribe endpoint and inventing a dead one would be worse
+       than the header's absence. */
+    headers: mail.unsubscribe ? {
+      'List-Unsubscribe': `<mailto:${mail.unsubscribe}?subject=Remove%20me%20from%20the%20Immersion%20waiting%20list>`
+    } : undefined
   });
   if (error) throw error;
   return { ok: true };
+}
+
+/* Tags out, entities back, blank lines where the paragraphs were. Enough for an
+   alternative part — this is not trying to be a renderer. */
+function toText(html) {
+  return String(html || '')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .split('\n').map((l) => l.trim()).join('\n')
+    .trim();
 }
 
 const WRAP = (inner) =>
@@ -57,9 +116,11 @@ const WRAP = (inner) =>
 /* ── To the person who joined ──────────────────────────────── */
 function sendJoined(f) {
   const p = 'style="margin:0 0 1.2em"';
+  const reply = noticeTo();
   return send({
     to: f.email,
-    replyTo: noticeTo() || undefined,
+    replyTo: reply || undefined,
+    unsubscribe: reply || undefined,
     subject: 'You are on the Saint Lucia WELL Immersion waiting list',
     html: WRAP(`
       <p ${p}>${esc(f.first_name)},</p>
