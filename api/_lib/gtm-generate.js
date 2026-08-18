@@ -38,6 +38,9 @@ const PLAYBOOK = require('../../content/marketing-playbook.js');
 const { personaBlock } = require('./persona.js');
 const { briefBlock, citedBlock, validCitation } = require('./brief.js');
 const { capacityBlock, enforce: enforceCapacity } = require('./capacity.js');
+/* Only for skeletonOnly() below. gtm.js does NOT require this file, so this
+   direction is safe — check before adding anything the other way. */
+const { rung: rungFor } = require('./gtm.js');
 
 /* ── Only the relevant channel goes into a prompt ─────────────────────────
    The playbook is twelve thousand characters. Sending all of it on every asset
@@ -372,6 +375,31 @@ function normaliseSkeleton(raw, brief) {
   return { premise: String(raw.premise || '').slice(0, 300), weeks };
 }
 
+/* ── HOW LONG EACH CALL MAY TAKE ──────────────────────────────────────────
+   These were one number, 8,000ms, inherited from openai.js's default — which
+   was itself sized for the Vercel Hobby limit the project has since left.
+
+   A-29 is what that cost: the skeleton timed out three times running for an
+   advisor whose profile had 1,099 characters in it, having succeeded weeks
+   earlier for one with 486. The system was failing for the advisors who had
+   done the most work, at the one step everything else depends on.
+
+   They are two numbers now because they are two different jobs:
+
+     SKELETON  one call, 1,400 output tokens, and a prompt that GROWS with the
+               profile. It runs once per plan and everything waits on it, so it
+               gets room. Must stay inside vercel.json's maxDuration for
+               api/gtm.js (60s) with space for the database write after it.
+     ASSET     700 output tokens, one of many, each its own request. Stays
+               short on purpose: a stuck caption must fail fast and cost one
+               caption, which is the whole reason generation is in pieces.
+
+   tools/gtm-latency.js times the real thing against the fullest profile on
+   file, because every test in this repo runs stubbed and a stub cannot have a
+   latency. Run it after changing a prompt, a model, or these numbers. */
+const SKELETON_BUDGET_MS = 45000;
+const ASSET_BUDGET_MS = 20000;
+
 async function generateSkeleton(advisor, profile, rung) {
   const ctx = advisorContext(advisor, profile);
   const r = await chat({
@@ -380,10 +408,18 @@ async function generateSkeleton(advisor, profile, rung) {
       briefBlock(profile && profile.brief_parsed), capacityBlock(profile)),
     maxTokens: 1400,
     temperature: 0.5,
+    timeoutMs: SKELETON_BUDGET_MS,
     stub: STUB_SKELETON
   });
 
-  if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms };
+  /* Carried on the result so a failure row can record what was being asked
+     for, not just that it failed. A-29 took a cross-referenced comparison of
+     two advisors' profiles to identify; the size of the prompt is the number
+     that would have said it outright. */
+  const promptChars = SKELETON_SYSTEM.length + skeletonPrompt(ctx, rung, personaBlock(profile),
+    briefBlock(profile && profile.brief_parsed), capacityBlock(profile)).length;
+
+  if (!r.ok) return { ok: false, reason: r.reason, payload: r.payload, ms: r.ms, promptChars };
 
   const parsedSkeleton = normaliseSkeleton(parseJson(r.text), profile && profile.brief_parsed);
   /* The prompt asks for the size; this makes it true. Across this release the
@@ -391,9 +427,9 @@ async function generateSkeleton(advisor, profile, rung) {
      four — a ceiling that is only requested is a suggestion. */
   const skeleton = enforceCapacity(parsedSkeleton, profile);
   if (!skeleton) {
-    return { ok: false, reason: 'unparseable', payload: r.payload, ms: r.ms };
+    return { ok: false, reason: 'unparseable', payload: r.payload, ms: r.ms, promptChars };
   }
-  return { ok: true, skeleton, payload: r.payload, ms: r.ms, model: r.model, usage: r.usage };
+  return { ok: true, skeleton, payload: r.payload, ms: r.ms, model: r.model, usage: r.usage, promptChars };
 }
 
 /* ── One asset ───────────────────────────────────────────────────────────── */
@@ -463,6 +499,7 @@ async function generateAsset(advisor, profile, rung, action, weekTheme, opts) {
       citedBlock(profile && profile.brief_parsed, action.uses)),
     maxTokens: 700,
     temperature: 0.65,
+    timeoutMs: ASSET_BUDGET_MS,
     stub: STUB_ASSET
   });
 
@@ -604,7 +641,16 @@ this is the one I would send you to first.
 
 Take two minutes and see what comes back: {{WELL_LINK}}`;
 
+/* For tools/gtm-latency.js. generateSkeleton() needs a rung, which api/gtm.js
+   resolves from the advisor's dates; the tool has no business duplicating that
+   logic, and no business writing anything either. This is the same call with
+   the rung worked out and nothing persisted. */
+async function skeletonOnly(advisor, profile) {
+  return generateSkeleton(advisor, profile, rungFor(advisor));
+}
+
 module.exports = {
+  SKELETON_BUDGET_MS, ASSET_BUDGET_MS, skeletonOnly,
   advisorContext, modelFacts, rulesBlock,
   playbookFor, playbookBlock, patternsBlock, patternByName, icpBlock, ANGLES, PLAYBOOK,
   splitTail, cardFor,

@@ -103,10 +103,17 @@ async function actionPlan(req, res, advisor, supabase) {
 
   if (!r.ok) {
     /* A failed skeleton is recorded, not swallowed. Without the row there is
-       nothing to point at when an advisor says it did not work. */
+       nothing to point at when an advisor says it did not work.
+
+       THE REASON ALONE WAS NOT ENOUGH. Three rows said `timeout` and it still
+       took comparing two advisors' profile sizes to work out that the budget
+       was eight seconds and the prompt had grown. So the row now carries how
+       long it ran and how much was being asked for — the two numbers that
+       identify this class of failure on sight. */
     await supabase.from('gtm_plan').insert({
       advisor_id: advisor.id, rung_at_generation: level,
-      status: 'failed', error: r.reason
+      status: 'failed',
+      error: r.ms ? `${r.reason} after ${r.ms}ms, prompt ${r.promptChars || '?'} chars` : r.reason
     });
     return json(res, 502, { error: r.reason, message: reasonText(r.reason) });
   }

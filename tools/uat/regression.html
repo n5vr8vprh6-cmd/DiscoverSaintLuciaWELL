@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>158 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>159 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">158</b></span>
+      <span class="t-left">Untested <b id="n-left">159</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -1383,7 +1383,7 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 55 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 56 recorded</p>
   </div>
   
   <details class="area" open>
@@ -2380,7 +2380,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Campaign · plan <span class="area-n">6</span></summary>
+    <summary>Campaign · plan <span class="area-n">7</span></summary>
     
 <article class="case" id="case-A-29" data-id="A-29" data-role="advisor"
    data-pri="1" data-hash="1cvuxhs"
@@ -2401,6 +2401,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> This is the feature. It also costs real money per run, so a failure here is expensive as well as embarrassing.</p>
 
   <div class="marks" role="group" aria-label="Result for A-29">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-56" data-id="A-56" data-role="advisor"
+   data-pri="1" data-hash="14u0njp"
+   data-title="A full profile still builds — the fuller the harder" data-expect="It builds. The latency tool reports the real call well inside its budget." data-area="Campaign · plan">
+  <div class="case-head">
+    <span class="cid">A-56</span>
+    <h4>A full profile still builds — the fuller the harder</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Fill ALL six business fields properly, not with one-liners</li><li>Build a plan</li><li>If it fails: node tools/gtm-latency.js, and read the elapsed time it prints</li></ol>
+
+  <p class="expect"><strong>Expect</strong> It builds. The latency tool reports the real call well inside its budget.</p>
+  <p class="why"><strong>Why this matters</strong> A-29 failed three times in a row this way and the cause was perverse: the skeleton had 8 seconds, enough for a 486-character profile and not enough for a 1,099-character one. The system failed for the advisors who had done the most work. Every test passed throughout, because they all run stubbed and a stub has no latency — so this case is a real timed call, not a green suite.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-56">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>

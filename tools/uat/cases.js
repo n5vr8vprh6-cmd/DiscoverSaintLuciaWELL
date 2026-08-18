@@ -532,6 +532,14 @@ const CASES = [
   expect: 'The overlay narrates progress and a four-week plan appears with copy written.',
   why: 'This is the feature. It also costs real money per run, so a failure here is expensive as well as embarrassing.' },
 
+{ id: 'A-56', role: 'advisor', priority: 1, area: 'Campaign · plan',
+  title: 'A full profile still builds — the fuller the harder',
+  steps: ['Fill ALL six business fields properly, not with one-liners',
+          'Build a plan',
+          'If it fails: node tools/gtm-latency.js, and read the elapsed time it prints'],
+  expect: 'It builds. The latency tool reports the real call well inside its budget.',
+  why: 'A-29 failed three times in a row this way and the cause was perverse: the skeleton had 8 seconds, enough for a 486-character profile and not enough for a 1,099-character one. The system failed for the advisors who had done the most work. Every test passed throughout, because they all run stubbed and a stub has no latency — so this case is a real timed call, not a green suite.' },
+
 { id: 'A-30', role: 'advisor', priority: 1, area: 'Campaign · plan',
   title: 'This week leads and the other weeks are one click away',
   steps: ['Look at the plan without scrolling far'],

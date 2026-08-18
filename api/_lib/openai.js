@@ -28,11 +28,23 @@
    why the suite runs both ways.
 
    ── TIMEOUT ────────────────────────────────────────────────────────────────
-   Vercel Hobby kills a function at ten seconds. The default here is eight,
-   leaving room for the database write that follows. A call that would exceed
-   it is aborted rather than allowed to take the whole function down with it —
-   an aborted asset is one missing caption; a killed function is a 504 with no
-   explanation and nothing written.
+   The reasoning is unchanged and the numbers are not: a call is aborted before
+   the platform can kill the function, because an aborted call is one missing
+   caption while a killed function is a 504 with no explanation and nothing
+   written.
+
+   WHAT CHANGED IS THE PLATFORM. This said "Vercel Hobby kills a function at
+   ten seconds" and capped every caller at nine — and it went on saying it
+   after the project moved to Pro, where vercel.json now sets maxDuration
+   explicitly. The consequence was A-29: the skeleton call needs more than
+   eight seconds once an advisor's profile is full, so the plan builder failed
+   for exactly the advisors who had done the most work, three times in a row,
+   while every test passed because they all run stubbed.
+
+   So the ceiling is derived from the function's own limit rather than from a
+   plan nobody is on any more, and callers ask for what they need — see
+   SKELETON_BUDGET_MS and ASSET_BUDGET_MS in gtm-generate.js. Keep the two in
+   step: a timeout longer than maxDuration is not a timeout, it is a 504.
    ========================================================================== */
 'use strict';
 
@@ -45,7 +57,17 @@ const key = () => process.env.OPENAI_API_KEY || '';
 const model = () => process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const stubbed = () => process.env.OPENAI_STUB === '1';
 
+/* What a caller gets if it does not say. Deliberately short: most calls in
+   this system are one asset, and one slow asset must not hold a request open.
+   Anything that genuinely needs longer asks for it explicitly, which makes the
+   exception visible at the call site rather than hidden in a default. */
 const DEFAULT_TIMEOUT_MS = 8000;
+
+/* The most any caller may ask for, and the one number that has to stay inside
+   vercel.json's maxDuration for api/gtm.js (60s), with room for the database
+   write that follows. Raising one without the other is how a timeout becomes a
+   504 — the failure this ceiling exists to prevent. */
+const MAX_TIMEOUT_MS = 50000;
 const DEFAULT_MAX_TOKENS = 900;
 
 /* A ceiling the caller cannot raise past. Token limits are a cost control, and
@@ -126,7 +148,7 @@ async function chat(opts) {
     return Object.assign(base, { ok: false, reason: 'not_configured', text: '' });
   }
 
-  const timeoutMs = Math.min(Number(o.timeoutMs) || DEFAULT_TIMEOUT_MS, 9000);
+  const timeoutMs = Math.min(Number(o.timeoutMs) || DEFAULT_TIMEOUT_MS, MAX_TIMEOUT_MS);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
 
@@ -204,4 +226,7 @@ function reasonText(reason) {
   return REASON_TEXT[reason] || 'Something went wrong generating that piece.';
 }
 
-module.exports = { chat, configured, reasonText, classify, HARD_MAX_TOKENS, DEFAULT_TIMEOUT_MS };
+module.exports = {
+  chat, configured, reasonText, classify,
+  HARD_MAX_TOKENS, DEFAULT_TIMEOUT_MS, MAX_TIMEOUT_MS
+};
