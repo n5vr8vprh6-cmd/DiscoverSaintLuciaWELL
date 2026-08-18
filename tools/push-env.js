@@ -65,6 +65,10 @@ const OPTIONAL = [
   /* Canonical origin for links that travel in email. Falls back in code to the
      www host, which is what the site 308s to anyway. */
   'SITE_ORIGIN',
+  /* Where the team is told about things — waiting-list signups today, whatever
+     comes next tomorrow. Optional because everything it notifies about is also
+     recorded in the Hub, so its absence costs the alert and not the fact. */
+  'ADMIN_EMAIL',
   /* The $9 build pack. All three are optional and all three fail closed when
      absent: with no secret /api/hook acknowledges and grants nothing, with no
      product id no purchase can be identified as a build pack, and with no URL

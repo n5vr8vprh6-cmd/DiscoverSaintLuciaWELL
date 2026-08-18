@@ -22,43 +22,15 @@
    ========================================================================== */
 'use strict';
 
-const { esc } = require('./core.js');
+const { esc, adminEmail } = require('./core.js');
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN || 'https://www.discoversaintluciawell.com';
 
-/* Where the notification goes.
-
-   IT USED TO FALL BACK TO NOTIFY_FROM, which was wrong in the specific way the
-   comment claimed to prevent. NOTIFY_FROM is journeys@ — a SENDING identity,
-   not a mailbox anybody opens — so the first real signup mailed the sender from
-   the sender, and Duncan never saw it. A notification delivered to an unread
-   address is the same as no notification, minus the ability to notice.
-
-   So the fallback is gone. Unset means unset, and it says so loudly once per
-   signup, naming the variable, rather than pretending to have told somebody. */
-function noticeTo() {
-  const to = String(process.env.WAITLIST_NOTIFY_TO || '').trim();
-  if (!to) {
-    console.error('waitlist: WAITLIST_NOTIFY_TO is not set — nobody is being '
-      + 'told about signups. The row IS saved; go and look at /hub/admin/waitlist.');
-    return '';
-  }
-  /* Self-addressed mail is both useless and a spam signal. Refuse rather than
-     quietly send it into the void again. */
-  if (to.toLowerCase() === addressOnly(process.env.NOTIFY_FROM).toLowerCase()) {
-    console.error('waitlist: WAITLIST_NOTIFY_TO is the same address as NOTIFY_FROM '
-      + '(' + to + '). That is a sending identity, not a mailbox — set it to one '
-      + 'somebody reads.');
-    return '';
-  }
-  return to;
-}
-
-/* NOTIFY_FROM is a display-name form: `Saint Lucia WELL <journeys@…>`. */
-function addressOnly(v) {
-  const m = /<([^>]+)>/.exec(String(v || ''));
-  return (m ? m[1] : String(v || '')).trim();
-}
+/* One address for everything the team needs to hear about, resolved in
+   core.js — including the refusal to send to the sending identity, which is
+   the fault that swallowed the first real signup. Kept as a local name so the
+   two send functions below read the same as they did. */
+const noticeTo = adminEmail;
 
 async function send(mail) {
   const from = process.env.NOTIFY_FROM;

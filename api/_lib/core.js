@@ -79,6 +79,45 @@ function ipHash(req) {
   return crypto.createHmac('sha256', salt).update(ip).digest('hex');
 }
 
+/* ── Who hears from the system ───────────────────────────────────────────────
+   ADMIN_EMAIL is the mailbox for anything the TEAM needs to know about, as
+   opposed to the five emails this system sends to individual people (an
+   advisor, a traveller, somebody resetting a password). It lives here rather
+   than in the one feature that currently uses it so the next admin
+   notification finds it instead of inventing its own variable.
+
+   THERE IS NO FALLBACK, AND THAT IS THE LESSON. This started as "fall back to
+   NOTIFY_FROM so a signup is never lost", and NOTIFY_FROM is a SENDING
+   identity — journeys@ — not a mailbox anybody opens. The first real waiting
+   list signup was duly mailed from the sender to the sender, and nobody saw
+   it. A notification delivered to an unread address is the same as no
+   notification, minus the ability to notice. So unset returns empty and says
+   so, naming the variable.
+
+   Equal to NOTIFY_FROM is refused for the same reason, and because
+   self-addressed mail is a spam signal in its own right. */
+function adminEmail() {
+  const to = str(process.env.ADMIN_EMAIL, 200);
+  if (!to) {
+    console.error('ADMIN_EMAIL is not set — nobody is being notified. Whatever '
+      + 'triggered this is still recorded; go and look in the Hub.');
+    return '';
+  }
+  if (to.toLowerCase() === fromAddress().toLowerCase()) {
+    console.error('ADMIN_EMAIL is the same address as NOTIFY_FROM (' + to + '). '
+      + 'That is a sending identity, not a mailbox — set it to one somebody reads.');
+    return '';
+  }
+  return to;
+}
+
+/* NOTIFY_FROM is the display-name form, `Saint Lucia WELL <journeys@…>`. */
+function fromAddress() {
+  const v = String(process.env.NOTIFY_FROM || '');
+  const m = /<([^>]+)>/.exec(v);
+  return (m ? m[1] : v).trim();
+}
+
 /* ── Body parsing ────────────────────────────────────────────────────────── */
 /* Vercel usually parses JSON for us, but not for every content type, and a
    malformed body must be a 400 rather than a crash. */
@@ -97,4 +136,7 @@ function methodGuard(req, res, allowed) {
   return false;
 }
 
-module.exports = { db, json, str, esc, looksLikeEmail, ipHash, body, methodGuard };
+module.exports = {
+  db, json, str, esc, looksLikeEmail, ipHash, body, methodGuard,
+  adminEmail, fromAddress
+};
