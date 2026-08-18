@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>152 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>156 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">152</b></span>
+      <span class="t-left">Untested <b id="n-left">156</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -486,7 +486,7 @@ header.top {
     <h2>Consumer</h2>
     <p class="role-note">A traveller who has never heard of us. Use a second browser or a private window with no Hub session.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 26 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 28 recorded</p>
   </div>
   
   <details class="area" open>
@@ -742,7 +742,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Journey Finder <span class="area-n">8</span></summary>
+    <summary>Journey Finder <span class="area-n">10</span></summary>
     
 <article class="case" id="case-C-06" data-id="C-06" data-role="consumer"
    data-pri="1" data-hash="7q743u"
@@ -980,6 +980,68 @@ header.top {
   <p class="why"><strong>Why this matters</strong> Two silent faults, one cause. The viewBox is computed from the label size and the letter-spacing, so all three have to stay in one file — declare either in CSS and it wins over the attribute, with nothing to error on. And a box fitted to a lopsided drawing is a lopsided box: nothing clips, the mark just sits off-centre, which on concentric circles is exactly what a careful eye catches first.</p>
 
   <div class="marks" role="group" aria-label="Result for C-26">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-C-27" data-id="C-27" data-role="consumer"
+   data-pri="1" data-hash="1ikhrve"
+   data-title="&quot;Send it to me&quot; actually sends it" data-expect="The button says Sending… then Sent and stays disabled. The email names your three villages and carries a link that reopens the same result." data-area="Journey Finder">
+  <div class="case-head">
+    <span class="cid">C-27</span>
+    <h4>&quot;Send it to me&quot; actually sends it</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Finish the Finder</li><li>Type your address into the capture form and press Send it to me</li><li>Watch the button, then read the email</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The button says Sending… then Sent and stays disabled. The email names your three villages and carries a link that reopens the same result.</p>
+  <p class="why"><strong>Why this matters</strong> This was dead from the day the Finder shipped — CAPTURE_ENDPOINT was an empty string, so the form promised to send a result it could not send. Duncan found it by using his own site. P1 because it is the only thing the Finder offers somebody who is not ready to speak to an advisor.</p>
+
+  <div class="marks" role="group" aria-label="Result for C-27">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-C-28" data-id="C-28" data-role="consumer"
+   data-pri="2" data-hash="qmj4eo"
+   data-title="The capture form tells you what happened" data-expect="A specific message each time, sitting just under the button rather than below the small print. The button changes while it works." data-area="Journey Finder">
+  <div class="case-head">
+    <span class="cid">C-28</span>
+    <h4>The capture form tells you what happened</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Press Send with the field empty, then with something that is not an address</li><li>Then send properly and watch the button through the whole press</li></ol>
+
+  <p class="expect"><strong>Expect</strong> A specific message each time, sitting just under the button rather than below the small print. The button changes while it works.</p>
+  <p class="why"><strong>Why this matters</strong> The old form DID write an honest line — 13.76px, muted, 60px below the button, behind the consent paragraph, while the button stayed unchanged and the field stayed full. Measured. Somebody who pressed it reasonably concluded nothing had happened, which is exactly what happened.</p>
+
+  <div class="marks" role="group" aria-label="Result for C-28">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -3814,7 +3876,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 24 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 26 recorded</p>
   </div>
   
   <details class="area" open>
@@ -4596,6 +4658,72 @@ header.top {
   <p class="why"><strong>Why this matters</strong> A store of personal data the subject-rights screen cannot see is worse than no screen at all — it turns a deletion request into a false assurance. Somebody who only joined this list has no Journey, which is exactly the case that used to report &quot;nothing held&quot;.</p>
 
   <div class="marks" role="group" aria-label="Result for G-24">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
+  <details class="area" open>
+    <summary>Journey Finder <span class="area-n">2</span></summary>
+    
+<article class="case" id="case-G-25" data-id="G-25" data-role="guard"
+   data-pri="1" data-hash="9l9ikh"
+   data-title="The result email cannot be written by whoever calls the endpoint" data-expect="Passes. An invented answer value or an invented question is refused before anything is composed." data-area="Journey Finder">
+  <div class="case-head">
+    <span class="cid">G-25</span>
+    <h4>The result email cannot be written by whoever calls the endpoint</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>node tools/capture-test.js</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Passes. An invented answer value or an invented question is refused before anything is composed.</p>
+  <p class="why"><strong>Why this matters</strong> /api/capture is unauthenticated and sends mail from our domain to an address the caller chooses. If a caller could put text in the message, it would be a way to send anything to anyone over our signature. The answers are validated against content/journey.js and the villages are recomputed server-side rather than taken from the request.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-25">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-26" data-id="G-26" data-role="guard"
+   data-pri="1" data-hash="owjnw"
+   data-title="The capture rate limit refuses, and fails closed" data-expect="The sixth request in an hour from one origin is refused. With the counter unreachable, requests are refused rather than allowed." data-area="Journey Finder">
+  <div class="case-head">
+    <span class="cid">G-26</span>
+    <h4>The capture rate limit refuses, and fails closed</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>node tools/capture-test.js — read the rate-limit section</li><li>The test also runs it with no database configured</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The sixth request in an hour from one origin is refused. With the counter unreachable, requests are refused rather than allowed.</p>
+  <p class="why"><strong>Why this matters</strong> The first version failed OPEN and the test caught it: a head-count against a missing table returns count null with NO error, so &quot;(count || 0) &gt;= 5&quot; read as 0 &gt;= 5 and allowed everything. A migration nobody ran would have turned this into an unlimited mail relay whose only symptom was a log line after the message had gone.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-26">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>

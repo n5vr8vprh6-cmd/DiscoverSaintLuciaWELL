@@ -648,6 +648,20 @@ const CASES = [
   expect: 'Both render a page — a confirmation, and the form again with the error above it. Never a bare 400.',
   why: 'A form that needs JavaScript to join a waiting list is a form that quietly loses people, and nobody would ever hear about it.' },
 
+{ id: 'C-27', role: 'consumer', priority: 1, area: 'Journey Finder',
+  title: '"Send it to me" actually sends it',
+  steps: ['Finish the Finder', 'Type your address into the capture form and press Send it to me',
+          'Watch the button, then read the email'],
+  expect: 'The button says Sending… then Sent and stays disabled. The email names your three villages and carries a link that reopens the same result.',
+  why: 'This was dead from the day the Finder shipped — CAPTURE_ENDPOINT was an empty string, so the form promised to send a result it could not send. Duncan found it by using his own site. P1 because it is the only thing the Finder offers somebody who is not ready to speak to an advisor.' },
+
+{ id: 'C-28', role: 'consumer', priority: 2, area: 'Journey Finder',
+  title: 'The capture form tells you what happened',
+  steps: ['Press Send with the field empty, then with something that is not an address',
+          'Then send properly and watch the button through the whole press'],
+  expect: 'A specific message each time, sitting just under the button rather than below the small print. The button changes while it works.',
+  why: 'The old form DID write an honest line — 13.76px, muted, 60px below the button, behind the consent paragraph, while the button stayed unchanged and the field stayed full. Measured. Somebody who pressed it reasonably concluded nothing had happened, which is exactly what happened.' },
+
 { id: 'D-01', role: 'admin', priority: 1, area: 'Console',
   title: 'The admin console is reachable only by an admin',
   steps: [`Open /hub/admin as ${UAT1} (not an admin)`],
@@ -949,6 +963,19 @@ const CASES = [
           'Erase, then search again'],
   expect: 'Found and reported as held before; gone after.',
   why: 'A store of personal data the subject-rights screen cannot see is worse than no screen at all — it turns a deletion request into a false assurance. Somebody who only joined this list has no Journey, which is exactly the case that used to report "nothing held".' },
+
+{ id: 'G-25', role: 'guard', priority: 1, area: 'Journey Finder',
+  title: 'The result email cannot be written by whoever calls the endpoint',
+  steps: ['node tools/capture-test.js'],
+  expect: 'Passes. An invented answer value or an invented question is refused before anything is composed.',
+  why: '/api/capture is unauthenticated and sends mail from our domain to an address the caller chooses. If a caller could put text in the message, it would be a way to send anything to anyone over our signature. The answers are validated against content/journey.js and the villages are recomputed server-side rather than taken from the request.' },
+
+{ id: 'G-26', role: 'guard', priority: 1, area: 'Journey Finder',
+  title: 'The capture rate limit refuses, and fails closed',
+  steps: ['node tools/capture-test.js — read the rate-limit section',
+          'The test also runs it with no database configured'],
+  expect: 'The sixth request in an hour from one origin is refused. With the counter unreachable, requests are refused rather than allowed.',
+  why: 'The first version failed OPEN and the test caught it: a head-count against a missing table returns count null with NO error, so "(count || 0) >= 5" read as 0 >= 5 and allowed everything. A migration nobody ran would have turned this into an unlimited mail relay whose only symptom was a log line after the message had gone.' },
 
 { id: 'X-01', role: 'cross', priority: 1, area: 'Layout',
   title: 'The Hub works at 380px',

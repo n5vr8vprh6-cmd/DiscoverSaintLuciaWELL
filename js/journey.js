@@ -422,17 +422,24 @@
           '<input type="email" id="finder-email" name="email" required autocomplete="email" placeholder="you@example.com">' +
           '<button class="btn btn--ghost" type="submit">Send it to me</button>' +
         '</div>' +
-        /* This is the only place on the site that asks for personal data, and
-           it said nothing about what happens to it. The sentence states use,
-           non-sharing and removal, and every word of it has to stay true of
-           whatever the ESP is eventually set to do.
-
-           It deliberately does NOT link to /privacy: that page does not exist
-           yet, and a consent line pointing at a 404 is worse than one that
-           does not. See the TODO at CAPTURE_ENDPOINT — the link goes in as
-           part of wiring the endpoint, not before. */
-        '<p class="capture-consent">We use it only to send those two emails — never sold, never shared — and you can ask us to remove it at any time.</p>' +
+        /* THE STATUS SITS DIRECTLY UNDER THE ROW IT REPORTS ON. It used to come
+           after the consent sentence, 60px below the button and behind a
+           paragraph — measured — so the only acknowledgement of a press was
+           small muted text two elements away. Somebody pressed Send, saw the
+           button unchanged and the field still full, and reasonably concluded
+           nothing had happened. Feedback belongs next to the control. */
         '<p class="capture-status" id="capture-status" role="status" aria-live="polite"></p>' +
+        /* This is the only place on the site that asks a member of the public
+           for personal data, and every word here has to stay true of what
+           /api/capture actually does. It sends one message and keeps nothing —
+           so "removal" is not a promise to honour later, it is already done by
+           the time they read it.
+
+           The /privacy link went in with the endpoint, exactly as the old TODO
+           said it should: a consent line pointing at a page that did not exist
+           would have been worse than one that pointed nowhere. The page exists
+           now and is linked from both footers. */
+        '<p class="capture-consent">One email, and we do not keep your address after sending it — never sold, never shared. <a href="/privacy">How we handle data</a>.</p>' +
       '</form>';
 
     /* The markup is built before the transition starts, so the pause covers
@@ -833,22 +840,32 @@
     }
 
     /* ── Email capture ──────────────────────────────────────────────────────
-       STUB. There is no ESP endpoint yet, so this validates, reports honestly,
-       and records the intent — it does not pretend to have sent anything.
-       Wire CAPTURE_ENDPOINT when the ESP is chosen; the event schema below is
-       already what the funnel report expects.
+       F3. This was a stub from the day the Finder shipped: CAPTURE_ENDPOINT was
+       an empty string, so the form validated the address, wrote a small apology
+       and sent nothing — while the note above the button promised to send the
+       result. Duncan found it by using his own site.
 
-       TODO — DO NOT WIRE THIS ENDPOINT ALONE.
-       Setting it turns this form from a no-op into real collection of personal
-       data, and three things have to land in the same change:
-         1. /privacy exists as a real page (it is `pending: true` in site.js
-            today and renders as plain text, not a link);
-         2. the consent line above links to it;
-         3. the removal promise in that line is actually honourable — someone
-            has to be able to act on the request.
-       Until then this form sends nothing, which is why the current wording is
-       true. Wiring the endpoint without the other three makes it false. */
-    var CAPTURE_ENDPOINT = '';
+       The old TODO here said not to wire it until three things landed, and all
+       three have: /privacy is a real page linked from both footers, the consent
+       line above links to it, and the removal promise is honourable because
+       /api/capture keeps nothing to remove.
+
+       WHAT THE ENDPOINT DOES NOT DO is store the address. It composes one
+       message, sends it, and forgets. If that ever changes, the consent
+       sentence above changes first. */
+    var CAPTURE_ENDPOINT = '/api/capture';
+
+    /* The endpoint's error codes, in the person's language. Anything not listed
+       falls through to the generic line, which is why these are short and
+       stable rather than sentences shipped from the server. */
+    var CAPTURE_ERRORS = {
+      email_invalid:  'That email address does not look right — could you check it?',
+      rate_limited:   'That is a few too many for now. Try again in a little while.',
+      not_configured: 'Email is not available just now. Your result stays on this page — the link in your address bar will bring you back to it.',
+      send_failed:    'We could not send that just now. Please try again in a moment.',
+      no_result:      'There is no result to send yet.',
+      answer_unknown: 'Something about that result did not look right. Try running the Finder again.'
+    };
     var cap = document.getElementById('finder-capture');
     var status = document.getElementById('capture-status');
     if (!cap) return;
@@ -870,14 +887,23 @@
         villages: score().map(function (v) { return v.key; }).join(',')
       });
 
-      if (!CAPTURE_ENDPOINT) {
-        status.textContent = 'Thank you — email delivery is not connected yet, so nothing has been sent. Your result stays on this page, and the link in your address bar will bring you back to it.';
-        status.setAttribute('data-state', 'ok');
-        return;
-      }
-
+      /* THE BUTTON HAS TO ANSWER. Whatever else happens, the control that was
+         pressed must stop looking exactly as it did before it was pressed —
+         that absence is what made a working stub read as a dead form. */
+      var btn = cap.querySelector('button[type="submit"]');
+      var label = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
       status.textContent = 'Sending…';
       status.removeAttribute('data-state');
+
+      var release = function () { btn.disabled = false; btn.textContent = label; };
+      var fail = function (code) {
+        release();
+        status.textContent = CAPTURE_ERRORS[code] || 'Something went wrong sending that. Please try again in a moment.';
+        status.setAttribute('data-state', 'error');
+      };
+
       fetch(CAPTURE_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -887,14 +913,19 @@
           attribution: window.dslwAttribution ? window.dslwAttribution() : null
         })
       }).then(function (r) {
-        if (!r.ok) throw new Error(String(r.status));
-        status.textContent = 'On its way. Check your inbox in a minute or two.';
+        /* The body is read either way: a refusal carries the reason, and
+           showing "something went wrong" when the server said "that address
+           looks wrong" wastes the one thing it told us. */
+        return r.json().catch(function () { return {}; })
+          .then(function (d) { return { ok: r.ok, error: d && d.error }; });
+      }).then(function (r) {
+        if (!r.ok) return fail(r.error);
+        /* Stays disabled, and says so. They asked for one email and one is on
+           its way; a live button invites a second. */
+        btn.textContent = 'Sent';
+        status.textContent = 'On its way. Check your inbox in a minute or two — and your spam folder, in case it landed there.';
         status.setAttribute('data-state', 'ok');
-        cap.querySelector('button[type="submit"]').disabled = true;
-      }).catch(function () {
-        status.textContent = 'Something went wrong sending that. Please try again in a moment.';
-        status.setAttribute('data-state', 'error');
-      });
+      }).catch(function () { fail(); });
     });
   }
 
