@@ -383,10 +383,10 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
   /* The whole /hub/campaign screen, not just a block: the dead button lives in
      the handler's own branch, so rendering planSection would prove nothing. */
   const campaign = require('../api/_lib/hub-screens/campaign.js');
-  const renderCampaign = async (advisor) => {
+  const renderCampaign = async (advisor, query) => {
     CURRENT = advisor;
     const res = fakeRes();
-    await campaign({ url: '/hub/campaign', headers: {}, method: 'GET' }, res);
+    await campaign({ url: '/hub/campaign' + (query || ''), headers: {}, method: 'GET' }, res);
     return res.body;
   };
 
@@ -418,6 +418,51 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
     !(/Build your plan/.test(atZero) && /have used the campaign/.test(atZero)),
     'the h2 sat outside the branch, so "Build your plan" headed a paragraph ' +
     'explaining that they could not');
+
+  /* ── Coming back from a checkout ─────────────────────────────────────────
+     ThriveCart redirects the buyer here immediately; the webhook arrives when
+     it arrives. So the confirmation has to be right in BOTH orders, and the
+     one that matters is the race: money has left their account and our
+     database has not caught up yet. */
+  section('Coming back from a purchase');
+
+  const paid = await renderCampaign(
+    { id: 'p1', first_name: 'Wren', status: 'active', plan_builds: 3 }, '?done=purchased');
+  ok('with the balance already updated, it says so',
+    /3 more campaigns are on your account/.test(paid),
+    'the webhook won the race, which is the ordinary case');
+
+  const waiting = await renderCampaign(
+    { id: 'p2', first_name: 'Wren', status: 'active', plan_builds: 0 }, '?done=purchased');
+  ok('with the webhook still in flight, it says it is confirming',
+    /confirming your purchase/i.test(waiting) && /refresh/i.test(waiting),
+    'the browser redirect is immediate and the webhook is not');
+
+  /* THE ASSERTION THIS SECTION EXISTS FOR. */
+  ok('and NEVER reads as a failure',
+    !/(went wrong|error|failed|sorry|problem|unable|could not)/i.test(
+      (waiting.match(/hub-flash[^>]*>([^<]+)</) || [])[1] || ''),
+    'their money has gone and the likeliest truth is that we are seconds behind. ' +
+    'Telling them it failed sends somebody to support over a delay that fixes itself.');
+  ok('nor is it styled as a bad flash',
+    waiting.indexOf('hub-flash--bad') === -1);
+
+  const found = await renderCampaign(
+    { id: 'p3', first_name: 'Wren', status: 'active', plan_builds: 0,
+      foundations_paid_at: '2026-08-18' }, '?done=foundations');
+  ok('a Foundations return says unlimited, and what is still outstanding',
+    /unlimited from now/i.test(found) && /once you have attended/i.test(found),
+    'they bought the entitlement; the claim waits on them turning up');
+
+  /* ── An unknown token is not a message ───────────────────────────────── */
+  const nonsense = await renderCampaign(
+    { id: 'p4', first_name: 'Wren', status: 'active', plan_builds: 1 }, '?done=nonsense');
+  ok('an unrecognised done value renders no flash at all',
+    nonsense.indexOf('hub-flash') === -1 && nonsense.indexOf('nonsense') === -1,
+    'it used to echo the token onto the page as though we had written it');
+  const saved = await renderCampaign(
+    { id: 'p5', first_name: 'Wren', status: 'active', plan_builds: 1 }, '?done=saved');
+  ok('but our own tokens still render', /Saved\./.test(saved));
 
   /* ── Something to look at ─────────────────────────────────────────────── */
   if (WRITE) {

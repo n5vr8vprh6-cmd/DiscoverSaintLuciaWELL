@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>170 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>172 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">170</b></span>
+      <span class="t-left">Untested <b id="n-left">172</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -4128,7 +4128,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 32 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 34 recorded</p>
   </div>
   
   <details class="area" open>
@@ -4718,7 +4718,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Webhook <span class="area-n">6</span></summary>
+    <summary>Webhook <span class="area-n">8</span></summary>
     
 <article class="case" id="case-G-32" data-id="G-32" data-role="guard"
    data-pri="2" data-hash="s494wm"
@@ -4770,6 +4770,68 @@ header.top {
   <p class="why"><strong>Why this matters</strong> It answers 200 so ThriveCart can validate the URL at all — failing closed means granting nothing, not failing the request. The uniform reply also tells somebody probing it nothing about whether they guessed. Nothing is recorded, or anyone could fill the ledger.</p>
 
   <div class="marks" role="group" aria-label="Result for G-14">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-33" data-id="G-33" data-role="guard"
+   data-pri="1" data-hash="vo7lwz"
+   data-title="Coming back from checkout never reads as a failure" data-expect="Either &quot;3 more campaigns are on your account&quot; or &quot;we are confirming your purchase — refresh in a moment&quot;. Never an error, and never the plain word &quot;purchased&quot;." data-area="Webhook">
+  <div class="case-head">
+    <span class="cid">G-33</span>
+    <h4>Coming back from checkout never reads as a failure</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> Return URL set on the ThriveCart product</p>
+  
+
+  <ol class="steps"><li>Buy the pack and let ThriveCart return you to /hub/campaign?done=purchased</li><li>Read the message the instant you land, before refreshing</li><li>Refresh once the webhook has arrived</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Either &quot;3 more campaigns are on your account&quot; or &quot;we are confirming your purchase — refresh in a moment&quot;. Never an error, and never the plain word &quot;purchased&quot;.</p>
+  <p class="why"><strong>Why this matters</strong> The browser redirect is immediate and the webhook is not, so an advisor can land here before the balance has moved. Their money has already gone: telling them something went wrong sends them to support over a delay that resolves itself in seconds.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-33">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-34" data-id="G-34" data-role="guard"
+   data-pri="2" data-hash="7ffu1o"
+   data-title="An unknown ?done value renders no message" data-expect="No flash at all. The word &quot;nonsense&quot; appears nowhere." data-area="Webhook">
+  <div class="case-head">
+    <span class="cid">G-34</span>
+    <h4>An unknown ?done value renders no message</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Open /hub/campaign?done=nonsense</li></ol>
+
+  <p class="expect"><strong>Expect</strong> No flash at all. The word &quot;nonsense&quot; appears nowhere.</p>
+  <p class="why"><strong>Why this matters</strong> The fallback used to echo any token straight onto the page as though the product had written it. Escaped, so cosmetic rather than dangerous — but a confirmation message we did not write is not a confirmation.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-34">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -4845,8 +4907,8 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-G-21" data-id="G-21" data-role="guard"
-   data-pri="1" data-hash="aqi4en"
-   data-title="A sandbox order grants nothing" data-expect="A row recorded with a note and a delta of 0. The balance does not move." data-area="Webhook">
+   data-pri="1" data-hash="1orfzbh"
+   data-title="A sandbox order grants nothing" data-expect="A row recorded with a note and a delta of 0. The balance does not move. The note reads &quot;Sandbox build pack order — recorded so you can confirm the wiring, but no money moved so nothing was granted.&quot;" data-area="Webhook">
   <div class="case-head">
     <span class="cid">G-21</span>
     <h4>A sandbox order grants nothing</h4>
@@ -4859,7 +4921,7 @@ header.top {
 
   <ol class="steps"><li>With the product in test mode, complete a sandbox purchase</li><li>Check the advisor&#39;s plan_builds and purchase_events</li></ol>
 
-  <p class="expect"><strong>Expect</strong> A row recorded with a note and a delta of 0. The balance does not move.</p>
+  <p class="expect"><strong>Expect</strong> A row recorded with a note and a delta of 0. The balance does not move. The note reads &quot;Sandbox build pack order — recorded so you can confirm the wiring, but no money moved so nothing was granted.&quot;</p>
   <p class="why"><strong>Why this matters</strong> The first successful test purchase granted three real builds on an order where no money moved — ThriveCart said mode:&quot;test&quot; in a payload of 77 fields and nothing looked. A product&#39;s checkout URL keeps working while it sits in test mode, so anyone who found it could mint build packs for free.</p>
 
   <div class="marks" role="group" aria-label="Result for G-21">

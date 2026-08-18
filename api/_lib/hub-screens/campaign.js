@@ -62,6 +62,11 @@ module.exports = async function handler(req, res) {
 
   const url = new URL(req.url, 'https://x');
   const done = str(url.searchParams.get('done'), 40);
+
+  /* A purchase return, or one of our own redirects, or nothing. Unrecognised
+     values fall through to null and render no flash at all. */
+  const flash = purchaseFlash(done, advisor) ||
+    (DONE_MESSAGE[done] ? { text: DONE_MESSAGE[done], bad: /failed|readonly/.test(done) } : null);
   const profile = await profileFor(advisor.id);
   const gaps = gapReport(profile);
   const p = profile || {};
@@ -102,8 +107,13 @@ module.exports = async function handler(req, res) {
         ? 'Small actions with the words already written, each one pointing at your WELL link.'
         : 'A plan of small actions with the words already written, each one pointing at your WELL link. First it needs to know who you are.')}
 
-    ${done ? `<p class="hub-flash${/failed|readonly/.test(done) ? ' hub-flash--bad' : ''}">${
-      esc(DONE_MESSAGE[done] || done)}</p>` : ''}
+    ${/* NO FALLBACK ECHO. This was `DONE_MESSAGE[done] || done`, which printed
+          any unrecognised token straight onto the page as though the product
+          had written it — a return URL of ?done=purchased would have rendered
+          the bare word "purchased" as a confirmation. Escaped, so a tidiness
+          fault rather than a security one, but a flash message we did not
+          write is not a message. */''}
+    ${flash ? `<p class="hub-flash${flash.bad ? ' hub-flash--bad' : ''}">${esc(flash.text)}</p>` : ''}
 
     ${thinkingOverlay()}
 
@@ -445,3 +455,42 @@ const DONE_MESSAGE = {
   not_configured: 'The Hub is not connected to its database just now.',
   failed: 'That did not save. Try again, and tell us if it keeps failing.'
 };
+
+/* ── Coming back from a checkout ───────────────────────────────────────────
+   ThriveCart returns the buyer here. Duncan bought the pack and was left on
+   ThriveCart's own page: nothing brought him back, and nothing in the product
+   acknowledged that money had moved.
+
+   ── THE RACE IS THE WHOLE PROBLEM ────────────────────────────────────────
+   The browser redirect is immediate. The webhook is not. An advisor can land
+   on this page before ThriveCart has called /api/hook, so the confirmation
+   CANNOT assume the balance has moved — it reads the balance at render and
+   says whichever of these is true right now.
+
+   The waiting branch is the one that matters. Their money has gone and the
+   likeliest truth is that the webhook is a few seconds behind, so it says we
+   are confirming it. "Something went wrong" there would be the product lying
+   about its own success, and it would send somebody to support over a delay
+   that resolves itself.
+
+   No polling and no spinner: hub-render sets scripts:false, and a sentence
+   asking for a refresh is more honest than an indicator that cannot know when
+   to stop. */
+function purchaseFlash(done, advisor) {
+  if (done !== 'purchased' && done !== 'foundations') return null;
+
+  if (done === 'foundations') {
+    return advisor.foundations_paid_at
+      ? { text: 'Thank you — Foundations is on your account, and campaigns are unlimited from ' +
+          'now. Your training date gets recorded once you have attended, and that is what ' +
+          'changes what your copy may claim.' }
+      : { text: 'Thank you. We are confirming it with ThriveCart — that usually takes a few ' +
+          'seconds. Refresh this page in a moment and your campaigns will be unlimited.' };
+  }
+
+  const n = BUILDS.balance(advisor);
+  return n === null || n > 0
+    ? { text: `Thank you — ${BUILDS.PACK_SIZE} more campaigns are on your account.` }
+    : { text: 'Thank you. We are confirming your purchase with ThriveCart — that usually takes ' +
+        'a few seconds. Refresh this page in a moment and it will be here.' };
+}
