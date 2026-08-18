@@ -68,12 +68,12 @@
     }
   ],
   "functions": {
-    "api/**/*.js": {
-      "includeFiles": "{css,js}/**"
-    },
     "api/gtm.js": {
       "includeFiles": "{css,js}/**",
       "maxDuration": 60
+    },
+    "api/**/*.js": {
+      "includeFiles": "{css,js}/**"
     }
   },
   "rewrites": [
