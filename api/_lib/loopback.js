@@ -159,8 +159,14 @@ async function forPlan(advisor, plan, now) {
    vocabulary rather than for intent. */
 function foundationsNote(report, advisor, profile) {
   if (!report || !report.anything) return null;
-  /* Already trained. The note would be telling them to buy what they have. */
-  if (advisor && (advisor.foundations_at || advisor.immersion_at)) return null;
+
+  /* Already trained, or already PAID and waiting to attend. In both cases the
+     note would be selling somebody a thing they own. The paid case is new with
+     021: an advisor can hold the entitlement for weeks before a date goes in
+     foundations_at, and pitching Foundations to them the whole time would be
+     the product failing to notice a purchase it processed itself. */
+  if (advisor && (advisor.foundations_paid_at ||
+      advisor.foundations_at || advisor.immersion_at)) return null;
 
   const hasBrief = Boolean(profile && profile.brief_parsed &&
     Object.keys(profile.brief_parsed).length);
@@ -170,11 +176,16 @@ function foundationsNote(report, advisor, profile) {
     body: hasBrief
       ? 'You have given this campaign your own clients and proof, and it shows in the copy. ' +
         'Foundations Day 1 produces a Brand Profile the campaign engine reads directly — the ' +
-        'same idea, one level deeper. Graduates also rebuild their plan as often as they want.'
+        'same idea, one level deeper. Graduates also build campaigns without limit.'
       : 'This month was built from five answers and the Saint Lucia fact bank. The campaign ' +
         'reads a Brand Profile directly when there is one, and Foundations Day 1 is where that ' +
-        'gets built. Graduates also rebuild their plan as often as they want.',
-    href: '/advisors/foundations'
+        'gets built. Graduates also build campaigns without limit.',
+    /* The short page rather than the long one. /advisors/foundations is written
+       for somebody who has never met any of this; the reader here has a month
+       of their own results in front of them and one question — what would be
+       different. /hub/campaign/more answers that in three screens and knows
+       who is asking. */
+    href: '/hub/campaign/more'
   };
 }
 

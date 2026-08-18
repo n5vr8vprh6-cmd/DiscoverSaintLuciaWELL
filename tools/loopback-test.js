@@ -101,9 +101,21 @@ const note = LB.foundationsNote(something, registered, {});
 const engineTerms = (b) => /Brand Profile/.test(b) && /read/.test(b) && !/transform|unlock your potential/i.test(b);
 ok('it is described in ENGINE terms', engineTerms(note.body),
   '"transform your marketing" is neither concrete nor checkable, and advisors have heard it');
-ok('it names a concrete consequence', /rebuild their plan/.test(note.body),
-  'a benefit an advisor can picture, rather than an adjective');
-ok('it links to the page, not to a checkout', note.href === '/advisors/foundations');
+ok('it names a concrete consequence', /build campaigns without limit/.test(note.body),
+  'a benefit an advisor can picture, rather than an adjective. The wording moved from ' +
+  '"rebuild their plan" to campaign vocabulary in U8 — same promise, the word an advisor uses');
+
+/* THE INTENT IS UNCHANGED, THE DESTINATION IS NOT. This used to require
+   /advisors/foundations. U10 points it at /hub/campaign/more — still a page
+   that explains before it asks, and now one that knows who is reading and what
+   their copy was allowed to claim. What must never happen is this becoming a
+   link straight to a payment form, which is what the assertion is really for. */
+ok('it links to a page that explains, not to a checkout',
+  note.href === '/hub/campaign/more',
+  'got ' + note.href);
+ok('and never straight to a payment form',
+  !/^https?:/.test(note.href) && !/(checkout|cart|buy|shop\.)/i.test(note.href),
+  'a report that ends in a payment form is a report written to sell rather than to inform');
 
 
 const withBrief = LB.foundationsNote(something, registered,

@@ -35,7 +35,8 @@ const { db } = require('../api/_lib/core.js');
 
 let pass = 0, fail = 0, skip = 0;
 const ok = (n, c, d) => { if (c) { pass++; console.log('  ✓ ' + n); } else { fail++; console.log('  ✗ ' + n + (d ? '  — ' + d : '')); } };
-const skipped = (n, why) => { skip++; console.log('  ⊘ ' + n + '  — ' + why); };
+const reasons = new Set();
+const skipped = (n, why) => { skip++; reasons.add(why); console.log('  ⊘ ' + n + '  — ' + why); };
 
 const REG = (n) => ({ id: 'r', plan_builds: n });
 const FOUND = (n) => ({ id: 'f', plan_builds: n, foundations_at: '2026-01-01' });
@@ -68,6 +69,39 @@ ok('their balance reads as null, not as a number', BUILDS.balance(FOUND(3)) === 
   'a number that is read is a number that gets acted on later');
 ok('and they are shown no balance line at all', BUILDS.balanceLine(FOUND(0)) === null,
   'an advisor who is not being metered must not be shown a meter');
+
+/* ══ PAID IS NOT TRAINED ═════════════════════════════════════════════════
+   THE ASSERTION THIS WHOLE MIGRATION EXISTS FOR, and the one most likely to
+   go green by accident if somebody later "simplifies" two dates into one.
+
+   Buying Foundations must stop the meter immediately — the advisor paid, and
+   waiting for an admin to notice is not a product. It must NOT move them up
+   the claims ladder, because that ladder decides whether we will generate the
+   sentence "trained in the Well Destination method" and put their name on it.
+
+   A person can buy the programme and never attend. If these two facts are ever
+   merged back into one column, that person publishes a claim to be trained,
+   written by us, on their own account. */
+const PAID = { id: 'p', foundations_paid_at: '2026-08-18T00:00:00Z', plan_builds: 0 };
+
+console.log('\n  Paying for Foundations is not completing it');
+ok('paying stops the meter at once', BUILDS.unmetered(PAID) === true,
+  'they bought unlimited campaigns; they should not wait for somebody to look');
+ok('and mayBuild is true even at a balance of zero', BUILDS.mayBuild(PAID) === true);
+ok('and no meter is shown', BUILDS.balanceLine(PAID) === null && BUILDS.countChip(PAID) === null);
+
+ok('but the claims ladder does NOT move', rung(PAID) === 'registered',
+  'rung() reads foundations_at and immersion_at ONLY. If this ever returns ' +
+  '"foundations" for somebody who has merely paid, our generator will write ' +
+  '"trained in the Well Destination method" for a person who has not been trained.');
+
+ok('completing it is what moves the ladder', rung(FOUND(0)) === 'foundations',
+  'the other half of the same rule — the date an admin sets is the one that counts');
+
+ok('a paid-and-trained advisor is both', (() => {
+  const both = Object.assign({}, PAID, { foundations_at: '2026-09-01T00:00:00Z' });
+  return BUILDS.unmetered(both) === true && rung(both) === 'foundations';
+})(), 'the ordinary end state, once they have actually attended');
 
 /* ══ WHAT THE ADVISOR IS TOLD ════════════════════════════════════════════ */
 console.log('\n  What it says');
@@ -127,12 +161,24 @@ const mkRes = () => {
   return r;
 };
 const post = async (body, env) => {
-  const saved = { s: process.env.THRIVECART_SECRET, p: process.env.THRIVECART_BUILDPACK_ID };
-  if (env && 'secret' in env) { if (env.secret === null) delete process.env.THRIVECART_SECRET; else process.env.THRIVECART_SECRET = env.secret; }
-  if (env && 'product' in env) { if (env.product === null) delete process.env.THRIVECART_BUILDPACK_ID; else process.env.THRIVECART_BUILDPACK_ID = env.product; }
+  const saved = {
+    s: process.env.THRIVECART_SECRET,
+    p: process.env.THRIVECART_BUILDPACK_ID,
+    f: process.env.THRIVECART_FOUNDATIONS_ID
+  };
+  const set = (key, name) => {
+    if (!env || !(key in env)) return;
+    if (env[key] === null) delete process.env[name]; else process.env[name] = env[key];
+  };
+  set('secret', 'THRIVECART_SECRET');
+  set('product', 'THRIVECART_BUILDPACK_ID');
+  set('foundations', 'THRIVECART_FOUNDATIONS_ID');
   const res = mkRes();
   await hook({ method: 'POST', headers: {}, body }, res);
-  process.env.THRIVECART_SECRET = saved.s; process.env.THRIVECART_BUILDPACK_ID = saved.p;
+  process.env.THRIVECART_SECRET = saved.s;
+  process.env.THRIVECART_BUILDPACK_ID = saved.p;
+  if (saved.f === undefined) delete process.env.THRIVECART_FOUNDATIONS_ID;
+  else process.env.THRIVECART_FOUNDATIONS_ID = saved.f;
   return res;
 };
 
@@ -197,19 +243,30 @@ const post = async (body, env) => {
   delete process.env.THRIVECART_SECRET;
 
   const noProduct = await post(
-    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-o1', product_id: 'foundations' },
-    { secret: 'right', product: 'buildpack' });
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-o1', product_id: 'something-else' },
+    { secret: 'right', product: 'buildpack', foundations: 'foundations' });
   ok('a purchase of something else grants nothing',
     noProduct.statusCode === 200 && noProduct.payload.granted === 0,
-    'Duncan sells more than one thing through ThriveCart; a Foundations sale must not hand out build packs');
+    'Duncan sells more than the two things this endpoint knows about');
   ok('and the reason is product_mismatch', noProduct.payload.reason === 'product_mismatch');
 
   const unset = await post(
     { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-o2', product_id: 'buildpack' },
-    { secret: 'right', product: null });
+    { secret: 'right', product: null, foundations: null });
   ok('with no product configured, nothing is granted',
     unset.payload.granted === 0 && unset.payload.reason === 'product_mismatch',
     'fails closed: money features do not guess');
+
+  /* ── ONE UNSET ID MUST NOT MAKE THE OTHER MATCH ───────────────────────────
+     Boolean(undefined) === false is what keeps these separate. Written as a
+     test because `String(undefined) === product` is the kind of comparison
+     that quietly becomes true if somebody refactors the guard. */
+  const packOnly = await post(
+    { event: 'order.success', thrivecart_secret: 'right', order_id: 'selftest-o2b', product_id: 'foundations' },
+    { secret: 'right', product: 'buildpack', foundations: null });
+  ok('a Foundations order with no Foundations id configured grants nothing',
+    packOnly.payload.granted === 0 && packOnly.payload.reason === 'product_mismatch',
+    'the same fail-closed shape the pack already had, per product');
 
   const ignored = await post(
     { event: 'order.viewed', thrivecart_secret: 'right', order_id: 'selftest-o3' }, { secret: 'right' });
@@ -341,6 +398,60 @@ const post = async (body, env) => {
       'providers retry precisely when the first attempt worked and the response was lost');
     await supabase.from('purchase_events').delete().eq('event_id', eid);
     await set(3);
+
+    /* ══ A FOUNDATIONS PURCHASE, THROUGH THE REAL HANDLER ═══════════════
+       The whole point of 021 asserted end to end rather than at unit level:
+       money arrives, the meter stops, and the claim does NOT move. */
+    const { data: col } = await supabase.from('advisors')
+      .select('foundations_paid_at').limit(1);
+
+    if (!col) {
+      ['a Foundations purchase stops the meter',
+       'and does NOT mark them trained',
+       'a replayed Foundations webhook grants once',
+       'a refund withdraws it'].forEach((n) => skipped(n, 'migration 021 is not applied yet'));
+    } else {
+      await set(0, { foundations_at: null, foundations_paid_at: null });
+      const oid = 'selftest-found-' + Date.now();
+      const buy = await post(
+        { event: 'order.success', thrivecart_secret: 'right', order_id: oid,
+          product_id: 'found-1', mode: 'live', customer: { email: seed.email } },
+        { secret: 'right', product: 'buildpack', foundations: 'found-1' });
+
+      const { data: paid } = await supabase.from('advisors')
+        .select('plan_builds, foundations_at, foundations_paid_at').eq('id', seed.id).single();
+
+      ok('a Foundations purchase stops the meter',
+        buy.payload.foundations === 'unlimited' && paid.foundations_paid_at !== null &&
+        BUILDS.unmetered(paid) === true,
+        JSON.stringify(buy.payload));
+      ok('and grants no builds — the balance is untouched', paid.plan_builds === 0,
+        'the meter is off, so a number beside them is one nobody reads');
+      ok('and does NOT mark them trained',
+        paid.foundations_at === null && rung(paid) === 'registered',
+        'THE assertion of 021: they paid, they have not attended, and our generator ' +
+        'must not write "trained in the Well Destination method" beside their name');
+      ok('and the response says somebody has to mark them', buy.payload.awaitingTraining === true,
+        'the purchase creates a state a human has to close');
+
+      const replay = await post(
+        { event: 'order.success', thrivecart_secret: 'right', order_id: oid,
+          product_id: 'found-1', mode: 'live', customer: { email: seed.email } },
+        { secret: 'right', product: 'buildpack', foundations: 'found-1' });
+      ok('a replayed Foundations webhook grants once', replay.payload.reason === 'replay');
+
+      const refund = await post(
+        { event: 'order.refund', thrivecart_secret: 'right', order_id: oid + '-r',
+          product_id: 'found-1', mode: 'live', customer: { email: seed.email } },
+        { secret: 'right', product: 'buildpack', foundations: 'found-1' });
+      const { data: back } = await supabase.from('advisors')
+        .select('plan_builds, foundations_paid_at').eq('id', seed.id).single();
+      ok('a refund withdraws it', refund.payload.foundations === 'withdrawn' &&
+        back.foundations_paid_at === null && back.plan_builds === 0,
+        'and still grants no builds on the way out');
+
+      await set(3, { foundations_at: null, foundations_paid_at: null });
+    }
   }
 
   /* ══ IT CLEANS UP AFTER ITSELF ═════════════════════════════════════════
@@ -363,6 +474,11 @@ const post = async (body, env) => {
   }
 
   console.log('\n  ' + '─'.repeat(60));
-  console.log(`  ${pass} passed, ${fail} failed${skip ? `, ${skip} SKIPPED (migration 017 not applied)` : ''}\n`);
+  /* The reason comes from the skips themselves rather than being hard-coded.
+     It used to say "migration 017 not applied" always, which went from true to
+     misleading the moment 021 added a second reason to skip — and a summary
+     line that names the wrong cause sends somebody to fix the wrong thing. */
+  console.log(`  ${pass} passed, ${fail} failed${
+    skip ? `, ${skip} SKIPPED (${[...reasons].join('; ')})` : ''}\n`);
   process.exit(fail ? 1 : 0);
 })();

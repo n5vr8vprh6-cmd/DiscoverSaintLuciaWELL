@@ -1,13 +1,27 @@
 /* ============================================================================
-   /api/hook — ThriveCart tells us somebody bought a build pack
+   /api/hook — ThriveCart tells us somebody bought something
    ----------------------------------------------------------------------------
    The only endpoint in this product that money passes through, which sets the
    standard for everything below: it fails closed, it never trusts the body
    about who anybody is, and it writes down every single thing that arrives.
 
+   ── TWO PRODUCTS ──────────────────────────────────────────────────────────
+     THRIVECART_BUILDPACK_ID    adds three campaigns to a balance
+     THRIVECART_FOUNDATIONS_ID  stops the meter entirely, and grants NO builds
+
+   They share this endpoint because they share a ThriveCart account, and so
+   share the signature check, the replay protection and the ledger. A second
+   endpoint would be a second copy of the only code here with money on it.
+
+   ── FOUNDATIONS DOES NOT MAKE ANYBODY "TRAINED" ───────────────────────────
+   It sets foundations_paid_at and stops. foundations_at — the column that
+   decides whether our generator will write "trained in the Well Destination
+   method" beside somebody's name — stays an admin action, because a webhook
+   knows that money moved and cannot know whether anybody attended. See 021.
+
    ── WHAT "FAILS CLOSED" MEANS HERE ────────────────────────────────────────
    It means NOTHING IS EVER GRANTED unless the secret matches, the product is
-   the build pack, and the event is one we act on. It does NOT mean the request
+   one of ours, and the event is one we act on. It does NOT mean the request
    fails: a webhook that returns 4xx/5xx to everything cannot even be saved in
    ThriveCart, which validates the URL first — the original version of this
    file made the integration impossible to set up. Anything we cannot act on
@@ -20,11 +34,11 @@
    2. THE SECRET IS COMPARED IN CONSTANT TIME. A byte-by-byte early return
       leaks the secret to anybody patient enough to measure. An unauthenticated
       request is also recorded NOWHERE — otherwise anyone could fill the ledger.
-   3. AN UNRECOGNISED PRODUCT GRANTS NOTHING. Duncan sells more than one thing
-      through ThriveCart. A Foundations purchase must not quietly hand out
-      build packs, so the product has to match THRIVECART_BUILDPACK_ID — and
-      when it does not, the event is RECORDED with a delta of zero and a note,
-      not dropped. Somebody paid; the evidence has to exist.
+   3. AN UNRECOGNISED PRODUCT GRANTS NOTHING. Duncan sells more than the two
+      things this file knows about, and each id is checked separately so that
+      one being unset cannot make the other match. When nothing matches, the
+      event is RECORDED with a delta of zero and a note, not dropped. Somebody
+      paid; the evidence has to exist.
    4. NO EVENT ID, NO GRANT. Idempotency depends on it, and a grant we cannot
       make idempotent is a grant that doubles on the provider's first retry.
 
@@ -187,29 +201,52 @@ module.exports = async function handler(req, res) {
     return json(res, 200, { ok: true, granted: 0, reason: 'ignored_kind' });
   }
 
-  /* THE PRODUCT CHECK. Fails closed: when we cannot prove this is the build
-     pack, nothing is granted and the event says so in the note. */
-  const expected = process.env.THRIVECART_BUILDPACK_ID;
-  if (!expected || String(expected) !== product) {
+  /* THE PRODUCT CHECK. Fails closed: when we cannot prove which of our two
+     products this is, nothing is granted and the event says so in the note.
+
+     ── TWO PRODUCTS, ONE ENDPOINT ─────────────────────────────────────────
+     The $9 pack adds campaigns. Foundations stops the meter entirely. They
+     share this endpoint because they share a ThriveCart account, which means
+     they also share the signature check, the replay protection and the ledger
+     — all of which are already built and proved. A second endpoint would be a
+     second copy of the only code in this product with money on it.
+
+     Each id is OPTIONAL and each fails closed on its own: an unset pack id
+     cannot identify a pack purchase, an unset Foundations id cannot identify a
+     Foundations one, and neither absence affects the other. */
+  const packId = process.env.THRIVECART_BUILDPACK_ID;
+  const foundationsId = process.env.THRIVECART_FOUNDATIONS_ID;
+  const isPack = Boolean(packId) && String(packId) === product;
+  const isFoundations = Boolean(foundationsId) && String(foundationsId) === product;
+
+  if (!isPack && !isFoundations) {
+    const known = [packId ? `pack ${packId}` : null, foundationsId ? `Foundations ${foundationsId}` : null]
+      .filter(Boolean).join(', ');
     await BUILDS.record({ provider: PROVIDER, eventId, kind, email, delta: 0,
-      note: expected
-        ? `Product "${product}" is not the build pack (${expected}) — nothing granted.`
-        : 'THRIVECART_BUILDPACK_ID is not set, so no purchase can be identified as a build pack.',
+      note: known
+        ? `Product "${product}" is not one of ours (${known}) — nothing granted.`
+        : 'Neither THRIVECART_BUILDPACK_ID nor THRIVECART_FOUNDATIONS_ID is set, so no purchase can be identified.',
       raw: redact(body) });
-    console.error('hook: product not the build pack', product, 'expected', expected || '(unset)');
+    console.error('hook: unrecognised product', product, 'known:', known || '(none configured)');
     return json(res, 200, { ok: true, granted: 0, reason: 'product_mismatch' });
   }
 
   if (isTest) {
     await BUILDS.record({ provider: PROVIDER, eventId, kind, email, delta: 0,
-      note: 'Sandbox order — recorded so you can confirm the wiring, but no money moved so no builds were granted.',
+      note: `Sandbox ${isFoundations ? 'Foundations' : 'build pack'} order — recorded so you can ` +
+        'confirm the wiring, but no money moved so nothing was granted.',
       raw: redact(body) });
     console.log('hook: sandbox order recorded, nothing granted', kind, email);
     return json(res, 200, { ok: true, granted: 0, reason: 'test_mode' });
   }
 
   const advisor = await advisorByEmail(email);
-  const delta = isRefund ? -BUILDS.PACK_SIZE : BUILDS.PACK_SIZE;
+
+  /* Foundations grants no builds. The meter is OFF for this advisor from the
+     moment the row is written, so a balance beside them is a number nobody
+     reads — and moving it would leave a misleading trail for whoever looks
+     next. See markFoundationsPaid() and 021. */
+  const delta = isFoundations ? 0 : (isRefund ? -BUILDS.PACK_SIZE : BUILDS.PACK_SIZE);
 
   /* ── RECORD FIRST ───────────────────────────────────────────────────────
      The insert is the idempotency check: UNIQUE (provider, event_id) in the
@@ -220,7 +257,15 @@ module.exports = async function handler(req, res) {
     provider: PROVIDER, eventId, kind, email,
     advisorId: advisor ? advisor.id : null,
     delta: advisor ? delta : 0,
-    note: advisor ? null : 'No advisor with this email — nobody was credited. Somebody paid; settle by hand.',
+    /* The pack's delta explains itself in the ledger; a Foundations row would
+       otherwise be a zero-delta entry with nothing saying why. */
+    note: !advisor
+      ? 'No advisor with this email — nobody was credited. Somebody paid; settle by hand.'
+      : isFoundations
+        ? (isRefund
+          ? 'Foundations refunded — unlimited campaigns withdrawn. Their training date, if set, is untouched.'
+          : 'Foundations purchased — unlimited campaigns from now. NOT marked as trained: that is an admin action once they have attended.')
+        : null,
     raw: redact(body)
   });
 
@@ -235,6 +280,26 @@ module.exports = async function handler(req, res) {
   if (!advisor) {
     console.error('hook: paid but no advisor', email, eventId);
     return json(res, 200, { ok: true, granted: 0, reason: 'no_advisor' });
+  }
+
+  /* ── Foundations ────────────────────────────────────────────────────────
+     Sets the entitlement and stops. It does NOT set foundations_at, and the
+     day somebody "fixes" that here is the day we generate the sentence
+     "trained in the Well Destination method" for a person who paid and never
+     attended, and publish it under their name. A webhook knows money moved.
+     Whether anybody turned up is a fact only a human has. */
+  if (isFoundations) {
+    const m = await BUILDS.markFoundationsPaid(advisor.id, !isRefund);
+    if (!m.ok) {
+      console.error('hook: recorded but not marked paid', advisor.id, m.reason, eventId);
+      return json(res, 500, { error: 'grant_failed' });
+    }
+    console.log('hook: Foundations', isRefund ? 'refunded' : 'purchased', email,
+      m.trained ? '(already marked trained)' : '(awaiting training — mark them in the Hub)');
+    return json(res, 200, {
+      ok: true, granted: 0, foundations: isRefund ? 'withdrawn' : 'unlimited',
+      awaitingTraining: !isRefund && !m.trained
+    });
   }
 
   const g = await BUILDS.grant(advisor.id, delta);
@@ -254,7 +319,7 @@ async function advisorByEmail(email) {
   const supabase = db();
   if (!supabase) return null;
   const { data, error } = await supabase
-    .from('advisors').select('id, email, foundations_at, immersion_at')
+    .from('advisors').select('id, email, foundations_at, immersion_at, foundations_paid_at')
     .ilike('email', email).limit(1).maybeSingle();
   if (error) { console.error('advisorByEmail', error); return null; }
   return data || null;

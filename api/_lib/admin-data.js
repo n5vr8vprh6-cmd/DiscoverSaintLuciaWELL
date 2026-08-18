@@ -40,7 +40,7 @@ async function allAdvisors() {
     supabase.from('advisors')
       .select('id, first_name, last_name, email, business, host_agency, website, market, ' +
               'public_code, slug, status, role, is_master, is_house, approved_at, locked_at, ' +
-              'foundations_at, immersion_at, ' +
+              'foundations_at, immersion_at, foundations_paid_at, ' +
               'registration_note, created_at')
       .order('created_at', { ascending: false }),
     supabase.from('journey_shares').select('advisor_id, stage, created_at'),
@@ -85,7 +85,7 @@ async function advisorById(id) {
     .from('advisors')
     .select('id, first_name, last_name, email, business, host_agency, phone, website, market, ' +
             'public_code, slug, status, role, is_master, is_house, approved_at, approved_by, locked_at, ' +
-            'foundations_at, immersion_at, ' +
+            'foundations_at, immersion_at, foundations_paid_at, ' +
             'registration_note, onboarding_state, auth_user_id, created_at')
     .eq('id', id)
     .maybeSingle();

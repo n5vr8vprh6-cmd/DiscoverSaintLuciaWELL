@@ -142,6 +142,33 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
     grad.statusCode === 302 && grad.headers.location === '/hub/campaign',
     'got ' + grad.statusCode + ' ' + (grad.headers.location || ''));
 
+  /* ── Paid, but not yet trained ──────────────────────────────────
+     The state 021 creates. They own everything this page sells, so it must not
+     sell it to them — and the loop-back note must stay quiet too, or the
+     product spends weeks pitching a thing it processed the payment for. */
+  section('An advisor who has paid but not yet attended');
+  const PAID = Object.assign({}, REGISTERED, { id: 'pd', foundations_paid_at: '2026-08-18' });
+  const paidPage = await renderMore(PAID);
+  ok('is not sold Foundations again',
+    paidPage.statusCode === 302 && paidPage.headers.location === '/hub/campaign',
+    'they bought it; the page is addressed to somebody who has not');
+
+  const LB = require('../api/_lib/loopback.js');
+  const someResults = { anything: true, totals: { journeys: 2 }, weeks: [], finished: false };
+  ok('and the loop-back note stays quiet for them',
+    LB.foundationsNote(someResults, PAID, {}) === null,
+    'pitching Foundations to somebody waiting to attend it is the product failing ' +
+    'to notice a purchase it processed itself');
+  ok('while a plain registered advisor with results still gets it',
+    LB.foundationsNote(someResults, REGISTERED, {}) !== null,
+    'the evidence gate must keep working — this is the only place Foundations is ' +
+    'allowed to appear before exhaustion');
+  ok('and it points at the short page, not the long one',
+    (LB.foundationsNote(someResults, REGISTERED, {}) || {}).href === '/hub/campaign/more');
+  ok('a zero-result advisor still gets nothing',
+    LB.foundationsNote({ anything: false }, REGISTERED, {}) === null,
+    'loopback.js: "before a result there is no argument, only a pitch"');
+
   /* ── The count, where it can be read ──────────────────────────────────── */
   section('The chip and the sentence quote the same number');
   [0, 1, 2, 3].forEach((n) => {
@@ -170,7 +197,11 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
     balanceLine: BUILDS.balanceLine({ plan_builds: 2 }),
     countChip: BUILDS.countChip({ plan_builds: 2 }) }));
   const outOf = planSection(rows, Object.assign({}, base, {
-    mayRefresh: false, outOfCampaigns: true,
+    mayRefresh: false, outOfCampaigns: true, hasResults: true,
+    balanceLine: BUILDS.balanceLine({ plan_builds: 0 }),
+    countChip: BUILDS.countChip({ plan_builds: 0 }) }));
+  const outOfNoResults = planSection(rows, Object.assign({}, base, {
+    mayRefresh: false, outOfCampaigns: true, hasResults: false,
     balanceLine: BUILDS.balanceLine({ plan_builds: 0 }),
     countChip: BUILDS.countChip({ plan_builds: 0 }) }));
   const gradPlan = planSection(rows, Object.assign({}, base, {
@@ -225,6 +256,28 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
   ok('the four states are genuinely different',
     new Set([withLeft, outOf, blocked, gradPlan]).size === 4,
     'they were identical in production for weeks — that is the bug this asserts against');
+
+  /* ── The offer follows the evidence ───────────────────────────────
+     loopback.js: "before a result there is no argument, only a pitch", and it
+     names "beside a locked button" as forbidden — which is exactly where this
+     section renders. An advisor can exhaust their campaign in week one with
+     nothing to show, and pitching training to them then is the guard eroding. */
+  section('Which offer leads at zero');
+  const foundIdx = (h) => h.indexOf('/hub/campaign/more"');
+  const packIdx = (h) => h.indexOf('#more-campaigns');
+
+  ok('with results, Foundations leads',
+    foundIdx(outOf) > -1 && foundIdx(outOf) < packIdx(outOf),
+    'there is a month of their own numbers on the same screen to argue from');
+  ok('without results, the pack leads',
+    packIdx(outOfNoResults) < foundIdx(outOfNoResults),
+    'they are stuck. The honest thing to offer somebody stuck is the way to keep working.');
+  ok('and Foundations is still reachable either way',
+    foundIdx(outOfNoResults) > -1,
+    'quieter, not absent — Duncan asked for both to be visible at zero');
+  ok('and the pack is still reachable either way', packIdx(outOf) > -1,
+    'a blocked advisor should not have to click "not right now" to find the unblock');
+  ok('the two zero states differ', outOf !== outOfNoResults);
 
   /* ── The empty screen, which is where uat3 actually is ────────────────── */
   section('No plan yet');

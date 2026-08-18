@@ -193,7 +193,7 @@ async function userFor(req, res) {
    tools/session-columns-test.js asserts that everything read off an advisor
    in api/_lib is actually in here. The next migration gets a failing test
    rather than a silent undefined. */
-const SESSION_COLUMNS = 'id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at, is_house, plan_builds, foundations_at, immersion_at';
+const SESSION_COLUMNS = 'id, slug, public_code, first_name, last_name, email, business, host_agency, phone, website, socials, bio, market, status, onboarding_state, photo_url, role, is_master, approved_at, registration_note, locked_at, undertaking_version, undertaking_at, is_house, plan_builds, foundations_at, immersion_at, foundations_paid_at';
 
 /* The advisor row for the signed-in user, or null. Every Hub read goes through
    here, so there is exactly one place that decides who you are. */

@@ -220,11 +220,27 @@ module.exports = async function handler(req, res) {
               have done Foundations as anybody. */''}
         <section class="hub-card">
           <h2>Training</h2>
-          <p class="hub-hint">What an advisor may claim in campaign copy, and whether they can
-            regenerate a plan. Recording a date asserts they completed it — enrolment happens off
-            this platform, so it is recorded here rather than inferred.</p>
+          <p class="hub-hint">What an advisor may claim in campaign copy. Recording a date asserts
+            they <strong>completed</strong> the training — which is why a payment cannot set it.
+            The webhook knows money moved; only you know whether they turned up.</p>
+
+          ${/* ── PAID, NOT YET TRAINED ─────────────────────────────────────
+                The state 021 creates, and the reason it is worth surfacing
+                loudly: it is the only one where somebody has given Duncan
+                money and is waiting on him for something. They already have
+                everything they bought — unlimited campaigns, from the moment
+                the webhook landed — so nothing is broken for them. What is
+                missing is the claim, and that is his to grant. */''}
+          ${advisor.foundations_paid_at && !advisor.foundations_at ? `
+          <p class="hub-notice"><strong>Paid on ${
+            new Date(advisor.foundations_paid_at).toISOString().slice(0, 10)}, not yet marked as
+            trained.</strong> They have unlimited campaigns already. Their copy still may not say
+            they were trained — record Foundations below once they have attended.</p>` : ''}
+
           <dl class="hub-answers">
-            ${field('Foundations', advisor.foundations_at
+            ${field('Foundations paid', advisor.foundations_paid_at
+              ? new Date(advisor.foundations_paid_at).toISOString().slice(0, 10) : 'no payment recorded')}
+            ${field('Foundations completed', advisor.foundations_at
               ? new Date(advisor.foundations_at).toISOString().slice(0, 10) : 'not recorded')}
             ${field('Immersion', advisor.immersion_at
               ? new Date(advisor.immersion_at).toISOString().slice(0, 10) : 'not recorded')}

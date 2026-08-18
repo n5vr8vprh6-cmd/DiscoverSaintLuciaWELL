@@ -464,12 +464,48 @@ function nextCampaign(o) {
     return `<p class="hub-hint gtm-builds" id="gtm-next">${esc(o.balanceLine)}</p>`;
   }
 
-  /* Out. The offer — and it opens by saying what is still free, because that
-     is true, it is most of the value here, and an advisor who reads a price
-     first stops reading. */
+  /* ── Out. The offer ───────────────────────────────────────────────────────
+     It opens by saying what is still free, because that is true, it is most of
+     the value here, and an advisor who reads a price first stops reading.
+
+     ── WHICH OFFER LEADS DEPENDS ON WHETHER THERE IS AN ARGUMENT ───────────
+     loopback.js states the rule this section had quietly stepped around:
+     "before a result there is no argument, only a pitch", and it names "beside
+     a locked button" as one of the places Foundations must not appear. This
+     block IS beside a locked button — an advisor can use up their campaign in
+     week one and have nothing to show for it yet.
+
+     So the emphasis follows the evidence rather than the counter:
+
+       with results     Foundations leads. There is a month of their own
+                        numbers on the same screen to argue from.
+       without results  the pack — the unblock — leads, and Foundations is one
+                        quiet line. They are stuck, and the honest thing to
+                        offer somebody who is stuck is the way to keep working.
+
+     Both are visible either way. Making a blocked advisor click "not right
+     now" to discover the thing that unblocks them is friction at the one
+     moment it is least deserved. */
+  const free = `<p class="hub-hint gtm-next-free">${esc(o.balanceLine)}</p>`;
+
+  if (!o.hasResults) {
+    return `
+    <section class="hub-card gtm-next" id="gtm-next">
+      ${free}
+      <h3>Build another one</h3>
+      <p>Three more campaigns, bought once — not a subscription, and they do not expire.
+        Each is a fresh 30 days from your profile as it stands then.</p>
+      <div class="gtm-plan-actions">
+        <a class="btn btn--gold btn--sm" href="/hub/campaign/more#more-campaigns">More campaigns</a>
+      </div>
+      <p class="hub-more">Or see <a href="/hub/campaign/more">what changes with Foundations</a> —
+        graduates build without limit, and their copy may say more about them.</p>
+    </section>`;
+  }
+
   return `
     <section class="hub-card gtm-next" id="gtm-next">
-      <p class="hub-hint gtm-next-free">${esc(o.balanceLine)}</p>
+      ${free}
       <h3>Where a campaign like this goes next</h3>
       <p>This one was written under the claims you may make as a registered
         advisor. <strong>Well Destination Foundations</strong> changes what the

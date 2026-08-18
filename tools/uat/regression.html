@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>163 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>167 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">163</b></span>
+      <span class="t-left">Untested <b id="n-left">167</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -201,7 +201,7 @@ header.top {
     <summary>Before you start <span class="area-n">9</span></summary>
     
 <article class="case" id="case-S-01" data-id="S-01" data-role="setup"
-   data-pri="1" data-hash="1e84a7v"
+   data-pri="1" data-hash="1crgskg"
    data-title="Run migration 017" data-expect="has_plan_builds 1, has_ledger 1, has_functions 2, and three NOTICEs confirming grants. No WARNING." data-area="Before you start">
   <div class="case-head">
     <span class="cid">S-01</span>
@@ -213,7 +213,7 @@ header.top {
   
   
 
-  <ol class="steps"><li>Open the Supabase SQL editor</li><li>Paste db/migrations/017-plan-builds.sql and run it</li><li>Read the notices and the final SELECT</li></ol>
+  <ol class="steps"><li>Open the Supabase SQL editor</li><li>Paste db/migrations/017-plan-builds.sql and run it</li><li>Then 020-free-campaign.sql, then 021-foundations-paid.sql</li><li>Read the notices and the final SELECT</li></ol>
 
   <p class="expect"><strong>Expect</strong> has_plan_builds 1, has_ledger 1, has_functions 2, and three NOTICEs confirming grants. No WARNING.</p>
   <p class="why"><strong>Why this matters</strong> D7 shipped but is inert without it. Until this runs, every build-pack case is testing the old gate rather than the new one.</p>
@@ -1383,11 +1383,11 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 56 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 57 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Campaign <span class="area-n">1</span></summary>
+    <summary>Campaign <span class="area-n">2</span></summary>
     
 <article class="case" id="case-A-54" data-id="A-54" data-role="advisor"
    data-pri="3" data-hash="70vu37"
@@ -1408,6 +1408,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> Three totals answer &quot;has this ever worked&quot; and cannot answer &quot;did the thing I just did land&quot; — which is what an advisor asks after putting their link somewhere. Without it, &quot;no visits&quot; and &quot;no NEW visits&quot; look identical, which is exactly how a working link read as broken during UAT.</p>
 
   <div class="marks" role="group" aria-label="Result for A-54">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-57" data-id="A-57" data-role="advisor"
+   data-pri="2" data-hash="ryekct"
+   data-title="At zero, the offer depends on whether anything happened" data-expect="No results: the $9 pack leads and Foundations is one quiet line. With results: Foundations leads and the pack is behind &quot;not right now&quot;. Both reachable either way." data-area="Campaign">
+  <div class="case-head">
+    <span class="cid">A-57</span>
+    <h4>At zero, the offer depends on whether anything happened</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>At zero campaigns with NO results yet, read the bottom of the plan</li><li>Then with results in the What happened report, read it again</li></ol>
+
+  <p class="expect"><strong>Expect</strong> No results: the $9 pack leads and Foundations is one quiet line. With results: Foundations leads and the pack is behind &quot;not right now&quot;. Both reachable either way.</p>
+  <p class="why"><strong>Why this matters</strong> loopback.js: &quot;before a result there is no argument, only a pitch.&quot; An advisor can exhaust their campaign in week one with nothing to show, and selling training to them then is the guard eroding. Somebody stuck should be offered the way to keep working.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-57">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -3188,7 +3219,7 @@ header.top {
     <h2>Admin</h2>
     <p class="role-note">The console. Destructive actions live here.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 24 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 25 recorded</p>
   </div>
   
   <details class="area" open>
@@ -3258,7 +3289,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Advisors <span class="area-n">8</span></summary>
+    <summary>Advisors <span class="area-n">9</span></summary>
     
 <article class="case" id="case-D-03" data-id="D-03" data-role="admin"
    data-pri="1" data-hash="6lhkjt"
@@ -3496,6 +3527,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> Deleting an advisor should never silently decide the fate of the travellers who trusted them.</p>
 
   <div class="marks" role="group" aria-label="Result for D-22">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-B-25" data-id="B-25" data-role="admin"
+   data-pri="2" data-hash="iw4jt7"
+   data-title="Paid-but-not-trained is visible and closeable" data-expect="A notice saying they paid on a date and are not yet marked trained, with both dates listed separately. Recording Foundations clears the notice." data-area="Advisors">
+  <div class="case-head">
+    <span class="cid">B-25</span>
+    <h4>Paid-but-not-trained is visible and closeable</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> An advisor with foundations_paid_at set</p>
+  
+
+  <ol class="steps"><li>Open that advisor in the admin</li><li>Read the Training card</li><li>Record Foundations</li></ol>
+
+  <p class="expect"><strong>Expect</strong> A notice saying they paid on a date and are not yet marked trained, with both dates listed separately. Recording Foundations clears the notice.</p>
+  <p class="why"><strong>Why this matters</strong> The only state in the product where somebody has paid Duncan and is waiting on him. They already have everything they bought; what is missing is the claim, and only a human knows whether they attended.</p>
+
+  <div class="marks" role="group" aria-label="Result for B-25">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -3973,7 +4035,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 30 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 32 recorded</p>
   </div>
   
   <details class="area" open>
@@ -4311,7 +4373,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Build gate <span class="area-n">7</span></summary>
+    <summary>Build gate <span class="area-n">8</span></summary>
     
 <article class="case" id="case-G-11" data-id="G-11" data-role="guard"
    data-pri="1" data-hash="h86bf8"
@@ -4437,6 +4499,37 @@ header.top {
     <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
   </label>
 </article>
+<article class="case" id="case-G-31" data-id="G-31" data-role="guard"
+   data-pri="1" data-hash="14lbo6a"
+   data-title="PAYING for Foundations is not COMPLETING it" data-expect="Unlimited campaigns immediately, no meter, no upsell anywhere. And the copy still may NOT say trained, certified or specialist — the claims checker flags it exactly as before." data-area="Build gate">
+  <div class="case-head">
+    <span class="cid">G-31</span>
+    <h4>PAYING for Foundations is not COMPLETING it</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> Migration 021 applied · THRIVECART_FOUNDATIONS_ID set</p>
+  
+
+  <ol class="steps"><li>Make a sandbox Foundations purchase, then a live one</li><li>Check advisors: foundations_paid_at is set, foundations_at is still null</li><li>Sign in as that advisor and open /hub/campaign</li><li>Build a campaign with plan_builds at 0</li><li>Generate any asset and look for the word &quot;trained&quot; in it</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Unlimited campaigns immediately, no meter, no upsell anywhere. And the copy still may NOT say trained, certified or specialist — the claims checker flags it exactly as before.</p>
+  <p class="why"><strong>Why this matters</strong> These are two different facts in one flow. A person can buy the programme and never attend; if payment ever set foundations_at, our generator would write &quot;trained in the Well Destination method&quot; beside their name and they would publish it. Unlimited campaigns are bought. The claim is earned.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-31">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
 <article class="case" id="case-G-30" data-id="G-30" data-role="guard"
    data-pri="1" data-hash="pymqok"
    data-title="An advisor with campaigns left is never sold anything" data-expect="The count, and the intake below it. No Foundations offer, no $9 pack." data-area="Build gate">
@@ -4532,8 +4625,39 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Webhook <span class="area-n">5</span></summary>
+    <summary>Webhook <span class="area-n">6</span></summary>
     
+<article class="case" id="case-G-32" data-id="G-32" data-role="guard"
+   data-pri="2" data-hash="s494wm"
+   data-title="A Foundations order grants no build packs, and a refund withdraws it" data-expect="plan_builds never moves, the replay grants nothing, the refund clears the entitlement, and foundations_at is untouched throughout." data-area="Webhook">
+  <div class="case-head">
+    <span class="cid">G-32</span>
+    <h4>A Foundations order grants no build packs, and a refund withdraws it</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> Migration 021 applied · Both ThriveCart product ids set</p>
+  
+
+  <ol class="steps"><li>Note plan_builds before a Foundations purchase</li><li>Purchase, then check plan_builds is unchanged</li><li>Have ThriveCart resend the same webhook</li><li>Refund it and check foundations_paid_at is null again</li></ol>
+
+  <p class="expect"><strong>Expect</strong> plan_builds never moves, the replay grants nothing, the refund clears the entitlement, and foundations_at is untouched throughout.</p>
+  <p class="why"><strong>Why this matters</strong> Two products share one endpoint. Each must do its own thing and nothing else — and the meter being off makes a balance beside that advisor a number nobody reads.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-32">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
 <article class="case" id="case-G-14" data-id="G-14" data-role="guard"
    data-pri="2" data-hash="376u4k"
    data-title="The webhook refuses without the right secret" data-expect="All three return 200 with reason &quot;unauthorised&quot;, granted 0, and no row in purchase_events." data-area="Webhook">

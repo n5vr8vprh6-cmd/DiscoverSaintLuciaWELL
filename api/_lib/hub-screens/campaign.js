@@ -133,6 +133,10 @@ module.exports = async function handler(req, res) {
            only this one is a reason to sell somebody anything — see
            nextCampaign() in campaign-blocks.js. */
         outOfCampaigns,
+        /* Whether there is anything to argue from. loopback.js: "before a
+           result there is no argument, only a pitch" — so this decides which
+           of the two offers leads when the balance is spent. */
+        hasResults: Boolean(report && report.anything),
       }) : `
     ${/* No plan yet. The button is the point of the screen, so it comes first —
           and when it cannot be pressed it says why, rather than sitting greyed
