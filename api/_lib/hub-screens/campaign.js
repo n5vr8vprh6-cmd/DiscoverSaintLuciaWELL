@@ -21,7 +21,8 @@ const { requireAdvisor } = require('../auth.js');
 const { str, body: parseBody } = require('../core.js');
 const { hubPage, esc, pageHead } = require('../hub-render.js');
 const {
-  BANDS, FIELDS, profileFor, saveProfile, gapReport, intakePrompt, rung, mayRefresh,
+  BANDS, FIELDS, BUSINESS_FIELDS, profileFor, saveProfile, gapReport, fieldPrompt,
+  rung, mayRefresh,
   currentPlan, planRows
 } = require('../gtm.js');
 const { planSection, thinkingOverlay, confidenceStrip } = require('../campaign-blocks.js');
@@ -63,7 +64,6 @@ module.exports = async function handler(req, res) {
   const done = str(url.searchParams.get('done'), 40);
   const profile = await profileFor(advisor.id);
   const gaps = gapReport(profile);
-  const prompt = intakePrompt(advisor, profile);
   const p = profile || {};
   const where = rung(advisor);
 
@@ -85,7 +85,7 @@ module.exports = async function handler(req, res) {
      Build button is a reproach rather than a prompt. */
   const waiting = held ? await waitingCount(advisor.id) : null;
 
-  const reasoning = reasoningSections(gaps, prompt, p, where);
+  const reasoning = reasoningSections(gaps, p, where, advisor);
 
   const body = `<div class="hub-main">
   <div class="wrap">
@@ -176,7 +176,10 @@ module.exports = async function handler(req, res) {
 
 /* Everything that explains and improves the plan, as opposed to the plan
    itself. Kept in one piece so it can be folded as one — see the call site. */
-function reasoningSections(gaps, prompt, p, where) {
+/* `advisor` is here for fieldPrompt(): each question's prompt opens with what
+   we already know about this particular advisor, so a generic one would be
+   worth less than the blank box it sits beside. */
+function reasoningSections(gaps, p, where, advisor) {
   return `
     ${/* Readiness before anything else, because it answers the only question
           somebody has on arrival: is this worth my time yet. */''}
@@ -206,50 +209,48 @@ function reasoningSections(gaps, prompt, p, where) {
         ${gaps.channels.length ? `<strong>${esc(gaps.channels.join(', '))}</strong>` : '<strong>none yet</strong> — a plan needs somewhere to send people from'}.</p>
     </section>
 
-    ${/* THE PROMPT. Placed above the form on purpose: somebody arriving at an
-          empty form should meet the thing that fills it, not the thing that
-          asks them to. */''}
+    ${/* THE PROMPT USED TO LIVE HERE, and it was the wrong prompt. It is the
+          BRIEF prompt — ## VOICE / CLIENTS / MARKETS — which /hub/campaign/profile
+          parses and this form cannot use: of the six questions below, only
+          MARKETS appears in it at all. The copy around it promised "answers you
+          can paste into the form below", so an advisor either pasted a brief
+          into a box wanting one sentence, or rebuilt the six questions by hand
+          in their own chat window. Duncan did the second, and told us.
+
+          Each question now carries its own prompt instead, beside the box it
+          answers. This says so, and points at the Brand Profile for the longer
+          exercise the brief prompt is actually for. */''}
     <section class="hub-card">
       <h2>Not sure what to write?</h2>
-      <p class="hub-hint">Copy this into <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>,
-        <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a> or whichever assistant you
-        already use — the free plans are fine. It will read your links and draft answers you can paste
-        into the form below. <strong>Read them before you paste.</strong> It has been told not to invent
-        anything, but it is describing your business and you are the one who knows.</p>
-
-      <div class="hub-link-row">
-        <textarea id="gtm-prompt" class="hub-prompt" rows="6" readonly>${esc(prompt)}</textarea>
-      </div>
-      <div class="hub-actions">
-        <button class="btn btn--gold btn--sm" type="button" data-copy="#gtm-prompt">Copy the prompt</button>
-      </div>
-      <p class="hub-hint">It improves as you fill things in — the more we know, the more precisely it can ask.</p>
+      <p class="hub-hint">Every question below has an <strong>Ask your assistant</strong> button.
+        It copies that one question, with what we already know about your business and the
+        rules about what may and may not be claimed, ready to paste into
+        <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>,
+        <a href="https://chatgpt.com" target="_blank" rel="noopener">ChatGPT</a> or whichever
+        assistant you already use. The free plans are fine.</p>
+      <p class="hub-hint">One question at a time is deliberate. An answer you read, decide on
+        and type is worth more than six that arrived together — and it means you can leave a
+        field empty today and come back to it. <strong>Nothing here is required.</strong></p>
+      <p class="hub-more"><a href="/hub/campaign/profile">The Brand Profile</a> is the longer
+        version of this, where your assistant writes a whole brief in one go and we read it back
+        to you.</p>
     </section>
 
     <form method="POST">
       <section class="hub-card">
         <h2>Your business</h2>
         <p class="hub-hint">In your own words. Short and specific beats long and impressive, and this is
-          what stops your campaign sounding like everybody else's.</p>
-        ${area('positioning', 'What you sell, and to whom', p.positioning,
-          'e.g. Slow, well-designed trips for couples in their forties who have not taken a proper break in years.')}
-        ${area('differentiator', 'Why you rather than anybody else', p.differentiator,
-          'What you do that another advisor does not.')}
-        ${area('icp', 'Your ideal client', p.icp,
-          'Who they are, what stage of life, what they actually care about.')}
-        ${area('client_examples', 'The clients you already have', p.client_examples,
-          'The kinds of people who already book with you.')}
-        ${area('specialties', 'What you are known for', p.specialties,
-          'Destinations, trip types, occasions.')}
-        ${area('markets', 'Where your clients live', p.markets,
-          'Cities or regions. This decides which local hooks and events a plan can suggest.')}
+          what stops your campaign sounding like everybody else's. Answer what you can — an empty
+          field saves like any other, and you can come back to it.</p>
+        ${BUSINESS_FIELDS.map((f) => area(f, p[f.field], advisor, p)).join('\n        ')}
       </section>
 
       <section class="hub-card">
         <h2>Where you already reach people</h2>
         <p class="hub-hint">Only the ones you actually use. An empty channel in a plan is a week of
-          actions nobody does. <strong>We never fetch these</strong> — they are here so the prompt above
-          can point your own assistant at them, and so a plan knows where it is sending you.</p>
+          actions nobody does. <strong>We never fetch these</strong> — they are here so the prompts on
+          each question above can point your own assistant at them, and so a plan knows where it
+          is sending you.</p>
         <div class="hub-form-grid">
           ${field('website', 'Website', p.website, 'https://')}
           ${field('newsletter', 'Newsletter platform', p.newsletter, 'Mailchimp, Flodesk, Substack…')}
@@ -340,11 +341,27 @@ function reportBlock(report, foundations) {
 }
 
 /* ── Bits ────────────────────────────────────────────────────────────────── */
-function area(name, label, value, hint) {
-  return `<label class="hub-field hub-field--wide">
-    <span class="hub-field-label">${esc(label)}</span>
-    <textarea name="${esc(name)}" rows="2" maxlength="900" placeholder="${esc(hint)}">${esc(value || '')}</textarea>
-  </label>`;
+/* One question: its label, its box, and a button that copies a prompt for
+   this question alone.
+
+   NO NEW JAVASCRIPT. The prompt goes into a hidden textarea and the button
+   reuses the [data-copy] handler in js/hub.js that the WELL link and the brief
+   prompt already use, so the behaviour an advisor has met once is the same
+   here. Hidden by position rather than display:none, because that handler
+   falls back to input.select() on browsers without the async clipboard, and
+   a display:none element cannot be selected. */
+function area(spec, value, advisor, profile) {
+  const id = 'ask-' + spec.field;
+  return `<div class="hub-ask">
+    <label class="hub-field hub-field--wide">
+      <span class="hub-field-row">
+        <span class="hub-field-label">${esc(spec.label)}</span>
+        <button class="btn btn--ghost btn--xs" type="button" data-copy="#${id}">Ask your assistant</button>
+      </span>
+      <textarea name="${esc(spec.field)}" rows="2" maxlength="900" placeholder="${esc(spec.hint)}">${esc(value || '')}</textarea>
+    </label>
+    <textarea id="${id}" class="hub-offscreen" readonly tabindex="-1" aria-hidden="true">${esc(fieldPrompt(advisor, profile, spec.field))}</textarea>
+  </div>`;
 }
 
 function field(name, label, value, placeholder) {

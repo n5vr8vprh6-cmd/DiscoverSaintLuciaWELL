@@ -127,6 +127,39 @@ async function cleanup() {
      any — so what matters now is that the prompt asks for the sections the
      parser actually requires. api/_lib/brief.js owns that pairing and
      tools/brief-test.js asserts it section by section. */
+  /* ── One prompt per question ──────────────────────────────────────────
+     The intake screen used to show the BRIEF prompt above six textareas it
+     does not fit — only MARKETS overlaps — so an advisor either pasted a
+     brief into a box wanting a sentence, or rebuilt the six questions by
+     hand in their own chat window. These assert the replacement. */
+  console.log('\n  One prompt per question');
+  const FIELDS_T = G.BUSINESS_FIELDS;
+  ok('there is a table of the six questions', FIELDS_T.length === 6);
+
+  const prompts = FIELDS_T.map((f) => ({ f, t: G.fieldPrompt(advisor, { website: 'https://hallco.example' }, f.field) }));
+
+  ok('every question has a prompt', prompts.every((x) => x.t.length > 200));
+  ok('each names its own question and no other',
+     prompts.every(({ f, t }) => t.includes(f.label)
+       && !FIELDS_T.some((o) => o.field !== f.field && t.includes(o.label))),
+     'six buttons that all copy the same thing is the failure worth catching');
+  ok('each carries what we already know', prompts.every((x) => x.t.includes('Hall & Co Travel')));
+  ok('each carries the claims ladder', prompts.every((x) => /may accurately say/.test(x.t)),
+     'this text is the only thing between an assistant and an invented credential');
+  ok('each bans health claims', prompts.every((x) => /No health or medical claims/i.test(x.t)));
+  ok('each says what to do when it cannot answer',
+     prompts.every((x) => /IF YOU CANNOT ANSWER IT/.test(x.t)),
+     'an advisor who cannot answer a field yet should be told so, not handed something plausible');
+  ok('each explains why the answer matters',
+     prompts.filter((x) => /Why it matters:/.test(x.t)).length === 6,
+     'pulled from GAPS rather than restated, so the two cannot drift');
+  ok('an unknown field returns nothing rather than a broken prompt',
+     G.fieldPrompt(advisor, {}, 'not_a_field') === '');
+
+  ok('the brief prompt and the field prompts stay distinct',
+     !prompts.some((x) => x.t.includes('## VOICE')) && prompt.includes('## VOICE'),
+     'they serve two screens; merging them is how this broke the first time');
+
   ok('it asks for the sectioned brief format',
     /##\s*CLIENTS/.test(prompt) && /##\s*PROOF/.test(prompt),
     'the flat POSITIONING/ICP format was replaced in D2b');

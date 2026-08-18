@@ -269,6 +269,30 @@ const GAPS = [
     costs: 'Channel choice gets less confident.' }
 ];
 
+/* ── The six questions, in one place ──────────────────────────────────────
+   The form used to hand-write these six labels and hints, and the prompt used
+   to describe the same six questions in its own words. Two descriptions of one
+   question drift, and the drift is invisible: nothing breaks, the assistant is
+   just answering something slightly different from what the box asks for.
+
+   So the screen renders from this, and the prompts are built from this.
+   `costs` is not repeated here — it already exists per field in GAPS above,
+   and fieldPrompt() reads it from there. */
+const BUSINESS_FIELDS = [
+  { field: 'positioning',     label: 'What you sell, and to whom',
+    hint: 'e.g. Slow, well-designed trips for couples in their forties who have not taken a proper break in years.' },
+  { field: 'differentiator',  label: 'Why you rather than anybody else',
+    hint: 'What you do that another advisor does not.' },
+  { field: 'icp',             label: 'Your ideal client',
+    hint: 'Who they are, what stage of life, what they actually care about.' },
+  { field: 'client_examples', label: 'The clients you already have',
+    hint: 'The kinds of people who already book with you.' },
+  { field: 'specialties',     label: 'What you are known for',
+    hint: 'Destinations, trip types, occasions.' },
+  { field: 'markets',         label: 'Where your clients live',
+    hint: 'Cities or regions. This decides which local hooks and events a plan can suggest.' }
+];
+
 function gapReport(profile) {
   const p = profile || {};
   const missing = GAPS.filter((g) => !String(p[g.field] || '').trim());
@@ -292,20 +316,15 @@ function gapReport(profile) {
   };
 }
 
-/* ── The prompt ───────────────────────────────────────────────────────────
-   Run by the advisor in their own AI. Three things it has to do, or it makes
-   the intake worse than the blank page it replaced:
+/* ── What every prompt says before it asks anything ───────────────────────
+   Two prompts are built from this: the whole brief on /hub/campaign/profile,
+   and one per question on /hub/campaign. Extracted rather than copied, because
+   two copies of a claims rule is one copy that goes stale — and this text is
+   the only thing standing between an assistant and an invented credential that
+   an advisor then publishes under their own name.
 
-     1. ASK FOR HONESTY. A language model will invent a brand story and an
-        award without being asked. It is told to leave gaps rather than fill
-        them, and to mark anything inferred.
-     2. OUTPUT IN OUR FIELD ORDER, so pasting back is mechanical.
-     3. CARRY THE CLAIM RULES. Whatever comes back becomes the seed for copy
-        an advisor publishes; a prompt that invites invention poisons the
-        intake before our checker ever runs.
-
-   Built from what we already hold, so it improves as the profile fills in. */
-function intakePrompt(advisor, profile) {
+   Built from what we already hold, so it sharpens as the profile fills in. */
+function promptPreamble(advisor, profile) {
   const p = profile || {};
   const a = advisor || {};
   const known = [];
@@ -324,26 +343,78 @@ function intakePrompt(advisor, profile) {
 
   const claims = FACTS.CLAIMS_LADDER[rung(a)] || FACTS.CLAIMS_LADDER.registered;
 
-  return `I am a travel advisor. Help me describe my own business clearly so I can
-plan a marketing campaign. I will paste your answers into a form.
-
-WHAT YOU ALREADY KNOW ABOUT ME
+  return `WHAT YOU ALREADY KNOW ABOUT ME
 ${known.length ? known.join('\n') : '- (nothing yet — ask me instead of guessing)'}
 
-WHAT TO DO
-Read any links above that you can open. Then draft an answer for each field
-below, in my voice, in plain language.
-
 RULES — THESE MATTER MORE THAN THE WRITING
-1. Do not invent anything. If you cannot find something, write [not found].
-   If you inferred it rather than read it, end the line with [guess].
+1. Do not invent anything. If you cannot find something, say so plainly rather
+   than filling the gap. Mark anything you inferred with [guess].
 2. Do not describe me as certified, trained, accredited or a specialist unless
    one of my links actually says so. Right now I may accurately say: ${claims.may.join('; ')}.
 3. No health or medical claims anywhere. Travel makes days feel different; it
    does not treat, cure, heal, reduce or improve any condition. Write about
    places and time, never about effects on a body.
 4. No prices, no availability, no awards, no superlatives.
-5. Short and specific beats long and impressive. One or two sentences a field.
+5. Short and specific beats long and impressive.`;
+}
+
+/* ── One question, on its own ─────────────────────────────────────────────
+   What /hub/campaign needed and did not have. intakePrompt() below returns
+   ## VOICE / CLIENTS / MARKETS, which is right for the Brand Profile screen
+   and wrong above six textareas asking six different things — so an advisor
+   either pasted a brief into a box wanting one sentence, or did what Duncan
+   did and rebuilt the questions by hand, one at a time.
+
+   ONE FIELD PER PROMPT IS THE POINT, not a limitation. Six answers arriving
+   together get reviewed together and the weak ones travel with the strong;
+   the whole claims discipline in this system exists because AI writes
+   plausible things. A prompt that asks one question, and is told to say "I
+   cannot find that", leaves an advisor a decision rather than a paragraph —
+   and lets them fill this form over several sittings instead of one. */
+function fieldPrompt(advisor, profile, field) {
+  const spec = BUSINESS_FIELDS.find((f) => f.field === field);
+  if (!spec) return '';
+  const gap = GAPS.find((g) => g.field === field);
+
+  return `I am a travel advisor. I am filling in one field of my own marketing
+profile, and I want your help with this one question only.
+
+${promptPreamble(advisor, profile)}
+
+THE QUESTION
+${spec.label}
+
+What the box says underneath it: ${spec.hint}${gap ? `
+Why it matters: ${gap.costs}` : ''}
+
+WHAT I WANT BACK
+One or two sentences I could paste straight into that box, in my voice, in
+plain language. Nothing else — no preamble, no headings, no alternatives.
+
+IF YOU CANNOT ANSWER IT from what you can actually see of my business, say so
+and tell me what you would need from me. I would rather leave this field empty
+today and come back to it than fill it with something that sounds right and is
+not mine.`;
+}
+
+/* ── The whole brief ──────────────────────────────────────────────────────
+   Used by /hub/campaign/profile, where brief.js parses what comes back —
+   which is why the headings and dashes below are stated so strictly.
+
+   It was ALSO used on /hub/campaign, above a form it did not fit, and the
+   comment here claimed "OUTPUT IN OUR FIELD ORDER, so pasting back is
+   mechanical". That was true of one screen and false of the other, and the
+   false half is what sent an advisor away to rebuild the questions himself.
+   fieldPrompt() above is how the other screen gets what it was promised. */
+function intakePrompt(advisor, profile) {
+  return `I am a travel advisor. Help me describe my own business clearly so I can
+plan a marketing campaign. I will paste your answer into a system that reads it.
+
+${promptPreamble(advisor, profile)}
+
+WHAT TO DO
+Read any links above that you can open. Then fill in the brief below, in my
+voice. Where you cannot find something write [not found] rather than guessing.
 
 ANSWER IN EXACTLY THIS FORMAT, and nothing else. The headings and the dashes
 matter — this gets pasted into a system that reads them.
@@ -398,5 +469,6 @@ module.exports = {
   rung, mayRefresh,
   profileFor, saveProfile, savePersona, PERSONA_FIELDS, currentPlan, planRows,
   wellLink, substitute,
-  gapReport, intakePrompt
+  gapReport, intakePrompt,
+  BUSINESS_FIELDS, promptPreamble, fieldPrompt
 };

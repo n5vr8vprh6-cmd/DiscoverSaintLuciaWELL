@@ -680,6 +680,34 @@ body {
 
 .hub-funnel--tight { margin: 1rem 0 1.25rem; }
 
+/* ── One question, with its own prompt ────────────────────────────────────
+   The label and the Ask button share a row so the button belongs to the
+   question rather than floating near it. */
+.hub-field-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.btn--xs {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.7rem;
+  letter-spacing: 0.06em;
+}
+.hub-ask + .hub-ask { margin-top: 0.4rem; }
+
+/* Off screen, NOT display:none. The [data-copy] handler falls back to
+   input.select() on browsers without the async clipboard, and a display:none
+   element cannot be selected — so hiding it the obvious way would break the
+   fallback silently on exactly the browsers that need it. */
+.hub-offscreen {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
 /* Sits directly under the three totals, because it is the sentence that makes
    them readable: without it, "0 visits" and "no NEW visits" look the same, and
    an advisor who has just put their link somewhere cannot tell whether it

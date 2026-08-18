@@ -470,6 +470,14 @@ const CASES = [
   expect: 'Both persist; the empty fields are still empty and nothing was required.',
   why: 'Every field is optional by design. A form that demands everything is a form nobody finishes.' },
 
+{ id: 'A-55', role: 'advisor', priority: 2, area: 'Campaign · intake',
+  title: 'Each question can be handed to your own assistant, on its own',
+  steps: ['Press "Ask your assistant" beside one question',
+          'Paste it into ChatGPT or Claude and read the answer',
+          'Type or paste the answer into that one box, then try another question'],
+  expect: 'Each button copies a prompt for its own question only — what we know about your business, the claim rules, and that one question. The answer fits the box it belongs to.',
+  why: 'The screen used to show the BRIEF prompt above these six boxes, and it fits none of them — only MARKETS overlaps. Duncan rebuilt the questions by hand in his own chat window, which is the workaround this removes. One question at a time is deliberate: six answers arriving together get reviewed together, and the weak ones travel with the strong.' },
+
 { id: 'A-21', role: 'advisor', priority: 2, area: 'Campaign · intake',
   title: 'The copy-paste prompt copies and is usable',
   steps: ['Copy the prompt', 'Paste it into ChatGPT or Claude', 'Read what comes back'],

@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>157 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>158 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">157</b></span>
+      <span class="t-left">Untested <b id="n-left">158</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -1383,7 +1383,7 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 54 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 55 recorded</p>
   </div>
   
   <details class="area" open>
@@ -2027,7 +2027,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Campaign · intake <span class="area-n">4</span></summary>
+    <summary>Campaign · intake <span class="area-n">5</span></summary>
     
 <article class="case" id="case-A-19" data-id="A-19" data-role="advisor"
    data-pri="1" data-hash="1ain1xn"
@@ -2079,6 +2079,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> Every field is optional by design. A form that demands everything is a form nobody finishes.</p>
 
   <div class="marks" role="group" aria-label="Result for A-20">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-55" data-id="A-55" data-role="advisor"
+   data-pri="2" data-hash="1ugwfwy"
+   data-title="Each question can be handed to your own assistant, on its own" data-expect="Each button copies a prompt for its own question only — what we know about your business, the claim rules, and that one question. The answer fits the box it belongs to." data-area="Campaign · intake">
+  <div class="case-head">
+    <span class="cid">A-55</span>
+    <h4>Each question can be handed to your own assistant, on its own</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Press &quot;Ask your assistant&quot; beside one question</li><li>Paste it into ChatGPT or Claude and read the answer</li><li>Type or paste the answer into that one box, then try another question</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Each button copies a prompt for its own question only — what we know about your business, the claim rules, and that one question. The answer fits the box it belongs to.</p>
+  <p class="why"><strong>Why this matters</strong> The screen used to show the BRIEF prompt above these six boxes, and it fits none of them — only MARKETS overlaps. Duncan rebuilt the questions by hand in his own chat window, which is the workaround this removes. One question at a time is deliberate: six answers arriving together get reviewed together, and the weak ones travel with the strong.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-55">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
