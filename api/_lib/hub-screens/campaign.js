@@ -80,6 +80,13 @@ module.exports = async function handler(req, res) {
   const foundations = report ? LB.foundationsNote(report, advisor, profile) : null;
   const canGenerate = configured() && gaps.enoughToGenerate && !advisor.viewingAs;
 
+  /* Read once, used by both the plan card and the empty screen, so the two
+     cannot reach different conclusions about the same advisor. `false` only —
+     mayBuild returns null when the balance is unreadable, and null must never
+     be treated as "out". */
+  const outOfCampaigns = BUILDS.mayBuild(advisor) === false;
+  const countChip = BUILDS.countChip(advisor);
+
   /* Only asked for when there is a plan to put it beside. On the empty screen
      the advisor has no campaign yet, and "3 people are waiting" next to a
      Build button is a reproach rather than a prompt. */
@@ -116,20 +123,50 @@ module.exports = async function handler(req, res) {
            both cases the plan says nothing about a balance, because an advisor
            who is not being metered must not be shown a meter. */
         balanceLine: BUILDS.balanceLine(advisor),
+        /* THE SAME FACT, WHERE IT CAN BE SEEN. balanceLine renders at the foot
+           of the card, under the weeks, the report and the strip; Duncan went
+           looking for it, did not reach it, and reported the feature missing.
+           Both come from builds.js so the header and the footer cannot quote
+           different numbers. */
+        countChip,
+        /* NOT the same as !mayRefresh. mayRefresh is false for four reasons and
+           only this one is a reason to sell somebody anything — see
+           nextCampaign() in campaign-blocks.js. */
+        outOfCampaigns,
       }) : `
     ${/* No plan yet. The button is the point of the screen, so it comes first —
           and when it cannot be pressed it says why, rather than sitting greyed
-          out with no explanation. */''}
+          out with no explanation.
+
+          ── THE BALANCE IS CHECKED HERE NOW ─────────────────────────────────
+          canGenerate asks whether the profile is full enough, whether the
+          feature is configured and whether this is a view-as session. It never
+          asked how many campaigns the advisor had, so uat3 — at zero, with no
+          plan — was shown a live "Build my 30-day plan" that api/gtm.js:80
+          refuses with `no_builds`. A button whose only outcome is a 402 is not
+          a button, and this is the fifth dead CTA this UAT has turned up.
+
+          The order matters: OUT OF CAMPAIGNS is checked before the profile
+          gate, because somebody at zero cannot act on "fill in the essentials"
+          either — telling them to would be sending them down a corridor with
+          a locked door at the end. */''}
     <section class="hub-card gtm-start">
       <h2>Build your plan</h2>
-      ${canGenerate ? `
+      ${outOfCampaigns ? `
+        <p class="hub-hint">${esc(BUILDS.balanceLine(advisor) || '')}</p>
+        <p>Building a new one is what needs a campaign in hand — and you have used yours.</p>
+        <div class="hub-actions">
+          <a class="btn btn--gold" href="/hub/campaign/more">What comes next</a>
+          <a class="hub-more" href="/hub/campaign/more#more-campaigns">Not right now — I just want to build more campaigns</a>
+        </div>`
+      : canGenerate ? `
         <p class="hub-hint">Four weeks of small actions, with the copy written for each one. It
           takes about a minute and you can edit everything afterwards.</p>
         <div class="hub-actions">
           <button type="button" class="btn btn--gold" id="gtm-build">Build my 30-day plan</button>
         </div>
-        ${mayRefresh(advisor) ? '' : `<p class="hub-hint">This builds you one plan. You can edit
-          every piece of it as much as you like.</p>`}`
+        ${countChip ? '' : `<p class="hub-hint">This builds you one plan. You can edit every piece
+          of it as much as you like.</p>`}`
       : advisor.viewingAs ? `
         <p class="hub-hint">You are viewing this advisor's Hub. Generating a campaign under their
           name is not available here — it would put words in their mouth that they publish and
@@ -141,6 +178,16 @@ module.exports = async function handler(req, res) {
       : `
         <p class="hub-hint">Plan writing is not switched on just yet. Everything below still works —
           fill it in now and the plan will be ready the moment it is.</p>`}
+
+      ${/* OUTSIDE the branches on purpose. How many campaigns you have is true
+            whichever of them you are in — an advisor with an unfinished profile
+            still has one waiting, and telling them only once the profile is
+            complete makes the number look like a reward for filling in a form.
+
+            The exhausted branch already says its own version, so it is excluded
+            rather than repeated. */''}
+      ${countChip && !outOfCampaigns
+        ? `<p class="hub-hint gtm-builds">${esc(BUILDS.balanceLine(advisor) || '')}</p>` : ''}
     </section>`}
 
     ${held ? `

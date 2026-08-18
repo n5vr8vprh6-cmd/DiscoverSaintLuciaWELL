@@ -342,7 +342,24 @@ function planSection(rows, opts) {
         <h2>Your 30-day plan</h2>
         <p class="hub-hint">${esc(o.premise || '')}</p>
       </div>
-      ${total ? `<span class="hub-stage" data-stage="${ready === total ? 'booked' : 'new'}">${ready}/${total} written</span>` : ''}
+      ${/* Two chips, both facts about this plan, in the one place the eye
+            already goes on this card.
+
+            THE SECOND ONE IS HERE BECAUSE THE SENTENCE AT THE BOTTOM WAS
+            UNREACHABLE. It rendered correctly and said the right thing, under
+            four weeks, a loop-back report and the confidence strip — Duncan
+            went looking for how many campaigns he had left and concluded the
+            feature was missing. Text nobody scrolls to is text that is not
+            there.
+
+            It is a LINK, to the button rather than to a purchase: seeing the
+            number was what was missing, not reaching the control in one click.
+            A start-over button beside week one invites rebuilding instead of
+            doing the work, which is the opposite of what this plan is for. */''}
+      <div class="gtm-plan-chips">
+        ${total ? `<span class="hub-stage" data-stage="${ready === total ? 'booked' : 'new'}">${ready}/${total} written</span>` : ''}
+        ${o.countChip ? `<a class="hub-stage hub-stage--count" href="#gtm-next">${esc(o.countChip)}</a>` : ''}
+      </div>
     </div>
 
     ${/* ── ORDER, AND WHY IT IS THIS ONE ──────────────────────────────────
@@ -410,34 +427,48 @@ function planSection(rows, opts) {
    ── THE GRADUATE SEES NOTHING ──────────────────────────────────────────────
    No meter, no upsell, no sentence about a programme they have already paid
    for and completed. This is a state, deliberately rendered as empty, not an
-   oversight — and it is the one that has never once worked. */
+   oversight — and it is the one that has never once worked.
+
+   ── TWO FLAGS, BECAUSE THERE ARE TWO DIFFERENT NOES ────────────────────────
+   This read `!o.mayRefresh` as "out of campaigns", and mayRefresh is false for
+   FOUR reasons: no campaigns left, an unfinished profile, viewing-as, and
+   generation not configured. Only the first is a reason to sell somebody
+   anything.
+
+   uat2 is the case that caught it: three campaigns in hand and a profile
+   missing its essentials. The moment it built a plan it would have been shown
+   the Foundations upsell as though exhausted — asking for money from somebody
+   whose actual problem was two empty fields.
+
+   So `outOfCampaigns` is now its own flag, from mayBuild() and nothing else. */
 function nextCampaign(o) {
+  const button = `
+    <div class="gtm-plan-actions">
+      <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new campaign</button>
+      <span class="hub-hint">Your current one stays until the new one is ready.</span>
+    </div>`;
+
   /* Unlimited: a graduate, or a balance we genuinely cannot read (before
      migration 017). Saying nothing is right in both cases — one has earned it
      and the other must not be guessed at. */
-  if (!o.balanceLine) {
-    return o.mayRefresh ? `
-    <div class="gtm-plan-actions">
-      <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new campaign</button>
-      <span class="hub-hint">Your current one stays until the new one is ready.</span>
-    </div>` : '';
-  }
+  if (!o.balanceLine) return o.mayRefresh ? button : '';
 
   /* Campaigns in hand. The button, and the count under it. */
-  if (o.mayRefresh) {
-    return `
-    <div class="gtm-plan-actions">
-      <button type="button" class="btn btn--ghost btn--sm" id="gtm-rebuild">Build a new campaign</button>
-      <span class="hub-hint">Your current one stays until the new one is ready.</span>
-    </div>
-    <p class="hub-hint gtm-builds">${esc(o.balanceLine)}</p>`;
+  if (o.mayRefresh) return button + `
+    <p class="hub-hint gtm-builds" id="gtm-next">${esc(o.balanceLine)}</p>`;
+
+  /* Campaigns in hand but something else is in the way — an unfinished
+     profile, or viewing-as. The intake below this is the answer, and it is
+     already on the screen. Say what they have and stop. */
+  if (!o.outOfCampaigns) {
+    return `<p class="hub-hint gtm-builds" id="gtm-next">${esc(o.balanceLine)}</p>`;
   }
 
   /* Out. The offer — and it opens by saying what is still free, because that
      is true, it is most of the value here, and an advisor who reads a price
      first stops reading. */
   return `
-    <section class="hub-card gtm-next">
+    <section class="hub-card gtm-next" id="gtm-next">
       <p class="hub-hint gtm-next-free">${esc(o.balanceLine)}</p>
       <h3>Where a campaign like this goes next</h3>
       <p>This one was written under the claims you may make as a registered

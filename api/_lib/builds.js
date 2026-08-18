@@ -227,7 +227,29 @@ function balanceLine(advisor) {
     : `${n} more campaigns to build when you want them. Reworking this one costs nothing.`;
 }
 
+/* ── The same number, short enough for a chip ─────────────────────────────
+   Duncan built a plan, went looking for how many campaigns he had left, and
+   could not find it: balanceLine() renders at the BOTTOM of the plan card,
+   under four weeks, the loop-back report and the confidence strip. On a
+   fourteen-action plan that is thousands of pixels down, so the sentence was
+   true, rendered, and unreachable.
+
+   This is that same fact at chip length, for the plan header where the eye
+   already is. It lives beside balanceLine() rather than being formatted at the
+   call site so the two cannot disagree — a header saying "2 left" above a
+   sentence saying three is worse than either alone.
+
+   Null in exactly the cases balanceLine() is null: a graduate, and a balance
+   we cannot read. Nobody who is not being counted is shown a count. */
+function countChip(advisor) {
+  if (unmetered(advisor)) return null;
+  const n = balance(advisor);
+  if (n === null) return null;
+  if (n === 0) return 'No more campaigns';
+  return n === 1 ? '1 campaign left' : `${n} campaigns left`;
+}
+
 module.exports = {
-  unmetered, balance, mayBuild, spend, grant, record, balanceLine,
+  unmetered, balance, mayBuild, spend, grant, record, balanceLine, countChip,
   PACK_SIZE, FREE_BUILDS, PACK_PRICE
 };

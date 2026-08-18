@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>162 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>163 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">162</b></span>
+      <span class="t-left">Untested <b id="n-left">163</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -3973,7 +3973,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 29 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 30 recorded</p>
   </div>
   
   <details class="area" open>
@@ -4311,7 +4311,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>Build gate <span class="area-n">6</span></summary>
+    <summary>Build gate <span class="area-n">7</span></summary>
     
 <article class="case" id="case-G-11" data-id="G-11" data-role="guard"
    data-pri="1" data-hash="h86bf8"
@@ -4345,11 +4345,11 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-G-27" data-id="G-27" data-role="guard"
-   data-pri="1" data-hash="2lertg"
-   data-title="The balance is VISIBLE — the bug that hid the whole feature" data-expect="One of the two. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;" data-area="Build gate">
+   data-pri="1" data-hash="nmd4h2"
+   data-title="The balance is visible WITHOUT SCROLLING" data-expect="A chip reading e.g. &quot;2 campaigns left&quot; in the header, which jumps to the Build a new campaign button. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;" data-area="Build gate">
   <div class="case-head">
     <span class="cid">G-27</span>
-    <h4>The balance is VISIBLE — the bug that hid the whole feature</h4>
+    <h4>The balance is visible WITHOUT SCROLLING</h4>
     <span class="pri pri--1">P1 · smoke</span>
     <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
   </div>
@@ -4357,10 +4357,10 @@ header.top {
   <p class="needs"><strong>Needs first:</strong> Migration 017 applied</p>
   
 
-  <ol class="steps"><li>Open /hub/campaign with a plan already built</li><li>Scroll to the very bottom of the plan</li><li>Confirm you see either a count of campaigns left or the offer</li></ol>
+  <ol class="steps"><li>Open /hub/campaign with a plan already built</li><li>Do not scroll. Look at the plan header, beside &quot;n/n written&quot;</li><li>Tap the count chip</li></ol>
 
-  <p class="expect"><strong>Expect</strong> One of the two. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;</p>
-  <p class="why"><strong>Why this matters</strong> That sentence is the fallback for &quot;we cannot read this advisor at all&quot;, and for weeks EVERY advisor got it: auth.js did not select plan_builds, so the balance was undefined and D7 never rendered once. If it comes back, the session query has lost a column again — run node tools/session-columns-test.js.</p>
+  <p class="expect"><strong>Expect</strong> A chip reading e.g. &quot;2 campaigns left&quot; in the header, which jumps to the Build a new campaign button. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;</p>
+  <p class="why"><strong>Why this matters</strong> Two bugs met here. That sentence is the fallback for &quot;we cannot read this advisor at all&quot; and for weeks EVERY advisor got it — auth.js did not select plan_builds. Then the replacement rendered 6,405px down a 7,919px page, so Duncan scrolled a working feature and reported it missing. If the sentence returns, run node tools/session-columns-test.js.</p>
 
   <div class="marks" role="group" aria-label="Result for G-27">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
@@ -4376,7 +4376,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-G-28" data-id="G-28" data-role="guard"
-   data-pri="1" data-hash="1a3o1gi"
+   data-pri="1" data-hash="140pji0"
    data-title="Rewriting is free at zero, and says so" data-expect="All of it works, and the line above the offer says editing and rewriting are free." data-area="Build gate">
   <div class="case-head">
     <span class="cid">G-28</span>
@@ -4388,7 +4388,7 @@ header.top {
   <p class="needs"><strong>Needs first:</strong> An advisor at plan_builds = 0 with a plan</p>
   
 
-  <ol class="steps"><li>Edit a piece of copy and save</li><li>Regenerate a piece</li><li>Try all four angles on one piece</li><li>Revert it</li></ol>
+  <ol class="steps"><li>Edit a piece of copy and save</li><li>Regenerate a piece</li><li>Try all four angles on one piece</li><li>Revert it</li><li>Check the header chip reads &quot;No more campaigns&quot; rather than vanishing</li></ol>
 
   <p class="expect"><strong>Expect</strong> All of it works, and the line above the offer says editing and rewriting are free.</p>
   <p class="why"><strong>Why this matters</strong> The free tier is ONE COMPLETE campaign, not a sample. A rewrite costs us 0.18 of a cent; an advisor who thinks it costs money will ration it, and unedited copy is the failure this product exists to prevent.</p>
@@ -4407,7 +4407,7 @@ header.top {
   </label>
 </article>
 <article class="case" id="case-G-29" data-id="G-29" data-role="guard"
-   data-pri="2" data-hash="1clop5c"
+   data-pri="2" data-hash="1bk62oe"
    data-title="Foundations is offered before the $9 pack, never beside it" data-expect="The plan screen names no price at all. /hub/campaign/more leads with Foundations and its price; the $9 pack is further down, at the #more-campaigns anchor the decline link points to." data-area="Build gate">
   <div class="case-head">
     <span class="cid">G-29</span>
@@ -4419,12 +4419,43 @@ header.top {
   
   
 
-  <ol class="steps"><li>At zero, read the bottom of the plan</li><li>Follow &quot;What Foundations changes&quot;</li><li>Then follow &quot;Not right now&quot;</li></ol>
+  <ol class="steps"><li>At zero, read the bottom of the plan</li><li>Follow &quot;What Foundations changes&quot;</li><li>Then follow &quot;Not right now&quot;</li><li>Separately: at zero with NO plan yet, check /hub/campaign offers no Build button</li></ol>
 
   <p class="expect"><strong>Expect</strong> The plan screen names no price at all. /hub/campaign/more leads with Foundations and its price; the $9 pack is further down, at the #more-campaigns anchor the decline link points to.</p>
-  <p class="why"><strong>Why this matters</strong> The builder exists to sell the training; the pack is the downsell. Two prices side by side is a comparison, and $9 against $697 answers itself.</p>
+  <p class="why"><strong>Why this matters</strong> The builder exists to sell the training; the pack is the downsell. Two prices side by side is a comparison, and $9 against $697 answers itself. The no-plan case is separate and was a dead CTA: canGenerate never asked the balance, so an advisor at zero got a live Build button that the server refuses with no_builds.</p>
 
   <div class="marks" role="group" aria-label="Result for G-29">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-30" data-id="G-30" data-role="guard"
+   data-pri="1" data-hash="pymqok"
+   data-title="An advisor with campaigns left is never sold anything" data-expect="The count, and the intake below it. No Foundations offer, no $9 pack." data-area="Build gate">
+  <div class="case-head">
+    <span class="cid">G-30</span>
+    <h4>An advisor with campaigns left is never sold anything</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  <p class="needs"><strong>Needs first:</strong> concierge+uat2@discoversaintluciawell.com-style account: campaigns in hand, profile incomplete</p>
+  
+
+  <ol class="steps"><li>With a balance above zero and an unfinished profile, build nothing</li><li>If a plan already exists, read the bottom of it</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The count, and the intake below it. No Foundations offer, no $9 pack.</p>
+  <p class="why"><strong>Why this matters</strong> mayRefresh is false for four different reasons — no campaigns, unfinished profile, viewing-as, generation not configured — and only the first is a reason to ask for money. Conflating them asks somebody to pay when their actual problem is two empty fields.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-30">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>

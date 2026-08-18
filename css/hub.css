@@ -1454,6 +1454,27 @@ body.gtm-busy { overflow: hidden; }
   color: var(--muted);
 }
 
+/* ── The two chips on the plan header ─────────────────────────────
+   They wrap to a second line rather than shrinking, because "2 CAMPAIGNS LEFT"
+   truncated to "2 CAMPAI…" would be worse than a taller header. */
+.gtm-plan-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+/* The count. Quieter than the progress chip beside it and NOT a call to action
+   — it is a fact with a jump link attached, so it borrows the neutral chip
+   colours rather than the gold that means "press me". */
+a.hub-stage--count {
+  text-decoration: none;
+  border: 1px solid var(--hairline-l);
+  background: transparent;
+}
+a.hub-stage--count:hover,
+a.hub-stage--count:focus-visible { background: var(--paper-2); }
+
 /* ── The offer at the end of a campaign ───────────────────────────
    It has to read as an offer and not as a wall, so it sits on sand like any
    other card rather than getting a colour of its own. Nothing here introduces
