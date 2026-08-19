@@ -38,7 +38,8 @@ const PAGES = [
   require('./content/advisor-undertaking.js'),
   require('./content/privacy.js'),
   require('./content/terms.js'),
-  require('./content/accessibility.js')
+  require('./content/accessibility.js'),
+  require('./content/404.js')
 ];
 
 /* ── fs helpers ─────────────────────────────────────────────────────────── */
@@ -247,6 +248,23 @@ function main() {
     path.join(DIST, 'advisors', 'foundations', dir)), 0);
 
   buildRedirect('/foundations', '/advisors/foundations');
+
+  /* ── The 404, where the edge looks for it ────────────────────────────────
+     Every page builds to <path>/index.html, so /404 lands at 404/index.html.
+     Vercel serves a custom not-found from 404.html at the OUTPUT ROOT, so the
+     page is copied there as well — same bytes, two names.
+
+     The copy is what makes the status right. Served from dist/404.html the
+     edge answers 404; served as a page it would answer 200, and a "not found"
+     page returning 200 lies to every crawler and every uptime monitor. */
+  const notFound = path.join(DIST, '404', 'index.html');
+  if (!fs.existsSync(notFound)) {
+    console.error('✗ /404 did not build — dist/404.html cannot be written, so every ' +
+      'mistyped URL keeps landing on the host\'s own error screen.');
+    process.exit(1);
+  }
+  fs.copyFileSync(notFound, path.join(DIST, '404.html'));
+
   buildSitemap(PAGES);
 
   /* After the write, not before it: the audit reads what actually shipped.

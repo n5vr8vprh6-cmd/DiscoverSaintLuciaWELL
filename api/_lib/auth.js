@@ -297,8 +297,7 @@ function undertakingGate(advisor, req, res, next) {
   const here = safeNext(next || req.url || '/hub');
   if (here === ACCEPT_PATH || here.indexOf(ACCEPT_PATH + '?') === 0) return false;
 
-  res.statusCode = 302;
-  res.setHeader('Location', `${ACCEPT_PATH}?next=${encodeURIComponent(here)}`);
+  sendTo(res, `${ACCEPT_PATH}?next=${encodeURIComponent(here)}`);
   res.end();
   return true;
 }
@@ -310,8 +309,7 @@ async function requireAdvisor(req, res, next) {
     return advisor;
   }
   const target = safeNext(next || req.url || '/hub');
-  res.statusCode = 302;
-  res.setHeader('Location', `/hub/login?next=${encodeURIComponent(target)}`);
+  sendTo(res, `/hub/login?next=${encodeURIComponent(target)}`);
   res.end();
   return null;
 }
@@ -333,8 +331,7 @@ async function requireAdmin(req, res, next) {
 
   if (!advisor) {
     const target = safeNext(next || '/hub');
-    res.statusCode = 302;
-    res.setHeader('Location', `/hub/login?next=${encodeURIComponent(target)}`);
+    sendTo(res, `/hub/login?next=${encodeURIComponent(target)}`);
     res.end();
     return null;
   }
@@ -350,8 +347,7 @@ async function requireAdmin(req, res, next) {
      The way back is the banner's Stop viewing, which clears the cookie and
      needs no permission of its own. */
   if (advisor.viewingAs || advisor.role !== 'admin') {
-    res.statusCode = 302;
-    res.setHeader('Location', '/hub');
+    sendTo(res, '/hub');
     res.end();
     return null;
   }
@@ -369,6 +365,28 @@ async function requireAdvisorJson(req, res) {
   const advisor = await advisorFor(req, res);
   if (!advisor) { json(res, 401, { error: 'not_signed_in' }); return null; }
   return advisor;
+}
+
+/* ── Every redirect that carries an access decision ───────────────────────
+   hub-render.js sets `private, no-store` on rendered Hub pages, and for a
+   long time that looked like the whole job. It was not: a guard never
+   RENDERS. It sets Location and ends, so the redirect skipped hub-render
+   entirely and fell through to the host default of
+
+     Cache-Control: public, max-age=0, must-revalidate
+
+   The one response whose meaning depends on who is signed in was the only
+   one with no header of its own. must-revalidate keeps the practical risk
+   low, but `public` is the wrong word on an auth decision and it is stored
+   more freely — including in back/forward caches — than no-store is.
+
+   One helper rather than four call sites, because four is how the page got
+   a header and the redirect did not. */
+function sendTo(res, location, status) {
+  res.statusCode = status || 302;
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.setHeader('Location', location);
+  return res.end();
 }
 
 /* Where a `next` parameter may send someone. An open redirect here would let a

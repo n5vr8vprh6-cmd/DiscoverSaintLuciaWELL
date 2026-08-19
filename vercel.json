@@ -9,6 +9,11 @@
       "source": "/foundations",
       "destination": "/advisors/foundations",
       "permanent": true
+    },
+    {
+      "source": "/advisors/hub/:rest+",
+      "destination": "/hub/:rest+",
+      "permanent": false
     }
   ],
   "headers": [
@@ -184,6 +189,10 @@
     {
       "source": "/well/:code/:sweeps",
       "destination": "/api/well?code=:code&sweeps=:sweeps"
+    },
+    {
+      "source": "/hub/:rest*",
+      "destination": "/api/hub?screen=notFound&path=:rest*"
     }
   ]
 }
