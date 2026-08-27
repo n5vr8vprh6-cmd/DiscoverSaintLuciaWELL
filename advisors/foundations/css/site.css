@@ -370,10 +370,15 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
    A stronger low anchor + a soft bottom gradient keep the eyebrow, lead and
    fact line readable over bright foliage as well as water (WCAG-safe). */
 .hero > .wrap::before {
-  content: ""; position: absolute; inset: 8% -20% -4rem -30%;
+  /* The core used to sit at 74% — but the eyebrow starts 6% down this block
+     and the headline 11%, so the top of the text was outside the scrim
+     entirely and measured 1.87:1 over bright foliage. Raised to 52% and
+     extended to the top of the block, which is the whole fix: the right of
+     the frame, where the Pitons are, is untouched. */
+  content: ""; position: absolute; inset: -8% -20% -4rem -30%;
   background:
-    radial-gradient(80% 90% at 34% 74%, rgba(9, 22, 21, 0.72) 0%, rgba(9, 22, 21, 0.30) 52%, transparent 74%),
-    linear-gradient(180deg, transparent 40%, rgba(9, 22, 21, 0.42) 100%);
+    radial-gradient(82% 86% at 32% 52%, rgba(9, 22, 21, 0.84) 0%, rgba(9, 22, 21, 0.52) 44%, rgba(9, 22, 21, 0.18) 66%, transparent 80%),
+    linear-gradient(180deg, rgba(9, 22, 21, 0.30) 0%, transparent 26%, rgba(9, 22, 21, 0.34) 66%, rgba(9, 22, 21, 0.52) 100%);
   z-index: -1; pointer-events: none;
 }
 .hero > .wrap, .hero .cred-strip { position: relative; z-index: 3; }
@@ -1436,8 +1441,14 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
 .cta-bg { position: absolute; inset: 0; z-index: 0; }
 .cta-bg img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
 .cta-bg::after {
+  /* Same problem, centred text: the eyebrow and lead measured 2.4-2.6:1
+     against the middle of the photograph, where the old gradient was at its
+     thinnest (0.38). A radial anchors the text column without flattening the
+     horizon at the edges of the frame. */
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(13, 36, 38, 0.60) 0%, rgba(13, 36, 38, 0.38) 45%, rgba(13, 36, 38, 0.72) 100%);
+  background:
+    radial-gradient(70% 60% at 50% 50%, rgba(13, 36, 38, 0.66) 0%, rgba(13, 36, 38, 0.34) 58%, transparent 82%),
+    linear-gradient(180deg, rgba(13, 36, 38, 0.60) 0%, rgba(13, 36, 38, 0.42) 45%, rgba(13, 36, 38, 0.72) 100%);
 }
 .final-cta > .wrap { position: relative; z-index: 1; }
 .final-cta h2 { font-size: var(--fs-h2); max-width: 22ch; margin: 0 auto 1.2rem; text-wrap: balance; }
@@ -1652,3 +1663,12 @@ input.shake { animation: field-shake 0.4s var(--ease-out-quint); }
   .footer-col ul a { display: inline-flex; align-items: center; min-height: 44px; }
   .footer-legal a { display: inline-flex; align-items: center; min-height: 24px; padding-block: 0.3rem; }
 }
+
+/* Text sitting directly on photography needs a shadow whether or not WCAG
+   credits one. The hero's eyebrow, headline, lead and note already had it;
+   these four did not, and all four sit over the brightest part of their
+   image. */
+.hero .btn--ghost,
+.final-cta .eyebrow,
+.final-cta .lead,
+.cta-buy-note { text-shadow: 0 1px 2px rgba(9, 22, 21, 0.85), 0 0 14px rgba(9, 22, 21, 0.65); }
