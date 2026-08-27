@@ -135,7 +135,18 @@ const SITE = {
      The categories stay clean: research inclusion ≠ participation ≠
      partnership ≠ endorsement. */
   partnersLabel: 'In conversation with',
-  partners: ['Saint Lucia Tourism Authority', 'Wellness Tourism Association']
+
+  /* ── TEMPORARILY HIDDEN, 2026-08-27 ─────────────────────────────────────
+     Approvals are still in progress with both organisations. Until they
+     land, the site names neither. This is a hold, not a retraction: put the
+     array below back and every page that renders it returns, unchanged.
+
+     credibility() in lib/components.js renders nothing for an empty list, so
+     the whole section disappears from home, about and advisors rather than
+     leaving a labelled empty box. The about page's properties footnote is
+     inside that section and goes with it for now. */
+  // partners: ['Saint Lucia Tourism Authority', 'Wellness Tourism Association']
+  partners: []
 };
 
 module.exports = SITE;

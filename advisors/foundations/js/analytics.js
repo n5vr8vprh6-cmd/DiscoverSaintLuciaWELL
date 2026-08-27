@@ -62,6 +62,20 @@
     }
 
     var label = a.textContent.trim();
+
+    /* data-cta first, label second. The regex below was written against the
+       old button wording; renaming the buttons silently stopped both VIP
+       paths being recorded at all, and nobody noticed because analytics is
+       inert until a GTM id is set. An explicit attribute survives copy edits.
+       The label branches stay as a fallback so anything not yet tagged keeps
+       reporting exactly as it did. */
+    var cta = a.getAttribute('data-cta');
+    if (cta) {
+      var TIERS = { online: 'standard', island: 'island', vip: 'vip', 'fit-call': 'vip_fit_call' };
+      track('cta_click', { tier: TIERS[cta] || cta, location: sectionOf(a), label: label });
+      return;
+    }
+
     if (/enroll|get vip|buy now/i.test(label)) {
       track('cta_click', {
         tier: /vip/i.test(label) ? 'vip' : 'standard',
