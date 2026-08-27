@@ -12,6 +12,16 @@
 
   gsap.registerPlugin(ScrollTrigger);
 
+  /* Mobile browsers resize the viewport when the URL bar shows or hides. The
+     hero's height is set in svh (css: .gsap .hero) so it does NOT move with
+     that chrome — but this file pins it with end: '+=85%', and GSAP resolves
+     that percentage against window.innerHeight, which DOES. So the hero's
+     height stayed put while its release point slid 60-100px under the reader
+     on every scroll direction change: the page appeared to bounce. Telling
+     ScrollTrigger to ignore chrome-driven resizes makes the pin as stable as
+     the CSS already was. */
+  ScrollTrigger.config({ ignoreMobileResize: true });
+
   /* ── Lenis inertia scrolling, driven by the GSAP ticker ─────────────── */
   var lenis = null;
   if (window.Lenis) {
@@ -179,6 +189,21 @@
   /* ── Keep measurements honest once webfonts land ────────────────────── */
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
+  }
+
+  /* …and honest again whenever the page changes height.
+     The FAQ is 13 <details>. Opening one adds ~115px to the document; opening
+     all of them adds ~1,750px. Every trigger below the accordion then holds a
+     stale start/end, and both pinned sections release at the wrong scroll
+     position. analytics.js already watches the body for its scroll-depth
+     sentinels for exactly this reason — ScrollTrigger simply was never told.
+     Debounced, because a refresh re-measures every trigger on the page. */
+  if ('ResizeObserver' in window) {
+    var refreshTimer = null;
+    new ResizeObserver(function () {
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(function () { ScrollTrigger.refresh(); }, 120);
+    }).observe(document.body);
   }
 
   /* ── Deep links: the native hash jump happens before pin spacers grow
