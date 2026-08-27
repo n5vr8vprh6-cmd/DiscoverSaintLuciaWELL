@@ -162,6 +162,12 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
 .js [data-splitted].settled .wi,
 .js [data-stagger].settled > * {
   transition: none !important; transform: none !important; opacity: 1 !important;
+  /* visibility, not just opacity: experience.js hides these with GSAP's
+     autoAlpha, which writes visibility:hidden AND opacity:0. Resetting only
+     opacity left a stranded tween invisible, so this failsafe could not do
+     the one job it exists for — the same failure that stranded the hero
+     headline. .reveal.settled below always had this; these two did not. */
+  visibility: visible !important;
 }
 .js .reveal.settled { opacity: 1 !important; transform: none !important; visibility: visible !important; }
 
@@ -1636,3 +1642,13 @@ input.shake { animation: field-shake 0.4s var(--ease-out-quint); }
 }
 .system-note b { color: var(--paper); }
 .system-note a { color: var(--gold); }
+
+/* Touch targets. Footer list links measured 39px and the legal row 21px at
+   390px — both under the 44px comfortable minimum, and the legal row under
+   even the 24px AA floor. Padded rather than resized so the type scale and
+   footer rhythm are unchanged. */
+@media (max-width: 860px) {
+  .nav-brand { min-height: 44px; }
+  .footer-col ul a { display: inline-flex; align-items: center; min-height: 44px; }
+  .footer-legal a { display: inline-flex; align-items: center; min-height: 24px; padding-block: 0.3rem; }
+}
