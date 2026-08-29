@@ -27,13 +27,15 @@
    ========================================================================== */
 'use strict';
 
+const PLAYBOOK = require('../../content/marketing-playbook.js');
+
 /* Actions per week, and the total that follows. The shapes come from Section 8
    §5; the numbers are what those shapes mean once a week has four slots.
 
    `sourceAssets` is how many original pieces the advisor must actually make.
    It is the number that governs real effort — derivatives are cheap and source
    material is not — and it is why C1 is one rather than "a few small ones". */
-const CLASSES = {
+const SEED_CLASSES = {
   C1: {
     key: 'C1',
     name: 'Essential',
@@ -75,6 +77,26 @@ const CLASSES = {
     rule: 'An operational calendar and an owner for each piece are mandatory, or the event eats the campaign.'
   }
 };
+
+/* ── The research wins, per class ──────────────────────────────────────────
+   These four came out of the Bible (Section 8 §5) and used to live only here,
+   which made the one taxonomy Duncan is most likely to want to tune the one
+   taxonomy only a code change could reach. They now live in the marketing
+   field guide and arrive through the generated bank.
+
+   MERGED PER CLASS, NOT WHOLESALE. A guide that revises C2's numbers and says
+   nothing about C4 upgrades C2 and leaves C4 alone — the same rule the channel
+   merge follows, and the reason a partial edit cannot silently blank a class.
+
+   The KEYS stay here, and stay structural. C1-C4 is a CHECK constraint in
+   migration 014, and 014 is right that they are not editorial: a class key is
+   a value already written into advisor rows. Research may retune what a class
+   MEANS; it may not invent a C5. */
+const CLASSES = Object.keys(SEED_CLASSES).reduce((out, k) => {
+  const researched = (PLAYBOOK.capacityClasses || {})[k];
+  out[k] = researched ? Object.assign({}, SEED_CLASSES[k], researched) : SEED_CLASSES[k];
+  return out;
+}, {});
 
 /* DEFAULTS TO C2, not to the largest. An advisor who never answered the
    capacity question gets the shape most independent advisors can sustain —

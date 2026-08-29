@@ -38,6 +38,22 @@ console.log('\n  CAPACITY AND THE ASSET CARD\n  ' + '─'.repeat(60) + '\n');
 /* ══ The classes ═════════════════════════════════════════════════════════ */
 console.log('  The four classes');
 ok('all four exist', KEYS.every((k) => C.CLASSES[k]));
+
+/* ── Where the numbers come from ─────────────────────────────────────────
+   C1-C4 used to be hardcoded here and nowhere else. They now come from the
+   marketing field guide through the generated bank, with this file's own copy
+   as the fallback. Both halves need proving: that the research is actually
+   read, and that a guide which says nothing about a class does not blank it. */
+const PLAYBOOK = require('../content/marketing-playbook.js');
+ok('the bank carries the four classes',
+  KEYS.every((k) => PLAYBOOK.capacityClasses && PLAYBOOK.capacityClasses[k]),
+  'if this fails the merge is silently falling back for every class');
+ok('and the live numbers match the researched ones',
+  KEYS.every((k) => C.CLASSES[k].total === PLAYBOOK.capacityClasses[k].total &&
+                    C.CLASSES[k].perWeek === PLAYBOOK.capacityClasses[k].perWeek));
+ok('every class still carries a key, so nothing invented a C5',
+  Object.keys(C.CLASSES).join(',') === 'C1,C2,C3,C4',
+  'the keys are a CHECK constraint in migration 014 — research may retune a class, not add one');
 ok('each says what reality it describes',
   KEYS.every((k) => C.CLASSES[k].reality && C.CLASSES[k].shape && C.CLASSES[k].rule));
 ok('they increase in size', KEYS.every((k, i) =>
