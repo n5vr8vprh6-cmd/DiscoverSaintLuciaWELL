@@ -5,12 +5,20 @@
    works through it out loud: this is what you told us, this is what I heard,
    here are two or three directions and here is what is wrong with each of them.
 
-   ── NOTHING ON THIS SCREEN IS GENERATED ───────────────────────────────────
-   The shortlist, the reasons, the mismatches and the day skeleton are all plain
-   arithmetic over vectors that already exist. No model is called anywhere in
-   this file, which is why the page arrives complete rather than behind a
-   spinner — and in front of a prospect, that difference is the whole feel of
-   the thing. Prose comes later and is the last ten percent.
+   ── THE PAGE IS NOT GENERATED. TWO BLOCKS ON IT ARE ───────────────────────
+   Everything the GET renders — the shortlist, the reasons, the mismatches, the
+   day skeleton — is plain arithmetic over vectors that already exist. That is
+   why the page arrives complete rather than behind a spinner, and in front of a
+   prospect that difference is the whole feel of the thing.
+
+   The POST is where a model appears, and only ever through design-generate.js:
+   the paragraph an advisor reads aloud, and the two that open and close an
+   issued document. Both are asked for by a button, both arrive after the page,
+   and neither can hold up anything the advisor is already looking at.
+
+   (This header used to say no model was called anywhere in this file. That was
+   true when the file only rendered, and stopped being true the moment it grew a
+   POST — worth correcting rather than leaving as a comment that reassures.)
 
    ── THE PROSPECT IS READING OVER A SHOULDER ───────────────────────────────
    POTENTIAL MISMATCH and WATCH-OUT are advisor working notes. Read cold, mid
@@ -46,6 +54,7 @@ const N = require('../need-state.js');
 const M = require('../design-match.js');
 const D = require('../design-data.js');
 const G = require('../design-generate.js');
+const IT = require('../design-itinerary.js');
 const { configured, reasonText } = require('../openai.js');
 const { rung } = require('../gtm.js');
 
@@ -131,7 +140,13 @@ module.exports = async function handler(req, res) {
    than leaving it to be discovered: it is guarded exactly like narrative —
    advisor-only, own Journey, view-as refused, rate-limited, ledgered — so it is
    an unused door in a locked corridor rather than an open one. */
-const ACTIONS = { day_note: actionDayNote, narrative: actionNarrative };
+/* The values are what makes an action name valid; only the first two are CALLED
+   through this table. `issue` returns a link rather than a paragraph and takes
+   (res, form, v) instead of (form, ctx), so generate() dispatches it by name
+   before it reaches run() — the entry here exists so an unknown action is still
+   the only thing that 400s. Marked rather than left as a trap for whoever adds
+   the fourth one. */
+const ACTIONS = { day_note: actionDayNote, narrative: actionNarrative, issue: 'dispatched-by-name' };
 
 async function generate(req, res, v) {
   const { advisor, id, raw, caps } = v;
@@ -165,6 +180,14 @@ async function generate(req, res, v) {
 
   const slugs = String(form.slugs || '').split(',').map((s) => str(s, 60)).filter(Boolean).slice(0, 6);
   const recipeKey = str(form.recipe, 60) || null;
+
+  /* ISSUE IS NOT A GENERATION, even though it makes two model calls on the
+     way. It writes a row, it is not rate-limited by the generation counter,
+     and what it returns is a link rather than a paragraph — so it takes its
+     own path out rather than being bent into the ledger shape below. */
+  if (name === 'issue') {
+    return await actionIssue(res, form, { advisor, id, need, slugs, recipeKey, caps });
+  }
 
   const out = await run(form, { advisor, need, slugs, recipeKey });
 
@@ -209,6 +232,102 @@ function actionNarrative(form, ctx) {
 }
 
 
+/* ── Issue ────────────────────────────────────────────────────────────────
+   The end of a consultation: freeze what was designed into a document, mint a
+   link, and hand the advisor the link ONCE.
+
+   IT REFUSES IN VIEW-AS, and that check is already above — generate() rejects
+   every action for a staff member looking at somebody else's Hub. Issuing is
+   the sharpest case: it puts a document into a client's hands, co-branded with
+   an advisor's name, that the advisor did not write and cannot unsend without
+   revoking it.
+
+   THE TOKEN IS RETURNED ONCE AND NEVER LOGGED. The database holds a sha256 of
+   it; nothing here writes it to a console, an audit row or an error. If the
+   advisor loses the link they issue version 2, which is the same thing a bank
+   does when you lose a card.
+
+   READINESS IS CHECKED IN SENTENCES, not booleans. "Not ready" with no reason
+   is the message that makes somebody click again harder. */
+async function actionIssue(res, form, v) {
+  const { advisor, id, need, slugs, recipeKey, caps } = v;
+
+  if (!caps.itinerary) {
+    return json(res, 503, { error: 'not_migrated', message: D.UNAVAILABLE.itinerary });
+  }
+
+  const may = await D.mayIssue(advisor.id);
+  if (!may.ok) {
+    return json(res, 429, { error: 'throttled',
+      message: 'That is a lot of documents in one hour. Nothing is lost — try again shortly.' });
+  }
+
+  /* A session is what an itinerary hangs off, and an advisor who has worked
+     through the shortlist without one should not be stopped at the last step
+     to be told so. Opened here if it does not exist yet. */
+  let session = await D.currentSession(id, advisor.id);
+  if (!session) {
+    const bank = await K.version();
+    const opened = await D.openSession(null, id, advisor.id, bank.bank);
+    if (!opened.ok) return json(res, 503, { error: opened.reason, message: opened.message || 'Could not open a session.' });
+    session = opened.session;
+  }
+
+  const nights = Number(form.nights) || (need && need.nights) || null;
+  const advisorNote = str(form.note, 4000);
+
+  /* The two paragraphs. If either fails the issue fails — a document that
+     opens with nothing is not a document, and half-issuing would leave a live
+     token pointing at a fragment. */
+  const gen = { need, advisor, slugs, recipeKey, rung: rung(advisor) };
+  const open = await G.generateItinOpen(gen);
+  const close = await G.generateItinClose(gen);
+
+  if (caps.ledger) {
+    for (const o of [open, close]) {
+      await D.recordGeneration(advisor.id, session.id, {
+        kind: o.kind, model: o.model, ms: o.ms, promptChars: o.promptChars,
+        usage: o.usage, reason: o.ok ? null : o.reason
+      });
+    }
+  }
+
+  if (!open.ok || !close.ok) {
+    const reason = open.ok ? close.reason : open.reason;
+    return json(res, 502, { error: reason || 'failed', message: reasonText(reason) });
+  }
+
+  const doc = await IT.assemble({
+    recipeKey, nights, slugs,
+    open: open.text, close: close.text,
+    dayNotes: (session.day_plan && session.day_plan.notes) || {},
+    advisorNote
+  });
+
+  const missing = IT.readiness(doc);
+  if (missing.length) {
+    return json(res, 400, { error: 'not_ready',
+      message: 'This still needs ' + missing.join(', ') + '.' });
+  }
+
+  const issued = await D.issueItinerary(advisor.id, session.id, id, doc, IT.brandOf(advisor));
+  if (!issued.ok) {
+    return json(res, 502, { error: issued.reason,
+      message: issued.reason === 'version_race'
+        ? 'Another version was issued at the same moment. Reload and try again.'
+        : 'Could not issue that. Nothing has been sent.' });
+  }
+
+  /* THE ONE TIME THE TOKEN EXISTS IN THE CLEAR. */
+  return json(res, 200, {
+    ok: true, version: issued.version,
+    url: '/j/' + issued.token,
+    expires_at: issued.expires_at,
+    flags: open.flags.concat(close.flags),
+    high: open.high + close.high
+  });
+}
+
 /* ── The page ─────────────────────────────────────────────────────────────
    Exported so tools/hub-preview.js renders THIS, against fixtures, rather than
    a second template that looks the same until the day it does not. Everything
@@ -252,6 +371,8 @@ function buildBody(v) {
     ${narrative(id, shortlist, caps)}
 
     ${alsoIn(topVillage, also, vocab)}
+
+    ${issue(id, shortlist, caps)}
 
     <footer class="design-foot" data-hide-in-present>
       <p>Property intelligence verified ${esc(bank.verified.core || '—')}
@@ -419,6 +540,56 @@ function narrative(id, shortlist, caps) {
 
   ${caps.consultation ? '' : `<p class="design-hint" data-hide-in-present>This will not be saved
     yet — migration 022 is not on this deployment.</p>`}
+</section>`;
+}
+
+/* ── Issue ────────────────────────────────────────────────────────────────
+   The end of the consultation. One button, and what comes back is a link the
+   advisor copies once.
+
+   DISABLED WITH A NAMED REASON, NEVER HIDDEN. journey.js:42 is the precedent:
+   a hidden button is a suggestion, a disabled one with a sentence beside it is
+   an explanation. An advisor who cannot issue should know why without opening
+   a support ticket.
+
+   IT IS BELOW THE FOLD BY CONSTRUCTION, at the bottom of the working screen
+   and after everything it depends on. Issuing is the one irreversible act here
+   — the document freezes and the link is live — so it should not be reachable
+   before the advisor has scrolled past the thing they are freezing.
+
+   HIDDEN IN PRESENT MODE. The client is watching this screen; "Issue" and a
+   raw share link are the advisor's apparatus, not part of the conversation. */
+function issue(id, shortlist, caps) {
+  const slugs = shortlist.slice(0, 3).map((c) => c.slug).join(',');
+  return `<section class="design-block design-issue" data-hide-in-present
+    data-issue data-share="${esc(id)}" data-slugs="${esc(slugs)}">
+  <h2>Send it</h2>
+  <p class="design-note">Freezes what is on this screen into a document and gives you a link
+    to send. The link can be withdrawn later; what it points at cannot be edited, so issuing
+    again makes a new version rather than changing this one.</p>
+
+  <div class="design-issue-fields">
+    <label class="hub-field">
+      <span class="hub-field-label">Nights</span>
+      <input type="number" min="1" max="21" data-issue-nights placeholder="7">
+    </label>
+    <label class="hub-field hub-field--wide">
+      <span class="hub-field-label">A note from you (optional)</span>
+      <textarea rows="3" data-issue-note
+        placeholder="The thing only you know. Appears in your name, unchanged."></textarea>
+    </label>
+  </div>
+
+  <div class="design-actions">
+    <button type="button" class="btn btn--gold btn--sm" data-issue-go${
+      caps.itinerary ? '' : ' disabled'}>Issue this plan</button>
+    <span class="design-hint" data-issue-status role="status">${
+      caps.itinerary ? '' : esc(D.UNAVAILABLE.itinerary)}</span>
+  </div>
+
+  ${/* Filled in by the client once, and never re-fetched. The server does not
+       hold this value in any readable form after the response. */''}
+  <div class="design-issued" data-issue-result hidden></div>
 </section>`;
 }
 

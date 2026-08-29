@@ -7,8 +7,16 @@
    question with an answer.
 
    ── WHAT IS GENERATED, AND WHAT EMPHATICALLY IS NOT ────────────────────────
-   Generated: a day note (one sentence per day) and a journey narrative (a
-   paragraph the advisor reads aloud). That is the whole list for this step.
+   Generated, and this is the whole list — four kinds, nowhere else:
+
+     day_note    one sentence under a day heading, on the working screen
+     narrative   a paragraph the advisor reads ALOUD, with them in the room
+     itin_open   the opening of the document the client keeps
+     itin_close  its closing, which has to end at a person
+
+   The last two are read ALONE, later, by someone who may not have been on the
+   call. That changes what the prompt must forbid, not just how it is worded —
+   see the itinerary section at the foot of this file.
 
    Not generated, ever, by anything:
      · The shortlist and its four bands — design-match.js, arithmetic.
@@ -393,3 +401,123 @@ module.exports = {
   DAY_NOTE_BUDGET_MS, NARRATIVE_BUDGET_MS, DAY_NOTE_MAX_WORDS,
   STUB_DAY_NOTE, STUB_NARRATIVE, SCALE_POLES
 };
+
+/* ============================================================================
+   THE ITINERARY'S TWO PARAGRAPHS
+   ----------------------------------------------------------------------------
+   The document a client is handed opens and closes with prose. Everything
+   between is assembled from the session — days, places, verification dates —
+   by design-itinerary.js, which writes no sentences of its own.
+
+   ── THE AUDIENCE CHANGES, AND SO DO THE RULES ──────────────────────────────
+   The narrative above is read ALOUD by an advisor who is in the room to add
+   what it leaves out. This is read ALONE, later, possibly by someone who was
+   not on the call. So two things are true here that are not true above:
+
+     · The closing paragraph must end at a person, not at an action. There is
+       no booking button on that page by design, and a closing line that says
+       "secure your dates" invents one.
+     · Nothing may be hedged into sounding conditional on payment. The document
+       is a plan, not an offer, and it says so in the furniture rather than in
+       nervous prose.
+
+   ── STILL NO PRICES, AND NOW IT MATTERS MORE ───────────────────────────────
+   design-need.js never passes one, so these prompts have never seen a number.
+   That is the same guarantee as everywhere else in this file; it is restated
+   because this is the one artifact that leaves the building. */
+const ITIN_BUDGET_MS = 12000;
+const ITIN_TOKENS = 400;
+
+function itinOpenPrompt(ctx) {
+  const system = `You write the opening of a personal travel document that one
+person will read on their own, prepared for them by their travel advisor. Warm,
+plain, unhurried, and addressed to them directly. No exclamation marks, no
+marketing register, no rhetorical questions, no headline.
+
+${rulesBlock(ctx.places)}`;
+
+  const user = `THE ADVISOR WHO PREPARED THIS
+${advisorBlock(ctx.advisor)}
+
+THE TRAVELLER
+${travellerBlock(ctx.traveller)}
+
+THE PLACES IN THE PLAN
+${placesBlock(ctx.places)}
+
+Write ONE paragraph, 50 to 80 words, opening this document. Say what has been
+put together and the thinking behind its shape. Do not greet them by name — you
+do not have it. Do not list the days. Do not promise anything. Return the
+paragraph and nothing else.`;
+
+  return { system, user };
+}
+
+function itinClosePrompt(ctx) {
+  const advisorName = [ctx.advisor.first_name, ctx.advisor.last_name]
+    .filter(Boolean).join(' ') || 'their advisor';
+
+  const system = `You write the closing of a personal travel document that one
+person will read on their own. Warm, plain, unhurried. No exclamation marks, no
+marketing register, no sign-off, no postscript.
+
+${rulesBlock(ctx.places)}
+
+8. IT ENDS AT A PERSON. The last thing this document does is send the reader
+   back to ${advisorName}, who will answer questions, confirm what is available
+   and adjust anything. There is no booking button on this page and there is not
+   going to be one, so do not write a sentence that implies one exists. Do not
+   say "book", "reserve", "secure", "confirm your dates" or "get started".
+
+9. IT IS A PLAN, NOT AN OFFER. Nothing here is held, quoted or guaranteed.
+   Do not reassure the reader about that — just do not imply otherwise.`;
+
+  const user = `THE ADVISOR WHO PREPARED THIS
+${advisorBlock(ctx.advisor)}
+
+THE TRAVELLER
+${travellerBlock(ctx.traveller)}
+
+THE PLACES IN THE PLAN
+${placesBlock(ctx.places)}
+
+Write ONE short paragraph, 40 to 70 words, closing this document. It should end
+by pointing back to ${advisorName} as the person to talk to next. Return the
+paragraph and nothing else.`;
+
+  return { system, user };
+}
+
+const STUB_ITIN_OPEN = 'What follows is a week put together around a single '
+  + 'idea: that the quiet has to come first, and everything else can be decided '
+  + 'once you have had some. The order of the days matters more than the list of '
+  + 'them, so they are arranged to move outward rather than to fill up.';
+
+const STUB_ITIN_CLOSE = 'Nothing here is fixed, and none of it is held. It is a '
+  + 'shape to react to — the parts that sound right can stay, and the parts that '
+  + 'do not can go. Marguerite has the current availability and the details that '
+  + 'change week to week, and is the person to take this to next.';
+
+async function generateItinOpen(input) {
+  const ctx = await project(input);
+  return run('itin_open', itinOpenPrompt(ctx), {
+    maxTokens: ITIN_TOKENS, timeoutMs: ITIN_BUDGET_MS, stub: STUB_ITIN_OPEN,
+    rung: input.rung, advisor: input.advisor, places: ctx.places
+  });
+}
+
+async function generateItinClose(input) {
+  const ctx = await project(input);
+  return run('itin_close', itinClosePrompt(ctx), {
+    maxTokens: ITIN_TOKENS, timeoutMs: ITIN_BUDGET_MS, stub: STUB_ITIN_CLOSE,
+    rung: input.rung, advisor: input.advisor, places: ctx.places
+  });
+}
+
+module.exports.generateItinOpen = generateItinOpen;
+module.exports.generateItinClose = generateItinClose;
+module.exports.itinOpenPrompt = itinOpenPrompt;
+module.exports.itinClosePrompt = itinClosePrompt;
+module.exports.ITIN_BUDGET_MS = ITIN_BUDGET_MS;
+module.exports.STUB_ITIN_OPEN = STUB_ITIN_OPEN;
+module.exports.STUB_ITIN_CLOSE = STUB_ITIN_CLOSE;

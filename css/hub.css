@@ -1839,3 +1839,213 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
   border-color: transparent; padding-left: 0; font-size: 1.15rem;
 }
 .is-present .design .design-narr-flags { display: none !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   /j/:token — the document a client keeps
+   --------------------------------------------------------------------------
+   The only page in this stylesheet that a client sees, and the only one that is
+   not a working surface. Everything else in hub.css is built for scanning: an
+   advisor with fourteen Journeys open needs density and rules and small type.
+   This is the opposite job. It is read once, slowly, by one person, probably on
+   a phone, probably in the evening, deciding whether they want the trip.
+
+   So it takes the site's editorial voice rather than the Hub's: serif display,
+   a narrow measure, generous air, and no cards. Cards are for things you
+   compare. There is nothing to compare here — that decision was made on the
+   call, and this is what came out of it.
+
+   IT PRINTS. Not because a print button exists — there is no JavaScript on this
+   page at all — but because people print things they are deciding about, and a
+   plan that comes out of a printer with the header repeated and the days split
+   across a page break reads as careless about the trip it describes.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.itin { padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(3rem, 7vw, 6rem); }
+.itin .wrap--narrow { max-width: 40rem; }
+
+.itin-head { margin-bottom: clamp(2rem, 4vw, 3rem); }
+.itin-head h1 {
+  font-family: var(--serif-display); font-size: var(--fs-h2);
+  line-height: 1.12; margin: .25em 0 0;
+}
+.itin-shape {
+  font-family: var(--serif); font-size: var(--fs-lead);
+  color: var(--muted); margin: .8em 0 0;
+}
+
+/* The two generated paragraphs. Set a step larger than the body: they are the
+   voice of the person who prepared this, and they open and close the reading. */
+.itin-open, .itin-close {
+  font-family: var(--serif); font-size: var(--fs-lead);
+  line-height: 1.62; margin: 0 0 clamp(2.2rem, 5vw, 3.4rem);
+}
+.itin-close {
+  border-top: 1px solid var(--hairline-l);
+  padding-top: clamp(1.6rem, 4vw, 2.4rem); margin-bottom: 2.5rem;
+}
+.itin-open p, .itin-close p { margin: 0 0 .9em; }
+.itin-open p:last-child, .itin-close p:last-child { margin-bottom: 0; }
+
+.itin-block { margin: 0 0 clamp(2.4rem, 5vw, 3.6rem); }
+.itin-block > h2 {
+  font-size: var(--fs-label); letter-spacing: var(--track-label);
+  text-transform: uppercase; color: var(--muted);
+  font-family: var(--sans); font-weight: 600;
+  margin: 0 0 1.4em;
+}
+
+/* ── The days ─────────────────────────────────────────────────────────────
+   A ruled list, not a table and not a timeline. The number is small and set
+   away from the text: it is an index, and making it a graphic device would put
+   the emphasis on the count of days rather than on what is in them. */
+.itin-days { list-style: none; margin: 0; padding: 0; }
+.itin-days li {
+  display: grid; grid-template-columns: 4.5rem 1fr; gap: 1rem;
+  padding: 1.1rem 0; border-top: 1px solid var(--hairline-l);
+}
+.itin-days li:last-child { border-bottom: 1px solid var(--hairline-l); }
+.itin-day-n {
+  margin: 0; font-family: var(--sans); font-size: var(--fs-small);
+  letter-spacing: .06em; color: var(--muted); padding-top: .15em;
+}
+.itin-day-shape {
+  margin: 0; font-family: var(--serif-display);
+  font-size: 1.15rem; line-height: 1.35;
+}
+.itin-day-note {
+  margin: .45em 0 0; color: var(--muted); line-height: var(--lh-body);
+}
+
+/* ── The places ───────────────────────────────────────────────────────────
+   No images. Every photograph here would be one the property supplied, of a
+   room that may not be the room, and this document already says its facts were
+   verified on a date. A picture makes a promise the sentence beside it is
+   carefully not making. */
+.itin-places { list-style: none; margin: 0; padding: 0; }
+.itin-places li { margin: 0 0 2rem; }
+.itin-places li:last-child { margin-bottom: 0; }
+.itin-places h3 {
+  font-family: var(--serif-display); font-size: var(--fs-h3);
+  line-height: 1.2; margin: 0 0 .35em;
+}
+.itin-places p { margin: 0; line-height: var(--lh-body); }
+
+/* The line that makes the advisor necessary rather than optional. Quiet, but
+   never hidden, and never smaller than the small type elsewhere. */
+.itin-verified {
+  margin-top: .7em !important;
+  font-size: var(--fs-small); color: var(--muted);
+  padding-left: .9rem; border-left: 2px solid var(--gold-deep);
+}
+
+/* The advisor's own words, on sand so they read as a note rather than as more
+   of the document. */
+.itin-note {
+  background: var(--paper-2); border-radius: 3px;
+  padding: clamp(1.3rem, 3vw, 1.8rem);
+}
+.itin-note h2 { margin-bottom: .9em; }
+.itin-note p { margin: 0 0 .8em; line-height: var(--lh-body); }
+.itin-note p:last-child { margin-bottom: 0; }
+
+/* ── The one call to action, and it is a person ───────────────────────────
+   Not a button. A button implies a transaction is available here, and none is.
+   The advisor's name, business and two ways to reach them, set as contact
+   details rather than as a conversion unit. */
+.itin-foot { border-top: 2px solid var(--ink); padding-top: 1.6rem; }
+.itin-foot h2 {
+  font-size: var(--fs-label); letter-spacing: var(--track-label);
+  text-transform: uppercase; color: var(--muted);
+  font-family: var(--sans); font-weight: 600; margin: 0 0 1em;
+}
+.itin-foot p { line-height: var(--lh-body); margin: 0 0 1em; }
+.itin-contact {
+  display: flex; flex-direction: column; gap: .2em;
+  font-family: var(--sans);
+}
+.itin-contact strong { font-size: 1.05rem; }
+.itin-contact span { color: var(--muted); }
+.itin-contact a { color: var(--teal); text-decoration: none; }
+.itin-contact a:hover { text-decoration: underline; }
+.itin-prov {
+  margin-top: 1.4em !important;
+  font-size: var(--fs-small); color: var(--muted);
+}
+
+/* ── Withdrawn, expired, never existed ────────────────────────────────────
+   Given real space rather than being squeezed into an error strip. Somebody
+   arriving here was sent a link by a person they trust, and the page has one
+   job: make it obvious this is fixable and who fixes it. */
+.itin--gone { text-align: left; padding-top: clamp(4rem, 10vw, 8rem); }
+.itin--gone h1 {
+  font-family: var(--serif-display); font-size: var(--fs-h2);
+  line-height: 1.15; margin: 0 0 .6em;
+}
+.itin--gone p {
+  font-family: var(--serif); font-size: var(--fs-lead);
+  line-height: 1.6; color: var(--muted); margin: 0 0 1em; max-width: 34rem;
+}
+
+@media (max-width: 34rem) {
+  .itin-days li { grid-template-columns: 1fr; gap: .2rem; }
+  .itin-day-n { padding-top: 0; }
+}
+
+/* ── On paper ─────────────────────────────────────────────────────────────
+   People print things they are deciding about. The chrome goes, the measure
+   opens up, and nothing that belongs together is allowed to break apart. */
+@media print {
+  .site-header, .site-footer { display: none !important; }
+  .itin { padding: 0; }
+  .itin .wrap--narrow { max-width: none; }
+  .itin-days li, .itin-places li, .itin-note, .itin-foot { break-inside: avoid; }
+  .itin-block > h2 { break-after: avoid; }
+  .itin-note { background: transparent; border: 1px solid var(--hairline-l); }
+  /* A URL printed beside every link is noise on a document with two links,
+     both of which are the advisor's own contact details. */
+  .itin-contact a::after { content: none !important; }
+}
+
+/* ── Issuing ───────────────────────────────────────────────────────────────
+   The last block on the working screen, and the only irreversible control on
+   it. Set apart by a rule and a step of air rather than by colour: the button
+   is already the only gold thing on the page, and a warning-coloured panel
+   would say "danger" about an ordinary end to a good consultation. */
+.design .design-issue {
+  border-top: 2px solid var(--ink);
+  padding-top: 1.6rem; margin-top: 3.5rem;
+}
+.design .design-issue-fields {
+  display: grid; grid-template-columns: 8rem 1fr; gap: 1rem 1.25rem;
+  align-items: start; margin: 1.4rem 0;
+}
+.design .design-issue-fields .hub-field--wide { grid-column: 2; }
+.design .design-issue-fields input[type="number"] { width: 100%; }
+
+/* What comes back. Given real weight, because the advisor has to notice the
+   sentence about this being the only time the link is shown. */
+.design .design-issued {
+  margin-top: 1.6rem; padding: 1.2rem 1.4rem;
+  background: var(--paper-2); border-radius: 3px;
+}
+.design .design-issued-h {
+  margin: 0 0 .4em; font-family: var(--serif-display); font-size: 1.2rem;
+}
+.design .design-issued-warn {
+  margin: 0 0 1em; font-size: .9rem; color: var(--ink);
+  padding-left: .9rem; border-left: 2px solid var(--gold-deep);
+}
+.design .design-issued-link {
+  width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .88rem; padding: .6rem .7rem; margin-bottom: .9rem;
+  border: 1px solid var(--hairline-l); border-radius: 3px;
+  background: var(--paper); color: var(--ink);
+}
+.design .design-issued-exp {
+  margin: .9rem 0 0; font-size: .84rem; color: var(--muted);
+}
+
+@media (max-width: 44rem) {
+  .design .design-issue-fields { grid-template-columns: 1fr; }
+  .design .design-issue-fields .hub-field--wide { grid-column: 1; }
+}

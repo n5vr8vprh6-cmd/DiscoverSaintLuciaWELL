@@ -61,6 +61,9 @@ const SCREENS = {
   adminImport:    () => require('../_lib/hub-screens/admin-import.js'),
   adminSubject:   () => require('../_lib/hub-screens/admin-subject.js'),
   adminWaitlist:  () => require('../_lib/hub-screens/admin-waitlist.js'),
+  /* PUBLIC on purpose, like waitlist above it — see the file. The token is
+     the whole of the authorisation, and it is 32 random bytes. */
+  itinerary:      () => require('../_lib/hub-screens/itinerary.js'),
   /* Unguarded on purpose — see the file. */
   viewasExit:     () => require('../_lib/hub-screens/viewas-exit.js')
 };

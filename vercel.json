@@ -187,6 +187,10 @@
       "destination": "/api/hub?screen=waitlist"
     },
     {
+      "source": "/j/:token",
+      "destination": "/api/hub?screen=itinerary&t=:token"
+    },
+    {
       "source": "/hub/admin/waitlist",
       "destination": "/api/hub?screen=adminWaitlist"
     },

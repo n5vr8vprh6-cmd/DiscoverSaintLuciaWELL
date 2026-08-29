@@ -160,3 +160,161 @@
     });
   });
 })();
+
+/* ============================================================================
+   ISSUING — the one irreversible thing this screen can do
+   ----------------------------------------------------------------------------
+   Freezes the document, mints the link, shows it once.
+
+   ── THE LINK IS SHOWN ONCE AND THAT IS NOT A UI CHOICE ────────────────────
+   The server holds a sha256 of the token and nothing else. There is no endpoint
+   that can return it again, because there is no copy of it to return — so this
+   is the only moment it exists in readable form, and the interface has to say
+   so rather than let an advisor close the tab assuming they can come back.
+
+   ── IT SAYS WHAT WILL HAPPEN BEFORE IT HAPPENS ────────────────────────────
+   A confirm() rather than a straight POST. Everything else on this screen is
+   reversible — regenerate the paragraph, change the shortlist, reload. This
+   writes a frozen row and opens a live URL, and an advisor mid-call with a
+   prospect watching should not discover that by having done it.
+
+   ── NO OPTIMISTIC ANYTHING ────────────────────────────────────────────────
+   Nothing appears until the server says the row exists. A link rendered
+   hopefully and then withdrawn is worse than a two-second wait.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var root = document.querySelector('[data-issue]');
+  if (!root) return;
+
+  var go = root.querySelector('[data-issue-go]');
+  var status = root.querySelector('[data-issue-status]');
+  var result = root.querySelector('[data-issue-result]');
+  var nights = root.querySelector('[data-issue-nights]');
+  var note = root.querySelector('[data-issue-note]');
+  if (!go || go.disabled) return;
+
+  var busy = false;
+
+  function say(m) { if (status) status.textContent = m || ''; }
+
+  function show(data) {
+    if (!result) return;
+    var url = location.origin + data.url;
+
+    result.hidden = false;
+    result.textContent = '';
+
+    var h = document.createElement('p');
+    h.className = 'design-issued-h';
+    h.textContent = 'Version ' + data.version + ' is live.';
+    result.appendChild(h);
+
+    var warn = document.createElement('p');
+    warn.className = 'design-issued-warn';
+    warn.textContent = 'Copy this link now. It is not stored anywhere we can read, '
+      + 'so this is the only time it can be shown to you.';
+    result.appendChild(warn);
+
+    /* A readonly input rather than a <p>: it selects on click, survives being
+       copied by keyboard, and cannot be edited into something that does not
+       resolve. */
+    var field = document.createElement('input');
+    field.className = 'design-issued-link';
+    field.readOnly = true;
+    field.value = url;
+    field.addEventListener('focus', function () { field.select(); });
+    result.appendChild(field);
+
+    var row = document.createElement('div');
+    row.className = 'design-actions';
+
+    var copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'btn btn--ghost btn--sm';
+    copy.textContent = 'Copy link';
+    copy.addEventListener('click', function () {
+      field.focus();
+      field.select();
+      /* Clipboard access is refused outright in some contexts and the fallback
+         is the thing that always works: the text is already selected, so
+         Ctrl+C finishes the job. */
+      var done = function () { copy.textContent = 'Copied'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done, function () {
+          copy.textContent = 'Press Ctrl+C';
+        });
+      } else {
+        copy.textContent = 'Press Ctrl+C';
+      }
+    });
+    row.appendChild(copy);
+
+    var open = document.createElement('a');
+    open.className = 'btn btn--ghost btn--sm';
+    open.href = data.url;
+    open.target = '_blank';
+    open.rel = 'noopener';
+    open.textContent = 'Open it';
+    row.appendChild(open);
+
+    result.appendChild(row);
+
+    if (data.expires_at) {
+      var exp = document.createElement('p');
+      exp.className = 'design-issued-exp';
+      var d = new Date(data.expires_at);
+      exp.textContent = 'The link stops working on '
+        + d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })
+        + ' unless you withdraw it sooner.';
+      result.appendChild(exp);
+    }
+
+    if (data.high) {
+      var f = document.createElement('p');
+      f.className = 'design-flag is-high';
+      f.textContent = data.high + ' thing' + (data.high === 1 ? '' : 's')
+        + ' in the writing needs checking — open it and read before you send.';
+      result.appendChild(f);
+    }
+  }
+
+  go.addEventListener('click', function () {
+    if (busy) return;
+    if (!window.confirm('Issue this plan?\n\nIt freezes what is on this screen and opens a '
+      + 'live link you can send. The link is shown to you once.')) return;
+
+    busy = true;
+    go.disabled = true;
+    say('Writing and freezing…');
+
+    fetch('/hub/journeys/' + encodeURIComponent(root.getAttribute('data-share')) + '/design', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'issue',
+        slugs: root.getAttribute('data-slugs') || '',
+        nights: nights ? nights.value : '',
+        note: note ? note.value : ''
+      })
+    }).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) {
+        say(j.message || 'That did not work. Nothing has been sent.');
+        go.disabled = false;
+        busy = false;
+        return;
+      }
+      say('');
+      show(j);
+      /* Deliberately NOT re-enabled. Issuing again makes another version and
+         another live link; that should be a decision taken on a reloaded page,
+         not a second click on a button that has just succeeded. */
+      go.textContent = 'Issued';
+    }).catch(function () {
+      say('Could not reach the server. Nothing has been sent.');
+      go.disabled = false;
+      busy = false;
+    });
+  });
+})();
