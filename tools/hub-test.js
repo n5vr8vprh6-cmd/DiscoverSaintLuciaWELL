@@ -15,6 +15,8 @@
    ========================================================================== */
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
 const { REF } = require('../api/_lib/advisors.js');
 const { normaliseWindow } = require('../api/share.js');
 const { attentionScore, needsAttention } = require('../api/_lib/hub-data.js');
@@ -221,6 +223,29 @@ if (savedToken) process.env.ENCHARGE_TOKEN = savedToken;
 check('since() reads as today for a fresh share', since(day(0)) === 'today');
 check('since() reads as yesterday at one day', since(day(1)) === 'yesterday');
 check('since() has no output for a missing date', since(null) === '');
+
+/* ── Every screen can actually be loaded ─────────────────────────────────
+   A screen whose require() throws is a 500 on a live route, and neither the
+   route table nor any other check here notices — every assertion above works
+   on modules it imported itself, and a screen nothing imports is a screen
+   nothing proves.
+
+   It has happened twice in one feature, both times a relative path copied from
+   a file one directory higher: '../../lib/page.js' from a screen resolves to
+   api/lib/, and so does ../../content/. Both were caught by rendering a fixture
+   rather than by the suite, which is luck rather than method.
+
+   Loading a module is not the same as exercising it. This proves only that the
+   file parses and its requires resolve — which is the whole of what those two
+   bugs were. */
+const SCREEN_DIR = path.join(__dirname, '..', 'api', '_lib', 'hub-screens');
+fs.readdirSync(SCREEN_DIR)
+  .filter((f) => f.endsWith('.js'))
+  .forEach((f) => {
+    let err = null;
+    try { require(path.join(SCREEN_DIR, f)); } catch (e) { err = e; }
+    check('hub-screens/' + f + ' can be required', !err, err && String(err.message).split('\n')[0]);
+  });
 
 /* ── Report ────────────────────────────────────────────────────────────────
    Deferred until the async checks above have settled. A `.then()` that lands

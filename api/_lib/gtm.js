@@ -123,6 +123,51 @@ async function saveProfile(advisorId, patch) {
   return { ok: true };
 }
 
+/* ── The priority traveller ───────────────────────────────────────────────
+   A THIRD ALLOW-LIST, for the reason the persona block below states for the
+   second: merging these into FIELDS would let a hand-edited intake POST set an
+   advisor's ICP, and merging them into PERSONA_FIELDS would let the persona
+   capture do the same. Three surfaces write three disjoint sets of columns.
+
+   WITHOUT THIS THE WRITE SILENTLY DID NOTHING. saveProfile() copies only what
+   is in FIELDS, so the Playbook form posted eight values, got a 303 and a
+   "Saved" flash, and stored none of them — the exact shape of failure that is
+   invisible until somebody checks the row. Caught by reading FIELDS rather
+   than by trusting the function name.
+
+   icp_at is a timestamp this function sets, never something a form supplies. */
+const ICP_COLUMNS = ['icp_current_states', 'icp_desired_states', 'icp_trigger',
+  'icp_uncertainty', 'icp_readiness', 'icp_party', 'icp_budget'];
+
+async function saveIcp(advisorId, patch) {
+  const supabase = db();
+  if (!supabase || !advisorId) return { ok: false, error: 'not_configured' };
+
+  const row = {
+    advisor_id: advisorId,
+    updated_at: new Date().toISOString(),
+    icp_at: new Date().toISOString()
+  };
+  ICP_COLUMNS.forEach((f) => {
+    if (Object.prototype.hasOwnProperty.call(patch, f)) row[f] = patch[f];
+  });
+
+  const { error } = await supabase
+    .from('gtm_profile').upsert(row, { onConflict: 'advisor_id' });
+  if (error) {
+    /* Absent until migration 022. Degrades to "the form does not save" rather
+       than to a stack trace, same as savePersona below. */
+    const missing = ['42703', 'PGRST204', 'PGRST205', '42P01'];
+    if (missing.indexOf(String(error.code)) !== -1) {
+      console.warn('saveIcp — is migration 022 applied?', error.code);
+      return { ok: false, error: 'needs_migration' };
+    }
+    console.error('saveIcp', error);
+    return { ok: false, error: 'failed' };
+  }
+  return { ok: true };
+}
+
 /* ── The persona ──────────────────────────────────────────────────────────
    A SECOND ALLOW-LIST, not a wider first one. The intake form and the persona
    capture are different surfaces writing different columns, and merging their
@@ -468,6 +513,7 @@ module.exports = {
   BANDS, FIELDS, GAPS,
   rung, mayRefresh,
   profileFor, saveProfile, savePersona, PERSONA_FIELDS, currentPlan, planRows,
+  saveIcp, ICP_COLUMNS,
   wellLink, substitute,
   gapReport, intakePrompt,
   BUSINESS_FIELDS, promptPreamble, fieldPrompt

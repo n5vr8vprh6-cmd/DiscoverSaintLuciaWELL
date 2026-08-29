@@ -34,6 +34,7 @@ const SCREENS = {
   campaign: () => require('../_lib/hub-screens/campaign.js'),
   campaignProfile: () => require('../_lib/hub-screens/campaign-profile.js'),
   campaignMore: () => require('../_lib/hub-screens/campaign-more.js'),
+  playbook: () => require('../_lib/hub-screens/playbook.js'),
   notFound: () => require('../_lib/hub-screens/not-found.js'),
   sweepstakes:       () => require('../_lib/hub-screens/sweepstakes.js'),
   sweepstakesDetail: () => require('../_lib/hub-screens/sweepstakes-detail.js'),

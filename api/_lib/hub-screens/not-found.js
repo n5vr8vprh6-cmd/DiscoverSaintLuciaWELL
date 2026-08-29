@@ -46,7 +46,8 @@ const { hubPage, esc } = require('../hub-render.js');
 const KNOWN = [
   '/hub', '/hub/login', '/hub/register', '/hub/forgot', '/hub/reset',
   '/hub/account', '/hub/journeys', '/hub/campaign', '/hub/campaign/profile',
-  '/hub/campaign/more', '/hub/sweepstakes', '/hub/undertaking',
+  '/hub/campaign/more', '/hub/campaign/playbook',
+  '/hub/sweepstakes', '/hub/undertaking',
   '/hub/admin', '/hub/admin/advisors', '/hub/admin/advisors/new',
   '/hub/admin/import', '/hub/admin/audit', '/hub/admin/subject',
   '/hub/admin/waitlist', '/hub/viewas/exit'

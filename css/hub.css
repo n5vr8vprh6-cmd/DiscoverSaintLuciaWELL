@@ -2049,3 +2049,176 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
   .design .design-issue-fields { grid-template-columns: 1fr; }
   .design .design-issue-fields .hub-field--wide { grid-column: 1; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE ADVISOR PLAYBOOK
+   --------------------------------------------------------------------------
+   /hub/campaign/playbook. A document inside a working surface, which is the
+   whole tension: it lives behind the Hub's chrome and reads like the field
+   guide. Serif for anything an advisor reads as prose, the Hub's sans for the
+   labels and the form, a narrow measure throughout.
+
+   THE GAPS ARE STYLED TO BE READ, NOT DISMISSED. An empty section here is the
+   most useful thing on the page — docs/bible-feedback.md found the engine is
+   input-limited, so the missing inputs ARE the finding. They get a dashed
+   frame and full-size type rather than the grey small print that usually
+   signals "ignore this".
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.playbook .wrap--narrow { max-width: 44rem; }
+
+.playbook .pb-head { margin-bottom: 3rem; }
+.playbook .pb-head h1 { font-family: var(--serif-display); margin: .2em 0 .4em; }
+.playbook .pb-sub {
+  font-family: var(--serif); font-size: var(--fs-lead);
+  line-height: 1.6; color: var(--muted); margin: 0 0 1em; max-width: 40rem;
+}
+.playbook .pb-print { font-size: var(--fs-small); color: var(--muted); margin: 0; }
+
+.playbook .pb-block {
+  margin-bottom: 3.2rem; padding-bottom: 2.4rem;
+  border-bottom: 1px solid var(--hairline-l);
+}
+.playbook .pb-block:last-of-type { border-bottom: 0; }
+.playbook .pb-block > h2 {
+  font-family: var(--serif-display); font-size: var(--fs-h3);
+  line-height: 1.2; margin: 0 0 .8em;
+}
+.playbook .pb-lead {
+  font-family: var(--serif); font-size: var(--fs-lead);
+  line-height: 1.6; margin: 0 0 1.2em;
+}
+.playbook .pb-note { color: var(--muted); font-size: var(--fs-small); margin: 0 0 1.2em; }
+
+/* ── Facts ────────────────────────────────────────────────────────────────
+   A definition list rather than a table: these are one-to-one, they wrap, and
+   a table would put a border around an advisor's own words. */
+.playbook .pb-facts {
+  display: grid; grid-template-columns: 13rem 1fr; gap: .8rem 1.5rem; margin: 0 0 1.4rem;
+}
+.playbook .pb-facts dt {
+  font-size: var(--fs-label); letter-spacing: var(--track-label);
+  text-transform: uppercase; color: var(--muted); padding-top: .3em;
+}
+.playbook .pb-facts dd { margin: 0; line-height: var(--lh-body); }
+
+/* ── A gap ────────────────────────────────────────────────────────────────
+   Deliberately not styled as a warning. It is not an error, it is the most
+   actionable thing on the page, and a red panel would make an advisor defensive
+   about something they simply have not done yet. */
+.playbook .pb-empty {
+  font-family: var(--serif); font-size: var(--fs-lead); line-height: 1.55;
+  color: var(--ink); margin: 0 0 1.2em; max-width: 40rem;
+}
+.playbook .pb-gap {
+  border: 1px dashed var(--hairline-l); border-radius: 3px;
+  padding: 1.1rem 1.3rem; margin-top: 1.4rem;
+}
+.playbook .pb-gap h3 { font-size: 1rem; margin: 0 0 .8em; }
+.playbook .pb-gap ul { list-style: none; margin: 0 0 1em; padding: 0; }
+.playbook .pb-gap li { margin-bottom: .7em; }
+.playbook .pb-gap b { display: block; }
+.playbook .pb-gap span { color: var(--muted); font-size: var(--fs-small); }
+
+/* ── The Day 2 form ───────────────────────────────────────────────────────
+   Apparatus, not document — hidden when printing. */
+.playbook .pb-form {
+  margin-top: 2rem; padding: 1.4rem 1.5rem;
+  background: var(--paper-2); border-radius: 3px;
+}
+.playbook .pb-form h3 { margin: 0 0 1.2em; font-size: 1.05rem; }
+.playbook .pb-field { display: block; margin: 0 0 1.5rem; border: 0; padding: 0; }
+.playbook .pb-field legend,
+.playbook .pb-field-label {
+  display: block; font-weight: 600; margin-bottom: .45em; padding: 0;
+}
+.playbook .pb-field legend span,
+.playbook .pb-field-label span {
+  display: block; font-weight: 400; color: var(--muted);
+  font-size: var(--fs-small); margin-top: .15em;
+}
+.playbook .pb-field select {
+  font: inherit; padding: .5rem .6rem; width: 100%; max-width: 26rem;
+  border: 1px solid var(--hairline-l); border-radius: 3px; background: var(--paper);
+}
+.playbook .pb-checks { display: flex; flex-wrap: wrap; gap: .5rem .9rem; }
+.playbook .pb-check {
+  display: inline-flex; align-items: center; gap: .4em;
+  font-size: .95rem; cursor: pointer;
+}
+
+/* ── Channels ─────────────────────────────────────────────────────────────
+   Works and Kills it get a word and a colour, in that order — the word is the
+   signal and the colour is the second one, same rule as the design bands. */
+.playbook .pb-channel {
+  padding: 1rem 0; border-top: 1px solid var(--hairline-l);
+}
+.playbook .pb-channel h3 {
+  font-size: var(--fs-label); letter-spacing: var(--track-label);
+  text-transform: uppercase; color: var(--muted); margin: 0 0 .6em;
+}
+.playbook .pb-channel p { margin: 0 0 .5em; line-height: var(--lh-body); }
+.playbook .pb-channel b {
+  font-size: var(--fs-label); letter-spacing: var(--track-label);
+  text-transform: uppercase; margin-right: .6em;
+}
+.playbook .pb-conv b { color: var(--teal); }
+.playbook .pb-kills b { color: var(--coral); }
+.playbook .pb-cta b { color: var(--gold-deep); }
+.playbook .pb-seeded {
+  font-size: var(--fs-small); color: var(--mist); font-style: italic;
+}
+
+/* ── The plan ─────────────────────────────────────────────────────────────
+   Same ruled-list shape as the itinerary's days, on purpose: an advisor who has
+   read one of these documents can read the other without relearning it. */
+.playbook .pb-weeks { list-style: none; margin: 0; padding: 0; }
+.playbook .pb-weeks > li {
+  display: grid; grid-template-columns: 5rem 1fr; gap: 1rem;
+  padding: 1.1rem 0; border-top: 1px solid var(--hairline-l);
+}
+.playbook .pb-week-n {
+  margin: 0; font-size: var(--fs-small); color: var(--muted); padding-top: .1em;
+}
+.playbook .pb-week-theme {
+  margin: 0 0 .5em; font-family: var(--serif-display); font-size: 1.15rem;
+}
+.playbook .pb-weeks ul { margin: 0; padding-left: 1.1em; }
+.playbook .pb-weeks ul li { margin-bottom: .4em; line-height: 1.5; }
+.playbook .pb-weeks ul span { display: block; color: var(--muted); font-size: var(--fs-small); }
+
+/* ── Never say ────────────────────────────────────────────────────────────
+   Last, and the one place on this page that is allowed to look like a rule. */
+.playbook .pb-never { border-top: 2px solid var(--ink); padding-top: 1.6rem; }
+.playbook .pb-never ul { margin: 0; padding-left: 1.1em; }
+.playbook .pb-never li { margin-bottom: .5em; line-height: var(--lh-body); }
+
+.playbook .pb-foot { margin-top: 2.5rem; }
+.playbook .pb-prov { font-size: var(--fs-small); color: var(--muted); margin: 0; }
+
+@media (max-width: 40rem) {
+  .playbook .pb-facts { grid-template-columns: 1fr; gap: .2rem 0; }
+  .playbook .pb-facts dt { padding-top: .8em; }
+  .playbook .pb-weeks > li { grid-template-columns: 1fr; gap: .3rem; }
+}
+
+/* ── On paper ─────────────────────────────────────────────────────────────
+   This is the half of the Playbook that is meant to leave the screen. The form
+   goes, the Hub chrome goes, and no section is allowed to break across a page —
+   a capacity rule split from its own heading is a rule nobody reads. */
+@media print {
+  .playbook .pb-screen-only,
+  .playbook .pb-form,
+  .site-header, .site-footer, .hub-context, .hub-back { display: none !important; }
+  .playbook .wrap--narrow { max-width: none; }
+  .playbook .pb-block { break-inside: avoid; page-break-inside: avoid; }
+  .playbook .pb-block > h2 { break-after: avoid; }
+  .playbook .pb-never { break-before: page; }
+  .playbook .pb-gap { border-style: solid; }
+}
+
+/* The anatomy of a post is an ORDER, so it is a numbered list. Rendering the
+   array into a template stringified it with commas, which read as sentence
+   punctuation and produced one run-on line. */
+.playbook .pb-anatomy { margin: 0 0 .8em; padding-left: 1.3em; }
+.playbook .pb-anatomy li { margin-bottom: .25em; line-height: 1.5; }

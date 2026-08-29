@@ -301,6 +301,9 @@ function reasoningSections(gaps, p, where, advisor) {
       <p class="hub-more"><a href="/hub/campaign/profile">The Brand Profile</a> is the longer
         version of this, where your assistant writes a whole brief in one go and we read it back
         to you.</p>
+      <p class="hub-more"><a href="/hub/campaign/playbook">Your Playbook</a> puts all of it in
+        one document — what we know, what we are still guessing at, and what it is costing
+        you. It is the fastest way to see which answer is worth going back for.</p>
     </section>
 
     <form method="POST">

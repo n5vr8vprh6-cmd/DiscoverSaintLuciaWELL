@@ -135,6 +135,10 @@
       "destination": "/api/hub?screen=campaignMore"
     },
     {
+      "source": "/hub/campaign/playbook",
+      "destination": "/api/hub?screen=playbook"
+    },
+    {
       "source": "/hub/campaign",
       "destination": "/api/hub?screen=campaign"
     },
