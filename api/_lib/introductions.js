@@ -196,6 +196,29 @@ async function send(journey, advisor, personalLine) {
     return { ok: false, error: 'sent_but_not_moved' };
   }
 
+  /* ── THE WORKSPACE MOVES WITH THE JOURNEY ─────────────────────────────────
+     journey_consultations and design_sessions denormalise advisor_id, because
+     every read of them is scoped by advisor and a row carrying its own owner
+     cannot be handed to the wrong one by a join written wrong later.
+
+     The cost of that choice is exactly here. Move the Journey and leave the
+     workspace behind, and an introduced Journey arrives with a consultation the
+     receiving advisor cannot open while the sending advisor still can — which
+     is both a broken feature and a disclosure.
+
+     Best effort, and deliberately after the move: the Journey changing hands is
+     the fact that matters, and a design workspace that failed to follow is a
+     repairable inconsistency rather than a reason to report the introduction as
+     failed. A missing table (migration 022 unapplied) is not an error at all. */
+  for (const table of ['journey_consultations', 'design_sessions']) {
+    const { error } = await supabase.from(table)
+      .update({ advisor_id: advisor.id })
+      .eq('share_id', journey.id);
+    if (error && ['42703', '42P01', 'PGRST204', 'PGRST205'].indexOf(String(error.code)) === -1) {
+      console.error('introduction moved the Journey but not ' + table, error.code);
+    }
+  }
+
   return { ok: true, mail };
 }
 

@@ -74,6 +74,7 @@ async function vocabulary() {
     readiness: V().readiness || [],
     party: V().party || [],
     constraints: V().constraints || [],
+    budget: V().budget || [],
     scales: V().scales || [],
     orientation: (PLAYBOOK.travellerOrientations || []).map((o) => ({
       key: o.key, label: o.label || o.name || o.key
@@ -209,7 +210,8 @@ async function seedFrom(answers) {
    dropping it would make a need-state that scores differently from the one the
    advisor thought they saved. */
 const WEIGHTED = ['current', 'desired', 'villages', 'compass', 'pillars'];
-const SINGLE = { trigger: 'trigger', uncertainty: 'uncertainty', readiness: 'readiness', party: 'party' };
+const SINGLE = { trigger: 'trigger', uncertainty: 'uncertainty', readiness: 'readiness',
+                 party: 'party', budget: 'budget' };
 const SCALES = ['rhythm', 'activity', 'social', 'experience'];
 
 async function validate(state) {
@@ -276,7 +278,7 @@ async function validate(state) {
      prompt. Catch it where it is written, not where it leaks. */
   Object.keys(s).forEach((k) => {
     if (typeof s[k] === 'string' && SINGLE[k] === undefined && k !== 'orientation' &&
-        k !== 'mobility' && k !== 'budget' && k !== 'continuumFloor' && k !== 'continuumCeiling') {
+        k !== 'mobility' && k !== 'continuumFloor' && k !== 'continuumCeiling') {
       problems.push(k + ': free text is not allowed in a need-state');
     }
   });

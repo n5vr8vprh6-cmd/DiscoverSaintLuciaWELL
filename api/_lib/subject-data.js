@@ -112,9 +112,33 @@ async function findSubject(email) {
     notes = data || [];
   }
 
+  /* The consultation is a record ABOUT this person — what an advisor
+     understood them to want — and the itineraries are documents that were
+     issued to them. Both are personal data, both cascade from journey_shares,
+     and both must appear here or the subject-rights screen reports a complete
+     picture it does not have. A missing table means migration 022 has not run,
+     which is an empty list rather than an error. */
+  let consultations = [];
+  let itineraries = [];
+  if (rows.length) {
+    const ids = rows.map((r) => r.id);
+    const c = await supabase.from('journey_consultations')
+      .select('id, share_id, advisor_id, created_at, updated_at, trigger, uncertainty, readiness, party, orientation, budget, nights, constraints, current_states, desired_states, village_weights, compass_weights, continuum_floor, continuum_ceiling')
+      .in('share_id', ids);
+    consultations = c.data || [];
+
+    const i = await supabase.from('journey_itineraries')
+      .select('id, share_id, advisor_id, version, issued_at, revoked_at, share_expires_at, view_count, last_viewed_at, document')
+      .in('share_id', ids).not('issued_at', 'is', null)
+      .order('version', { ascending: true });
+    itineraries = i.data || [];
+  }
+
   return {
     email: norm,
     key: subjectKey(norm),
+    consultations,
+    itineraries,
     journeys: rows.map((r) => Object.assign({}, r, {
       advisor: r.advisor_id ? (byId[r.advisor_id] || null) : null,
       notes: notes.filter((n) => n.share_id === r.id)
@@ -156,6 +180,36 @@ function accessExport(found) {
         in_your_own_words: j.context
       },
       your_journey_finder_answers: j.answers,
+      /* Codes, because that is genuinely all that is stored — the consultation
+         table carries no prose about anybody. Saying so plainly is more honest
+         than translating them into sentences we then have to stand behind. */
+      what_your_advisor_recorded_about_what_you_wanted:
+        (found.consultations || []).filter((c) => c.share_id === j.id).map((c) => ({
+          recorded_at: c.updated_at || c.created_at,
+          moving_away_from: c.current_states,
+          moving_toward: c.desired_states,
+          why_now: c.trigger,
+          what_was_uncertain: c.uncertainty,
+          how_ready: c.readiness,
+          travelling_as: c.party,
+          how_they_relate_to_wellness: c.orientation,
+          budget_band: c.budget,
+          nights: c.nights,
+          constraints: c.constraints,
+          places_it_pointed_to: c.village_weights,
+          directions_it_pointed_to: c.compass_weights,
+          depth_discussed: [c.continuum_floor, c.continuum_ceiling].filter(Boolean)
+        })),
+      itineraries_issued_to_you:
+        (found.itineraries || []).filter((i) => i.share_id === j.id).map((i) => ({
+          version: i.version,
+          issued_at: i.issued_at,
+          withdrawn_at: i.revoked_at,
+          link_expires_at: i.share_expires_at,
+          times_opened: i.view_count,
+          last_opened_at: i.last_viewed_at,
+          the_document: i.document
+        })),
       villages_it_pointed_to: j.villages,
       consent: { given_at: j.consent_at, you_agreed_to: j.consent_text },
       how_the_advisor_has_worked_it: j.stage,
@@ -244,6 +298,13 @@ async function eraseSubject(email) {
   const { data: notes } = await supabase
     .from('advisor_notes').select('id').in('share_id', rows.map((r) => r.id));
 
+  /* Same reasoning as the notes above: read the ids BEFORE the delete so the
+     cascade can be checked afterwards against rows we know existed. */
+  const { data: consults } = await supabase
+    .from('journey_consultations').select('id').in('share_id', rows.map((r) => r.id));
+  const { data: itins } = await supabase
+    .from('journey_itineraries').select('id').in('share_id', rows.map((r) => r.id));
+
   const { error } = await supabase.from('journey_shares').delete().eq('consumer_email', norm);
   if (error) { console.error('eraseSubject', error); return { ok: false, error: 'failed' }; }
 
@@ -257,11 +318,21 @@ async function eraseSubject(email) {
       .from('advisor_notes').select('id').in('id', notes.map((n) => n.id));
     orphans = (left || []).length;
   }
+  /* A design workspace that outlives its Journey is an erasure that reported
+     success and left a record of what somebody wanted behind it. Counted into
+     the same number, because "orphans" is the one figure whoever ran this reads. */
+  for (const [table, before] of [['journey_consultations', consults], ['journey_itineraries', itins]]) {
+    if (!before || !before.length) continue;
+    const { data: left } = await supabase.from(table).select('id').in('id', before.map((r) => r.id));
+    orphans += (left || []).length;
+  }
 
   return {
     ok: true,
     journeys: rows.length,
     notes: (notes || []).length,
+    consultations: (consults || []).length,
+    itineraries: (itins || []).length,
     orphans,
     advisors: [...new Set(rows.map((r) => r.advisor_id).filter(Boolean))].length,
     waitlist: waitlistRemoved

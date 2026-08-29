@@ -839,6 +839,24 @@ module.exports = {
         "label": "Transfer tolerance"
       }
     ],
+    "budget": [
+      {
+        "key": "entry",
+        "label": "Value-led"
+      },
+      {
+        "key": "mid",
+        "label": "Comfortable"
+      },
+      {
+        "key": "premium",
+        "label": "Premium"
+      },
+      {
+        "key": "open",
+        "label": "Open, if it is right"
+      }
+    ],
     "scales": [
       {
         "key": "rhythm",
