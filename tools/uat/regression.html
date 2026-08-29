@@ -88,6 +88,9 @@ header.top {
 .pri { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.1rem 0.4rem;
   border: 1px solid var(--line); border-radius: 2px; color: var(--muted); white-space: nowrap; }
 .pri--1 { border-color: var(--coral); color: #a8331a; font-weight: 700; }
+.area-pick { font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+.area-pick select { font: inherit; font-size: 0.8rem; padding: 0.2rem 0.3rem; }
+.showing { font-size: 0.75rem; opacity: 0.7; margin-left: 0.4rem; }
 .stale { font-size: 0.68rem; background: var(--gold); color: #fff; padding: 0.1rem 0.4rem; border-radius: 2px; }
 
 .needs, .blocked-note { margin: 0.5rem 0 0; font-size: 0.82rem; color: var(--muted); }
@@ -168,6 +171,19 @@ header.top {
       <button type="button" data-filter="untested" aria-pressed="false">Untested</button>
       <button type="button" data-filter="failures" aria-pressed="false">Failures</button>
       <span class="sep"></span>
+      
+      <label class="area-pick">Show
+        <select id="area-filter">
+          <option value="">Everything</option>
+          <optgroup label="Pass"><option value="pass:ASK WELL">ASK WELL (20)</option>
+          </optgroup>
+          <optgroup label="Area">
+          <option value="area:Before you start">Before you start (10)</option><option value="area:Public pages">Public pages (8)</option><option value="area:Journey Finder">Journey Finder (12)</option><option value="area:Sharing">Sharing (5)</option><option value="area:WELL link">WELL link (2)</option><option value="area:Sweepstakes">Sweepstakes (5)</option><option value="area:Campaign">Campaign (5)</option><option value="area:Registration">Registration (5)</option><option value="area:Sign in">Sign in (5)</option><option value="area:Hub home">Hub home (3)</option><option value="area:Journeys">Journeys (6)</option><option value="area:Campaign · intake">Campaign · intake (5)</option><option value="area:Campaign · persona">Campaign · persona (4)</option><option value="area:Campaign · brief">Campaign · brief (2)</option><option value="area:Campaign · plan">Campaign · plan (7)</option><option value="area:Campaign · assets">Campaign · assets (7)</option><option value="area:Campaign · report">Campaign · report (3)</option><option value="area:Campaign · profile fold">Campaign · profile fold (1)</option><option value="area:Account">Account (2)</option><option value="area:Immersion">Immersion (6)</option><option value="area:Console">Console (2)</option><option value="area:Advisors">Advisors (9)</option><option value="area:People">People (4)</option><option value="area:View-as">View-as (6)</option><option value="area:Audit">Audit (1)</option><option value="area:Subject rights">Subject rights (3)</option><option value="area:Retention">Retention (1)</option><option value="area:Claims">Claims (3)</option><option value="area:Consent">Consent (1)</option><option value="area:Claims ladder">Claims ladder (1)</option><option value="area:Foundations timing">Foundations timing (2)</option><option value="area:Tone">Tone (1)</option><option value="area:Images">Images (2)</option><option value="area:Build gate">Build gate (8)</option><option value="area:Webhook">Webhook (8)</option><option value="area:Access">Access (1)</option><option value="area:Rate limits">Rate limits (1)</option><option value="area:Layout">Layout (2)</option><option value="area:Accessibility">Accessibility (3)</option><option value="area:Hygiene">Hygiene (4)</option><option value="area:Brand">Brand (1)</option><option value="area:Cleanup">Cleanup (7)</option><option value="area:ASK WELL">ASK WELL (15)</option><option value="area:Playbook">Playbook (3)</option>
+          </optgroup>
+        </select>
+      </label>
+      <span class="showing" id="showing"></span>
+      <span class="sep"></span>
       <button type="button" id="export-md">Export ⇢ markdown</button>
       <button type="button" id="export-json">Backup JSON</button>
       <button type="button" id="import-json">Restore</button>
@@ -202,7 +218,7 @@ header.top {
     
 <article class="case" id="case-S-01" data-id="S-01" data-role="setup"
    data-pri="1" data-hash="1crgskg"
-   data-title="Run migration 017" data-expect="has_plan_builds 1, has_ledger 1, has_functions 2, and three NOTICEs confirming grants. No WARNING." data-area="Before you start">
+   data-title="Run migration 017" data-expect="has_plan_builds 1, has_ledger 1, has_functions 2, and three NOTICEs confirming grants. No WARNING." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-01</span>
     <h4>Run migration 017</h4>
@@ -233,7 +249,7 @@ header.top {
 </article>
 <article class="case" id="case-S-02" data-id="S-02" data-role="setup"
    data-pri="1" data-hash="1josxtk"
-   data-title="Confirm the ThriveCart wiring is still live" data-expect="A 200 with reason &quot;unauthorised&quot;. NOT &quot;not_configured&quot;, which would mean the secret never reached Vercel." data-area="Before you start">
+   data-title="Confirm the ThriveCart wiring is still live" data-expect="A 200 with reason &quot;unauthorised&quot;. NOT &quot;not_configured&quot;, which would mean the secret never reached Vercel." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-02</span>
     <h4>Confirm the ThriveCart wiring is still live</h4>
@@ -264,7 +280,7 @@ header.top {
 </article>
 <article class="case" id="case-S-03" data-id="S-03" data-role="setup"
    data-pri="1" data-hash="1apksng"
-   data-title="Fix the split MX before trusting any email case" data-expect="One clear primary. Not two records both at preference 10." data-area="Before you start">
+   data-title="Fix the split MX before trusting any email case" data-expect="One clear primary. Not two records both at preference 10." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-03</span>
     <h4>Fix the split MX before trusting any email case</h4>
@@ -295,7 +311,7 @@ header.top {
 </article>
 <article class="case" id="case-S-04" data-id="S-04" data-role="setup"
    data-pri="1" data-hash="no9ykk"
-   data-title="Prove both test addresses actually receive mail" data-expect="All four arrive in the concierge inbox." data-area="Before you start">
+   data-title="Prove both test addresses actually receive mail" data-expect="All four arrive in the concierge inbox." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-04</span>
     <h4>Prove both test addresses actually receive mail</h4>
@@ -326,7 +342,7 @@ header.top {
 </article>
 <article class="case" id="case-S-05" data-id="S-05" data-role="setup"
    data-pri="1" data-hash="1d3ei9d"
-   data-title="Create two test advisor accounts" data-expect="Both go to pending, both approve cleanly, and both can then sign in. NO approval email — see below." data-area="Before you start">
+   data-title="Create two test advisor accounts" data-expect="Both go to pending, both approve cleanly, and both can then sign in. NO approval email — see below." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-05</span>
     <h4>Create two test advisor accounts</h4>
@@ -357,7 +373,7 @@ header.top {
 </article>
 <article class="case" id="case-S-06" data-id="S-06" data-role="setup"
    data-pri="2" data-hash="xayq6n"
-   data-title="Check the Encharge events are arriving" data-expect="Both events present against both people, with the right properties." data-area="Before you start">
+   data-title="Check the Encharge events are arriving" data-expect="Both events present against both people, with the right properties." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-06</span>
     <h4>Check the Encharge events are arriving</h4>
@@ -388,7 +404,7 @@ header.top {
 </article>
 <article class="case" id="case-S-07" data-id="S-07" data-role="setup"
    data-pri="1" data-hash="1xubhxo"
-   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start">
+   data-title="Grant Foundations to the second test advisor" data-expect="Their record shows a Foundations date." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-07</span>
     <h4>Grant Foundations to the second test advisor</h4>
@@ -419,7 +435,7 @@ header.top {
 </article>
 <article class="case" id="case-S-08" data-id="S-08" data-role="setup"
    data-pri="2" data-hash="iizp1w"
-   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start">
+   data-title="Note the starting row counts" data-expect="Four numbers written down." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-08</span>
     <h4>Note the starting row counts</h4>
@@ -450,7 +466,7 @@ header.top {
 </article>
 <article class="case" id="case-S-09" data-id="S-09" data-role="setup"
    data-pri="2" data-hash="77j6gp"
-   data-title="Have a WELL link and a second browser ready" data-expect="Two independent sessions, one signed in and one not." data-area="Before you start">
+   data-title="Have a WELL link and a second browser ready" data-expect="Two independent sessions, one signed in and one not." data-area="Before you start" data-pass="">
   <div class="case-head">
     <span class="cid">S-09</span>
     <h4>Have a WELL link and a second browser ready</h4>
@@ -481,7 +497,7 @@ header.top {
 </article>
 <article class="case" id="case-S-10" data-id="S-10" data-role="setup"
    data-pri="1" data-hash="1j63gx1"
-   data-title="Apply migration 022 and confirm the deployment can see it" data-expect="The check prints &quot;022 is applied and the deployment can see it&quot; and exits 0. Five tables, 25 need-state columns, the token and ledger columns, and all eight icp_ columns on gtm_profile." data-area="Before you start">
+   data-title="Apply migration 022 and confirm the deployment can see it" data-expect="The check prints &quot;022 is applied and the deployment can see it&quot; and exits 0. Five tables, 25 need-state columns, the token and ledger columns, and all eight icp_ columns on gtm_profile." data-area="Before you start" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">S-10</span>
     <h4>Apply migration 022 and confirm the deployment can see it</h4>
@@ -525,7 +541,7 @@ header.top {
     
 <article class="case" id="case-C-01" data-id="C-01" data-role="consumer"
    data-pri="1" data-hash="16aszv4"
-   data-title="The home page loads and the hero reads correctly" data-expect="Hero fold is complete and legible, nothing overlaps, no console errors." data-area="Public pages">
+   data-title="The home page loads and the hero reads correctly" data-expect="Hero fold is complete and legible, nothing overlaps, no console errors." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-01</span>
     <h4>The home page loads and the hero reads correctly</h4>
@@ -556,7 +572,7 @@ header.top {
 </article>
 <article class="case" id="case-C-02" data-id="C-02" data-role="consumer"
    data-pri="1" data-hash="bojg5v"
-   data-title="The Journey page loads and the Finder starts" data-expect="Question 1 appears; the ambient video plays or degrades quietly." data-area="Public pages">
+   data-title="The Journey page loads and the Finder starts" data-expect="Question 1 appears; the ambient video plays or degrades quietly." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-02</span>
     <h4>The Journey page loads and the Finder starts</h4>
@@ -587,7 +603,7 @@ header.top {
 </article>
 <article class="case" id="case-C-03" data-id="C-03" data-role="consumer"
    data-pri="2" data-hash="vxw6na"
-   data-title="The remaining public pages load clean" data-expect="Each renders fully with no console errors and no broken images." data-area="Public pages">
+   data-title="The remaining public pages load clean" data-expect="Each renders fully with no console errors and no broken images." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-03</span>
     <h4>The remaining public pages load clean</h4>
@@ -618,7 +634,7 @@ header.top {
 </article>
 <article class="case" id="case-C-04" data-id="C-04" data-role="consumer"
    data-pri="2" data-hash="10fidg6"
-   data-title="The advisor-facing public pages load clean" data-expect="All six render; /foundations redirects to /advisors/foundations." data-area="Public pages">
+   data-title="The advisor-facing public pages load clean" data-expect="All six render; /foundations redirects to /advisors/foundations." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-04</span>
     <h4>The advisor-facing public pages load clean</h4>
@@ -649,7 +665,7 @@ header.top {
 </article>
 <article class="case" id="case-C-22" data-id="C-22" data-role="consumer"
    data-pri="1" data-hash="1551ryv"
-   data-title="Both Foundations buy buttons reach a live checkout" data-expect="All four open a ThriveCart checkout in a new tab, Standard at 97 and VIP at ,497 — matching the prices on our page." data-area="Public pages">
+   data-title="Both Foundations buy buttons reach a live checkout" data-expect="All four open a ThriveCart checkout in a new tab, Standard at 97 and VIP at ,497 — matching the prices on our page." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-22</span>
     <h4>Both Foundations buy buttons reach a live checkout</h4>
@@ -680,7 +696,7 @@ header.top {
 </article>
 <article class="case" id="case-C-23" data-id="C-23" data-role="consumer"
    data-pri="2" data-hash="1o8zdhm"
-   data-title="The recruitment pages describe the product that exists" data-expect="Four things listed on the Hub page including the 30-day campaign; the campaign named in Activate; the only in-development claim left is the advisor designation." data-area="Public pages">
+   data-title="The recruitment pages describe the product that exists" data-expect="Four things listed on the Hub page including the 30-day campaign; the campaign named in Activate; the only in-development claim left is the advisor designation." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-23</span>
     <h4>The recruitment pages describe the product that exists</h4>
@@ -711,7 +727,7 @@ header.top {
 </article>
 <article class="case" id="case-C-24" data-id="C-24" data-role="consumer"
    data-pri="1" data-hash="1n9wmg0"
-   data-title="The Hub hero can be acted on, and shows what is inside" data-expect="Both buttons are visible in the first screen and land on /hub/register and /hub/login. The screenshot shows a briefing with an obviously invented traveller." data-area="Public pages">
+   data-title="The Hub hero can be acted on, and shows what is inside" data-expect="Both buttons are visible in the first screen and land on /hub/register and /hub/login. The screenshot shows a briefing with an obviously invented traveller." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-24</span>
     <h4>The Hub hero can be acted on, and shows what is inside</h4>
@@ -742,7 +758,7 @@ header.top {
 </article>
 <article class="case" id="case-C-05" data-id="C-05" data-role="consumer"
    data-pri="2" data-hash="9zzswu"
-   data-title="The policy pages load and are current" data-expect="All three render and read as current — retention stated, contact route present." data-area="Public pages">
+   data-title="The policy pages load and are current" data-expect="All three render and read as current — retention stated, contact route present." data-area="Public pages" data-pass="">
   <div class="case-head">
     <span class="cid">C-05</span>
     <h4>The policy pages load and are current</h4>
@@ -777,7 +793,7 @@ header.top {
     
 <article class="case" id="case-C-06" data-id="C-06" data-role="consumer"
    data-pri="1" data-hash="7q743u"
-   data-title="All six questions answer and advance" data-expect="Each question advances cleanly; progress is visible; the result appears at the end." data-area="Journey Finder">
+   data-title="All six questions answer and advance" data-expect="Each question advances cleanly; progress is visible; the result appears at the end." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-06</span>
     <h4>All six questions answer and advance</h4>
@@ -808,7 +824,7 @@ header.top {
 </article>
 <article class="case" id="case-C-07" data-id="C-07" data-role="consumer"
    data-pri="2" data-hash="1ls91h1"
-   data-title="Going back preserves earlier answers" data-expect="Earlier answers are still selected; the changed one is respected." data-area="Journey Finder">
+   data-title="Going back preserves earlier answers" data-expect="Earlier answers are still selected; the changed one is respected." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-07</span>
     <h4>Going back preserves earlier answers</h4>
@@ -839,7 +855,7 @@ header.top {
 </article>
 <article class="case" id="case-C-08" data-id="C-08" data-role="consumer"
    data-pri="1" data-hash="1ub9pey"
-   data-title="The result names villages and reads as written for you" data-expect="Villages are named, the copy reflects the answers given, nothing reads as a placeholder." data-area="Journey Finder">
+   data-title="The result names villages and reads as written for you" data-expect="Villages are named, the copy reflects the answers given, nothing reads as a placeholder." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-08</span>
     <h4>The result names villages and reads as written for you</h4>
@@ -870,7 +886,7 @@ header.top {
 </article>
 <article class="case" id="case-C-09" data-id="C-09" data-role="consumer"
    data-pri="2" data-hash="1awuukd"
-   data-title="Answering differently produces a different result" data-expect="The two results differ in villages and in register." data-area="Journey Finder">
+   data-title="Answering differently produces a different result" data-expect="The two results differ in villages and in register." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-09</span>
     <h4>Answering differently produces a different result</h4>
@@ -901,7 +917,7 @@ header.top {
 </article>
 <article class="case" id="case-C-10" data-id="C-10" data-role="consumer"
    data-pri="2" data-hash="sub1gu"
-   data-title="The wellness orientation changes the register, not the villages" data-expect="The same three villages both times. A different &quot;They are after…&quot; line, and a different second question in the call prompts — &quot;What would make this feel like a holiday first?&quot; against &quot;Have you done something like this before?&quot;" data-area="Journey Finder">
+   data-title="The wellness orientation changes the register, not the villages" data-expect="The same three villages both times. A different &quot;They are after…&quot; line, and a different second question in the call prompts — &quot;What would make this feel like a holiday first?&quot; against &quot;Have you done something like this before?&quot;" data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-10</span>
     <h4>The wellness orientation changes the register, not the villages</h4>
@@ -932,7 +948,7 @@ header.top {
 </article>
 <article class="case" id="case-C-25" data-id="C-25" data-role="consumer"
    data-pri="2" data-hash="84iu2h"
-   data-title="Every village is reachable, and no one question decides the result" data-expect="Exits 0. Every village is the closest match at least 8% of the time, and no question flips the result more than 90% of the time. It exits 2 instead if it has stopped agreeing with the scorer in js/journey.js." data-area="Journey Finder">
+   data-title="Every village is reachable, and no one question decides the result" data-expect="Exits 0. Every village is the closest match at least 8% of the time, and no question flips the result more than 90% of the time. It exits 2 instead if it has stopped agreeing with the scorer in js/journey.js." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-25</span>
     <h4>Every village is reachable, and no one question decides the result</h4>
@@ -963,7 +979,7 @@ header.top {
 </article>
 <article class="case" id="case-C-21" data-id="C-21" data-role="consumer"
    data-pri="3" data-hash="z74jth"
-   data-title="The Finder works on a phone" data-expect="Every option is tappable, nothing is clipped, the result is readable." data-area="Journey Finder">
+   data-title="The Finder works on a phone" data-expect="Every option is tappable, nothing is clipped, the result is readable." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-21</span>
     <h4>The Finder works on a phone</h4>
@@ -994,7 +1010,7 @@ header.top {
 </article>
 <article class="case" id="case-C-26" data-id="C-26" data-role="consumer"
    data-pri="3" data-hash="1vbjowm"
-   data-title="The compass is centred and uncut, on the home page and on the result" data-expect="Exits 0. No direction is cut off at any width, and the ring is centred rather than sitting a little right of middle." data-area="Journey Finder">
+   data-title="The compass is centred and uncut, on the home page and on the result" data-expect="Exits 0. No direction is cut off at any width, and the ring is centred rather than sitting a little right of middle." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-26</span>
     <h4>The compass is centred and uncut, on the home page and on the result</h4>
@@ -1025,7 +1041,7 @@ header.top {
 </article>
 <article class="case" id="case-C-27" data-id="C-27" data-role="consumer"
    data-pri="1" data-hash="1ikhrve"
-   data-title="&quot;Send it to me&quot; actually sends it" data-expect="The button says Sending… then Sent and stays disabled. The email names your three villages and carries a link that reopens the same result." data-area="Journey Finder">
+   data-title="&quot;Send it to me&quot; actually sends it" data-expect="The button says Sending… then Sent and stays disabled. The email names your three villages and carries a link that reopens the same result." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-27</span>
     <h4>&quot;Send it to me&quot; actually sends it</h4>
@@ -1056,7 +1072,7 @@ header.top {
 </article>
 <article class="case" id="case-C-28" data-id="C-28" data-role="consumer"
    data-pri="2" data-hash="qmj4eo"
-   data-title="The capture form tells you what happened" data-expect="A specific message each time, sitting just under the button rather than below the small print. The button changes while it works." data-area="Journey Finder">
+   data-title="The capture form tells you what happened" data-expect="A specific message each time, sitting just under the button rather than below the small print. The button changes while it works." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">C-28</span>
     <h4>The capture form tells you what happened</h4>
@@ -1091,7 +1107,7 @@ header.top {
     
 <article class="case" id="case-C-11" data-id="C-11" data-role="consumer"
    data-pri="1" data-hash="m6ng82"
-   data-title="The result link restores the same result" data-expect="The same result renders immediately, without replaying the questions." data-area="Sharing">
+   data-title="The result link restores the same result" data-expect="The same result renders immediately, without replaying the questions." data-area="Sharing" data-pass="">
   <div class="case-head">
     <span class="cid">C-11</span>
     <h4>The result link restores the same result</h4>
@@ -1122,7 +1138,7 @@ header.top {
 </article>
 <article class="case" id="case-C-12" data-id="C-12" data-role="consumer"
    data-pri="1" data-hash="1ibs1k8"
-   data-title="The share panel asks for consent before the email" data-expect="A consent line is visible before or beside the email field, and nothing is pre-ticked." data-area="Sharing">
+   data-title="The share panel asks for consent before the email" data-expect="A consent line is visible before or beside the email field, and nothing is pre-ticked." data-area="Sharing" data-pass="">
   <div class="case-head">
     <span class="cid">C-12</span>
     <h4>The share panel asks for consent before the email</h4>
@@ -1153,7 +1169,7 @@ header.top {
 </article>
 <article class="case" id="case-C-13" data-id="C-13" data-role="consumer"
    data-pri="1" data-hash="cdfxv7"
-   data-title="Sharing with a specific advisor reaches that advisor" data-expect="The Journey appears under concierge+uat1@discoversaintluciawell.com at /hub/journeys, not under anybody else." data-area="Sharing">
+   data-title="Sharing with a specific advisor reaches that advisor" data-expect="The Journey appears under concierge+uat1@discoversaintluciawell.com at /hub/journeys, not under anybody else." data-area="Sharing" data-pass="">
   <div class="case-head">
     <span class="cid">C-13</span>
     <h4>Sharing with a specific advisor reaches that advisor</h4>
@@ -1184,7 +1200,7 @@ header.top {
 </article>
 <article class="case" id="case-C-14" data-id="C-14" data-role="consumer"
    data-pri="2" data-hash="1vzptck"
-   data-title="Sharing with no advisor goes to the house account" data-expect="The Journey is captured against the house account rather than lost." data-area="Sharing">
+   data-title="Sharing with no advisor goes to the house account" data-expect="The Journey is captured against the house account rather than lost." data-area="Sharing" data-pass="">
   <div class="case-head">
     <span class="cid">C-14</span>
     <h4>Sharing with no advisor goes to the house account</h4>
@@ -1215,7 +1231,7 @@ header.top {
 </article>
 <article class="case" id="case-C-15" data-id="C-15" data-role="consumer"
    data-pri="2" data-hash="1ksklyb"
-   data-title="The confirmation says only what is true" data-expect="It does not promise a reply within a timeframe nobody has committed to, and does not claim the data is shared more widely than it is." data-area="Sharing">
+   data-title="The confirmation says only what is true" data-expect="It does not promise a reply within a timeframe nobody has committed to, and does not claim the data is shared more widely than it is." data-area="Sharing" data-pass="">
   <div class="case-head">
     <span class="cid">C-15</span>
     <h4>The confirmation says only what is true</h4>
@@ -1250,7 +1266,7 @@ header.top {
     
 <article class="case" id="case-C-16" data-id="C-16" data-role="consumer"
    data-pri="1" data-hash="178oevg"
-   data-title="A WELL link resolves and records a visit" data-expect="It lands on the site with ?advisor= in the address, and Visits is one higher than the number you wrote down." data-area="WELL link">
+   data-title="A WELL link resolves and records a visit" data-expect="It lands on the site with ?advisor= in the address, and Visits is one higher than the number you wrote down." data-area="WELL link" data-pass="">
   <div class="case-head">
     <span class="cid">C-16</span>
     <h4>A WELL link resolves and records a visit</h4>
@@ -1281,7 +1297,7 @@ header.top {
 </article>
 <article class="case" id="case-C-17" data-id="C-17" data-role="consumer"
    data-pri="3" data-hash="3vzihp"
-   data-title="An unknown WELL code fails gracefully" data-expect="A sensible page, not a stack trace and not a blank screen." data-area="WELL link">
+   data-title="An unknown WELL code fails gracefully" data-expect="A sensible page, not a stack trace and not a blank screen." data-area="WELL link" data-pass="">
   <div class="case-head">
     <span class="cid">C-17</span>
     <h4>An unknown WELL code fails gracefully</h4>
@@ -1316,7 +1332,7 @@ header.top {
     
 <article class="case" id="case-C-18" data-id="C-18" data-role="consumer"
    data-pri="2" data-hash="gokkor"
-   data-title="The sweepstakes link opens the entry path" data-expect="The prize-draw variant renders with its own consent and rules." data-area="Sweepstakes">
+   data-title="The sweepstakes link opens the entry path" data-expect="The prize-draw variant renders with its own consent and rules." data-area="Sweepstakes" data-pass="">
   <div class="case-head">
     <span class="cid">C-18</span>
     <h4>The sweepstakes link opens the entry path</h4>
@@ -1347,7 +1363,7 @@ header.top {
 </article>
 <article class="case" id="case-C-19" data-id="C-19" data-role="consumer"
    data-pri="2" data-hash="6v06ok"
-   data-title="The entry confirmation is truthful" data-expect="It confirms entry without implying odds, a win, or a prize that is not on offer." data-area="Sweepstakes">
+   data-title="The entry confirmation is truthful" data-expect="It confirms entry without implying odds, a win, or a prize that is not on offer." data-area="Sweepstakes" data-pass="">
   <div class="case-head">
     <span class="cid">C-19</span>
     <h4>The entry confirmation is truthful</h4>
@@ -1378,7 +1394,7 @@ header.top {
 </article>
 <article class="case" id="case-C-20" data-id="C-20" data-role="consumer"
    data-pri="2" data-hash="lyzz1k"
-   data-title="A second entry by the same person is refused" data-expect="The second attempt is refused clearly, not silently duplicated." data-area="Sweepstakes">
+   data-title="A second entry by the same person is refused" data-expect="The second attempt is refused clearly, not silently duplicated." data-area="Sweepstakes" data-pass="">
   <div class="case-head">
     <span class="cid">C-20</span>
     <h4>A second entry by the same person is refused</h4>
@@ -1422,7 +1438,7 @@ header.top {
     
 <article class="case" id="case-A-54" data-id="A-54" data-role="advisor"
    data-pri="3" data-hash="70vu37"
-   data-title="The Hub says when the last visit was, not just how many" data-expect="&quot;Last visit just now.&quot; Before any visit exists, the line is absent rather than saying never." data-area="Campaign">
+   data-title="The Hub says when the last visit was, not just how many" data-expect="&quot;Last visit just now.&quot; Before any visit exists, the line is absent rather than saying never." data-area="Campaign" data-pass="">
   <div class="case-head">
     <span class="cid">A-54</span>
     <h4>The Hub says when the last visit was, not just how many</h4>
@@ -1453,7 +1469,7 @@ header.top {
 </article>
 <article class="case" id="case-A-57" data-id="A-57" data-role="advisor"
    data-pri="2" data-hash="ryekct"
-   data-title="At zero, the offer depends on whether anything happened" data-expect="No results: the $9 pack leads and Foundations is one quiet line. With results: Foundations leads and the pack is behind &quot;not right now&quot;. Both reachable either way." data-area="Campaign">
+   data-title="At zero, the offer depends on whether anything happened" data-expect="No results: the $9 pack leads and Foundations is one quiet line. With results: Foundations leads and the pack is behind &quot;not right now&quot;. Both reachable either way." data-area="Campaign" data-pass="">
   <div class="case-head">
     <span class="cid">A-57</span>
     <h4>At zero, the offer depends on whether anything happened</h4>
@@ -1484,7 +1500,7 @@ header.top {
 </article>
 <article class="case" id="case-A-58" data-id="A-58" data-role="advisor"
    data-pri="2" data-hash="k42xzb"
-   data-title="The upsell page argues from YOUR campaign, not from a rule" data-expect="It opens on what YOUR campaign was built from: how many intake answers you gave, how it was sized, your readiness figure. Then at most two gaps you actually have, each with what it costs in copy you have already read, and the claims rung last." data-area="Campaign">
+   data-title="The upsell page argues from YOUR campaign, not from a rule" data-expect="It opens on what YOUR campaign was built from: how many intake answers you gave, how it was sized, your readiness figure. Then at most two gaps you actually have, each with what it costs in copy you have already read, and the claims rung last." data-area="Campaign" data-pass="">
   <div class="case-head">
     <span class="cid">A-58</span>
     <h4>The upsell page argues from YOUR campaign, not from a rule</h4>
@@ -1515,7 +1531,7 @@ header.top {
 </article>
 <article class="case" id="case-A-59" data-id="A-59" data-role="advisor"
    data-pri="1" data-hash="1byols4"
-   data-title="An advisor who HAS done the work is not told they have not" data-expect="None. The headline reads &quot;nearly everything it can use&quot;, and the only consequence left is what their copy may claim." data-area="Campaign">
+   data-title="An advisor who HAS done the work is not told they have not" data-expect="None. The headline reads &quot;nearly everything it can use&quot;, and the only consequence left is what their copy may claim." data-area="Campaign" data-pass="">
   <div class="case-head">
     <span class="cid">A-59</span>
     <h4>An advisor who HAS done the work is not told they have not</h4>
@@ -1546,7 +1562,7 @@ header.top {
 </article>
 <article class="case" id="case-A-60" data-id="A-60" data-role="advisor"
    data-pri="2" data-hash="1250r5u"
-   data-title="Nothing on the empty screen describes a campaign you never built" data-expect="The heading matches the body. Never &quot;Build your plan&quot; above a paragraph saying you cannot, and never &quot;This is your campaign&quot; to somebody without one." data-area="Campaign">
+   data-title="Nothing on the empty screen describes a campaign you never built" data-expect="The heading matches the body. Never &quot;Build your plan&quot; above a paragraph saying you cannot, and never &quot;This is your campaign&quot; to somebody without one." data-area="Campaign" data-pass="">
   <div class="case-head">
     <span class="cid">A-60</span>
     <h4>Nothing on the empty screen describes a campaign you never built</h4>
@@ -1581,7 +1597,7 @@ header.top {
     
 <article class="case" id="case-A-01" data-id="A-01" data-role="advisor"
    data-pri="1" data-hash="1u24jdb"
-   data-title="Registration accepts a complete application" data-expect="A pending confirmation, and the account appears in the admin queue." data-area="Registration">
+   data-title="Registration accepts a complete application" data-expect="A pending confirmation, and the account appears in the admin queue." data-area="Registration" data-pass="">
   <div class="case-head">
     <span class="cid">A-01</span>
     <h4>Registration accepts a complete application</h4>
@@ -1612,7 +1628,7 @@ header.top {
 </article>
 <article class="case" id="case-A-02" data-id="A-02" data-role="advisor"
    data-pri="2" data-hash="1afy6qt"
-   data-title="Registration refuses a duplicate email" data-expect="A clear refusal, and no second account is created." data-area="Registration">
+   data-title="Registration refuses a duplicate email" data-expect="A clear refusal, and no second account is created." data-area="Registration" data-pass="">
   <div class="case-head">
     <span class="cid">A-02</span>
     <h4>Registration refuses a duplicate email</h4>
@@ -1643,7 +1659,7 @@ header.top {
 </article>
 <article class="case" id="case-A-03" data-id="A-03" data-role="advisor"
    data-pri="2" data-hash="2nz905"
-   data-title="A weak password is refused" data-expect="Refused before submission, with the requirement stated." data-area="Registration">
+   data-title="A weak password is refused" data-expect="Refused before submission, with the requirement stated." data-area="Registration" data-pass="">
   <div class="case-head">
     <span class="cid">A-03</span>
     <h4>A weak password is refused</h4>
@@ -1674,7 +1690,7 @@ header.top {
 </article>
 <article class="case" id="case-A-04" data-id="A-04" data-role="advisor"
    data-pri="2" data-hash="by203z"
-   data-title="The undertaking must be accepted" data-expect="Submission is blocked." data-area="Registration">
+   data-title="The undertaking must be accepted" data-expect="Submission is blocked." data-area="Registration" data-pass="">
   <div class="case-head">
     <span class="cid">A-04</span>
     <h4>The undertaking must be accepted</h4>
@@ -1705,7 +1721,7 @@ header.top {
 </article>
 <article class="case" id="case-A-05" data-id="A-05" data-role="advisor"
    data-pri="1" data-hash="534pcy"
-   data-title="A pending advisor cannot use the Hub yet" data-expect="A pending state that explains what happens next — not a broken Hub and not full access." data-area="Registration">
+   data-title="A pending advisor cannot use the Hub yet" data-expect="A pending state that explains what happens next — not a broken Hub and not full access." data-area="Registration" data-pass="">
   <div class="case-head">
     <span class="cid">A-05</span>
     <h4>A pending advisor cannot use the Hub yet</h4>
@@ -1740,7 +1756,7 @@ header.top {
     
 <article class="case" id="case-A-06" data-id="A-06" data-role="advisor"
    data-pri="1" data-hash="1h4kmw9"
-   data-title="Sign in works and lands on the Hub" data-expect="Lands on /hub with their name shown." data-area="Sign in">
+   data-title="Sign in works and lands on the Hub" data-expect="Lands on /hub with their name shown." data-area="Sign in" data-pass="">
   <div class="case-head">
     <span class="cid">A-06</span>
     <h4>Sign in works and lands on the Hub</h4>
@@ -1771,7 +1787,7 @@ header.top {
 </article>
 <article class="case" id="case-A-07" data-id="A-07" data-role="advisor"
    data-pri="2" data-hash="1ech9cs"
-   data-title="A wrong password is refused without leaking anything" data-expect="A refusal that does not reveal whether the email exists." data-area="Sign in">
+   data-title="A wrong password is refused without leaking anything" data-expect="A refusal that does not reveal whether the email exists." data-area="Sign in" data-pass="">
   <div class="case-head">
     <span class="cid">A-07</span>
     <h4>A wrong password is refused without leaking anything</h4>
@@ -1802,7 +1818,7 @@ header.top {
 </article>
 <article class="case" id="case-A-08" data-id="A-08" data-role="advisor"
    data-pri="2" data-hash="tjt2p0"
-   data-title="Forgot password sends a working reset" data-expect="The email arrives, the link works once, the new password signs in." data-area="Sign in">
+   data-title="Forgot password sends a working reset" data-expect="The email arrives, the link works once, the new password signs in." data-area="Sign in" data-pass="">
   <div class="case-head">
     <span class="cid">A-08</span>
     <h4>Forgot password sends a working reset</h4>
@@ -1833,7 +1849,7 @@ header.top {
 </article>
 <article class="case" id="case-A-09" data-id="A-09" data-role="advisor"
    data-pri="3" data-hash="12pk90m"
-   data-title="A used or stale reset link is refused" data-expect="Refused, with a route to request a new one." data-area="Sign in">
+   data-title="A used or stale reset link is refused" data-expect="Refused, with a route to request a new one." data-area="Sign in" data-pass="">
   <div class="case-head">
     <span class="cid">A-09</span>
     <h4>A used or stale reset link is refused</h4>
@@ -1864,7 +1880,7 @@ header.top {
 </article>
 <article class="case" id="case-A-10" data-id="A-10" data-role="advisor"
    data-pri="2" data-hash="1u2bb2p"
-   data-title="Sign out ends the session" data-expect="Both land on the login screen." data-area="Sign in">
+   data-title="Sign out ends the session" data-expect="Both land on the login screen." data-area="Sign in" data-pass="">
   <div class="case-head">
     <span class="cid">A-10</span>
     <h4>Sign out ends the session</h4>
@@ -1899,7 +1915,7 @@ header.top {
     
 <article class="case" id="case-A-50" data-id="A-50" data-role="advisor"
    data-pri="2" data-hash="17at83o"
-   data-title="The prominent Copy button actually copies" data-expect="The link is on the clipboard and the button says Copied. It does not scroll you to a second Copy button." data-area="Hub home">
+   data-title="The prominent Copy button actually copies" data-expect="The link is on the clipboard and the button says Copied. It does not scroll you to a second Copy button." data-area="Hub home" data-pass="">
   <div class="case-head">
     <span class="cid">A-50</span>
     <h4>The prominent Copy button actually copies</h4>
@@ -1930,7 +1946,7 @@ header.top {
 </article>
 <article class="case" id="case-A-11" data-id="A-11" data-role="advisor"
    data-pri="1" data-hash="bgdnci"
-   data-title="The Hub home shows the WELL link and the funnel" data-expect="Their WELL link, a QR code, and counts for visits, Journeys started and shared." data-area="Hub home">
+   data-title="The Hub home shows the WELL link and the funnel" data-expect="Their WELL link, a QR code, and counts for visits, Journeys started and shared." data-area="Hub home" data-pass="">
   <div class="case-head">
     <span class="cid">A-11</span>
     <h4>The Hub home shows the WELL link and the funnel</h4>
@@ -1961,7 +1977,7 @@ header.top {
 </article>
 <article class="case" id="case-A-12" data-id="A-12" data-role="advisor"
    data-pri="2" data-hash="fwls68"
-   data-title="The QR code downloads and scans" data-expect="It resolves to their WELL link." data-area="Hub home">
+   data-title="The QR code downloads and scans" data-expect="It resolves to their WELL link." data-area="Hub home" data-pass="">
   <div class="case-head">
     <span class="cid">A-12</span>
     <h4>The QR code downloads and scans</h4>
@@ -1996,7 +2012,7 @@ header.top {
     
 <article class="case" id="case-A-13" data-id="A-13" data-role="advisor"
    data-pri="1" data-hash="s6l0mn"
-   data-title="A shared Journey appears with the traveller&#39;s answers" data-expect="Their name, contact details, timing and the answers they gave." data-area="Journeys">
+   data-title="A shared Journey appears with the traveller&#39;s answers" data-expect="Their name, contact details, timing and the answers they gave." data-area="Journeys" data-pass="">
   <div class="case-head">
     <span class="cid">A-13</span>
     <h4>A shared Journey appears with the traveller&#39;s answers</h4>
@@ -2027,7 +2043,7 @@ header.top {
 </article>
 <article class="case" id="case-A-14" data-id="A-14" data-role="advisor"
    data-pri="2" data-hash="13u1xgv"
-   data-title="The list puts the ones needing attention first" data-expect="New and un-contacted ones sort above settled ones." data-area="Journeys">
+   data-title="The list puts the ones needing attention first" data-expect="New and un-contacted ones sort above settled ones." data-area="Journeys" data-pass="">
   <div class="case-head">
     <span class="cid">A-14</span>
     <h4>The list puts the ones needing attention first</h4>
@@ -2058,7 +2074,7 @@ header.top {
 </article>
 <article class="case" id="case-A-15" data-id="A-15" data-role="advisor"
    data-pri="2" data-hash="1aldb21"
-   data-title="Stage changes save and persist" data-expect="Each stage sticks." data-area="Journeys">
+   data-title="Stage changes save and persist" data-expect="Each stage sticks." data-area="Journeys" data-pass="">
   <div class="case-head">
     <span class="cid">A-15</span>
     <h4>Stage changes save and persist</h4>
@@ -2089,7 +2105,7 @@ header.top {
 </article>
 <article class="case" id="case-A-16" data-id="A-16" data-role="advisor"
    data-pri="2" data-hash="1p64966"
-   data-title="Notes save against the right Journey" data-expect="The note is on the first Journey and nowhere else." data-area="Journeys">
+   data-title="Notes save against the right Journey" data-expect="The note is on the first Journey and nowhere else." data-area="Journeys" data-pass="">
   <div class="case-head">
     <span class="cid">A-16</span>
     <h4>Notes save against the right Journey</h4>
@@ -2120,7 +2136,7 @@ header.top {
 </article>
 <article class="case" id="case-A-17" data-id="A-17" data-role="advisor"
    data-pri="2" data-hash="syry68"
-   data-title="The empty state reads well" data-expect="It explains how to get one rather than showing an empty table." data-area="Journeys">
+   data-title="The empty state reads well" data-expect="It explains how to get one rather than showing an empty table." data-area="Journeys" data-pass="">
   <div class="case-head">
     <span class="cid">A-17</span>
     <h4>The empty state reads well</h4>
@@ -2151,7 +2167,7 @@ header.top {
 </article>
 <article class="case" id="case-A-18" data-id="A-18" data-role="advisor"
    data-pri="2" data-hash="1hfwp3n"
-   data-title="The introduce flow composes a sensible message" data-expect="It reflects that traveller&#39;s answers and is editable before anything is sent." data-area="Journeys">
+   data-title="The introduce flow composes a sensible message" data-expect="It reflects that traveller&#39;s answers and is editable before anything is sent." data-area="Journeys" data-pass="">
   <div class="case-head">
     <span class="cid">A-18</span>
     <h4>The introduce flow composes a sensible message</h4>
@@ -2186,7 +2202,7 @@ header.top {
     
 <article class="case" id="case-A-19" data-id="A-19" data-role="advisor"
    data-pri="1" data-hash="1ain1xn"
-   data-title="The campaign screen loads with no plan" data-expect="A build section, a readiness percentage, the copy-paste prompt and the intake form, all open." data-area="Campaign · intake">
+   data-title="The campaign screen loads with no plan" data-expect="A build section, a readiness percentage, the copy-paste prompt and the intake form, all open." data-area="Campaign · intake" data-pass="">
   <div class="case-head">
     <span class="cid">A-19</span>
     <h4>The campaign screen loads with no plan</h4>
@@ -2217,7 +2233,7 @@ header.top {
 </article>
 <article class="case" id="case-A-20" data-id="A-20" data-role="advisor"
    data-pri="1" data-hash="d4nfnt"
-   data-title="Intake fields save independently" data-expect="Both persist; the empty fields are still empty and nothing was required." data-area="Campaign · intake">
+   data-title="Intake fields save independently" data-expect="Both persist; the empty fields are still empty and nothing was required." data-area="Campaign · intake" data-pass="">
   <div class="case-head">
     <span class="cid">A-20</span>
     <h4>Intake fields save independently</h4>
@@ -2248,7 +2264,7 @@ header.top {
 </article>
 <article class="case" id="case-A-55" data-id="A-55" data-role="advisor"
    data-pri="2" data-hash="1ugwfwy"
-   data-title="Each question can be handed to your own assistant, on its own" data-expect="Each button copies a prompt for its own question only — what we know about your business, the claim rules, and that one question. The answer fits the box it belongs to." data-area="Campaign · intake">
+   data-title="Each question can be handed to your own assistant, on its own" data-expect="Each button copies a prompt for its own question only — what we know about your business, the claim rules, and that one question. The answer fits the box it belongs to." data-area="Campaign · intake" data-pass="">
   <div class="case-head">
     <span class="cid">A-55</span>
     <h4>Each question can be handed to your own assistant, on its own</h4>
@@ -2279,7 +2295,7 @@ header.top {
 </article>
 <article class="case" id="case-A-21" data-id="A-21" data-role="advisor"
    data-pri="2" data-hash="6t4gvi"
-   data-title="The copy-paste prompt copies and is usable" data-expect="It produces answers worth pasting into the form." data-area="Campaign · intake">
+   data-title="The copy-paste prompt copies and is usable" data-expect="It produces answers worth pasting into the form." data-area="Campaign · intake" data-pass="">
   <div class="case-head">
     <span class="cid">A-21</span>
     <h4>The copy-paste prompt copies and is usable</h4>
@@ -2310,7 +2326,7 @@ header.top {
 </article>
 <article class="case" id="case-A-22" data-id="A-22" data-role="advisor"
    data-pri="2" data-hash="1n6mfji"
-   data-title="Readiness moves as fields are filled" data-expect="The percentage rises and the &quot;still needed&quot; list shrinks." data-area="Campaign · intake">
+   data-title="Readiness moves as fields are filled" data-expect="The percentage rises and the &quot;still needed&quot; list shrinks." data-area="Campaign · intake" data-pass="">
   <div class="case-head">
     <span class="cid">A-22</span>
     <h4>Readiness moves as fields are filled</h4>
@@ -2345,7 +2361,7 @@ header.top {
     
 <article class="case" id="case-A-23" data-id="A-23" data-role="advisor"
    data-pri="1" data-hash="1wefkxj"
-   data-title="The five persona questions run start to finish" data-expect="Each advances; the reveal appears at the end." data-area="Campaign · persona">
+   data-title="The five persona questions run start to finish" data-expect="Each advances; the reveal appears at the end." data-area="Campaign · persona" data-pass="">
   <div class="case-head">
     <span class="cid">A-23</span>
     <h4>The five persona questions run start to finish</h4>
@@ -2376,7 +2392,7 @@ header.top {
 </article>
 <article class="case" id="case-A-24" data-id="A-24" data-role="advisor"
    data-pri="2" data-hash="1vv4mn3"
-   data-title="No question asks the advisor what they are" data-expect="Every question asks what they have done or what happened — none asks them to pick a personality type." data-area="Campaign · persona">
+   data-title="No question asks the advisor what they are" data-expect="Every question asks what they have done or what happened — none asks them to pick a personality type." data-area="Campaign · persona" data-pass="">
   <div class="case-head">
     <span class="cid">A-24</span>
     <h4>No question asks the advisor what they are</h4>
@@ -2407,7 +2423,7 @@ header.top {
 </article>
 <article class="case" id="case-A-25" data-id="A-25" data-role="advisor"
    data-pri="2" data-hash="1gs94dj"
-   data-title="Leaving and returning resumes where it stopped" data-expect="It resumes at question three, not question one." data-area="Campaign · persona">
+   data-title="Leaving and returning resumes where it stopped" data-expect="It resumes at question three, not question one." data-area="Campaign · persona" data-pass="">
   <div class="case-head">
     <span class="cid">A-25</span>
     <h4>Leaving and returning resumes where it stopped</h4>
@@ -2438,7 +2454,7 @@ header.top {
 </article>
 <article class="case" id="case-A-26" data-id="A-26" data-role="advisor"
    data-pri="2" data-hash="5ewk2w"
-   data-title="The reveal reads as a starting point and can be corrected" data-expect="It reads as a read rather than a verdict, and the correction saves." data-area="Campaign · persona">
+   data-title="The reveal reads as a starting point and can be corrected" data-expect="It reads as a read rather than a verdict, and the correction saves." data-area="Campaign · persona" data-pass="">
   <div class="case-head">
     <span class="cid">A-26</span>
     <h4>The reveal reads as a starting point and can be corrected</h4>
@@ -2473,7 +2489,7 @@ header.top {
     
 <article class="case" id="case-A-27" data-id="A-27" data-role="advisor"
    data-pri="3" data-hash="zyqqac"
-   data-title="A complete brief pastes back and parses" data-expect="It reports what it found — voice, clients, markets, objections, proof, angles." data-area="Campaign · brief">
+   data-title="A complete brief pastes back and parses" data-expect="It reports what it found — voice, clients, markets, objections, proof, angles." data-area="Campaign · brief" data-pass="">
   <div class="case-head">
     <span class="cid">A-27</span>
     <h4>A complete brief pastes back and parses</h4>
@@ -2504,7 +2520,7 @@ header.top {
 </article>
 <article class="case" id="case-A-28" data-id="A-28" data-role="advisor"
    data-pri="3" data-hash="1npm21f"
-   data-title="A truncated brief fails loudly" data-expect="It names what is missing rather than accepting three quarters of it." data-area="Campaign · brief">
+   data-title="A truncated brief fails loudly" data-expect="It names what is missing rather than accepting three quarters of it." data-area="Campaign · brief" data-pass="">
   <div class="case-head">
     <span class="cid">A-28</span>
     <h4>A truncated brief fails loudly</h4>
@@ -2539,7 +2555,7 @@ header.top {
     
 <article class="case" id="case-A-29" data-id="A-29" data-role="advisor"
    data-pri="1" data-hash="1cvuxhs"
-   data-title="Building a plan works end to end" data-expect="The overlay narrates progress and a four-week plan appears with copy written." data-area="Campaign · plan">
+   data-title="Building a plan works end to end" data-expect="The overlay narrates progress and a four-week plan appears with copy written." data-area="Campaign · plan" data-pass="">
   <div class="case-head">
     <span class="cid">A-29</span>
     <h4>Building a plan works end to end</h4>
@@ -2570,7 +2586,7 @@ header.top {
 </article>
 <article class="case" id="case-A-56" data-id="A-56" data-role="advisor"
    data-pri="1" data-hash="14u0njp"
-   data-title="A full profile still builds — the fuller the harder" data-expect="It builds. The latency tool reports the real call well inside its budget." data-area="Campaign · plan">
+   data-title="A full profile still builds — the fuller the harder" data-expect="It builds. The latency tool reports the real call well inside its budget." data-area="Campaign · plan" data-pass="">
   <div class="case-head">
     <span class="cid">A-56</span>
     <h4>A full profile still builds — the fuller the harder</h4>
@@ -2601,7 +2617,7 @@ header.top {
 </article>
 <article class="case" id="case-A-30" data-id="A-30" data-role="advisor"
    data-pri="1" data-hash="xj2f1j"
-   data-title="This week leads and the other weeks are one click away" data-expect="The current week is open; the other weeks sit behind &quot;What is coming&quot; and &quot;Already behind you&quot;." data-area="Campaign · plan">
+   data-title="This week leads and the other weeks are one click away" data-expect="The current week is open; the other weeks sit behind &quot;What is coming&quot; and &quot;Already behind you&quot;." data-area="Campaign · plan" data-pass="">
   <div class="case-head">
     <span class="cid">A-30</span>
     <h4>This week leads and the other weeks are one click away</h4>
@@ -2632,7 +2648,7 @@ header.top {
 </article>
 <article class="case" id="case-A-31" data-id="A-31" data-role="advisor"
    data-pri="2" data-hash="nz4l3"
-   data-title="The folded weeks open and are complete" data-expect="Every week and every asset is there, fully written." data-area="Campaign · plan">
+   data-title="The folded weeks open and are complete" data-expect="Every week and every asset is there, fully written." data-area="Campaign · plan" data-pass="">
   <div class="case-head">
     <span class="cid">A-31</span>
     <h4>The folded weeks open and are complete</h4>
@@ -2663,7 +2679,7 @@ header.top {
 </article>
 <article class="case" id="case-A-32" data-id="A-32" data-role="advisor"
    data-pri="2" data-hash="1t140xf"
-   data-title="The plan reflects the capacity answer" data-expect="The smaller capacity produces materially fewer actions." data-area="Campaign · plan">
+   data-title="The plan reflects the capacity answer" data-expect="The smaller capacity produces materially fewer actions." data-area="Campaign · plan" data-pass="">
   <div class="case-head">
     <span class="cid">A-32</span>
     <h4>The plan reflects the capacity answer</h4>
@@ -2694,7 +2710,7 @@ header.top {
 </article>
 <article class="case" id="case-A-43" data-id="A-43" data-role="advisor"
    data-pri="2" data-hash="1kmwx6q"
-   data-title="The confidence strip names what the plan was built from" data-expect="It lists the real inputs and what was missing, and matches what you actually filled in." data-area="Campaign · plan">
+   data-title="The confidence strip names what the plan was built from" data-expect="It lists the real inputs and what was missing, and matches what you actually filled in." data-area="Campaign · plan" data-pass="">
   <div class="case-head">
     <span class="cid">A-43</span>
     <h4>The confidence strip names what the plan was built from</h4>
@@ -2725,7 +2741,7 @@ header.top {
 </article>
 <article class="case" id="case-A-44" data-id="A-44" data-role="advisor"
    data-pri="2" data-hash="17jxxag"
-   data-title="The rights note appears once, not on every asset" data-expect="Exactly once." data-area="Campaign · plan">
+   data-title="The rights note appears once, not on every asset" data-expect="Exactly once." data-area="Campaign · plan" data-pass="">
   <div class="case-head">
     <span class="cid">A-44</span>
     <h4>The rights note appears once, not on every asset</h4>
@@ -2760,7 +2776,7 @@ header.top {
     
 <article class="case" id="case-A-33" data-id="A-33" data-role="advisor"
    data-pri="1" data-hash="1tsv8x9"
-   data-title="Copy puts the text on the clipboard" data-expect="The full text, with the WELL link substituted rather than a token like {{WELL_LINK}}." data-area="Campaign · assets">
+   data-title="Copy puts the text on the clipboard" data-expect="The full text, with the WELL link substituted rather than a token like {{WELL_LINK}}." data-area="Campaign · assets" data-pass="">
   <div class="case-head">
     <span class="cid">A-33</span>
     <h4>Copy puts the text on the clipboard</h4>
@@ -2791,7 +2807,7 @@ header.top {
 </article>
 <article class="case" id="case-A-34" data-id="A-34" data-role="advisor"
    data-pri="2" data-hash="1acqvi4"
-   data-title="Edit, then Revert, restores the original" data-expect="The original returns without regenerating or spending anything." data-area="Campaign · assets">
+   data-title="Edit, then Revert, restores the original" data-expect="The original returns without regenerating or spending anything." data-area="Campaign · assets" data-pass="">
   <div class="case-head">
     <span class="cid">A-34</span>
     <h4>Edit, then Revert, restores the original</h4>
@@ -2822,7 +2838,7 @@ header.top {
 </article>
 <article class="case" id="case-A-35" data-id="A-35" data-role="advisor"
    data-pri="2" data-hash="85021v"
-   data-title="Regenerate rewrites one piece and leaves the rest alone" data-expect="Only that piece changed." data-area="Campaign · assets">
+   data-title="Regenerate rewrites one piece and leaves the rest alone" data-expect="Only that piece changed." data-area="Campaign · assets" data-pass="">
   <div class="case-head">
     <span class="cid">A-35</span>
     <h4>Regenerate rewrites one piece and leaves the rest alone</h4>
@@ -2853,7 +2869,7 @@ header.top {
 </article>
 <article class="case" id="case-A-36" data-id="A-36" data-role="advisor"
    data-pri="2" data-hash="zcck23"
-   data-title="Another angle rewrites from a different starting point" data-expect="Noticeably different copy doing the same job, and it does not cost a build." data-area="Campaign · assets">
+   data-title="Another angle rewrites from a different starting point" data-expect="Noticeably different copy doing the same job, and it does not cost a build." data-area="Campaign · assets" data-pass="">
   <div class="case-head">
     <span class="cid">A-36</span>
     <h4>Another angle rewrites from a different starting point</h4>
@@ -2884,7 +2900,7 @@ header.top {
 </article>
 <article class="case" id="case-A-37" data-id="A-37" data-role="advisor"
    data-pri="1" data-hash="1dnbkwp"
-   data-title="&quot;Make it yours&quot; carries the shot list" data-expect="A shot described in a sentence, a frame ratio and pixel size, a light note, a keep-out list, and a no-picture fallback." data-area="Campaign · assets">
+   data-title="&quot;Make it yours&quot; carries the shot list" data-expect="A shot described in a sentence, a frame ratio and pixel size, a light note, a keep-out list, and a no-picture fallback." data-area="Campaign · assets" data-pass="">
   <div class="case-head">
     <span class="cid">A-37</span>
     <h4>&quot;Make it yours&quot; carries the shot list</h4>
@@ -2915,7 +2931,7 @@ header.top {
 </article>
 <article class="case" id="case-A-38" data-id="A-38" data-role="advisor"
    data-pri="2" data-hash="1kqum89"
-   data-title="The shot is something they could photograph this week" data-expect="Every one is shootable at home with a phone — no Saint Lucia, no models, no studio." data-area="Campaign · assets">
+   data-title="The shot is something they could photograph this week" data-expect="Every one is shootable at home with a phone — no Saint Lucia, no models, no studio." data-area="Campaign · assets" data-pass="">
   <div class="case-head">
     <span class="cid">A-38</span>
     <h4>The shot is something they could photograph this week</h4>
@@ -2946,7 +2962,7 @@ header.top {
 </article>
 <article class="case" id="case-A-39" data-id="A-39" data-role="advisor"
    data-pri="2" data-hash="601h66"
-   data-title="Personalization and the busy-week fallback appear" data-expect="A &quot;where to put yourself in it&quot; note and an &quot;if this week gets away from you&quot; note." data-area="Campaign · assets">
+   data-title="Personalization and the busy-week fallback appear" data-expect="A &quot;where to put yourself in it&quot; note and an &quot;if this week gets away from you&quot; note." data-area="Campaign · assets" data-pass="">
   <div class="case-head">
     <span class="cid">A-39</span>
     <h4>Personalization and the busy-week fallback appear</h4>
@@ -2981,7 +2997,7 @@ header.top {
     
 <article class="case" id="case-A-40" data-id="A-40" data-role="advisor"
    data-pri="1" data-hash="smflh4"
-   data-title="A brand-new plan shows no report at all" data-expect="No report section." data-area="Campaign · report">
+   data-title="A brand-new plan shows no report at all" data-expect="No report section." data-area="Campaign · report" data-pass="">
   <div class="case-head">
     <span class="cid">A-40</span>
     <h4>A brand-new plan shows no report at all</h4>
@@ -3012,7 +3028,7 @@ header.top {
 </article>
 <article class="case" id="case-A-41" data-id="A-41" data-role="advisor"
    data-pri="2" data-hash="1hcvpn5"
-   data-title="After real traffic the report appears and reads plainly" data-expect="A &quot;What happened&quot; section with real counts in plain sentences, no percentages on tiny numbers." data-area="Campaign · report">
+   data-title="After real traffic the report appears and reads plainly" data-expect="A &quot;What happened&quot; section with real counts in plain sentences, no percentages on tiny numbers." data-area="Campaign · report" data-pass="">
   <div class="case-head">
     <span class="cid">A-41</span>
     <h4>After real traffic the report appears and reads plainly</h4>
@@ -3043,7 +3059,7 @@ header.top {
 </article>
 <article class="case" id="case-A-42" data-id="A-42" data-role="advisor"
    data-pri="2" data-hash="pj2n3a"
-   data-title="Somebody waiting for a reply is surfaced above the plan" data-expect="A line saying somebody is waiting, above this week&#39;s actions, linking to /hub/journeys." data-area="Campaign · report">
+   data-title="Somebody waiting for a reply is surfaced above the plan" data-expect="A line saying somebody is waiting, above this week&#39;s actions, linking to /hub/journeys." data-area="Campaign · report" data-pass="">
   <div class="case-head">
     <span class="cid">A-42</span>
     <h4>Somebody waiting for a reply is surfaced above the plan</h4>
@@ -3078,7 +3094,7 @@ header.top {
     
 <article class="case" id="case-A-45" data-id="A-45" data-role="advisor"
    data-pri="2" data-hash="1wonu9k"
-   data-title="With a plan, the profile folds away" data-expect="The readiness, prompt and intake sit behind one summary showing the readiness percentage." data-area="Campaign · profile fold">
+   data-title="With a plan, the profile folds away" data-expect="The readiness, prompt and intake sit behind one summary showing the readiness percentage." data-area="Campaign · profile fold" data-pass="">
   <div class="case-head">
     <span class="cid">A-45</span>
     <h4>With a plan, the profile folds away</h4>
@@ -3113,7 +3129,7 @@ header.top {
     
 <article class="case" id="case-A-46" data-id="A-46" data-role="advisor"
    data-pri="2" data-hash="tnh7n6"
-   data-title="Profile changes save" data-expect="The change persists and shows in the header where relevant." data-area="Account">
+   data-title="Profile changes save" data-expect="The change persists and shows in the header where relevant." data-area="Account" data-pass="">
   <div class="case-head">
     <span class="cid">A-46</span>
     <h4>Profile changes save</h4>
@@ -3144,7 +3160,7 @@ header.top {
 </article>
 <article class="case" id="case-A-47" data-id="A-47" data-role="advisor"
    data-pri="2" data-hash="ghuhtc"
-   data-title="The data undertaking is readable and its state is shown" data-expect="The current version, whether they have accepted it and when." data-area="Account">
+   data-title="The data undertaking is readable and its state is shown" data-expect="The current version, whether they have accepted it and when." data-area="Account" data-pass="">
   <div class="case-head">
     <span class="cid">A-47</span>
     <h4>The data undertaking is readable and its state is shown</h4>
@@ -3179,7 +3195,7 @@ header.top {
     
 <article class="case" id="case-A-48" data-id="A-48" data-role="advisor"
    data-pri="3" data-hash="11pibgi"
-   data-title="An advisor sees their own entries only" data-expect="Their entries, with counts, and nobody else&#39;s." data-area="Sweepstakes">
+   data-title="An advisor sees their own entries only" data-expect="Their entries, with counts, and nobody else&#39;s." data-area="Sweepstakes" data-pass="">
   <div class="case-head">
     <span class="cid">A-48</span>
     <h4>An advisor sees their own entries only</h4>
@@ -3210,7 +3226,7 @@ header.top {
 </article>
 <article class="case" id="case-A-49" data-id="A-49" data-role="advisor"
    data-pri="3" data-hash="1k2k13w"
-   data-title="The entry export downloads and opens" data-expect="A readable file with the expected rows." data-area="Sweepstakes">
+   data-title="The entry export downloads and opens" data-expect="A readable file with the expected rows." data-area="Sweepstakes" data-pass="">
   <div class="case-head">
     <span class="cid">A-49</span>
     <h4>The entry export downloads and opens</h4>
@@ -3245,7 +3261,7 @@ header.top {
     
 <article class="case" id="case-A-51" data-id="A-51" data-role="advisor"
    data-pri="2" data-hash="1nnvp2y"
-   data-title="The waiting list accepts a real advisor" data-expect="A confirmation screen, an email that promises no date, no price and no place, and a notification to Duncan." data-area="Immersion">
+   data-title="The waiting list accepts a real advisor" data-expect="A confirmation screen, an email that promises no date, no price and no place, and a notification to Duncan." data-area="Immersion" data-pass="">
   <div class="case-head">
     <span class="cid">A-51</span>
     <h4>The waiting list accepts a real advisor</h4>
@@ -3276,7 +3292,7 @@ header.top {
 </article>
 <article class="case" id="case-A-52" data-id="A-52" data-role="advisor"
    data-pri="3" data-hash="149g9cm"
-   data-title="Joining twice does not create two of you" data-expect="One row, carrying the newer phone number." data-area="Immersion">
+   data-title="Joining twice does not create two of you" data-expect="One row, carrying the newer phone number." data-area="Immersion" data-pass="">
   <div class="case-head">
     <span class="cid">A-52</span>
     <h4>Joining twice does not create two of you</h4>
@@ -3307,7 +3323,7 @@ header.top {
 </article>
 <article class="case" id="case-A-53" data-id="A-53" data-role="advisor"
    data-pri="3" data-hash="1pl9653"
-   data-title="The waiting list works without JavaScript" data-expect="Both render a page — a confirmation, and the form again with the error above it. Never a bare 400." data-area="Immersion">
+   data-title="The waiting list works without JavaScript" data-expect="Both render a page — a confirmation, and the form again with the error above it. Never a bare 400." data-area="Immersion" data-pass="">
   <div class="case-head">
     <span class="cid">A-53</span>
     <h4>The waiting list works without JavaScript</h4>
@@ -3342,7 +3358,7 @@ header.top {
     
 <article class="case" id="case-A-61" data-id="A-61" data-role="advisor"
    data-pri="1" data-hash="4z7des"
-   data-title="Design a journey end to end" data-expect="The shortlist and its reasons are on screen the moment the page loads, with no spinner. Only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button." data-area="ASK WELL">
+   data-title="Design a journey end to end" data-expect="The shortlist and its reasons are on screen the moment the page loads, with no spinner. Only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">A-61</span>
     <h4>Design a journey end to end</h4>
@@ -3373,7 +3389,7 @@ header.top {
 </article>
 <article class="case" id="case-A-62" data-id="A-62" data-role="advisor"
    data-pri="1" data-hash="arddmk"
-   data-title="Present mode, with the P key" data-expect="All of those disappear and the type steps up. With the cursor in a text box, P types a letter rather than toggling." data-area="ASK WELL">
+   data-title="Present mode, with the P key" data-expect="All of those disappear and the type steps up. With the cursor in a text box, P types a letter rather than toggling." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">A-62</span>
     <h4>Present mode, with the P key</h4>
@@ -3404,7 +3420,7 @@ header.top {
 </article>
 <article class="case" id="case-A-63" data-id="A-63" data-role="advisor"
    data-pri="2" data-hash="1izmxjm"
-   data-title="Open the issued link as the client would" data-expect="A document with the days, the places, verification dates and one way forward — a named person. No price, no availability, no booking button, and none of the mismatch sentences. The print has no site navigation on it." data-area="ASK WELL">
+   data-title="Open the issued link as the client would" data-expect="A document with the days, the places, verification dates and one way forward — a named person. No price, no availability, no booking button, and none of the mismatch sentences. The print has no site navigation on it." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">A-63</span>
     <h4>Open the issued link as the client would</h4>
@@ -3435,7 +3451,7 @@ header.top {
 </article>
 <article class="case" id="case-A-64" data-id="A-64" data-role="advisor"
    data-pri="2" data-hash="1l497zs"
-   data-title="Issue a second version" data-expect="Version 2 with a different link. Version 1 still resolves." data-area="ASK WELL">
+   data-title="Issue a second version" data-expect="Version 2 with a different link. Version 1 still resolves." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">A-64</span>
     <h4>Issue a second version</h4>
@@ -3470,7 +3486,7 @@ header.top {
     
 <article class="case" id="case-A-65" data-id="A-65" data-role="advisor"
    data-pri="2" data-hash="1qvrgwt"
-   data-title="Read the Playbook and fill in the priority traveller" data-expect="The saved answers appear in the section above the form. Not just a &quot;Saved&quot; message — the values themselves, read back." data-area="Playbook">
+   data-title="Read the Playbook and fill in the priority traveller" data-expect="The saved answers appear in the section above the form. Not just a &quot;Saved&quot; message — the values themselves, read back." data-area="Playbook" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">A-65</span>
     <h4>Read the Playbook and fill in the priority traveller</h4>
@@ -3501,7 +3517,7 @@ header.top {
 </article>
 <article class="case" id="case-A-66" data-id="A-66" data-role="advisor"
    data-pri="3" data-hash="1ken83t"
-   data-title="Print the Playbook" data-expect="No Hub navigation, no form, and no section split across a page break. &quot;What you may never say&quot; starts its own page." data-area="Playbook">
+   data-title="Print the Playbook" data-expect="No Hub navigation, no form, and no section split across a page break. &quot;What you may never say&quot; starts its own page." data-area="Playbook" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">A-66</span>
     <h4>Print the Playbook</h4>
@@ -3545,7 +3561,7 @@ header.top {
     
 <article class="case" id="case-D-01" data-id="D-01" data-role="admin"
    data-pri="1" data-hash="1vyu2h3"
-   data-title="The admin console is reachable only by an admin" data-expect="Refused or redirected — not rendered." data-area="Console">
+   data-title="The admin console is reachable only by an admin" data-expect="Refused or redirected — not rendered." data-area="Console" data-pass="">
   <div class="case-head">
     <span class="cid">D-01</span>
     <h4>The admin console is reachable only by an admin</h4>
@@ -3576,7 +3592,7 @@ header.top {
 </article>
 <article class="case" id="case-D-02" data-id="D-02" data-role="admin"
    data-pri="1" data-hash="126kdv2"
-   data-title="The dashboard shows the queue and the numbers" data-expect="Pending applications and system counts." data-area="Console">
+   data-title="The dashboard shows the queue and the numbers" data-expect="Pending applications and system counts." data-area="Console" data-pass="">
   <div class="case-head">
     <span class="cid">D-02</span>
     <h4>The dashboard shows the queue and the numbers</h4>
@@ -3611,7 +3627,7 @@ header.top {
     
 <article class="case" id="case-D-03" data-id="D-03" data-role="admin"
    data-pri="1" data-hash="6lhkjt"
-   data-title="Approving an advisor activates them and emails them" data-expect="Status active, an audit entry, and an advisor_activated event in Encharge. NO email from us — that flow does not exist yet." data-area="Advisors">
+   data-title="Approving an advisor activates them and emails them" data-expect="Status active, an audit entry, and an advisor_activated event in Encharge. NO email from us — that flow does not exist yet." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-03</span>
     <h4>Approving an advisor activates them and emails them</h4>
@@ -3642,7 +3658,7 @@ header.top {
 </article>
 <article class="case" id="case-D-04" data-id="D-04" data-role="admin"
    data-pri="2" data-hash="1gj1alu"
-   data-title="Pause and unpause work" data-expect="Access stops and returns; both are audited." data-area="Advisors">
+   data-title="Pause and unpause work" data-expect="Access stops and returns; both are audited." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-04</span>
     <h4>Pause and unpause work</h4>
@@ -3673,7 +3689,7 @@ header.top {
 </article>
 <article class="case" id="case-D-05" data-id="D-05" data-role="admin"
    data-pri="2" data-hash="1x53rok"
-   data-title="Lock and unlock work" data-expect="Sign-in refused while locked." data-area="Advisors">
+   data-title="Lock and unlock work" data-expect="Sign-in refused while locked." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-05</span>
     <h4>Lock and unlock work</h4>
@@ -3704,7 +3720,7 @@ header.top {
 </article>
 <article class="case" id="case-D-06" data-id="D-06" data-role="admin"
    data-pri="2" data-hash="1qxlt1b"
-   data-title="Setting and clearing Foundations changes what they may claim" data-expect="The claims ladder follows the date in both directions." data-area="Advisors">
+   data-title="Setting and clearing Foundations changes what they may claim" data-expect="The claims ladder follows the date in both directions." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-06</span>
     <h4>Setting and clearing Foundations changes what they may claim</h4>
@@ -3735,7 +3751,7 @@ header.top {
 </article>
 <article class="case" id="case-D-07" data-id="D-07" data-role="admin"
    data-pri="2" data-hash="zb6wan"
-   data-title="Promote and demote change admin rights" data-expect="Rights granted and removed, both audited." data-area="Advisors">
+   data-title="Promote and demote change admin rights" data-expect="Rights granted and removed, both audited." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-07</span>
     <h4>Promote and demote change admin rights</h4>
@@ -3766,7 +3782,7 @@ header.top {
 </article>
 <article class="case" id="case-D-08" data-id="D-08" data-role="admin"
    data-pri="2" data-hash="nnit4e"
-   data-title="An admin cannot act on their own account" data-expect="Refused." data-area="Advisors">
+   data-title="An admin cannot act on their own account" data-expect="Refused." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-08</span>
     <h4>An admin cannot act on their own account</h4>
@@ -3797,7 +3813,7 @@ header.top {
 </article>
 <article class="case" id="case-D-09" data-id="D-09" data-role="admin"
    data-pri="3" data-hash="12x0vlb"
-   data-title="The house account can be set and cleared, including on yourself" data-expect="Both work; self-action is allowed here specifically." data-area="Advisors">
+   data-title="The house account can be set and cleared, including on yourself" data-expect="Both work; self-action is allowed here specifically." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-09</span>
     <h4>The house account can be set and cleared, including on yourself</h4>
@@ -3828,7 +3844,7 @@ header.top {
 </article>
 <article class="case" id="case-D-22" data-id="D-22" data-role="admin"
    data-pri="2" data-hash="hhsslc"
-   data-title="Deleting an advisor offers transfer or erase" data-expect="A choice between transferring their Journeys and erasing them, with the impact stated and a confirmation for erase." data-area="Advisors">
+   data-title="Deleting an advisor offers transfer or erase" data-expect="A choice between transferring their Journeys and erasing them, with the impact stated and a confirmation for erase." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">D-22</span>
     <h4>Deleting an advisor offers transfer or erase</h4>
@@ -3859,7 +3875,7 @@ header.top {
 </article>
 <article class="case" id="case-B-25" data-id="B-25" data-role="admin"
    data-pri="2" data-hash="iw4jt7"
-   data-title="Paid-but-not-trained is visible and closeable" data-expect="A notice saying they paid on a date and are not yet marked trained, with both dates listed separately. Recording Foundations clears the notice." data-area="Advisors">
+   data-title="Paid-but-not-trained is visible and closeable" data-expect="A notice saying they paid on a date and are not yet marked trained, with both dates listed separately. Recording Foundations clears the notice." data-area="Advisors" data-pass="">
   <div class="case-head">
     <span class="cid">B-25</span>
     <h4>Paid-but-not-trained is visible and closeable</h4>
@@ -3894,7 +3910,7 @@ header.top {
     
 <article class="case" id="case-D-10" data-id="D-10" data-role="admin"
    data-pri="2" data-hash="e0rrmx"
-   data-title="Creating an advisor by hand works" data-expect="It appears in the list, active or pending as chosen." data-area="People">
+   data-title="Creating an advisor by hand works" data-expect="It appears in the list, active or pending as chosen." data-area="People" data-pass="">
   <div class="case-head">
     <span class="cid">D-10</span>
     <h4>Creating an advisor by hand works</h4>
@@ -3925,7 +3941,7 @@ header.top {
 </article>
 <article class="case" id="case-D-11" data-id="D-11" data-role="admin"
    data-pri="2" data-hash="ckcqpo"
-   data-title="A valid CSV imports" data-expect="Rows created, with a summary of what happened." data-area="People">
+   data-title="A valid CSV imports" data-expect="Rows created, with a summary of what happened." data-area="People" data-pass="">
   <div class="case-head">
     <span class="cid">D-11</span>
     <h4>A valid CSV imports</h4>
@@ -3956,7 +3972,7 @@ header.top {
 </article>
 <article class="case" id="case-D-12" data-id="D-12" data-role="admin"
    data-pri="2" data-hash="1wvlq2f"
-   data-title="A malformed CSV is refused with a reason" data-expect="It names the problem rows rather than half-importing." data-area="People">
+   data-title="A malformed CSV is refused with a reason" data-expect="It names the problem rows rather than half-importing." data-area="People" data-pass="">
   <div class="case-head">
     <span class="cid">D-12</span>
     <h4>A malformed CSV is refused with a reason</h4>
@@ -3987,7 +4003,7 @@ header.top {
 </article>
 <article class="case" id="case-D-13" data-id="D-13" data-role="admin"
    data-pri="3" data-hash="1b5b6sh"
-   data-title="Duplicate rows in an import are handled" data-expect="Skipped or reported, never silently duplicated." data-area="People">
+   data-title="Duplicate rows in an import are handled" data-expect="Skipped or reported, never silently duplicated." data-area="People" data-pass="">
   <div class="case-head">
     <span class="cid">D-13</span>
     <h4>Duplicate rows in an import are handled</h4>
@@ -4022,7 +4038,7 @@ header.top {
     
 <article class="case" id="case-D-14" data-id="D-14" data-role="admin"
    data-pri="1" data-hash="85ld1i"
-   data-title="View-as shows their Hub with a banner" data-expect="Their Hub, with an unmistakable banner saying whose it is." data-area="View-as">
+   data-title="View-as shows their Hub with a banner" data-expect="Their Hub, with an unmistakable banner saying whose it is." data-area="View-as" data-pass="">
   <div class="case-head">
     <span class="cid">D-14</span>
     <h4>View-as shows their Hub with a banner</h4>
@@ -4053,7 +4069,7 @@ header.top {
 </article>
 <article class="case" id="case-D-15" data-id="D-15" data-role="admin"
    data-pri="1" data-hash="18dl9fz"
-   data-title="View-as masks personal data until revealed" data-expect="Contact details masked, with a deliberate reveal." data-area="View-as">
+   data-title="View-as masks personal data until revealed" data-expect="Contact details masked, with a deliberate reveal." data-area="View-as" data-pass="">
   <div class="case-head">
     <span class="cid">D-15</span>
     <h4>View-as masks personal data until revealed</h4>
@@ -4084,7 +4100,7 @@ header.top {
 </article>
 <article class="case" id="case-D-16" data-id="D-16" data-role="admin"
    data-pri="2" data-hash="27jauf"
-   data-title="Revealing masked data is audited" data-expect="An entry naming who revealed what and when." data-area="View-as">
+   data-title="Revealing masked data is audited" data-expect="An entry naming who revealed what and when." data-area="View-as" data-pass="">
   <div class="case-head">
     <span class="cid">D-16</span>
     <h4>Revealing masked data is audited</h4>
@@ -4115,7 +4131,7 @@ header.top {
 </article>
 <article class="case" id="case-D-17" data-id="D-17" data-role="admin"
    data-pri="2" data-hash="1ismxzk"
-   data-title="Exiting view-as returns to the admin" data-expect="Back to the admin&#39;s own Hub." data-area="View-as">
+   data-title="Exiting view-as returns to the admin" data-expect="Back to the admin&#39;s own Hub." data-area="View-as" data-pass="">
   <div class="case-head">
     <span class="cid">D-17</span>
     <h4>Exiting view-as returns to the admin</h4>
@@ -4150,7 +4166,7 @@ header.top {
     
 <article class="case" id="case-D-18" data-id="D-18" data-role="admin"
    data-pri="2" data-hash="10f0cdp"
-   data-title="The audit log records the session&#39;s actions" data-expect="Approve, pause, promote, reveal and delete all present with actor and time." data-area="Audit">
+   data-title="The audit log records the session&#39;s actions" data-expect="Approve, pause, promote, reveal and delete all present with actor and time." data-area="Audit" data-pass="">
   <div class="case-head">
     <span class="cid">D-18</span>
     <h4>The audit log records the session&#39;s actions</h4>
@@ -4185,7 +4201,7 @@ header.top {
     
 <article class="case" id="case-D-19" data-id="D-19" data-role="admin"
    data-pri="2" data-hash="fko1f2"
-   data-title="A person can be found by email" data-expect="Their records across the system." data-area="Subject rights">
+   data-title="A person can be found by email" data-expect="Their records across the system." data-area="Subject rights" data-pass="">
   <div class="case-head">
     <span class="cid">D-19</span>
     <h4>A person can be found by email</h4>
@@ -4216,7 +4232,7 @@ header.top {
 </article>
 <article class="case" id="case-D-20" data-id="D-20" data-role="admin"
    data-pri="2" data-hash="14v50kp"
-   data-title="Their data exports" data-expect="A readable file containing what is actually held." data-area="Subject rights">
+   data-title="Their data exports" data-expect="A readable file containing what is actually held." data-area="Subject rights" data-pass="">
   <div class="case-head">
     <span class="cid">D-20</span>
     <h4>Their data exports</h4>
@@ -4247,7 +4263,7 @@ header.top {
 </article>
 <article class="case" id="case-D-21" data-id="D-21" data-role="admin"
    data-pri="1" data-hash="1occ7ps"
-   data-title="Deleting a person removes them everywhere" data-expect="Gone from both, with an audit entry." data-area="Subject rights">
+   data-title="Deleting a person removes them everywhere" data-expect="Gone from both, with an audit entry." data-area="Subject rights" data-pass="">
   <div class="case-head">
     <span class="cid">D-21</span>
     <h4>Deleting a person removes them everywhere</h4>
@@ -4282,7 +4298,7 @@ header.top {
     
 <article class="case" id="case-D-23" data-id="D-23" data-role="admin"
    data-pri="3" data-hash="18lf6yi"
-   data-title="The retention position is visible" data-expect="Both say the same thing." data-area="Retention">
+   data-title="The retention position is visible" data-expect="Both say the same thing." data-area="Retention" data-pass="">
   <div class="case-head">
     <span class="cid">D-23</span>
     <h4>The retention position is visible</h4>
@@ -4317,7 +4333,7 @@ header.top {
     
 <article class="case" id="case-D-24" data-id="D-24" data-role="admin"
    data-pri="2" data-hash="vh4q1a"
-   data-title="The waiting list is readable and exportable" data-expect="Everyone who joined, newest first, and a CSV whose accents and commas survive Excel." data-area="Immersion">
+   data-title="The waiting list is readable and exportable" data-expect="Everyone who joined, newest first, and a CSV whose accents and commas survive Excel." data-area="Immersion" data-pass="">
   <div class="case-head">
     <span class="cid">D-24</span>
     <h4>The waiting list is readable and exportable</h4>
@@ -4361,7 +4377,7 @@ header.top {
     
 <article class="case" id="case-G-01" data-id="G-01" data-role="guard"
    data-pri="1" data-hash="ot8bmu"
-   data-title="A serious health claim disables the Copy button" data-expect="A warning above the text and Copy disabled — not a dialog, not just a red border." data-area="Claims">
+   data-title="A serious health claim disables the Copy button" data-expect="A warning above the text and Copy disabled — not a dialog, not just a red border." data-area="Claims" data-pass="">
   <div class="case-head">
     <span class="cid">G-01</span>
     <h4>A serious health claim disables the Copy button</h4>
@@ -4392,7 +4408,7 @@ header.top {
 </article>
 <article class="case" id="case-G-02" data-id="G-02" data-role="guard"
    data-pri="1" data-hash="1ik8e0r"
-   data-title="Removing the claim re-enables Copy" data-expect="The warning clears and Copy works again." data-area="Claims">
+   data-title="Removing the claim re-enables Copy" data-expect="The warning clears and Copy works again." data-area="Claims" data-pass="">
   <div class="case-head">
     <span class="cid">G-02</span>
     <h4>Removing the claim re-enables Copy</h4>
@@ -4423,7 +4439,7 @@ header.top {
 </article>
 <article class="case" id="case-G-03" data-id="G-03" data-role="guard"
    data-pri="2" data-hash="d79pa5"
-   data-title="Milder wording warns without blocking" data-expect="A note, and Copy still available." data-area="Claims">
+   data-title="Milder wording warns without blocking" data-expect="A note, and Copy still available." data-area="Claims" data-pass="">
   <div class="case-head">
     <span class="cid">G-03</span>
     <h4>Milder wording warns without blocking</h4>
@@ -4458,7 +4474,7 @@ header.top {
     
 <article class="case" id="case-G-04" data-id="G-04" data-role="guard"
    data-pri="1" data-hash="fevdvd"
-   data-title="The consent warning appears on direct messages only" data-expect="The CASL/TCPA note on the first three and not on the caption." data-area="Consent">
+   data-title="The consent warning appears on direct messages only" data-expect="The CASL/TCPA note on the first three and not on the caption." data-area="Consent" data-pass="">
   <div class="case-head">
     <span class="cid">G-04</span>
     <h4>The consent warning appears on direct messages only</h4>
@@ -4493,7 +4509,7 @@ header.top {
     
 <article class="case" id="case-G-05" data-id="G-05" data-role="guard"
    data-pri="1" data-hash="15t42e"
-   data-title="A registered advisor is described as Registered" data-expect="Registered — not Foundations, not trained." data-area="Claims ladder">
+   data-title="A registered advisor is described as Registered" data-expect="Registered — not Foundations, not trained." data-area="Claims ladder" data-pass="">
   <div class="case-head">
     <span class="cid">G-05</span>
     <h4>A registered advisor is described as Registered</h4>
@@ -4528,7 +4544,7 @@ header.top {
     
 <article class="case" id="case-G-06" data-id="G-06" data-role="guard"
    data-pri="1" data-hash="u3ysbf"
-   data-title="Foundations is not pitched before there is a result" data-expect="No Foundations call to action anywhere. Factual explanations of why copy says what it says are fine; a pitch is not." data-area="Foundations timing">
+   data-title="Foundations is not pitched before there is a result" data-expect="No Foundations call to action anywhere. Factual explanations of why copy says what it says are fine; a pitch is not." data-area="Foundations timing" data-pass="">
   <div class="case-head">
     <span class="cid">G-06</span>
     <h4>Foundations is not pitched before there is a result</h4>
@@ -4559,7 +4575,7 @@ header.top {
 </article>
 <article class="case" id="case-G-07" data-id="G-07" data-role="guard"
    data-pri="2" data-hash="ib2it2"
-   data-title="After a real result the note appears, in engine terms" data-expect="It describes what Foundations produces that the engine reads — not &quot;transform your marketing&quot;." data-area="Foundations timing">
+   data-title="After a real result the note appears, in engine terms" data-expect="It describes what Foundations produces that the engine reads — not &quot;transform your marketing&quot;." data-area="Foundations timing" data-pass="">
   <div class="case-head">
     <span class="cid">G-07</span>
     <h4>After a real result the note appears, in engine terms</h4>
@@ -4594,7 +4610,7 @@ header.top {
     
 <article class="case" id="case-G-08" data-id="G-08" data-role="guard"
    data-pri="1" data-hash="lfjfh2"
-   data-title="No padlock language anywhere" data-expect="None of it." data-area="Tone">
+   data-title="No padlock language anywhere" data-expect="None of it." data-area="Tone" data-pass="">
   <div class="case-head">
     <span class="cid">G-08</span>
     <h4>No padlock language anywhere</h4>
@@ -4629,7 +4645,7 @@ header.top {
     
 <article class="case" id="case-G-09" data-id="G-09" data-role="guard"
    data-pri="1" data-hash="12vq8st"
-   data-title="Every shot list carries the keep-out list" data-expect="All three every time — consent, other people&#39;s photographs, and anything that reads as medical." data-area="Images">
+   data-title="Every shot list carries the keep-out list" data-expect="All three every time — consent, other people&#39;s photographs, and anything that reads as medical." data-area="Images" data-pass="">
   <div class="case-head">
     <span class="cid">G-09</span>
     <h4>Every shot list carries the keep-out list</h4>
@@ -4660,7 +4676,7 @@ header.top {
 </article>
 <article class="case" id="case-G-10" data-id="G-10" data-role="guard"
    data-pri="2" data-hash="1gym9mk"
-   data-title="No image is offered for download anywhere" data-expect="None. Only instructions, and a note explaining why." data-area="Images">
+   data-title="No image is offered for download anywhere" data-expect="None. Only instructions, and a note explaining why." data-area="Images" data-pass="">
   <div class="case-head">
     <span class="cid">G-10</span>
     <h4>No image is offered for download anywhere</h4>
@@ -4695,7 +4711,7 @@ header.top {
     
 <article class="case" id="case-G-11" data-id="G-11" data-role="guard"
    data-pri="1" data-hash="h86bf8"
-   data-title="The balance counts down and blocks at zero" data-expect="At zero, building is refused and the offer appears at the end of the plan; editing, regenerating and all four angles still work." data-area="Build gate">
+   data-title="The balance counts down and blocks at zero" data-expect="At zero, building is refused and the offer appears at the end of the plan; editing, regenerating and all four angles still work." data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-11</span>
     <h4>The balance counts down and blocks at zero</h4>
@@ -4726,7 +4742,7 @@ header.top {
 </article>
 <article class="case" id="case-G-27" data-id="G-27" data-role="guard"
    data-pri="1" data-hash="nmd4h2"
-   data-title="The balance is visible WITHOUT SCROLLING" data-expect="A chip reading e.g. &quot;2 campaigns left&quot; in the header, which jumps to the Build a new campaign button. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;" data-area="Build gate">
+   data-title="The balance is visible WITHOUT SCROLLING" data-expect="A chip reading e.g. &quot;2 campaigns left&quot; in the header, which jumps to the Build a new campaign button. Never the bare sentence &quot;This is your plan. Rebuilding it whenever you like is part of Well Destination Foundations.&quot;" data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-27</span>
     <h4>The balance is visible WITHOUT SCROLLING</h4>
@@ -4757,7 +4773,7 @@ header.top {
 </article>
 <article class="case" id="case-G-28" data-id="G-28" data-role="guard"
    data-pri="1" data-hash="140pji0"
-   data-title="Rewriting is free at zero, and says so" data-expect="All of it works, and the line above the offer says editing and rewriting are free." data-area="Build gate">
+   data-title="Rewriting is free at zero, and says so" data-expect="All of it works, and the line above the offer says editing and rewriting are free." data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-28</span>
     <h4>Rewriting is free at zero, and says so</h4>
@@ -4788,7 +4804,7 @@ header.top {
 </article>
 <article class="case" id="case-G-29" data-id="G-29" data-role="guard"
    data-pri="2" data-hash="1bk62oe"
-   data-title="Foundations is offered before the $9 pack, never beside it" data-expect="The plan screen names no price at all. /hub/campaign/more leads with Foundations and its price; the $9 pack is further down, at the #more-campaigns anchor the decline link points to." data-area="Build gate">
+   data-title="Foundations is offered before the $9 pack, never beside it" data-expect="The plan screen names no price at all. /hub/campaign/more leads with Foundations and its price; the $9 pack is further down, at the #more-campaigns anchor the decline link points to." data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-29</span>
     <h4>Foundations is offered before the $9 pack, never beside it</h4>
@@ -4819,7 +4835,7 @@ header.top {
 </article>
 <article class="case" id="case-G-31" data-id="G-31" data-role="guard"
    data-pri="1" data-hash="14lbo6a"
-   data-title="PAYING for Foundations is not COMPLETING it" data-expect="Unlimited campaigns immediately, no meter, no upsell anywhere. And the copy still may NOT say trained, certified or specialist — the claims checker flags it exactly as before." data-area="Build gate">
+   data-title="PAYING for Foundations is not COMPLETING it" data-expect="Unlimited campaigns immediately, no meter, no upsell anywhere. And the copy still may NOT say trained, certified or specialist — the claims checker flags it exactly as before." data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-31</span>
     <h4>PAYING for Foundations is not COMPLETING it</h4>
@@ -4850,7 +4866,7 @@ header.top {
 </article>
 <article class="case" id="case-G-30" data-id="G-30" data-role="guard"
    data-pri="1" data-hash="pymqok"
-   data-title="An advisor with campaigns left is never sold anything" data-expect="The count, and the intake below it. No Foundations offer, no $9 pack." data-area="Build gate">
+   data-title="An advisor with campaigns left is never sold anything" data-expect="The count, and the intake below it. No Foundations offer, no $9 pack." data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-30</span>
     <h4>An advisor with campaigns left is never sold anything</h4>
@@ -4881,7 +4897,7 @@ header.top {
 </article>
 <article class="case" id="case-G-12" data-id="G-12" data-role="guard"
    data-pri="1" data-hash="1lqpicl"
-   data-title="A Foundations advisor is unlimited, shown no meter AND no upsell" data-expect="Never refused, the number never moves, and nothing anywhere tries to sell them the programme they completed." data-area="Build gate">
+   data-title="A Foundations advisor is unlimited, shown no meter AND no upsell" data-expect="Never refused, the number never moves, and nothing anywhere tries to sell them the programme they completed." data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-12</span>
     <h4>A Foundations advisor is unlimited, shown no meter AND no upsell</h4>
@@ -4912,7 +4928,7 @@ header.top {
 </article>
 <article class="case" id="case-G-13" data-id="G-13" data-role="guard"
    data-pri="2" data-hash="8lcgas"
-   data-title="A failed generation does not cost a build" data-expect="Unchanged." data-area="Build gate">
+   data-title="A failed generation does not cost a build" data-expect="Unchanged." data-area="Build gate" data-pass="">
   <div class="case-head">
     <span class="cid">G-13</span>
     <h4>A failed generation does not cost a build</h4>
@@ -4947,7 +4963,7 @@ header.top {
     
 <article class="case" id="case-G-32" data-id="G-32" data-role="guard"
    data-pri="2" data-hash="s494wm"
-   data-title="A Foundations order grants no build packs, and a refund withdraws it" data-expect="plan_builds never moves, the replay grants nothing, the refund clears the entitlement, and foundations_at is untouched throughout." data-area="Webhook">
+   data-title="A Foundations order grants no build packs, and a refund withdraws it" data-expect="plan_builds never moves, the replay grants nothing, the refund clears the entitlement, and foundations_at is untouched throughout." data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-32</span>
     <h4>A Foundations order grants no build packs, and a refund withdraws it</h4>
@@ -4978,7 +4994,7 @@ header.top {
 </article>
 <article class="case" id="case-G-14" data-id="G-14" data-role="guard"
    data-pri="2" data-hash="376u4k"
-   data-title="The webhook refuses without the right secret" data-expect="All three return 200 with reason &quot;unauthorised&quot;, granted 0, and no row in purchase_events." data-area="Webhook">
+   data-title="The webhook refuses without the right secret" data-expect="All three return 200 with reason &quot;unauthorised&quot;, granted 0, and no row in purchase_events." data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-14</span>
     <h4>The webhook refuses without the right secret</h4>
@@ -5009,7 +5025,7 @@ header.top {
 </article>
 <article class="case" id="case-G-33" data-id="G-33" data-role="guard"
    data-pri="1" data-hash="vo7lwz"
-   data-title="Coming back from checkout never reads as a failure" data-expect="Either &quot;3 more campaigns are on your account&quot; or &quot;we are confirming your purchase — refresh in a moment&quot;. Never an error, and never the plain word &quot;purchased&quot;." data-area="Webhook">
+   data-title="Coming back from checkout never reads as a failure" data-expect="Either &quot;3 more campaigns are on your account&quot; or &quot;we are confirming your purchase — refresh in a moment&quot;. Never an error, and never the plain word &quot;purchased&quot;." data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-33</span>
     <h4>Coming back from checkout never reads as a failure</h4>
@@ -5040,7 +5056,7 @@ header.top {
 </article>
 <article class="case" id="case-G-34" data-id="G-34" data-role="guard"
    data-pri="2" data-hash="7ffu1o"
-   data-title="An unknown ?done value renders no message" data-expect="No flash at all. The word &quot;nonsense&quot; appears nowhere." data-area="Webhook">
+   data-title="An unknown ?done value renders no message" data-expect="No flash at all. The word &quot;nonsense&quot; appears nowhere." data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-34</span>
     <h4>An unknown ?done value renders no message</h4>
@@ -5071,7 +5087,7 @@ header.top {
 </article>
 <article class="case" id="case-G-15" data-id="G-15" data-role="guard"
    data-pri="2" data-hash="1vve23l"
-   data-title="A real purchase adds three, and a replay adds nothing" data-expect="Balance +3 once. The replay is recorded as a replay and adds nothing." data-area="Webhook">
+   data-title="A real purchase adds three, and a replay adds nothing" data-expect="Balance +3 once. The replay is recorded as a replay and adds nothing." data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-15</span>
     <h4>A real purchase adds three, and a replay adds nothing</h4>
@@ -5102,7 +5118,7 @@ header.top {
 </article>
 <article class="case" id="case-G-16" data-id="G-16" data-role="guard"
    data-pri="2" data-hash="7pglcl"
-   data-title="A purchase of something else grants no builds" data-expect="Recorded with a note and a delta of zero." data-area="Webhook">
+   data-title="A purchase of something else grants no builds" data-expect="Recorded with a note and a delta of zero." data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-16</span>
     <h4>A purchase of something else grants no builds</h4>
@@ -5133,7 +5149,7 @@ header.top {
 </article>
 <article class="case" id="case-G-21" data-id="G-21" data-role="guard"
    data-pri="1" data-hash="1orfzbh"
-   data-title="A sandbox order grants nothing" data-expect="A row recorded with a note and a delta of 0. The balance does not move. The note reads &quot;Sandbox build pack order — recorded so you can confirm the wiring, but no money moved so nothing was granted.&quot;" data-area="Webhook">
+   data-title="A sandbox order grants nothing" data-expect="A row recorded with a note and a delta of 0. The balance does not move. The note reads &quot;Sandbox build pack order — recorded so you can confirm the wiring, but no money moved so nothing was granted.&quot;" data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-21</span>
     <h4>A sandbox order grants nothing</h4>
@@ -5164,7 +5180,7 @@ header.top {
 </article>
 <article class="case" id="case-G-22" data-id="G-22" data-role="guard"
    data-pri="2" data-hash="mfc8kk"
-   data-title="The shared secret is never stored" data-expect="&quot;[redacted]&quot;. Search the whole row for the live secret and find nothing." data-area="Webhook">
+   data-title="The shared secret is never stored" data-expect="&quot;[redacted]&quot;. Search the whole row for the live secret and find nothing." data-area="Webhook" data-pass="">
   <div class="case-head">
     <span class="cid">G-22</span>
     <h4>The shared secret is never stored</h4>
@@ -5199,7 +5215,7 @@ header.top {
     
 <article class="case" id="case-G-17" data-id="G-17" data-role="guard"
    data-pri="1" data-hash="yj1r7o"
-   data-title="Signed out, every Hub route redirects to login" data-expect="All redirect to login, and after signing in you land where you were going." data-area="Access">
+   data-title="Signed out, every Hub route redirects to login" data-expect="All redirect to login, and after signing in you land where you were going." data-area="Access" data-pass="">
   <div class="case-head">
     <span class="cid">G-17</span>
     <h4>Signed out, every Hub route redirects to login</h4>
@@ -5234,7 +5250,7 @@ header.top {
     
 <article class="case" id="case-G-18" data-id="G-18" data-role="guard"
    data-pri="1" data-hash="1ax32bs"
-   data-title="Nothing can be written while viewing as somebody" data-expect="Every write refused, with an explanation." data-area="View-as">
+   data-title="Nothing can be written while viewing as somebody" data-expect="Every write refused, with an explanation." data-area="View-as" data-pass="">
   <div class="case-head">
     <span class="cid">G-18</span>
     <h4>Nothing can be written while viewing as somebody</h4>
@@ -5265,7 +5281,7 @@ header.top {
 </article>
 <article class="case" id="case-G-19" data-id="G-19" data-role="guard"
    data-pri="2" data-hash="1c9q0i"
-   data-title="A campaign cannot be generated while viewing as somebody" data-expect="Refused with a reason." data-area="View-as">
+   data-title="A campaign cannot be generated while viewing as somebody" data-expect="Refused with a reason." data-area="View-as" data-pass="">
   <div class="case-head">
     <span class="cid">G-19</span>
     <h4>A campaign cannot be generated while viewing as somebody</h4>
@@ -5300,7 +5316,7 @@ header.top {
     
 <article class="case" id="case-G-20" data-id="G-20" data-role="guard"
    data-pri="3" data-hash="1j7hbcx"
-   data-title="Rapid repeated plan builds are throttled" data-expect="A &quot;give it a minute&quot; refusal rather than unbounded generation." data-area="Rate limits">
+   data-title="Rapid repeated plan builds are throttled" data-expect="A &quot;give it a minute&quot; refusal rather than unbounded generation." data-area="Rate limits" data-pass="">
   <div class="case-head">
     <span class="cid">G-20</span>
     <h4>Rapid repeated plan builds are throttled</h4>
@@ -5335,7 +5351,7 @@ header.top {
     
 <article class="case" id="case-G-23" data-id="G-23" data-role="guard"
    data-pri="1" data-hash="1e26ces"
-   data-title="A non-admin advisor cannot reach the waiting list" data-expect="Redirected both times. No list, and no file." data-area="Immersion">
+   data-title="A non-admin advisor cannot reach the waiting list" data-expect="Redirected both times. No list, and no file." data-area="Immersion" data-pass="">
   <div class="case-head">
     <span class="cid">G-23</span>
     <h4>A non-admin advisor cannot reach the waiting list</h4>
@@ -5366,7 +5382,7 @@ header.top {
 </article>
 <article class="case" id="case-G-24" data-id="G-24" data-role="guard"
    data-pri="2" data-hash="1yhvnga"
-   data-title="A waiting-list entrant can be found and erased" data-expect="Found and reported as held before; gone after." data-area="Immersion">
+   data-title="A waiting-list entrant can be found and erased" data-expect="Found and reported as held before; gone after." data-area="Immersion" data-pass="">
   <div class="case-head">
     <span class="cid">G-24</span>
     <h4>A waiting-list entrant can be found and erased</h4>
@@ -5401,7 +5417,7 @@ header.top {
     
 <article class="case" id="case-G-25" data-id="G-25" data-role="guard"
    data-pri="1" data-hash="9l9ikh"
-   data-title="The result email cannot be written by whoever calls the endpoint" data-expect="Passes. An invented answer value or an invented question is refused before anything is composed." data-area="Journey Finder">
+   data-title="The result email cannot be written by whoever calls the endpoint" data-expect="Passes. An invented answer value or an invented question is refused before anything is composed." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">G-25</span>
     <h4>The result email cannot be written by whoever calls the endpoint</h4>
@@ -5432,7 +5448,7 @@ header.top {
 </article>
 <article class="case" id="case-G-26" data-id="G-26" data-role="guard"
    data-pri="1" data-hash="owjnw"
-   data-title="The capture rate limit refuses, and fails closed" data-expect="The sixth request in an hour from one origin is refused. With the counter unreachable, requests are refused rather than allowed." data-area="Journey Finder">
+   data-title="The capture rate limit refuses, and fails closed" data-expect="The sixth request in an hour from one origin is refused. With the counter unreachable, requests are refused rather than allowed." data-area="Journey Finder" data-pass="">
   <div class="case-head">
     <span class="cid">G-26</span>
     <h4>The capture rate limit refuses, and fails closed</h4>
@@ -5467,7 +5483,7 @@ header.top {
     
 <article class="case" id="case-G-35" data-id="G-35" data-role="guard"
    data-pri="1" data-hash="sndqy2"
-   data-title="The design screen signed out sends you back to it" data-expect="The login page, and after signing in you land back on that design screen — not on Hub home." data-area="ASK WELL">
+   data-title="The design screen signed out sends you back to it" data-expect="The login page, and after signing in you land back on that design screen — not on Hub home." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-35</span>
     <h4>The design screen signed out sends you back to it</h4>
@@ -5498,7 +5514,7 @@ header.top {
 </article>
 <article class="case" id="case-G-36" data-id="G-36" data-role="guard"
    data-pri="1" data-hash="taw9da"
-   data-title="Another advisor&#39;s design is not found, not forbidden" data-expect="&quot;That Journey is not here.&quot; Not a 403, not a permission message, and nothing about the other advisor." data-area="ASK WELL">
+   data-title="Another advisor&#39;s design is not found, not forbidden" data-expect="&quot;That Journey is not here.&quot; Not a 403, not a permission message, and nothing about the other advisor." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-36</span>
     <h4>Another advisor&#39;s design is not found, not forbidden</h4>
@@ -5529,7 +5545,7 @@ header.top {
 </article>
 <article class="case" id="case-G-37" data-id="G-37" data-role="guard"
    data-pri="1" data-hash="fipaug"
-   data-title="View-as can read a design and write nothing" data-expect="The workspace reads normally. Both writes are refused with a message saying you are viewing this Hub rather than signed in as its owner." data-area="ASK WELL">
+   data-title="View-as can read a design and write nothing" data-expect="The workspace reads normally. Both writes are refused with a message saying you are viewing this Hub rather than signed in as its owner." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-37</span>
     <h4>View-as can read a design and write nothing</h4>
@@ -5560,7 +5576,7 @@ header.top {
 </article>
 <article class="case" id="case-G-38" data-id="G-38" data-role="guard"
    data-pri="1" data-hash="11tctmq"
-   data-title="No consumer value reaches the model, proven by sweep" data-expect="Every check passes, including the ones that hand the poisoned share in as the need-state, the advisor and every other parameter at once." data-area="ASK WELL">
+   data-title="No consumer value reaches the model, proven by sweep" data-expect="Every check passes, including the ones that hand the poisoned share in as the need-state, the advisor and every other parameter at once." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-38</span>
     <h4>No consumer value reaches the model, proven by sweep</h4>
@@ -5591,7 +5607,7 @@ header.top {
 </article>
 <article class="case" id="case-G-39" data-id="G-39" data-role="guard"
    data-pri="2" data-hash="1ib3k2r"
-   data-title="Generation refuses rather than running uncounted" data-expect="A message saying that is more writing than this is meant to do in an hour. Nothing is lost." data-area="ASK WELL">
+   data-title="Generation refuses rather than running uncounted" data-expect="A message saying that is more writing than this is meant to do in an hour. Nothing is lost." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-39</span>
     <h4>Generation refuses rather than running uncounted</h4>
@@ -5622,7 +5638,7 @@ header.top {
 </article>
 <article class="case" id="case-G-40" data-id="G-40" data-role="guard"
    data-pri="1" data-hash="z0uuyp"
-   data-title="A withdrawn plan says withdrawn, not missing" data-expect="&quot;This plan has been withdrawn&quot;, and a line pointing them back to their advisor. Not a 404, and nothing about what the document used to contain." data-area="ASK WELL">
+   data-title="A withdrawn plan says withdrawn, not missing" data-expect="&quot;This plan has been withdrawn&quot;, and a line pointing them back to their advisor. Not a 404, and nothing about what the document used to contain." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-40</span>
     <h4>A withdrawn plan says withdrawn, not missing</h4>
@@ -5653,7 +5669,7 @@ header.top {
 </article>
 <article class="case" id="case-G-41" data-id="G-41" data-role="guard"
    data-pri="2" data-hash="ozj90w"
-   data-title="An expired link cannot resolve" data-expect="&quot;This link has expired.&quot; The document does not render." data-area="ASK WELL">
+   data-title="An expired link cannot resolve" data-expect="&quot;This link has expired.&quot; The document does not render." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-41</span>
     <h4>An expired link cannot resolve</h4>
@@ -5684,7 +5700,7 @@ header.top {
 </article>
 <article class="case" id="case-G-42" data-id="G-42" data-role="guard"
    data-pri="1" data-hash="u16pgb"
-   data-title="No cost figure anywhere is model-generated" data-expect="Nothing. No price, no band, no range, no adjective standing in for one." data-area="ASK WELL">
+   data-title="No cost figure anywhere is model-generated" data-expect="Nothing. No price, no band, no range, no adjective standing in for one." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-42</span>
     <h4>No cost figure anywhere is model-generated</h4>
@@ -5715,7 +5731,7 @@ header.top {
 </article>
 <article class="case" id="case-G-43" data-id="G-43" data-role="guard"
    data-pri="1" data-hash="57ttmf"
-   data-title="Present mode hides every working note, not most of them" data-expect="None of them are visible anywhere on the page." data-area="ASK WELL">
+   data-title="Present mode hides every working note, not most of them" data-expect="None of them are visible anywhere on the page." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-43</span>
     <h4>Present mode hides every working note, not most of them</h4>
@@ -5746,7 +5762,7 @@ header.top {
 </article>
 <article class="case" id="case-G-44" data-id="G-44" data-role="guard"
    data-pri="2" data-hash="pfk0rp"
-   data-title="The tier letter is absent where the guide never assigned one" data-expect="No letter on the candidates. Letters in the list below, each with a tooltip giving its meaning." data-area="ASK WELL">
+   data-title="The tier letter is absent where the guide never assigned one" data-expect="No letter on the candidates. Letters in the list below, each with a tooltip giving its meaning." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-44</span>
     <h4>The tier letter is absent where the guide never assigned one</h4>
@@ -5777,7 +5793,7 @@ header.top {
 </article>
 <article class="case" id="case-G-46" data-id="G-46" data-role="guard"
    data-pri="1" data-hash="q2tzxu"
-   data-title="A handed-over Journey takes its workspace with it" data-expect="UAT2 sees the consultation, the session and the issued plan. The house account sees not found and cannot withdraw anything." data-area="ASK WELL">
+   data-title="A handed-over Journey takes its workspace with it" data-expect="UAT2 sees the consultation, the session and the issued plan. The house account sees not found and cannot withdraw anything." data-area="ASK WELL" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-46</span>
     <h4>A handed-over Journey takes its workspace with it</h4>
@@ -5812,7 +5828,7 @@ header.top {
     
 <article class="case" id="case-G-45" data-id="G-45" data-role="guard"
    data-pri="2" data-hash="18a3tnk"
-   data-title="The Playbook shows its gaps instead of hiding them" data-expect="Each empty section says what is missing and what it costs, with a link to go and answer it. No section is silently omitted and none is filled with a plausible default." data-area="Playbook">
+   data-title="The Playbook shows its gaps instead of hiding them" data-expect="Each empty section says what is missing and what it costs, with a link to go and answer it. No section is silently omitted and none is filled with a plausible default." data-area="Playbook" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">G-45</span>
     <h4>The Playbook shows its gaps instead of hiding them</h4>
@@ -5856,7 +5872,7 @@ header.top {
     
 <article class="case" id="case-X-01" data-id="X-01" data-role="cross"
    data-pri="1" data-hash="ui90o2"
-   data-title="The Hub works at 380px" data-expect="No horizontal scrolling, no clipped controls, no text smaller than it should be." data-area="Layout">
+   data-title="The Hub works at 380px" data-expect="No horizontal scrolling, no clipped controls, no text smaller than it should be." data-area="Layout" data-pass="">
   <div class="case-head">
     <span class="cid">X-01</span>
     <h4>The Hub works at 380px</h4>
@@ -5887,7 +5903,7 @@ header.top {
 </article>
 <article class="case" id="case-X-02" data-id="X-02" data-role="cross"
    data-pri="2" data-hash="kvc4zt"
-   data-title="Everything holds at 2000px" data-expect="No stranded content, no line lengths that become unreadable." data-area="Layout">
+   data-title="Everything holds at 2000px" data-expect="No stranded content, no line lengths that become unreadable." data-area="Layout" data-pass="">
   <div class="case-head">
     <span class="cid">X-02</span>
     <h4>Everything holds at 2000px</h4>
@@ -5922,7 +5938,7 @@ header.top {
     
 <article class="case" id="case-X-03" data-id="X-03" data-role="cross"
    data-pri="2" data-hash="fmebpd"
-   data-title="The whole Finder is keyboard-operable" data-expect="Focus is always visible and never trapped." data-area="Accessibility">
+   data-title="The whole Finder is keyboard-operable" data-expect="Focus is always visible and never trapped." data-area="Accessibility" data-pass="">
   <div class="case-head">
     <span class="cid">X-03</span>
     <h4>The whole Finder is keyboard-operable</h4>
@@ -5953,7 +5969,7 @@ header.top {
 </article>
 <article class="case" id="case-X-04" data-id="X-04" data-role="cross"
    data-pri="2" data-hash="976gm4"
-   data-title="Disclosures are reachable without a mouse" data-expect="They open, and focus moves into the revealed content." data-area="Accessibility">
+   data-title="Disclosures are reachable without a mouse" data-expect="They open, and focus moves into the revealed content." data-area="Accessibility" data-pass="">
   <div class="case-head">
     <span class="cid">X-04</span>
     <h4>Disclosures are reachable without a mouse</h4>
@@ -5984,7 +6000,7 @@ header.top {
 </article>
 <article class="case" id="case-X-05" data-id="X-05" data-role="cross"
    data-pri="3" data-hash="enzqlr"
-   data-title="Reduced motion is respected" data-expect="Ambient motion stops or softens; nothing becomes unusable." data-area="Accessibility">
+   data-title="Reduced motion is respected" data-expect="Ambient motion stops or softens; nothing becomes unusable." data-area="Accessibility" data-pass="">
   <div class="case-head">
     <span class="cid">X-05</span>
     <h4>Reduced motion is respected</h4>
@@ -6019,7 +6035,7 @@ header.top {
     
 <article class="case" id="case-X-06" data-id="X-06" data-role="cross"
    data-pri="2" data-hash="1qy1k3c"
-   data-title="No console errors anywhere" data-expect="No red." data-area="Hygiene">
+   data-title="No console errors anywhere" data-expect="No red." data-area="Hygiene" data-pass="">
   <div class="case-head">
     <span class="cid">X-06</span>
     <h4>No console errors anywhere</h4>
@@ -6050,7 +6066,7 @@ header.top {
 </article>
 <article class="case" id="case-X-07" data-id="X-07" data-role="cross"
    data-pri="3" data-hash="17fsly2"
-   data-title="Nothing is fetched from a third-party domain" data-expect="Fonts and assets come from our own domain." data-area="Hygiene">
+   data-title="Nothing is fetched from a third-party domain" data-expect="Fonts and assets come from our own domain." data-area="Hygiene" data-pass="">
   <div class="case-head">
     <span class="cid">X-07</span>
     <h4>Nothing is fetched from a third-party domain</h4>
@@ -6081,7 +6097,7 @@ header.top {
 </article>
 <article class="case" id="case-X-08" data-id="X-08" data-role="cross"
    data-pri="3" data-hash="15hqd3g"
-   data-title="A missing page behaves" data-expect="A sensible page with a way back." data-area="Hygiene">
+   data-title="A missing page behaves" data-expect="A sensible page with a way back." data-area="Hygiene" data-pass="">
   <div class="case-head">
     <span class="cid">X-08</span>
     <h4>A missing page behaves</h4>
@@ -6112,7 +6128,7 @@ header.top {
 </article>
 <article class="case" id="case-X-10" data-id="X-10" data-role="cross"
    data-pri="3" data-hash="tnzlm0"
-   data-title="The campaign screen survives a slow connection" data-expect="The overlay keeps saying what is happening; nothing looks hung." data-area="Hygiene">
+   data-title="The campaign screen survives a slow connection" data-expect="The overlay keeps saying what is happening; nothing looks hung." data-area="Hygiene" data-pass="">
   <div class="case-head">
     <span class="cid">X-10</span>
     <h4>The campaign screen survives a slow connection</h4>
@@ -6147,7 +6163,7 @@ header.top {
     
 <article class="case" id="case-X-09" data-id="X-09" data-role="cross"
    data-pri="2" data-hash="191czpr"
-   data-title="The colours are right" data-expect="They match, and gold text on light backgrounds uses the contrast-safe token." data-area="Brand">
+   data-title="The colours are right" data-expect="They match, and gold text on light backgrounds uses the contrast-safe token." data-area="Brand" data-pass="">
   <div class="case-head">
     <span class="cid">X-09</span>
     <h4>The colours are right</h4>
@@ -6191,7 +6207,7 @@ header.top {
     
 <article class="case" id="case-T-01" data-id="T-01" data-role="teardown"
    data-pri="1" data-hash="e3bgq"
-   data-title="Delete every ZZTest person through the subject-rights screen" data-expect="None remain, and each deletion is audited." data-area="Cleanup">
+   data-title="Delete every ZZTest person through the subject-rights screen" data-expect="None remain, and each deletion is audited." data-area="Cleanup" data-pass="">
   <div class="case-head">
     <span class="cid">T-01</span>
     <h4>Delete every ZZTest person through the subject-rights screen</h4>
@@ -6222,7 +6238,7 @@ header.top {
 </article>
 <article class="case" id="case-T-02" data-id="T-02" data-role="teardown"
    data-pri="1" data-hash="557fj"
-   data-title="Delete the test advisors" data-expect="Accounts gone, Journeys handled as chosen." data-area="Cleanup">
+   data-title="Delete the test advisors" data-expect="Accounts gone, Journeys handled as chosen." data-area="Cleanup" data-pass="">
   <div class="case-head">
     <span class="cid">T-02</span>
     <h4>Delete the test advisors</h4>
@@ -6253,7 +6269,7 @@ header.top {
 </article>
 <article class="case" id="case-T-03" data-id="T-03" data-role="teardown"
    data-pri="2" data-hash="g9vvvh"
-   data-title="Remove campaign rows the screens do not reach" data-expect="No orphaned rows." data-area="Cleanup">
+   data-title="Remove campaign rows the screens do not reach" data-expect="No orphaned rows." data-area="Cleanup" data-pass="">
   <div class="case-head">
     <span class="cid">T-03</span>
     <h4>Remove campaign rows the screens do not reach</h4>
@@ -6284,7 +6300,7 @@ header.top {
 </article>
 <article class="case" id="case-T-04" data-id="T-04" data-role="teardown"
    data-pri="2" data-hash="6983xv"
-   data-title="Clear test purchase events" data-expect="Only real purchases remain." data-area="Cleanup">
+   data-title="Clear test purchase events" data-expect="Only real purchases remain." data-area="Cleanup" data-pass="">
   <div class="case-head">
     <span class="cid">T-04</span>
     <h4>Clear test purchase events</h4>
@@ -6315,7 +6331,7 @@ header.top {
 </article>
 <article class="case" id="case-T-05" data-id="T-05" data-role="teardown"
    data-pri="1" data-hash="163ls3x"
-   data-title="The counts are back where they started" data-expect="Back to the S-08 numbers, allowing for anything real that arrived during the day." data-area="Cleanup">
+   data-title="The counts are back where they started" data-expect="Back to the S-08 numbers, allowing for anything real that arrived during the day." data-area="Cleanup" data-pass="">
   <div class="case-head">
     <span class="cid">T-05</span>
     <h4>The counts are back where they started</h4>
@@ -6346,7 +6362,7 @@ header.top {
 </article>
 <article class="case" id="case-T-06" data-id="T-06" data-role="teardown"
    data-pri="2" data-hash="59cqk3"
-   data-title="Export the results and send them over" data-expect="Every failure and suggestion captured." data-area="Cleanup">
+   data-title="Export the results and send them over" data-expect="Every failure and suggestion captured." data-area="Cleanup" data-pass="">
   <div class="case-head">
     <span class="cid">T-06</span>
     <h4>Export the results and send them over</h4>
@@ -6377,7 +6393,7 @@ header.top {
 </article>
 <article class="case" id="case-T-07" data-id="T-07" data-role="teardown"
    data-pri="1" data-hash="qfzcca"
-   data-title="Remove the ASK WELL test rows" data-expect="All five tables clear of test rows. Every link from this pass returns withdrawn or not found." data-area="Cleanup">
+   data-title="Remove the ASK WELL test rows" data-expect="All five tables clear of test rows. Every link from this pass returns withdrawn or not found." data-area="Cleanup" data-pass="ASK WELL">
   <div class="case-head">
     <span class="cid">T-07</span>
     <h4>Remove the ASK WELL test rows</h4>
@@ -6491,16 +6507,37 @@ header.top {
 
   /* ── Filters ──────────────────────────────────────────────────────── */
   var filter = 'all';
+  var area = '';
+
+  /* The two filters are INDEPENDENT and AND together. "ASK WELL, untested" is
+     the query somebody actually has halfway through a pass, and a single
+     mutually-exclusive filter cannot express it. */
   function refilter() {
+    var shown = 0;
     cases.forEach(function (el) {
       var r = state[el.dataset.id];
       var status = r && r.status;
-      var show = filter === 'all'
+      var byStatus = filter === 'all'
         || (filter === 'p1' && el.dataset.pri === '1')
         || (filter === 'untested' && !status)
         || (filter === 'failures' && (status === 'fail' || status === 'blocked'));
+      /* The value carries its own kind — "pass:ASK WELL" or "area:Campaign" —
+         so a pass and an area that happen to share a name cannot collide. */
+      var byArea = !area
+        || (area.slice(0, 5) === 'pass:' && el.dataset.pass === area.slice(5))
+        || (area.slice(0, 5) === 'area:' && el.dataset.area === area.slice(5));
+      var show = byStatus && byArea;
+      if (show) shown++;
       el.classList.toggle('hidden', !show);
     });
+
+    /* Say how many are on screen. Without it, a filter that matches nothing
+       looks identical to a page that failed to render. */
+    var s = document.getElementById('showing');
+    if (s) {
+      s.textContent = (filter === 'all' && !area)
+        ? '' : 'showing ' + shown + ' of ' + cases.length;
+    }
     /* Hide an area or a role once everything inside it is filtered out —
        otherwise "Failures" shows a page of empty headings. */
     [].forEach.call(document.querySelectorAll('.area'), function (a) {
@@ -6510,6 +6547,20 @@ header.top {
       s.classList.toggle('hidden', !s.querySelector('.case:not(.hidden)'));
     });
   }
+  var areaSel = document.getElementById('area-filter');
+  if (areaSel) {
+    /* Remembered across reloads, like the results themselves: a pass is not
+       one sitting, and re-picking the area every time is the kind of friction
+       that makes somebody stop filtering and start scrolling. */
+    try { areaSel.value = localStorage.getItem(KEY + '.area') || ''; } catch (e) {}
+    area = areaSel.value;
+    areaSel.addEventListener('change', function () {
+      area = areaSel.value;
+      try { localStorage.setItem(KEY + '.area', area); } catch (e) {}
+      refilter();
+    });
+  }
+
   [].forEach.call(document.querySelectorAll('[data-filter]'), function (b) {
     b.addEventListener('click', function () {
       filter = b.dataset.filter;

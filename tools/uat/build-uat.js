@@ -72,6 +72,20 @@ function hash(s) {
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
   return (h >>> 0).toString(36);
 }
+/* Every distinct area, in the order the cases declare them — which is the
+   order of the file, which is the order somebody would work through them. */
+const AREAS = CASES.map((c) => c.area).filter((a, i, all) => a && all.indexOf(a) === i);
+
+/* A PASS IS A RELEASE, AN AREA IS A PLACE IN THE PRODUCT, and they cut across
+   each other. The ASK WELL pass is twenty cases spanning "Before you start",
+   "ASK WELL", "Playbook" and "Cleanup" — filtering by area shows fifteen of
+   them and hides the migration that has to run first and the teardown that has
+   to run last, which is the worst possible subset to hand somebody.
+
+   Optional. A case with no `pass` belongs to the standing regression and
+   simply never appears under a pass filter. */
+const PASSES = CASES.map((c) => c.pass).filter((p, i, all) => p && all.indexOf(p) === i);
+
 const caseHash = (c) => hash([c.title, c.expect, c.steps.join('|'), c.why].join('~'));
 
 const PRI_LABEL = { 1: 'P1 · smoke', 2: 'P2', 3: 'P3' };
@@ -81,7 +95,7 @@ function caseHTML(c) {
   return `
 <article class="case" id="case-${esc(c.id)}" data-id="${esc(c.id)}" data-role="${esc(c.role)}"
    data-pri="${c.priority}" data-hash="${caseHash(c)}"
-   data-title="${esc(c.title)}" data-expect="${esc(c.expect)}" data-area="${esc(c.area)}"${
+   data-title="${esc(c.title)}" data-expect="${esc(c.expect)}" data-area="${esc(c.area)}" data-pass="${esc(c.pass || '')}"${
    c.blocked ? ` data-blocked="${esc(c.blocked)}"` : ''}>
   <div class="case-head">
     <span class="cid">${esc(c.id)}</span>
@@ -227,6 +241,9 @@ header.top {
 .pri { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.1rem 0.4rem;
   border: 1px solid var(--line); border-radius: 2px; color: var(--muted); white-space: nowrap; }
 .pri--1 { border-color: var(--coral); color: #a8331a; font-weight: 700; }
+.area-pick { font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+.area-pick select { font: inherit; font-size: 0.8rem; padding: 0.2rem 0.3rem; }
+.showing { font-size: 0.75rem; opacity: 0.7; margin-left: 0.4rem; }
 .stale { font-size: 0.68rem; background: var(--gold); color: #fff; padding: 0.1rem 0.4rem; border-radius: 2px; }
 
 .needs, .blocked-note { margin: 0.5rem 0 0; font-size: 0.82rem; color: var(--muted); }
@@ -306,6 +323,29 @@ header.top {
       <button type="button" data-filter="p1" aria-pressed="false">P1 only</button>
       <button type="button" data-filter="untested" aria-pressed="false">Untested</button>
       <button type="button" data-filter="failures" aria-pressed="false">Failures</button>
+      <span class="sep"></span>
+      ${/* AREA, NOT ROLE. The role sections are already on the page and can be
+           scrolled to; what nobody can do without this is run ONE FEATURE's
+           cases, which is what a pass after a release actually is. ASK WELL
+           alone is twenty cases inside a tracker holding nearly two hundred,
+           and scrolling past the other 172 to find them is how a pass gets
+           abandoned halfway.
+
+           Derived from the cases, so a new area appears here without anybody
+           remembering to add it. */''}
+      <label class="area-pick">Show
+        <select id="area-filter">
+          <option value="">Everything</option>
+          ${PASSES.length ? `<optgroup label="Pass">${PASSES.map((p) => `<option value="pass:${
+            esc(p)}">${esc(p)} (${CASES.filter((c) => c.pass === p).length})</option>`).join('')}
+          </optgroup>` : ''}
+          <optgroup label="Area">
+          ${AREAS.map((a) => `<option value="area:${esc(a)}">${esc(a)} (${
+            CASES.filter((c) => c.area === a).length})</option>`).join('')}
+          </optgroup>
+        </select>
+      </label>
+      <span class="showing" id="showing"></span>
       <span class="sep"></span>
       <button type="button" id="export-md">Export ⇢ markdown</button>
       <button type="button" id="export-json">Backup JSON</button>
@@ -411,16 +451,37 @@ header.top {
 
   /* ── Filters ──────────────────────────────────────────────────────── */
   var filter = 'all';
+  var area = '';
+
+  /* The two filters are INDEPENDENT and AND together. "ASK WELL, untested" is
+     the query somebody actually has halfway through a pass, and a single
+     mutually-exclusive filter cannot express it. */
   function refilter() {
+    var shown = 0;
     cases.forEach(function (el) {
       var r = state[el.dataset.id];
       var status = r && r.status;
-      var show = filter === 'all'
+      var byStatus = filter === 'all'
         || (filter === 'p1' && el.dataset.pri === '1')
         || (filter === 'untested' && !status)
         || (filter === 'failures' && (status === 'fail' || status === 'blocked'));
+      /* The value carries its own kind — "pass:ASK WELL" or "area:Campaign" —
+         so a pass and an area that happen to share a name cannot collide. */
+      var byArea = !area
+        || (area.slice(0, 5) === 'pass:' && el.dataset.pass === area.slice(5))
+        || (area.slice(0, 5) === 'area:' && el.dataset.area === area.slice(5));
+      var show = byStatus && byArea;
+      if (show) shown++;
       el.classList.toggle('hidden', !show);
     });
+
+    /* Say how many are on screen. Without it, a filter that matches nothing
+       looks identical to a page that failed to render. */
+    var s = document.getElementById('showing');
+    if (s) {
+      s.textContent = (filter === 'all' && !area)
+        ? '' : 'showing ' + shown + ' of ' + cases.length;
+    }
     /* Hide an area or a role once everything inside it is filtered out —
        otherwise "Failures" shows a page of empty headings. */
     [].forEach.call(document.querySelectorAll('.area'), function (a) {
@@ -430,6 +491,20 @@ header.top {
       s.classList.toggle('hidden', !s.querySelector('.case:not(.hidden)'));
     });
   }
+  var areaSel = document.getElementById('area-filter');
+  if (areaSel) {
+    /* Remembered across reloads, like the results themselves: a pass is not
+       one sitting, and re-picking the area every time is the kind of friction
+       that makes somebody stop filtering and start scrolling. */
+    try { areaSel.value = localStorage.getItem(KEY + '.area') || ''; } catch (e) {}
+    area = areaSel.value;
+    areaSel.addEventListener('change', function () {
+      area = areaSel.value;
+      try { localStorage.setItem(KEY + '.area', area); } catch (e) {}
+      refilter();
+    });
+  }
+
   [].forEach.call(document.querySelectorAll('[data-filter]'), function (b) {
     b.addEventListener('click', function () {
       filter = b.dataset.filter;
