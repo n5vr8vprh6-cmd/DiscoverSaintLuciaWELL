@@ -101,9 +101,8 @@
     });
   }
 
-  function show(i, userInitiated) {
-    step = i;
-    fieldsets.forEach(function (fs, n) { fs.hidden = n !== i; });
+  /* Everything about arriving at a question except which fieldset is showing. */
+  function paint(i, userInitiated) {
     lightSteps(i);
     backBtn.hidden = i === 0;
     nextBtn.textContent = i === questions.length - 1 ? 'See my journey' : 'Continue';
@@ -119,6 +118,69 @@
       legend.setAttribute('tabindex', '-1');
       legend.focus({ preventScroll: true });
     }
+  }
+
+  /* ── The swap ─────────────────────────────────────────────────────────────
+     One question replacing another was the last moment in this tool that
+     behaved like a document: `hidden` toggled and the next question was simply
+     there, in the same frame, inside a card the visitor is staring at.
+
+     THE CARD HAS TO BE ANIMATED TOO, AND THAT IS NOT OPTIONAL.
+     Measured at 1280x900 the card is 834, 936, 426, 457, 427 and 451px tall
+     across the six questions — a 510px jump between Place and Company. A
+     content-only cross-fade would leave the frame snapping half a screen while
+     the words dissolved politely, which is worse than the instant swap it
+     replaced. So the height is measured before and after and transitioned with
+     the incoming content.
+
+     Sequence: 120ms for the old question to leave, then the card reshapes over
+     260ms while the new one fades up 8px over 220ms. Transitions, not
+     keyframes, so an interrupted swap retargets instead of restarting. */
+  var SWAP_OUT = 120;
+  var swapping = false;
+
+  function show(i, userInitiated) {
+    var from = fieldsets[step];
+    var to = fieldsets[i];
+    step = i;
+
+    /* Instant for first paint, for reduced motion, and when there is no
+       outgoing question to leave (launch -> Q1, restart -> Q1). */
+    if (!userInitiated || reduced || !from || from === to || from.hidden) {
+      fieldsets.forEach(function (fs, n) { fs.hidden = n !== i; });
+      paint(i, userInitiated);
+      return;
+    }
+
+    swapping = true;
+    var h0 = formEl.offsetHeight;
+    from.classList.add('q-leave');
+
+    window.setTimeout(function () {
+      fieldsets.forEach(function (fs, n) { fs.hidden = n !== i; });
+      from.classList.remove('q-leave');
+
+      /* `q-enter` only moves opacity and transform, so the card measures its
+         true new height with the incoming question already in place. */
+      to.classList.add('q-enter');
+      var h1 = formEl.offsetHeight;
+
+      formEl.style.height = h0 + 'px';
+      void formEl.offsetHeight;              /* commit the start height */
+      formEl.classList.add('is-resizing');
+      formEl.style.height = h1 + 'px';
+
+      void to.offsetWidth;                   /* commit the start opacity */
+      to.classList.remove('q-enter');
+
+      paint(i, userInitiated);
+
+      window.setTimeout(function () {
+        formEl.classList.remove('is-resizing');
+        formEl.style.height = '';            /* back to auto, so it reflows */
+        swapping = false;
+      }, 280);
+    }, SWAP_OUT);
   }
 
   formEl.addEventListener('change', function (e) {
@@ -154,11 +216,13 @@
   }
 
   backBtn.addEventListener('click', function () {
+    if (swapping) return;                    /* a swap is mid-flight */
     if (step > 0) show(step - 1, true);
   });
 
   formEl.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (swapping) return;                    /* a swap is mid-flight */
     if (!answers[questions[step].id]) return;
     if (step < questions.length - 1) {
       track('finder_step', { step: step + 1, answer: answers[questions[step].id] });
@@ -452,6 +516,37 @@
        it the ring arrives as an empty circle. `is-probed` is the existing
        hover mechanism — it dims the directions that are not active, which is
        what makes the lit ones read as chosen rather than merely brighter. */
+    /* ── The three matched villages arriving ──────────────────────────────
+       js/motion.js builds its observer list ONCE, with a single
+       querySelectorAll at init. The result is injected long afterwards as
+       innerHTML, so none of it is ever observed and the site's reveal system
+       never touches it — the three cards simply exist, in one frame, at the
+       moment the whole tool has been building toward.
+
+       Only the cards. The experiences list, the Eclipse block and the capture
+       form are read after the eye has already landed, and staggering them
+       would delay the one thing a visitor might have come back for.
+
+       The failsafe matters more than the animation: 1.2s later both classes
+       come off unconditionally, so the result is visible even if the
+       transition never fires. That is the same guarantee `settled` gives every
+       revealed element on the site, and the reason the reveal system has it.
+       A result nobody can read is a worse failure than one that does not
+       animate. */
+    function arriveCards(skip) {
+      var cards = resultEl.querySelectorAll('.result-card');
+      if (skip || reduced || !cards.length) return;
+      [].forEach.call(cards, function (c, n) { c.style.setProperty('--i', n); });
+      resultEl.classList.add('is-arriving');
+      /* Two frames: one to let the start state paint, one to transition from it. */
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { resultEl.classList.add('is-in'); });
+      });
+      window.setTimeout(function () {
+        resultEl.classList.remove('is-arriving', 'is-in');
+      }, 1200);
+    }
+
     function placeCompass() {
       var fig = document.getElementById('finder-compass');
       var slot = resultEl.querySelector('[data-compass-slot]');
@@ -471,6 +566,10 @@
     shaping(function () {
       resultEl.innerHTML = html;
       placeCompass();
+      /* `instant` is the shared-link path — somebody opening a friend's result
+         has answered nothing, so it should not perform for them any more than
+         the shaping sequence does. */
+      arriveCards(instant);
       if (launchEl) launchEl.hidden = true;
       formEl.hidden = true;
       resultEl.hidden = false;
