@@ -28,6 +28,7 @@ const SCREENS = {
   home:     () => require('../_lib/hub-screens/home.js'),
   journeys: () => require('../_lib/hub-screens/journeys.js'),
   journey:  () => require('../_lib/hub-screens/journey.js'),
+  design:   () => require('../_lib/hub-screens/design.js'),
   introduce: () => require('../_lib/hub-screens/introduce.js'),
   account:  () => require('../_lib/hub-screens/account.js'),
   campaign: () => require('../_lib/hub-screens/campaign.js'),

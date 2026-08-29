@@ -330,7 +330,7 @@ module.exports = {
       "name": "Sugar Beach, A Viceroy Resort",
       "folder": "01-sugar-beach-viceroy",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "rainforest",
@@ -440,7 +440,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -449,7 +449,7 @@ module.exports = {
       "name": "Jade Mountain",
       "folder": "02-jade-mountain",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "connection",
@@ -560,7 +560,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -569,7 +569,7 @@ module.exports = {
       "name": "Anse Chastanet",
       "folder": "03-anse-chastanet",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "movement",
@@ -674,7 +674,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -683,7 +683,7 @@ module.exports = {
       "name": "The Landings Resort & Spa",
       "folder": "04-the-landings",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "connection",
@@ -781,7 +781,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -790,7 +790,7 @@ module.exports = {
       "name": "Sandals Grande St. Lucian",
       "folder": "05-sandals-grande-st-lucian",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "movement",
@@ -893,7 +893,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -902,7 +902,7 @@ module.exports = {
       "name": "BodyHoliday Saint Lucia",
       "folder": "06-bodyholiday",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "ocean",
@@ -1013,7 +1013,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1022,7 +1022,7 @@ module.exports = {
       "name": "A’ILA Resorts, Villas & Residences",
       "folder": "07-aila-resorts-villas-residences",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "longevity"
@@ -1096,7 +1096,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1105,7 +1105,7 @@ module.exports = {
       "name": "StolenTime Saint Lucia",
       "folder": "08-stolentime",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "ocean",
@@ -1197,7 +1197,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1206,7 +1206,7 @@ module.exports = {
       "name": "Rabot Hotel from Hotel Chocolat",
       "folder": "09-rabot-hotel-hotel-chocolat",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "heritage",
@@ -1311,7 +1311,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1320,7 +1320,7 @@ module.exports = {
       "name": "Ladera Resort",
       "folder": "10-ladera-resort",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "heritage",
@@ -1426,7 +1426,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1435,7 +1435,7 @@ module.exports = {
       "name": "Cap Maison Resort & Spa",
       "folder": "11-cap-maison",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "connection",
@@ -1532,7 +1532,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1541,7 +1541,7 @@ module.exports = {
       "name": "TheLifeCo St. Lucia",
       "folder": "12-thelifeco-st-lucia",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "longevity"
@@ -1639,7 +1639,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1648,7 +1648,7 @@ module.exports = {
       "name": "Stonefield Villa Resort",
       "folder": "13-stonefield-villa-resort",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "rainforest",
@@ -1751,7 +1751,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1760,7 +1760,7 @@ module.exports = {
       "name": "Zoëtry Marigot Bay St. Lucia",
       "folder": "14-zoetry-marigot-bay",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "rainforest",
@@ -1866,7 +1866,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {
@@ -1875,7 +1875,7 @@ module.exports = {
       "name": "Calabash Cove Resort & Spa",
       "folder": "15-calabash-cove",
       "collection": "deep",
-      "tier": "D",
+      "tier": null,
       "scorable": true,
       "villages": [
         "ocean",
@@ -1977,7 +1977,7 @@ module.exports = {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
         "confidence": "VERIFIED OFFER",
-        "tier": "D"
+        "tier": null
       }
     },
     {

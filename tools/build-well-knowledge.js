@@ -183,7 +183,19 @@ function image(folder) {
   return { src: m.src, base: m.base, widths: m.widths, w: m.w, h: m.h, alt: m.alt, source: m.source, retrieved: m.retrieved };
 }
 
-/* ── The fifteen deep profiles ───────────────────────────────────────────── */
+/* ── The fifteen deep profiles ─────────────────────────────────────────────
+   TIER IS NULL HERE, AND THAT IS THE ACCURATE VALUE. The A-B-C-D scale is a
+   property of the EXPANDED scan: the source declares tier A for the Collection
+   and carries an explicit `tier` field on Supporting and Basecamps. The fifteen
+   deep profiles predate that scan and carry no tier field at all — they are the
+   core set, verified in their own right on 10 Aug 2026.
+
+   Defaulting the absent value to 'D' — which this file did until it was caught
+   on screen — does not read as "unclassified". FW.tiers defines D as "No verified
+   formal WELL offer found", so the workspace was asserting exactly that about the
+   fifteen most-researched properties in the guide, to an advisor, in front of a
+   client. An absent classification has to stay absent; the renderer shows nothing
+   rather than a letter, because a letter is a claim. */
 const deep = (guideProps.DEEP || []).map((p) => {
   const folder = String(p.n).padStart(2, '0') + '-' + p.slug;
   return {
@@ -192,7 +204,7 @@ const deep = (guideProps.DEEP || []).map((p) => {
     name: p.name,
     folder,
     collection: 'deep',
-    tier: 'D',
+    tier: null,
     scorable: true,
 
     villages: keysFrom(p.villages, villageKey),
@@ -217,7 +229,7 @@ const deep = (guideProps.DEEP || []).map((p) => {
     watchLevel: p.watchLevel || null,
 
     image: image(folder),
-    provenance: { source: 'field-guide-deep', verified_at: CORE_VERIFIED, confidence: 'VERIFIED OFFER', tier: 'D' }
+    provenance: { source: 'field-guide-deep', verified_at: CORE_VERIFIED, confidence: 'VERIFIED OFFER', tier: null }
   };
 });
 

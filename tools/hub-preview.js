@@ -297,6 +297,35 @@ function login() {
   });
 }
 
+/* ── ASK WELL ─────────────────────────────────────────────────────────────
+   Rendered from the SCREEN'S OWN builder, not from a copy of it here. The
+   shortlist is computed for real against the knowledge bank, from the fixture
+   Journey's own Finder answers — so what this shows is what an advisor sees,
+   including the mismatch sentences, rather than a mock-up that agrees with the
+   design until somebody changes one of them. */
+async function designWorkspace() {
+  const K = require('../api/_lib/well-knowledge.js');
+  const N = require('../api/_lib/need-state.js');
+  const M = require('../api/_lib/design-match.js');
+  const { buildBody } = require('../api/_lib/hub-screens/design.js');
+
+  const j = JOURNEYS[0];
+  const need = await N.seedFrom(j.answers || {});
+  const bank = await K.version();
+  const shortlist = bank.ready ? await M.shortlistFor(need) : [];
+  const vocab = await N.vocabulary();
+  const topVillage = Object.keys(need.villages || {})
+    .sort((a, b) => need.villages[b] - need.villages[a])[0] || null;
+  const also = topVillage ? await K.alsoInVillage(topVillage) : { supporting: [], basecamps: [] };
+
+  return buildBody({
+    id: j.id, name: fullName(j), need, seeded: need, stored: null,
+    vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
+    caps: { database: true, consultation: true, itinerary: true, ledger: true },
+    bank
+  });
+}
+
 /* ── Write ───────────────────────────────────────────────────────────────
    The path is passed through as the real route, not as the preview filename,
    so the nav's current-page state is the one the deployed Hub will show. */
@@ -310,13 +339,20 @@ const PAGES = [
 ];
 
 fs.mkdirSync(OUT, { recursive: true });
+
+/* The design workspace is async — it scores against the knowledge bank — so
+   the write runs inside an IIFE rather than at module top level. */
+(async () => {
+PAGES.push(['design.html', 'Design · Marguerite Okonkwo', '/hub/journeys', ADVISOR, await designWorkspace()]);
 PAGES.forEach(([file, title, routePath, advisor, body]) => {
   const html = render({
     key: 'hub', path: routePath, layout: 'hub', surface: 'advisor',
     title: title + ' — Saint Lucia WELL', description: 'Private advisor workspace.',
-    noindex: true, scripts: false, js: ['/js/hub.js'], styles: ['/css/hub.css'], advisor
+    noindex: true, scripts: false, styles: ['/css/hub.css'], advisor,
+    js: file === 'design.html' ? ['/js/hub.js', '/js/hub-design.js'] : ['/js/hub.js']
   }, body);
   fs.writeFileSync(path.join(OUT, file), html);
   console.log('  ' + path.relative(process.cwd(), path.join(OUT, file)));
 });
 console.log('\nFixture data only. Serve dist/ and open /_hub-preview/.');
+})();

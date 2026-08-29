@@ -125,6 +125,10 @@ module.exports = async function handler(req, res) {
               encodeURIComponent('Your Saint Lucia WELL Journey')}">Email ${esc(j.consumer_first || '')}</a>` : ''}
         ${j.consumer_phone
           ? `<a class="btn btn--ghost" href="tel:${esc(j.consumer_phone.replace(/[^\d+]/g, ''))}">Call</a>` : ''}
+        ${/* Shown in view-as as well. The workspace is read-only there, and its
+             consultation carries codes rather than anybody's words, so there is
+             nothing on it to withhold. */''}
+        <a class="btn btn--ghost" href="/hub/journeys/${esc(id)}/design">Design this journey</a>
       </div>
       <p class="hub-contact">
         ${j.consumer_email ? `<span>${esc(j.consumer_email)}</span>` : ''}
