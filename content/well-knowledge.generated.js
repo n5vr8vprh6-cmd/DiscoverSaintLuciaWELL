@@ -19,7 +19,7 @@
 
    Field Guide edition : Founding Edition · 2026
    Verified            : core 10 Aug 2026 · expanded 11 Aug 2026
-   Generated           : 2026-08-27
+   Generated           : 2026-08-29
    ======================================================================== */
 'use strict';
 
@@ -30,7 +30,7 @@ module.exports = {
       "core": "10 Aug 2026",
       "expanded": "11 Aug 2026"
     },
-    "generated": "2026-08-27"
+    "generated": "2026-08-29"
   },
   "frameworks": {
     "compass": [
@@ -1981,7 +1981,7 @@ module.exports = {
       }
     },
     {
-      "slug": "balenboucheestate",
+      "slug": "balenbouche-estate",
       "n": null,
       "name": "Balenbouche Estate",
       "folder": null,
@@ -2034,7 +2034,7 @@ module.exports = {
       }
     },
     {
-      "slug": "baygardensbeachresortspa",
+      "slug": "bay-gardens-beach-resort-spa",
       "n": null,
       "name": "Bay Gardens Beach Resort & Spa",
       "folder": null,
@@ -2085,7 +2085,7 @@ module.exports = {
       }
     },
     {
-      "slug": "cabotsaintlucia",
+      "slug": "cabot-saint-lucia",
       "n": null,
       "name": "Cabot Saint Lucia",
       "folder": null,
@@ -2134,7 +2134,7 @@ module.exports = {
       }
     },
     {
-      "slug": "coconutbaybeachresortspa",
+      "slug": "coconut-bay-beach-resort-spa",
       "n": null,
       "name": "Coconut Bay Beach Resort & Spa",
       "folder": null,
@@ -2185,7 +2185,7 @@ module.exports = {
       }
     },
     {
-      "slug": "eastwindssaintlucia",
+      "slug": "east-winds-saint-lucia",
       "n": null,
       "name": "East Winds Saint Lucia",
       "folder": null,
@@ -2236,7 +2236,7 @@ module.exports = {
       }
     },
     {
-      "slug": "fonddouxecoresort",
+      "slug": "fond-doux-eco-resort",
       "n": null,
       "name": "Fond Doux Eco Resort",
       "folder": null,
@@ -2288,7 +2288,7 @@ module.exports = {
       }
     },
     {
-      "slug": "greenfigresortspa",
+      "slug": "green-fig-resort-spa",
       "n": null,
       "name": "Green Fig Resort & Spa",
       "folder": null,
@@ -2341,7 +2341,7 @@ module.exports = {
       }
     },
     {
-      "slug": "marigotbeachclubdiveresort",
+      "slug": "marigot-beach-club-dive-resort",
       "n": null,
       "name": "Marigot Beach Club & Dive Resort",
       "folder": null,
@@ -2392,7 +2392,7 @@ module.exports = {
       }
     },
     {
-      "slug": "royaltonsaintlucia",
+      "slug": "royalton-saint-lucia",
       "n": null,
       "name": "Royalton Saint Lucia",
       "folder": null,
@@ -2443,7 +2443,7 @@ module.exports = {
       }
     },
     {
-      "slug": "secretsstluciaresortspa",
+      "slug": "secrets-st-lucia-resort-spa",
       "n": null,
       "name": "Secrets St. Lucia Resort & Spa",
       "folder": null,
@@ -2494,7 +2494,7 @@ module.exports = {
       }
     },
     {
-      "slug": "solsanctumwellnesshotelstudio",
+      "slug": "sol-sanctum-wellness-hotel-studio",
       "n": null,
       "name": "Sol Sanctum Wellness Hotel & Studio",
       "folder": null,
@@ -2545,7 +2545,7 @@ module.exports = {
       }
     },
     {
-      "slug": "theharborclub",
+      "slug": "the-harbor-club",
       "n": null,
       "name": "The Harbor Club",
       "folder": null,
@@ -2595,7 +2595,7 @@ module.exports = {
       }
     },
     {
-      "slug": "thereefkitesurf",
+      "slug": "the-reef-kite-surf",
       "n": null,
       "name": "The Reef Kite & Surf",
       "folder": null,
@@ -2644,7 +2644,7 @@ module.exports = {
       }
     },
     {
-      "slug": "tikayeresortspa",
+      "slug": "ti-kaye-resort-spa",
       "n": null,
       "name": "Ti Kaye Resort & Spa",
       "folder": null,
@@ -2695,7 +2695,7 @@ module.exports = {
       }
     },
     {
-      "slug": "windjammerlandingresortresidences",
+      "slug": "windjammer-landing-resort-residences",
       "n": null,
       "name": "Windjammer Landing Resort & Residences",
       "folder": null,

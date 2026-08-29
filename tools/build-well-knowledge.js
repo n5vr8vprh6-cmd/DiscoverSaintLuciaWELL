@@ -223,7 +223,11 @@ const deep = (guideProps.DEEP || []).map((p) => {
 
 /* ── The expanded collection — tier A, scorable, no depth band ───────────── */
 const collection = (guideProps.COLLECTION || []).map((c) => ({
-  slug: norm(c.name).slice(0, 60) || null,
+  /* Kebab, to match the deep profiles' own slugs. These become URL fragments,
+     database values and test fixtures; 'balenboucheestate' is none of those
+     things readable, and a slug is read far more often than it is written. */
+  slug: String(c.name).toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || null,
   n: null,
   name: c.name,
   folder: null,
