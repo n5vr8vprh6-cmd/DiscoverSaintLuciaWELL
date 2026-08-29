@@ -169,6 +169,45 @@ async function cleanup() {
     ok('a supplied line replaces the draft',
       I.compose(journey, target, 'They are marvellous.').personalLine === 'They are marvellous.');
 
+    /* ── EVERY TABLE THAT DENORMALISES advisor_id MUST MOVE, OR SAY WHY ──
+       Static, no database. It reads migration 022 for tables carrying their own
+       advisor_id and asserts each is either handled in introductions.js or on
+       the exclusion list below with a reason.
+
+       This exists because the handover shipped covering two of the four. The
+       one it missed was journey_itineraries, and the consequence was not a
+       cosmetic inconsistency: revokeItinerary() is scoped by advisor, so a
+       handed-over Journey left the SENDING advisor able to withdraw a live
+       document from a client who was now somebody else's.
+
+       A table added later with no handover line is the same bug again, and
+       nothing else would notice. */
+    const sql = fs.readFileSync(path.join(__dirname, '..', 'db', 'migrations',
+      '022-journey-design.sql'), 'utf8');
+    const intro = fs.readFileSync(path.join(__dirname, '..', 'api', '_lib',
+      'introductions.js'), 'utf8');
+
+    /* Deliberately not moved, and why. A cost ledger follows the advisor who
+       incurred the cost; reassigning it would charge one advisor's usage to
+       another's hourly counter and throttle somebody who generated nothing. */
+    const EXCLUDED = { design_generation: 'cost and rate-limit ledger — follows the spender' };
+
+    const owning = [];
+    sql.replace(/create table if not exists\s+(\w+)\s*\(([\s\S]*?)\n\);/g, (m, name, cols) => {
+      if (/^\s*advisor_id\s+uuid/m.test(cols)) owning.push(name);
+      return '';
+    });
+
+    ok('022 declares tables that own an advisor_id', owning.length >= 4, owning.join(', '));
+    owning.forEach((table) => {
+      if (EXCLUDED[table]) {
+        ok('handover deliberately skips ' + table + ' (' + EXCLUDED[table] + ')', true);
+        return;
+      }
+      ok('handover moves ' + table, intro.indexOf(table) !== -1,
+        'introductions.js never mentions it, so a handed-over Journey leaves it behind');
+    });
+
   } catch (e) {
     if (e.message !== '__skip__') { fail++; console.log('\n  ✗ THREW: ' + (e && e.message ? e.message : e)); }
   } finally {

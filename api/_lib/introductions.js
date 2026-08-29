@@ -210,12 +210,46 @@ async function send(journey, advisor, personalLine) {
      the fact that matters, and a design workspace that failed to follow is a
      repairable inconsistency rather than a reason to report the introduction as
      failed. A missing table (migration 022 unapplied) is not an error at all. */
-  for (const table of ['journey_consultations', 'design_sessions']) {
+  const MISSING = ['42703', '42P01', 'PGRST204', 'PGRST205'];
+  const moved = async (table, column, value) => {
     const { error } = await supabase.from(table)
       .update({ advisor_id: advisor.id })
-      .eq('share_id', journey.id);
-    if (error && ['42703', '42P01', 'PGRST204', 'PGRST205'].indexOf(String(error.code)) === -1) {
+      .eq(column, value);
+    if (error && MISSING.indexOf(String(error.code)) === -1) {
       console.error('introduction moved the Journey but not ' + table, error.code);
+    }
+  };
+
+  /* Keyed by share_id. */
+  for (const table of ['journey_consultations', 'design_sessions', 'journey_itineraries']) {
+    await moved(table, 'share_id', journey.id);
+  }
+
+  /* JOURNEY_ITINERARIES IS THE ONE THAT MATTERS MOST, and it was the one left
+     behind. revokeItinerary() is scoped by advisor in the query, so a Journey
+     handed over left the SENDING advisor able to withdraw a live document from
+     a client who is now somebody else's — and the receiving advisor unable to.
+     Updating advisor_id is allowed on an issued row on purpose: itinerary_frozen()
+     freezes the document, the brand, the version and the ids, and deliberately
+     not the owner.
+
+     DESIGN_CANDIDATES HAS NO share_id. It hangs off the session, so it needs
+     the session ids first — two round trips for an operation that happens once
+     per pooled Journey, which is the right trade against a join written wrong.
+
+     DESIGN_GENERATION DELIBERATELY DOES NOT MOVE. It is a cost and rate-limit
+     ledger: the calls were made by the sending advisor, on their hour, and
+     reassigning them would charge one advisor's usage to another's counter and
+     silently throttle somebody who has generated nothing. */
+  const { data: sessions } = await supabase
+    .from('design_sessions').select('id').eq('share_id', journey.id);
+  const ids = (sessions || []).map((s) => s.id);
+  if (ids.length) {
+    const { error } = await supabase.from('design_candidates')
+      .update({ advisor_id: advisor.id })
+      .in('session_id', ids);
+    if (error && MISSING.indexOf(String(error.code)) === -1) {
+      console.error('introduction moved the Journey but not design_candidates', error.code);
     }
   }
 

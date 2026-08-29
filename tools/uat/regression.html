@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>191 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>192 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">191</b></span>
+      <span class="t-left">Untested <b id="n-left">192</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -4353,7 +4353,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 45 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 46 recorded</p>
   </div>
   
   <details class="area" open>
@@ -5463,7 +5463,7 @@ header.top {
 </article>
   </details>
   <details class="area" open>
-    <summary>ASK WELL <span class="area-n">10</span></summary>
+    <summary>ASK WELL <span class="area-n">11</span></summary>
     
 <article class="case" id="case-G-35" data-id="G-35" data-role="guard"
    data-pri="1" data-hash="sndqy2"
@@ -5763,6 +5763,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> D means &quot;no verified formal WELL offer found&quot;. The deep profiles carry no tier at all, and defaulting the absent value to D made the workspace assert that about Anse Chastanet and Ladera in front of a client.</p>
 
   <div class="marks" role="group" aria-label="Result for G-44">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-46" data-id="G-46" data-role="guard"
+   data-pri="1" data-hash="q2tzxu"
+   data-title="A handed-over Journey takes its workspace with it" data-expect="UAT2 sees the consultation, the session and the issued plan. The house account sees not found and cannot withdraw anything." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-46</span>
+    <h4>A handed-over Journey takes its workspace with it</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>As the house account, design a pooled Journey and issue a plan</li><li>Introduce that Journey to UAT2</li><li>As UAT2, open the Journey and press Design</li><li>As the house account, try to open the same design and withdraw the issued plan</li></ol>
+
+  <p class="expect"><strong>Expect</strong> UAT2 sees the consultation, the session and the issued plan. The house account sees not found and cannot withdraw anything.</p>
+  <p class="why"><strong>Why this matters</strong> These tables carry their own advisor_id, so a handover that moves the Journey and not the workspace leaves the SENDING advisor able to withdraw a live document from a client who now belongs to somebody else — and the receiving advisor unable to open the work that was done for them.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-46">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
