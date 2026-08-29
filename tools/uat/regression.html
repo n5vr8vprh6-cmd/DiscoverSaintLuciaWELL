@@ -88,6 +88,13 @@ header.top {
 .pri { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.1rem 0.4rem;
   border: 1px solid var(--line); border-radius: 2px; color: var(--muted); white-space: nowrap; }
 .pri--1 { border-color: var(--coral); color: #a8331a; font-weight: 700; }
+.target { margin: 0 0 1rem; padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-radius: 3px; }
+.target label { font-size: 0.85rem; font-weight: 600; display: block; }
+.target input { font: inherit; font-size: 0.85rem; width: min(100%, 34rem); margin-top: 0.3rem;
+  padding: 0.35rem 0.45rem; border: 1px solid var(--line); border-radius: 3px; }
+.target button { margin-top: 0.4rem; font-size: 0.78rem; }
+.target--off { border-color: var(--gold); background: rgba(217,160,60,0.09); }
+#target-warn { margin: 0.5rem 0 0; font-size: 0.82rem; color: var(--ink); }
 .area-pick { font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; }
 .area-pick select { font: inherit; font-size: 0.8rem; padding: 0.2rem 0.3rem; }
 .showing { font-size: 0.75rem; opacity: 0.7; margin-left: 0.4rem; }
@@ -156,7 +163,9 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>192 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>192 cases ·
+      <a id="target-link" href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener"
+         style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
@@ -193,8 +202,19 @@ header.top {
 
 <div class="wrap">
 
+  
+  <div class="target" data-target>
+    <label>Testing against
+      <input type="url" id="target-url" value="https://www.discoversaintluciawell.com" spellcheck="false">
+    </label>
+    <button type="button" id="target-reset">Production</button>
+    <p id="target-warn" hidden>Not production. Results below were gathered here, and the
+      export says so — but nothing on a preview proves anything about the live site.</p>
+  </div>
+
   <div class="preamble">
-    <h2>Before you start — this is production</h2>
+    
+    <h2 id="preamble-h">Before you start — this is production</h2>
     <ul>
       <li><strong>Real emails send</strong> through Resend, and Encharge events fire on registration and approval.</li>
       <li><strong>Every plan build costs real money</strong> at OpenAI. Budget a few dollars for the Campaign group.</li>
@@ -6547,6 +6567,46 @@ header.top {
       s.classList.toggle('hidden', !s.querySelector('.case:not(.hidden)'));
     });
   }
+  /* ── Which deployment ─────────────────────────────────────────────── */
+  var PROD = "https://www.discoversaintluciawell.com";
+  var targetBox = document.querySelector('[data-target]');
+  var targetIn = document.getElementById('target-url');
+  var targetLink = document.getElementById('target-link');
+  var targetWarn = document.getElementById('target-warn');
+
+  /* THESE BACKSLASHES ARE DOUBLED BECAUSE THIS LINE IS INSIDE A TEMPLATE
+     LITERAL. A single / is consumed as an escape on the way out and the page
+     receives //+$/, which is a syntax error that kills the WHOLE tracker script
+     — every filter, every status button — while node --check on this file still
+     passes, because the fault is in the string rather than in the source. */
+  function target() { return (targetIn && targetIn.value || PROD).replace(/\/+$/, ''); }
+
+  function paintTarget() {
+    var v = target();
+    var off = v !== PROD;
+    if (targetBox) targetBox.classList.toggle('target--off', off);
+    if (targetWarn) targetWarn.hidden = !off;
+    var ph = document.getElementById('preamble-h');
+    if (ph) {
+      ph.textContent = off
+        ? 'Before you start — this is a preview, on the live database'
+        : 'Before you start — this is production';
+    }
+    if (targetLink) {
+      targetLink.href = v;
+      targetLink.textContent = v.replace(/^https?:\/\//, '');
+    }
+    try { localStorage.setItem(KEY + '.target', v); } catch (e) {}
+  }
+
+  if (targetIn) {
+    try { targetIn.value = localStorage.getItem(KEY + '.target') || PROD; } catch (e) {}
+    targetIn.addEventListener('input', paintTarget);
+    var reset = document.getElementById('target-reset');
+    if (reset) reset.addEventListener('click', function () { targetIn.value = PROD; paintTarget(); });
+    paintTarget();
+  }
+
   var areaSel = document.getElementById('area-filter');
   if (areaSel) {
     /* Remembered across reloads, like the results themselves: a pass is not
@@ -6609,6 +6669,12 @@ header.top {
     out.push('');
     out.push('Exported ' + when + ' · ' + (cases.length - n.untested.length) + ' of ' + cases.length + ' recorded');
     out.push('');
+    /* Named, always. A reader who cannot tell a preview result from a
+       production one will treat both as production, which is the failure this
+       line exists to prevent. */
+    out.push('Tested against: **' + target() + '**' +
+      (target() === PROD ? '' : '  — NOT production. Nothing here proves anything about the live site.'));
+    out.push('');
     out.push('| Result | n |');
     out.push('|---|---|');
     ['pass', 'fail', 'blocked', 'na', 'untested'].forEach(function (k) {
@@ -6649,6 +6715,9 @@ header.top {
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
 
+  /* The export is the artifact that leaves this page and gets pasted into a
+     conversation. If it does not say which deployment produced it, nobody
+     downstream can tell. */
   document.getElementById('export-md').addEventListener('click', function () {
     var md = markdown();
     if (navigator.clipboard) navigator.clipboard.writeText(md).catch(function () {});

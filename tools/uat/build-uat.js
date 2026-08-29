@@ -241,6 +241,13 @@ header.top {
 .pri { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.1rem 0.4rem;
   border: 1px solid var(--line); border-radius: 2px; color: var(--muted); white-space: nowrap; }
 .pri--1 { border-color: var(--coral); color: #a8331a; font-weight: 700; }
+.target { margin: 0 0 1rem; padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-radius: 3px; }
+.target label { font-size: 0.85rem; font-weight: 600; display: block; }
+.target input { font: inherit; font-size: 0.85rem; width: min(100%, 34rem); margin-top: 0.3rem;
+  padding: 0.35rem 0.45rem; border: 1px solid var(--line); border-radius: 3px; }
+.target button { margin-top: 0.4rem; font-size: 0.78rem; }
+.target--off { border-color: var(--gold); background: rgba(217,160,60,0.09); }
+#target-warn { margin: 0.5rem 0 0; font-size: 0.82rem; color: var(--ink); }
 .area-pick { font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; }
 .area-pick select { font: inherit; font-size: 0.8rem; padding: 0.2rem 0.3rem; }
 .showing { font-size: 0.75rem; opacity: 0.7; margin-left: 0.4rem; }
@@ -309,7 +316,9 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>${CASES.length} cases · <a href="${SITE}" target="_blank" rel="noopener" style="color:#7fd6d8">${SITE.replace('https://', '')}</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>${CASES.length} cases ·
+      <a id="target-link" href="${SITE}" target="_blank" rel="noopener"
+         style="color:#7fd6d8">${esc(SITE.replace('https://', ''))}</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
@@ -356,8 +365,31 @@ header.top {
 
 <div class="wrap">
 
+  ${/* WHICH DEPLOYMENT AM I LOOKING AT. A pass run against a preview and a
+       pass run against production are different facts, and the tracker used to
+       record them identically — same localStorage, same export, no mention of
+       where any of it happened. A green row that turns out to have been a
+       preview is worse than an untested one, because nobody re-runs it.
+
+       The results are keyed by case id and NOT by target, deliberately: one
+       set of results, and the export names the target it was gathered against.
+       Two parallel result sets would be a way to lose half of them. */''}
+  <div class="target" data-target>
+    <label>Testing against
+      <input type="url" id="target-url" value="${esc(SITE)}" spellcheck="false">
+    </label>
+    <button type="button" id="target-reset">Production</button>
+    <p id="target-warn" hidden>Not production. Results below were gathered here, and the
+      export says so — but nothing on a preview proves anything about the live site.</p>
+  </div>
+
   <div class="preamble">
-    <h2>Before you start — this is production</h2>
+    ${/* Reacts to the target. A heading that insists "this is production" while
+          the field above it says otherwise teaches somebody to stop reading
+          both. The warnings underneath stay true either way: a preview shares
+          the live database, the live Resend account and the live OpenAI key,
+          so the emails, the rows and the spend are all real wherever it runs. */''}
+    <h2 id="preamble-h">Before you start — this is production</h2>
     <ul>
       <li><strong>Real emails send</strong> through Resend, and Encharge events fire on registration and approval.</li>
       <li><strong>Every plan build costs real money</strong> at OpenAI. Budget a few dollars for the Campaign group.</li>
@@ -491,6 +523,46 @@ header.top {
       s.classList.toggle('hidden', !s.querySelector('.case:not(.hidden)'));
     });
   }
+  /* ── Which deployment ─────────────────────────────────────────────── */
+  var PROD = ${JSON.stringify(SITE)};
+  var targetBox = document.querySelector('[data-target]');
+  var targetIn = document.getElementById('target-url');
+  var targetLink = document.getElementById('target-link');
+  var targetWarn = document.getElementById('target-warn');
+
+  /* THESE BACKSLASHES ARE DOUBLED BECAUSE THIS LINE IS INSIDE A TEMPLATE
+     LITERAL. A single \/ is consumed as an escape on the way out and the page
+     receives //+$/, which is a syntax error that kills the WHOLE tracker script
+     — every filter, every status button — while node --check on this file still
+     passes, because the fault is in the string rather than in the source. */
+  function target() { return (targetIn && targetIn.value || PROD).replace(/\\/+$/, ''); }
+
+  function paintTarget() {
+    var v = target();
+    var off = v !== PROD;
+    if (targetBox) targetBox.classList.toggle('target--off', off);
+    if (targetWarn) targetWarn.hidden = !off;
+    var ph = document.getElementById('preamble-h');
+    if (ph) {
+      ph.textContent = off
+        ? 'Before you start — this is a preview, on the live database'
+        : 'Before you start — this is production';
+    }
+    if (targetLink) {
+      targetLink.href = v;
+      targetLink.textContent = v.replace(/^https?:\\/\\//, '');
+    }
+    try { localStorage.setItem(KEY + '.target', v); } catch (e) {}
+  }
+
+  if (targetIn) {
+    try { targetIn.value = localStorage.getItem(KEY + '.target') || PROD; } catch (e) {}
+    targetIn.addEventListener('input', paintTarget);
+    var reset = document.getElementById('target-reset');
+    if (reset) reset.addEventListener('click', function () { targetIn.value = PROD; paintTarget(); });
+    paintTarget();
+  }
+
   var areaSel = document.getElementById('area-filter');
   if (areaSel) {
     /* Remembered across reloads, like the results themselves: a pass is not
@@ -553,6 +625,12 @@ header.top {
     out.push('');
     out.push('Exported ' + when + ' · ' + (cases.length - n.untested.length) + ' of ' + cases.length + ' recorded');
     out.push('');
+    /* Named, always. A reader who cannot tell a preview result from a
+       production one will treat both as production, which is the failure this
+       line exists to prevent. */
+    out.push('Tested against: **' + target() + '**' +
+      (target() === PROD ? '' : '  — NOT production. Nothing here proves anything about the live site.'));
+    out.push('');
     out.push('| Result | n |');
     out.push('|---|---|');
     ['pass', 'fail', 'blocked', 'na', 'untested'].forEach(function (k) {
@@ -593,6 +671,9 @@ header.top {
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
 
+  /* The export is the artifact that leaves this page and gets pasted into a
+     conversation. If it does not say which deployment produced it, nobody
+     downstream can tell. */
   document.getElementById('export-md').addEventListener('click', function () {
     var md = markdown();
     if (navigator.clipboard) navigator.clipboard.writeText(md).catch(function () {});
@@ -638,6 +719,40 @@ const missing = CASES.filter((c) => html.indexOf(`data-id="${c.id}"`) === -1).ma
 if (missing.length) {
   console.error('\n  NOT WRITTEN — ' + missing.length + ' case(s) never reached the page:');
   console.error('    ' + missing.join(', ') + '\n');
+  process.exit(1);
+}
+
+/* ── THE EMITTED SCRIPT MUST PARSE ───────────────────────────────────────
+   node --check on THIS file proves the builder is valid JavaScript. It says
+   nothing about the script this file writes into the page, which is a string
+   here and only becomes code in a browser.
+
+   That gap shipped a broken tracker: a single-backslash escape inside the
+   template literal was consumed on the way out, the page received a malformed
+   regex, and ONE syntax error killed the entire script — every filter, every
+   status button, the export. The page still rendered perfectly, because the
+   markup was fine. It looked like a working tracker that had simply stopped
+   responding to clicks.
+
+   Same lesson as the field guide, where a typo in render.js produced a blank
+   120-page PDF that measured as a passing proof. Parse it here, refuse to
+   write if it fails, and name the line. */
+const scriptSrc = (html.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
+if (!scriptSrc) {
+  console.error('\n  NOT WRITTEN — the page has no script block at all.\n');
+  process.exit(1);
+}
+try {
+  new (require('vm').Script)(scriptSrc);
+} catch (e) {
+  const line = (String(e.stack).match(/evalmachine[^:]*:(\d+)/) || [])[1];
+  console.error('\n  NOT WRITTEN — the tracker script does not parse.');
+  console.error('    ' + e.message);
+  if (line) {
+    const src = scriptSrc.split('\n');
+    console.error('    line ' + line + ':  ' + (src[Number(line) - 1] || '').trim());
+  }
+  console.error('');
   process.exit(1);
 }
 
