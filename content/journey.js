@@ -271,7 +271,19 @@ module.exports = {
          SCORING note at the top of this file. A step labelled "Depth" grades the
          person answering it, which is the one thing this question was written to
          avoid. */
-      steps: ['Intention', 'Company', 'Pace', 'Fit'],
+      /* ONE NAME PER QUESTION. The count must match QUESTIONS above.
+         This read ['Intention','Company','Pace','Fit'] while QUESTIONS had
+         grown to six, so the rail labelled five of the six wrongly — Place was
+         called "Company", Company was called "Pace", Orientation was called
+         "Fit" — and the last two fell back to "Question 5" and "Question 6"
+         with the rail unlit, because lightSteps() had no node to mark.
+
+         "Shape" for `orientation`: its own help says it "shapes how much is
+         planned, not where you go". "Fit" for `recognition` rather than
+         "Depth", for the reason recorded in the SCORING note at the top of
+         this file — that question is worded as recognition, not diagnosis, and
+         a step called Depth grades the person answering it. */
+      steps: ['Intention', 'Place', 'Company', 'Shape', 'Pace', 'Fit'],
 
       /* STATE 5. Beats that settle as the result renders — the reveal covers the
          work rather than a timer pretending there is some. */

@@ -330,6 +330,34 @@ is already reading, it must arrive finished, or it appears as a bare centre mark
 and a half-drawn arc. It also has to be recoloured: the labels are `--paper`,
 which is invisible on the result card.
 
+**Questions cross-fade, and the card height is animated with them.** The swap
+used to be a bare `hidden` toggle. The card is 834, 936, 426, 457, 427 and 451px
+tall across the six questions, so a content-only fade would have left the frame
+snapping half a screen while the words dissolved — the height is measured before
+and after and transitioned alongside. 120ms out, then 260ms of reshape with the
+new question fading up over 220ms. `overflow: hidden` during the resize stops
+the taller outgoing content spilling past the border.
+
+Reduced motion takes the **instant** branch, not a gentler one: the dominant
+movement is a half-screen resize, and there is no restrained way to travel
+510px.
+
+**This breaks synchronous test drivers.** A `swapping` guard ignores navigation
+while a swap is in flight, so a harness that answers a question and clicks
+Continue in the same tick now stalls on question two. Drive it with ~460ms
+between steps, or force `--force-prefers-reduced-motion=reduce` to get instant
+swaps back.
+
+**The result's three village cards get their own arrival**, because
+`js/motion.js` builds its observer list with a single `querySelectorAll` at init
+— the result is injected long afterwards, so the site's reveal system never sees
+it. `arriveCards()` stages them 60ms apart and then **removes both classes after
+1.2s whatever happened**, which is the same unconditional guarantee `settled`
+gives everywhere else. Only the cards: the experiences, Eclipse and the capture
+form are read after the eye has landed. Skipped on a `#r=` share link for the
+same reason the shaping sequence is — nobody who opened a friend's result
+answered anything.
+
 **Known wart:** steps do not push history, so browser Back at question 3 leaves
 the tool entirely. Tolerable when this was a page; more jarring now it presents
 as software. Roughly fifteen lines to fix and the first thing to do next.

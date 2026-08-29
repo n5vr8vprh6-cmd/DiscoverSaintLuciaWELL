@@ -1083,6 +1083,39 @@ html[data-finder="app"] .finder-app:has(.finder-result:not([hidden])) {
   justify-content: flex-start;
   padding-top: clamp(2rem, 5vh, 3.5rem);
 }
+/* ── The question swap ───────────────────────────────────────────────────
+   Driven by js/journey.js: `q-leave` fades the outgoing question, then the
+   card takes an explicit height and transitions to the new one while the
+   incoming question fades up out of `q-enter`.
+
+   `overflow: hidden` is load-bearing during the resize. Going from the 936px
+   Place question to the 426px Company one, the old content is briefly taller
+   than the card it is inside; without it, it spills out of the bottom border
+   while the card shrinks.
+
+   Transitions rather than keyframes so an interrupted swap retargets from
+   wherever it is instead of jumping back to the start. */
+html[data-finder="app"] .finder-q {
+  transition: opacity 220ms var(--ease-out-quint),
+              transform 220ms var(--ease-out-quint);
+}
+html[data-finder="app"] .finder-q.q-enter { opacity: 0; transform: translateY(8px); }
+html[data-finder="app"] .finder-q.q-leave { opacity: 0; transition-duration: 120ms; }
+html[data-finder="app"] .finder-form.is-resizing {
+  transition: height 260ms var(--ease-out-quint);
+  overflow: hidden;
+}
+
+/* Reduced motion gets the instant swap, not a gentler version of this one.
+   The dominant movement here is the card resizing by up to half a screen, and
+   there is no restrained way to travel 510px — fading the words while the
+   frame still jumps would be the worst of both. js/journey.js takes the
+   instant branch; these rules make sure nothing animates if it ever does not. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-finder="app"] .finder-q,
+  html[data-finder="app"] .finder-form.is-resizing { transition: none; }
+}
+
 /* Wider than the 760px reading measure: this is a control surface, not a
    column of prose, and the extra width is what lets the option cards sit two
    across instead of overflowing the screen. */
@@ -1424,6 +1457,32 @@ html[data-finder="app"] .result-villages {
    broken rather than ranked. The accent edge and the lift do the ranking. */
 .result-media { aspect-ratio: 16 / 10; overflow: hidden; background: var(--paper-2); }
 .result-media img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── The matched villages arriving ───────────────────────────────────────
+   Scoped to `.is-arriving`, which js/journey.js adds and then removes 1.2s
+   later whatever happens. Outside that window these rules do not exist, so a
+   card can never be left invisible by a transition that did not run.
+
+   Gated on body[data-motion="ready"] like every other reveal on the site: with
+   scripting off or motion standing down, the cards are simply there. */
+body[data-motion="ready"] .finder-result.is-arriving .result-card {
+  opacity: 0;
+  transform: translateY(10px);
+}
+body[data-motion="ready"] .finder-result.is-arriving.is-in .result-card {
+  opacity: 1;
+  transform: none;
+  transition: opacity 300ms var(--ease-out-expo),
+              transform 300ms var(--ease-out-expo);
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-motion="ready"] .finder-result.is-arriving .result-card {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
 
 /* Rhythm through the result, so it reads as passages rather than one wall. */
 html[data-finder="app"] .result-block,
