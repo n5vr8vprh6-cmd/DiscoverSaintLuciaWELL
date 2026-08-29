@@ -41,10 +41,18 @@ prints the reason — the only way I found to see it was `vercel deploy` (a
 preview, not `--prod`), which prints it on stderr. It cost a failed production
 deploy on the Hub push.
 
-The count today is ten: four public endpoints, five auth endpoints, and the Hub
-router. **The Hub is one function, not eight** — see below. If a feature needs
-several new endpoints, route them through one function rather than adding files,
-or the deploy will fail after a build that looked perfect.
+**The project is on Pro now, and the twelve above is history rather than the
+current limit** — `api/_lib/openai.js` records the move, and the count today is
+**thirteen**, which a Hobby deployment would refuse. The paragraph stays because
+the failure mode is worth knowing and because the discipline it produced is
+still right, not because twelve is still the number.
+
+The thirteen: **seven public endpoints** (`advisor`, `capture`, `gtm`, `hook`,
+`share`, `visit`, `well`), **five auth endpoints**, and the **Hub router**. The
+Hub is one function, not twenty-nine — see below. If a feature needs several new
+endpoints, route them through one function rather than adding files. On Hobby
+that was survival; on Pro it is still the reason a screen costs a line in a table
+instead of a deployment slot.
 
 **A push can silently fail to deploy.** Seen once (2026-08-12): the commit
 reached GitHub, the repo was still connected, no deployment was created, and
@@ -436,17 +444,34 @@ functions through the site's own renderer** — `render(page, body)` in
 | `/hub` | `hub-screens/home.js` | Needs-attention list, funnel, next best action |
 | `/hub/journeys` | `hub-screens/journeys.js` | Four server-side views; default is Needs Attention |
 | `/hub/journeys/:id` | `hub-screens/journey.js` | GET renders; POST sets stage / adds a note, then 303 |
+| `/hub/journeys/:id/design` | `hub-screens/design.js` | ASK WELL. GET is pure computation; POST returns JSON |
+| `/hub/campaign/playbook` | `hub-screens/playbook.js` | The Advisor Playbook. Assembles, never generates |
+| `/j/:token` | `hub-screens/itinerary.js` | **Public.** The document a client keeps |
 | `/hub/account` | `hub-screens/account.js` | Profile only — never status, code, slug or auth id |
 | `/hub/login` · `register` · `forgot` · `reset` | `hub-screens/*.js` | Signed-out screens; the POST targets live in `api/auth/` |
+
+The `/design` rewrite must sit **before** `/hub/journeys/:id` in `vercel.json`;
+rewrites match in order, so the general one would otherwise swallow it.
 | `/well/:code` | `api/well.js` | Opaque campaign link (above) |
 
-**All eight screens are ONE serverless function.** `api/hub/index.js` is a
-router; the screens live in `api/_lib/hub-screens/`, where the leading
-underscore keeps the directory out of Vercel's function detection. The `screen`
-parameter is set by the rewrites in `vercel.json` and matched against a fixed
-table, so a hand-typed `/api/hub?screen=…` can only reach a screen that already
-has a public route. Adding a screen is a file, a line in `SCREENS`, and a
-rewrite — the function count stays at one.
+**Every screen is ONE serverless function.** There are twenty-nine of them now
+and the count of functions has not moved. `api/hub/index.js` is a router; the
+screens live in `api/_lib/hub-screens/`, where the leading underscore keeps the
+directory out of Vercel's function detection. The `screen` parameter is set by
+the rewrites in `vercel.json` and matched against a fixed table, so a hand-typed
+`/api/hub?screen=…` can only reach a screen that already has a public route.
+Adding a screen is a file, a line in `SCREENS`, and a rewrite — the function
+count stays at one.
+
+**Two of those screens are deliberately public**, and both say so in their own
+header: `waitlist.js`, which wants advisors who have no Hub account, and
+`itinerary.js` at `/j/:token`, which is read by a client who is not a user of
+anything. A screen that skips `requireAdvisor` is a decision, never an omission.
+
+`tools/hub-test.js` requires all twenty-nine on every run. A screen whose
+`require` throws is a 500 on a live route, and nothing else in the suite would
+notice — a relative path copied from a file one directory higher resolves to
+`api/lib/` rather than `lib/`, which has now happened twice.
 
 Things worth knowing before changing any of it:
 
@@ -502,6 +527,120 @@ throw, and the caller says so rather than drawing something unscannable.
 data into `dist/_hub-preview/` (gitignored), so layout can be iterated without a
 deploy, a database or a session.
 
+
+## ASK WELL
+
+The consultation workspace an advisor opens on a shared screen with the person
+the trip is for, and the document that comes out of it. Five files do the work
+and each has a header explaining itself; this is the map.
+
+```
+  field-guide/content/*.js          marketing-field-guide/content/playbook.js
+        |                                     |
+        | tools/build-well-knowledge.js       | tools/build-marketing-playbook.js
+        |   (author-time, --check)            |   (author-time, --check)
+        v                                     v
+  content/well-knowledge.generated.js   content/marketing-playbook.js
+        |                                     |
+  api/_lib/well-knowledge.js  <- the adapter, async from day one
+        |
+        +-- need-state.js       ONE vocabulary, two instances
+        +-- design-need.js      the projection: copies named fields
+        +-- design-match.js     four axes, scored independently
+        +-- design-data.js      read/write, full degradation ladder
+        +-- design-generate.js  the ONLY file that calls chat()
+        +-- design-itinerary.js assemble, freeze, version
+```
+
+**The adapter cannot `require` the Field Guide at runtime.** `field-guide/` is a
+sibling directory outside the deploy root. `tools/build-campaign-facts.js` says
+it plainly — a runtime require would work on this laptop and fail in production —
+so the bank is generated at author time and committed. The diff is the
+confirmation step, and `--check` fails the suite if it goes stale.
+
+### Deterministic first, model only for prose
+
+Four model touchpoints in the whole feature, all through `design-generate.js`:
+`day_note`, `narrative`, `itin_open`, `itin_close`. Everything else is
+arithmetic — the shortlist, the four bands, the mismatch sentences, the day
+skeleton. **Cost is advisor-entered and no prompt has ever seen a price.**
+
+Bands are **words**, never a number: `strong · partial · thin · absent ·
+unknown`, on four axes reported independently and never summed. `94/100 fit` is
+a lie about a judgement, and a composite hides which axis failed.
+
+The mismatch sentences are a **rule engine**, not a second opinion. A model
+asked for a downside softens it or invents one; the sentences come from the same
+arithmetic as the upside, or not at all.
+
+### The privacy boundary is structural
+
+`design-need.js` builds its return value by **copying named fields** — no
+denylist, no spread, no `Object.assign`. A filter can be written wrong; an
+absent parameter cannot. It helps that `journey_consultations` has **no
+free-text column at all**, so "does prose reach the model?" is a column list
+rather than an audit.
+
+`tools/design-privacy-test.js` does not assert on field names. Every fixture
+field carries a distinctive sentinel **value** and the whole composed payload is
+swept for all of them — including when the poisoned share is handed in as the
+need-state, as the advisor and as every other parameter at once. A name check
+passes cleanly the day somebody pipes `context` into a field called
+`background`.
+
+Because the projection identifies nobody, staff in view-as can debug a shortlist
+without unmasking anything. The privacy property and the support property are
+the same property.
+
+### The itinerary
+
+`/j/:token` is public and token-guarded. The token is 32 random bytes, stored as
+a **sha256 and returned in the clear exactly once**; a database dump yields no
+working links. Revoking nulls the hash as well as stamping `revoked_at`.
+
+Four ways a link can be dead and they get different words: withdrawn (410),
+expired (410), never existed (404), not migrated (503). A 404 for a revoked
+document tells a client they were forgotten.
+
+`document` and `brand` are **frozen at issue** by the `itinerary_frozen()`
+trigger in migration 022 — a trigger rather than RLS, because our own code is
+the service role and bypasses RLS. Issuing again makes version *n+1*; the old
+link keeps resolving until it is revoked.
+
+What is deliberately absent from that page, and why it cannot drift into a
+self-serve booking tool: no price, no availability, no option tree, no booking
+action, no mismatch, no watch-out. **`LAST VERIFIED` does appear** — it is
+honest, and it is the line that makes the advisor structurally necessary.
+
+### It ships assuming the migration has not run
+
+Deploys routinely run ahead of hand-applied migrations, so `design-data.js`
+detects `42703 / 42P01 / PGRST204 / PGRST205` and degrades three different ways:
+
+| Missing | Behaviour |
+|---|---|
+| `journey_consultations` | The workspace **still works, read-only** — every input is in `journey_shares.answers` and matching is pure computation |
+| `journey_itineraries` | Issue is **disabled with a named reason**, never hidden |
+| `design_generation` | **Fails closed.** Generation refuses rather than proceeding uncounted |
+
+`node tools/design-migration-check.js` answers "did 022 land where the
+deployment can see it" with an exit code.
+
+### Verifying it
+
+```bash
+node tools/design-match-test.js
+node tools/design-coverage.js        # all 270 need-states; fails on a never-surfacing property
+node tools/design-privacy-test.js    # sentinel sweep, stubbed, no network
+node tools/design-itinerary-test.js
+node tools/hub-preview.js            # renders the screens' OWN builders against fixtures
+```
+
+`hub-preview.js` calls the exported `buildBody` from each screen rather than a
+copy of it, and scores the shortlist for real against the bank — so what it
+renders is what an advisor sees, mismatch sentences included. **Never screenshot
+a real Hub.**
+
 ## Tests
 
 There is no framework. Each suite is a script that prints PASS/FAIL and exits
@@ -516,7 +655,24 @@ system after.
 | `node tools/check-migration.js` | `.env` | That `002`/`003` landed and preserved what was already there |
 | `node tools/rls-test.js` | `.env` | Cross-advisor denial, proved by planting a row and failing to read it |
 | `node tools/auth-test.js [url]` | deployed site | The auth lifecycle end to end, then cleans up after itself |
+| `node tools/design-match-test.js` | nothing | The four axes, the bands, the tie-break |
+| `node tools/design-coverage.js` | nothing | All 270 need-states. **Fails** if a scorable property never surfaces |
+| `node tools/design-privacy-test.js` | nothing | The sentinel sweep — no consumer value reaches any prompt |
+| `node tools/design-itinerary-test.js` | nothing | The day layout, what the document may carry, the four dead-link states |
+| `node tools/design-migration-check.js` | `.env` | That `022` landed where the deployment can see it |
+| `node tools/playbook-test.js` | nothing | The doctrine bank and the seed merge |
 | `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
+
+Three of those are **generators with a `--check` mode** rather than suites, and
+they belong in the same run: `build-well-knowledge`, `build-marketing-playbook`
+and `build-campaign-facts` all fail if their committed bank has gone stale
+against its source.
+
+Each `--check` normalises line endings **before** anything else looks at the
+text. `.` does not match `\r` in a JavaScript regex, so on a git-CRLF checkout
+the `Generated:` line survives the strip and the check reports a bank nobody has
+touched as out of date. A drift guard that cries wolf on a fresh clone is one
+people learn to skip.
 
 ## Prize draws: a flag on a share, not a contest engine
 
@@ -656,6 +812,31 @@ what it destroyed.
 **It does not reach the advisor's mailbox.** The notification email carried that
 person's name, email and phone. No delete here touches it. The screen says so,
 and tells you to ask the advisor — which the Undertaking obliges them to do.
+
+### What reaches OpenAI, and what cannot
+
+ASK WELL and WELL Campaign both call a third-party model, so this needs stating
+plainly rather than being left to the code.
+
+**No consumer prose, name, contact detail or identifier reaches it.** What the
+consultation prompts carry is codes and weights — `rainforest 1, ocean 0.75`,
+`depth relax to reconnect`, `party family` — plus the advisor's own name and
+business, and the names of properties we publish. Not the free-text `context`
+box, not `timing` as they typed it, not any advisor note, not any uuid.
+
+Two things make that structural rather than careful. `journey_consultations`
+has **no free-text column at all**, so there is no prose to send. And
+`api/_lib/design-need.js` builds every prompt's input by copying named fields,
+so adding one is a deliberate act with a diff — there is no denylist to fall out
+of date.
+
+`tools/design-privacy-test.js` proves it on values rather than field names, and
+runs stubbed, so the assertion costs nothing and can run on every push.
+
+**The calls are server to server.** A visitor's IP never reaches OpenAI, which
+is why the jsdelivr note above is still the only third-party IP disclosure — but
+the campaign and consultation processing itself belongs in §10 of the policy on
+its own terms.
 
 ### Retention
 

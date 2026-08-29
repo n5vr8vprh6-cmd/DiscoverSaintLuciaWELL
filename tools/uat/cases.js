@@ -1221,7 +1221,157 @@ const CASES = [
   title: 'Export the results and send them over',
   steps: ['Press Export in this tracker', 'Paste the markdown into the conversation'],
   expect: 'Every failure and suggestion captured.',
-  why: 'The suggestions are the most valuable output of the day, and they are the easiest thing to lose.' }
+  why: 'The suggestions are the most valuable output of the day, and they are the easiest thing to lose.' },
+
+
+/* ══ ASK WELL ════════════════════════════════════════════════════════════
+   The consultation workspace, the itinerary a client keeps, and the Playbook.
+
+   MOST OF THIS GROUP IS NEGATIVE. The valuable half of ASK WELL is behaviour
+   that is invisible when it works — the projection that drops consumer values,
+   the view-as refusal, the token that resolves once, present mode hiding the
+   working notes. All of them look fine when broken, and a shared screen with a
+   prospect on it is the worst possible place to find that out.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+{ id: 'S-10', role: 'setup', priority: 1, area: 'Before you start',
+  title: 'Apply migration 022 and confirm the deployment can see it',
+  steps: ['Open the Supabase SQL editor',
+          'Paste db/migrations/022-journey-design.sql and run it',
+          'Read every NOTICE and check for WARNINGs',
+          'From the repo, run: node tools/design-migration-check.js'],
+  expect: 'The check prints "022 is applied and the deployment can see it" and exits 0. Five tables, 25 need-state columns, the token and ledger columns, and all eight icp_ columns on gtm_profile.',
+  why: 'Every ASK WELL case below either writes a row or reads one. Without this the workspace still renders — deliberately — so a half-applied migration looks like a working feature until an advisor presses Issue.' },
+
+{ id: 'A-61', role: 'advisor', priority: 1, area: 'ASK WELL',
+  title: 'Design a journey end to end',
+  steps: ['Open a Journey you own and press "Design this journey"',
+          'Read the four bands on each candidate and the sentence under "What is wrong with it"',
+          'Press "Draft a paragraph" and wait',
+          'Set nights, add a note, press "Issue this plan" and confirm'],
+  expect: 'The shortlist and its reasons are on screen the moment the page loads, with no spinner. Only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button.',
+  why: 'This is the whole product in one pass. The shortlist arriving instantly is the difference between a tool an advisor opens in front of a prospect and one they prepare in private beforehand.' },
+
+{ id: 'A-62', role: 'advisor', priority: 1, area: 'ASK WELL',
+  title: 'Present mode, with the P key',
+  steps: ['On the design screen, press P',
+          'Look for "What is wrong with it", "Ask about", "Last verified" and the Issue block',
+          'Click into the paragraph box and press P again'],
+  expect: 'All of those disappear and the type steps up. With the cursor in a text box, P types a letter rather than toggling.',
+  why: 'This screen is read over a shoulder by the person the trip is for. The working notes are written for the advisor and read cold they are an argument against the trip. A shortcut that fires while you are typing is a shortcut nobody uses.' },
+
+{ id: 'A-63', role: 'advisor', priority: 2, area: 'ASK WELL',
+  title: 'Open the issued link as the client would',
+  steps: ['Copy the link from the issue block',
+          'Open it in a private window with no Hub session',
+          'Read the whole page, then print it to PDF'],
+  expect: 'A document with the days, the places, verification dates and one way forward — a named person. No price, no availability, no booking button, and none of the mismatch sentences. The print has no site navigation on it.',
+  why: 'This is the only thing in ASK WELL a client ever sees, and everything absent from it is absent on purpose. A booking action here would turn an advisor tool into a self-serve site that cuts them out.' },
+
+{ id: 'A-64', role: 'advisor', priority: 2, area: 'ASK WELL',
+  title: 'Issue a second version',
+  steps: ['Reload the design screen and issue again',
+          'Open both links'],
+  expect: 'Version 2 with a different link. Version 1 still resolves.',
+  why: 'Issuing again must not silently kill a link somebody is already holding. Withdrawing is a separate, deliberate act.' },
+
+{ id: 'A-65', role: 'advisor', priority: 2, area: 'Playbook',
+  title: 'Read the Playbook and fill in the priority traveller',
+  steps: ['Open /hub/campaign and follow the link to Your Playbook',
+          'Read what is missing and what each gap costs',
+          'Fill in the priority traveller form and press Save',
+          'Reload the page'],
+  expect: 'The saved answers appear in the section above the form. Not just a "Saved" message — the values themselves, read back.',
+  why: 'This form writes columns that no other screen writes, and an earlier build returned "Saved" while storing nothing. Reading the values back is the only check that distinguishes those two.' },
+
+{ id: 'A-66', role: 'advisor', priority: 3, area: 'Playbook',
+  title: 'Print the Playbook',
+  steps: ['Press print on /hub/campaign/playbook', 'Look at the preview'],
+  expect: 'No Hub navigation, no form, and no section split across a page break. "What you may never say" starts its own page.',
+  why: 'This is the half of the Playbook meant to leave the screen. A capacity rule split from its own heading is a rule nobody reads.' },
+
+{ id: 'G-35', role: 'guard', priority: 1, area: 'ASK WELL',
+  title: 'The design screen signed out sends you back to it',
+  steps: ['Copy a design URL', 'Sign out', 'Paste the URL'],
+  expect: 'The login page, and after signing in you land back on that design screen — not on Hub home.',
+  why: 'An advisor opening this from a notification on a phone should not have to find the Journey again after signing in. The screen passes its own path because the router has already rewritten the URL.' },
+
+{ id: 'G-36', role: 'guard', priority: 1, area: 'ASK WELL',
+  title: "Another advisor's design is not found, not forbidden",
+  steps: ['Sign in as UAT1', 'Take a Journey id belonging to UAT2', 'Open /hub/journeys/THAT-ID/design'],
+  expect: '"That Journey is not here." Not a 403, not a permission message, and nothing about the other advisor.',
+  why: 'A 403 confirms the id exists, which turns a guessed id into a way of proving another advisor has a client. Not found says nothing either way.' },
+
+{ id: 'G-37', role: 'guard', priority: 1, area: 'ASK WELL',
+  title: 'View-as can read a design and write nothing',
+  steps: ['As admin, view as another advisor',
+          'Open one of their Journeys and press "Design this journey"',
+          'Try "Draft a paragraph"',
+          'Try to issue'],
+  expect: 'The workspace reads normally. Both writes are refused with a message saying you are viewing this Hub rather than signed in as its owner.',
+  why: 'Putting words into an advisor\'s mouth that they will read aloud to their own client, or issuing a document under their name, is the sharpest version of the view-as rule. It is enforced in the handler, not by hiding the buttons.' },
+
+{ id: 'G-38', role: 'guard', priority: 1, area: 'ASK WELL',
+  title: 'No consumer value reaches the model, proven by sweep',
+  steps: ['From the repo, run: node tools/design-privacy-test.js'],
+  expect: 'Every check passes, including the ones that hand the poisoned share in as the need-state, the advisor and every other parameter at once.',
+  why: 'A traveller consented to an introduction to an advisor, not to becoming raw material for a third-party model. The test asserts on VALUES rather than field names, because a denylist passes cleanly the day someone renames a field.' },
+
+{ id: 'G-39', role: 'guard', priority: 2, area: 'ASK WELL',
+  title: 'Generation refuses rather than running uncounted',
+  steps: ['Ask for many paragraphs in quick succession, or check design_generation is being written'],
+  expect: 'A message saying that is more writing than this is meant to do in an hour. Nothing is lost.',
+  why: 'The ledger is the only counter — day notes live inside jsonb, so without a row per generation there is nothing to count. If the ledger is missing, generation fails CLOSED rather than proceeding unmetered.' },
+
+{ id: 'G-40', role: 'guard', priority: 1, area: 'ASK WELL',
+  title: 'A withdrawn plan says withdrawn, not missing',
+  steps: ['Revoke an issued itinerary', 'Open its link in a private window'],
+  expect: '"This plan has been withdrawn", and a line pointing them back to their advisor. Not a 404, and nothing about what the document used to contain.',
+  why: 'A 404 tells a client they were forgotten and sends them nowhere. Withdrawn tells them to pick up the phone, which is the only correct next step.' },
+
+{ id: 'G-41', role: 'guard', priority: 2, area: 'ASK WELL',
+  title: 'An expired link cannot resolve',
+  steps: ['In Supabase, set share_expires_at on an issued row to a past date',
+          'Open the link'],
+  expect: '"This link has expired." The document does not render.',
+  why: 'A link forwarded and forgotten must not stay live forever. The expiry is checked on read AND the purge nulls the hash, so there are two independent reasons a dead link stays dead.' },
+
+{ id: 'G-42', role: 'guard', priority: 1, area: 'ASK WELL',
+  title: 'No cost figure anywhere is model-generated',
+  steps: ['Read an issued itinerary end to end',
+          'Search the page for a currency symbol, a number of dollars, or the words affordable, premium, from, starting'],
+  expect: 'Nothing. No price, no band, no range, no adjective standing in for one.',
+  why: 'Cost is the advisor\'s to give, in their own words, in context. The projection never passes a price to the model, so there is no number for it to print — but this is the case that would catch it if that ever changed.' },
+
+{ id: 'G-43', role: 'guard', priority: 1, area: 'ASK WELL',
+  title: 'Present mode hides every working note, not most of them',
+  steps: ['Turn on present mode',
+          'Scroll the whole page slowly',
+          'Look specifically for: any mismatch sentence, any watch note, any "Last verified" date, the "Ask about" list, and the Issue block'],
+  expect: 'None of them are visible anywhere on the page.',
+  why: 'One surviving mismatch line is worse than none being hidden, because the advisor believes the screen is safe and stops watching it. The markup is always sent and only ever hidden, so a missed item is a missing attribute rather than a missing render.' },
+
+{ id: 'G-44', role: 'guard', priority: 2, area: 'ASK WELL',
+  title: 'The tier letter is absent where the guide never assigned one',
+  steps: ['On the design screen, look at the candidate cards',
+          'Then look at the "Also in ... Village" list below them'],
+  expect: 'No letter on the candidates. Letters in the list below, each with a tooltip giving its meaning.',
+  why: 'D means "no verified formal WELL offer found". The deep profiles carry no tier at all, and defaulting the absent value to D made the workspace assert that about Anse Chastanet and Ladera in front of a client.' },
+
+{ id: 'G-45', role: 'guard', priority: 2, area: 'Playbook',
+  title: 'The Playbook shows its gaps instead of hiding them',
+  steps: ['Sign in as an advisor with an empty or partial profile',
+          'Open /hub/campaign/playbook'],
+  expect: 'Each empty section says what is missing and what it costs, with a link to go and answer it. No section is silently omitted and none is filled with a plausible default.',
+  why: 'The campaign engine is limited by its inputs, not its model. A Playbook that quietly drops its empty half teaches an advisor nothing about why their copy reads generic.' },
+
+{ id: 'T-07', role: 'teardown', priority: 1, area: 'Cleanup',
+  title: 'Remove the ASK WELL test rows',
+  steps: ['In Supabase, delete the design_sessions rows created during this pass',
+          'Confirm journey_consultations, design_candidates, journey_itineraries and design_generation emptied with them',
+          'Check no issued link still resolves'],
+  expect: 'All five tables clear of test rows. Every link from this pass returns withdrawn or not found.',
+  why: 'Everything cascades from journey_shares, so deleting the session should be enough — but a live itinerary link left resolving after a test pass is a real document pointing at nothing, and this is the only step that checks.' },
 
 ];
 

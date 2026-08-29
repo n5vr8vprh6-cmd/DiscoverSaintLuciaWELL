@@ -153,13 +153,13 @@ header.top {
 
 <header class="top">
   <div class="top-in">
-    <h1>UAT · Discover Saint Lucia WELL <small>172 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
+    <h1>UAT · Discover Saint Lucia WELL <small>191 cases · <a href="https://www.discoversaintluciawell.com" target="_blank" rel="noopener" style="color:#7fd6d8">www.discoversaintluciawell.com</a></small></h1>
     <div class="totals">
       <span class="t-pass">Pass <b id="n-pass">0</b></span>
       <span class="t-fail">Fail <b id="n-fail">0</b></span>
       <span class="t-blocked">Blocked <b id="n-blocked">0</b></span>
       <span>N/A <b id="n-na">0</b></span>
-      <span class="t-left">Untested <b id="n-left">172</b></span>
+      <span class="t-left">Untested <b id="n-left">191</b></span>
       <span>Suggestions <b id="n-notes">0</b></span>
     </div>
     <div class="controls">
@@ -194,11 +194,11 @@ header.top {
     <h2>Setup</h2>
     <p class="role-note">Do these first or half the pass is meaningless.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 9 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 10 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Before you start <span class="area-n">9</span></summary>
+    <summary>Before you start <span class="area-n">10</span></summary>
     
 <article class="case" id="case-S-01" data-id="S-01" data-role="setup"
    data-pri="1" data-hash="1crgskg"
@@ -467,6 +467,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> Consumer cases must run with no Hub session. Testing them in the signed-in window silently exercises a different code path.</p>
 
   <div class="marks" role="group" aria-label="Result for S-09">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-S-10" data-id="S-10" data-role="setup"
+   data-pri="1" data-hash="1j63gx1"
+   data-title="Apply migration 022 and confirm the deployment can see it" data-expect="The check prints &quot;022 is applied and the deployment can see it&quot; and exits 0. Five tables, 25 need-state columns, the token and ledger columns, and all eight icp_ columns on gtm_profile." data-area="Before you start">
+  <div class="case-head">
+    <span class="cid">S-10</span>
+    <h4>Apply migration 022 and confirm the deployment can see it</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Open the Supabase SQL editor</li><li>Paste db/migrations/022-journey-design.sql and run it</li><li>Read every NOTICE and check for WARNINGs</li><li>From the repo, run: node tools/design-migration-check.js</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The check prints &quot;022 is applied and the deployment can see it&quot; and exits 0. Five tables, 25 need-state columns, the token and ledger columns, and all eight icp_ columns on gtm_profile.</p>
+  <p class="why"><strong>Why this matters</strong> Every ASK WELL case below either writes a row or reads one. Without this the workspace still renders — deliberately — so a half-applied migration looks like a working feature until an advisor presses Issue.</p>
+
+  <div class="marks" role="group" aria-label="Result for S-10">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
@@ -1383,7 +1414,7 @@ header.top {
     <h2>Travel advisor</h2>
     <p class="role-note">The Hub. The largest group, and the one Duncan has seen least of.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 60 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 66 recorded</p>
   </div>
   
   <details class="area" open>
@@ -3306,6 +3337,200 @@ header.top {
   </label>
 </article>
   </details>
+  <details class="area" open>
+    <summary>ASK WELL <span class="area-n">4</span></summary>
+    
+<article class="case" id="case-A-61" data-id="A-61" data-role="advisor"
+   data-pri="1" data-hash="4z7des"
+   data-title="Design a journey end to end" data-expect="The shortlist and its reasons are on screen the moment the page loads, with no spinner. Only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">A-61</span>
+    <h4>Design a journey end to end</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Open a Journey you own and press &quot;Design this journey&quot;</li><li>Read the four bands on each candidate and the sentence under &quot;What is wrong with it&quot;</li><li>Press &quot;Draft a paragraph&quot; and wait</li><li>Set nights, add a note, press &quot;Issue this plan&quot; and confirm</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The shortlist and its reasons are on screen the moment the page loads, with no spinner. Only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button.</p>
+  <p class="why"><strong>Why this matters</strong> This is the whole product in one pass. The shortlist arriving instantly is the difference between a tool an advisor opens in front of a prospect and one they prepare in private beforehand.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-61">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-62" data-id="A-62" data-role="advisor"
+   data-pri="1" data-hash="arddmk"
+   data-title="Present mode, with the P key" data-expect="All of those disappear and the type steps up. With the cursor in a text box, P types a letter rather than toggling." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">A-62</span>
+    <h4>Present mode, with the P key</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>On the design screen, press P</li><li>Look for &quot;What is wrong with it&quot;, &quot;Ask about&quot;, &quot;Last verified&quot; and the Issue block</li><li>Click into the paragraph box and press P again</li></ol>
+
+  <p class="expect"><strong>Expect</strong> All of those disappear and the type steps up. With the cursor in a text box, P types a letter rather than toggling.</p>
+  <p class="why"><strong>Why this matters</strong> This screen is read over a shoulder by the person the trip is for. The working notes are written for the advisor and read cold they are an argument against the trip. A shortcut that fires while you are typing is a shortcut nobody uses.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-62">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-63" data-id="A-63" data-role="advisor"
+   data-pri="2" data-hash="1izmxjm"
+   data-title="Open the issued link as the client would" data-expect="A document with the days, the places, verification dates and one way forward — a named person. No price, no availability, no booking button, and none of the mismatch sentences. The print has no site navigation on it." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">A-63</span>
+    <h4>Open the issued link as the client would</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Copy the link from the issue block</li><li>Open it in a private window with no Hub session</li><li>Read the whole page, then print it to PDF</li></ol>
+
+  <p class="expect"><strong>Expect</strong> A document with the days, the places, verification dates and one way forward — a named person. No price, no availability, no booking button, and none of the mismatch sentences. The print has no site navigation on it.</p>
+  <p class="why"><strong>Why this matters</strong> This is the only thing in ASK WELL a client ever sees, and everything absent from it is absent on purpose. A booking action here would turn an advisor tool into a self-serve site that cuts them out.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-63">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-64" data-id="A-64" data-role="advisor"
+   data-pri="2" data-hash="1l497zs"
+   data-title="Issue a second version" data-expect="Version 2 with a different link. Version 1 still resolves." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">A-64</span>
+    <h4>Issue a second version</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Reload the design screen and issue again</li><li>Open both links</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Version 2 with a different link. Version 1 still resolves.</p>
+  <p class="why"><strong>Why this matters</strong> Issuing again must not silently kill a link somebody is already holding. Withdrawing is a separate, deliberate act.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-64">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
+  <details class="area" open>
+    <summary>Playbook <span class="area-n">2</span></summary>
+    
+<article class="case" id="case-A-65" data-id="A-65" data-role="advisor"
+   data-pri="2" data-hash="1qvrgwt"
+   data-title="Read the Playbook and fill in the priority traveller" data-expect="The saved answers appear in the section above the form. Not just a &quot;Saved&quot; message — the values themselves, read back." data-area="Playbook">
+  <div class="case-head">
+    <span class="cid">A-65</span>
+    <h4>Read the Playbook and fill in the priority traveller</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Open /hub/campaign and follow the link to Your Playbook</li><li>Read what is missing and what each gap costs</li><li>Fill in the priority traveller form and press Save</li><li>Reload the page</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The saved answers appear in the section above the form. Not just a &quot;Saved&quot; message — the values themselves, read back.</p>
+  <p class="why"><strong>Why this matters</strong> This form writes columns that no other screen writes, and an earlier build returned &quot;Saved&quot; while storing nothing. Reading the values back is the only check that distinguishes those two.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-65">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-A-66" data-id="A-66" data-role="advisor"
+   data-pri="3" data-hash="1ken83t"
+   data-title="Print the Playbook" data-expect="No Hub navigation, no form, and no section split across a page break. &quot;What you may never say&quot; starts its own page." data-area="Playbook">
+  <div class="case-head">
+    <span class="cid">A-66</span>
+    <h4>Print the Playbook</h4>
+    <span class="pri pri--3">P3</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Press print on /hub/campaign/playbook</li><li>Look at the preview</li></ol>
+
+  <p class="expect"><strong>Expect</strong> No Hub navigation, no form, and no section split across a page break. &quot;What you may never say&quot; starts its own page.</p>
+  <p class="why"><strong>Why this matters</strong> This is the half of the Playbook meant to leave the screen. A capacity rule split from its own heading is a rule nobody reads.</p>
+
+  <div class="marks" role="group" aria-label="Result for A-66">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
 </section>
 <section class="role" id="role-admin" data-role="admin">
   <div class="role-head">
@@ -4128,7 +4353,7 @@ header.top {
     <h2>Guards</h2>
     <p class="role-note">The negative tests. These look fine when broken, which is exactly why they are written down.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 34 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 45 recorded</p>
   </div>
   
   <details class="area" open>
@@ -5237,6 +5462,355 @@ header.top {
   </label>
 </article>
   </details>
+  <details class="area" open>
+    <summary>ASK WELL <span class="area-n">10</span></summary>
+    
+<article class="case" id="case-G-35" data-id="G-35" data-role="guard"
+   data-pri="1" data-hash="sndqy2"
+   data-title="The design screen signed out sends you back to it" data-expect="The login page, and after signing in you land back on that design screen — not on Hub home." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-35</span>
+    <h4>The design screen signed out sends you back to it</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Copy a design URL</li><li>Sign out</li><li>Paste the URL</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The login page, and after signing in you land back on that design screen — not on Hub home.</p>
+  <p class="why"><strong>Why this matters</strong> An advisor opening this from a notification on a phone should not have to find the Journey again after signing in. The screen passes its own path because the router has already rewritten the URL.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-35">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-36" data-id="G-36" data-role="guard"
+   data-pri="1" data-hash="taw9da"
+   data-title="Another advisor&#39;s design is not found, not forbidden" data-expect="&quot;That Journey is not here.&quot; Not a 403, not a permission message, and nothing about the other advisor." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-36</span>
+    <h4>Another advisor&#39;s design is not found, not forbidden</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Sign in as UAT1</li><li>Take a Journey id belonging to UAT2</li><li>Open /hub/journeys/THAT-ID/design</li></ol>
+
+  <p class="expect"><strong>Expect</strong> &quot;That Journey is not here.&quot; Not a 403, not a permission message, and nothing about the other advisor.</p>
+  <p class="why"><strong>Why this matters</strong> A 403 confirms the id exists, which turns a guessed id into a way of proving another advisor has a client. Not found says nothing either way.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-36">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-37" data-id="G-37" data-role="guard"
+   data-pri="1" data-hash="fipaug"
+   data-title="View-as can read a design and write nothing" data-expect="The workspace reads normally. Both writes are refused with a message saying you are viewing this Hub rather than signed in as its owner." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-37</span>
+    <h4>View-as can read a design and write nothing</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>As admin, view as another advisor</li><li>Open one of their Journeys and press &quot;Design this journey&quot;</li><li>Try &quot;Draft a paragraph&quot;</li><li>Try to issue</li></ol>
+
+  <p class="expect"><strong>Expect</strong> The workspace reads normally. Both writes are refused with a message saying you are viewing this Hub rather than signed in as its owner.</p>
+  <p class="why"><strong>Why this matters</strong> Putting words into an advisor&#39;s mouth that they will read aloud to their own client, or issuing a document under their name, is the sharpest version of the view-as rule. It is enforced in the handler, not by hiding the buttons.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-37">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-38" data-id="G-38" data-role="guard"
+   data-pri="1" data-hash="11tctmq"
+   data-title="No consumer value reaches the model, proven by sweep" data-expect="Every check passes, including the ones that hand the poisoned share in as the need-state, the advisor and every other parameter at once." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-38</span>
+    <h4>No consumer value reaches the model, proven by sweep</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>From the repo, run: node tools/design-privacy-test.js</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Every check passes, including the ones that hand the poisoned share in as the need-state, the advisor and every other parameter at once.</p>
+  <p class="why"><strong>Why this matters</strong> A traveller consented to an introduction to an advisor, not to becoming raw material for a third-party model. The test asserts on VALUES rather than field names, because a denylist passes cleanly the day someone renames a field.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-38">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-39" data-id="G-39" data-role="guard"
+   data-pri="2" data-hash="1ib3k2r"
+   data-title="Generation refuses rather than running uncounted" data-expect="A message saying that is more writing than this is meant to do in an hour. Nothing is lost." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-39</span>
+    <h4>Generation refuses rather than running uncounted</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Ask for many paragraphs in quick succession, or check design_generation is being written</li></ol>
+
+  <p class="expect"><strong>Expect</strong> A message saying that is more writing than this is meant to do in an hour. Nothing is lost.</p>
+  <p class="why"><strong>Why this matters</strong> The ledger is the only counter — day notes live inside jsonb, so without a row per generation there is nothing to count. If the ledger is missing, generation fails CLOSED rather than proceeding unmetered.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-39">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-40" data-id="G-40" data-role="guard"
+   data-pri="1" data-hash="z0uuyp"
+   data-title="A withdrawn plan says withdrawn, not missing" data-expect="&quot;This plan has been withdrawn&quot;, and a line pointing them back to their advisor. Not a 404, and nothing about what the document used to contain." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-40</span>
+    <h4>A withdrawn plan says withdrawn, not missing</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Revoke an issued itinerary</li><li>Open its link in a private window</li></ol>
+
+  <p class="expect"><strong>Expect</strong> &quot;This plan has been withdrawn&quot;, and a line pointing them back to their advisor. Not a 404, and nothing about what the document used to contain.</p>
+  <p class="why"><strong>Why this matters</strong> A 404 tells a client they were forgotten and sends them nowhere. Withdrawn tells them to pick up the phone, which is the only correct next step.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-40">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-41" data-id="G-41" data-role="guard"
+   data-pri="2" data-hash="ozj90w"
+   data-title="An expired link cannot resolve" data-expect="&quot;This link has expired.&quot; The document does not render." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-41</span>
+    <h4>An expired link cannot resolve</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>In Supabase, set share_expires_at on an issued row to a past date</li><li>Open the link</li></ol>
+
+  <p class="expect"><strong>Expect</strong> &quot;This link has expired.&quot; The document does not render.</p>
+  <p class="why"><strong>Why this matters</strong> A link forwarded and forgotten must not stay live forever. The expiry is checked on read AND the purge nulls the hash, so there are two independent reasons a dead link stays dead.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-41">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-42" data-id="G-42" data-role="guard"
+   data-pri="1" data-hash="u16pgb"
+   data-title="No cost figure anywhere is model-generated" data-expect="Nothing. No price, no band, no range, no adjective standing in for one." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-42</span>
+    <h4>No cost figure anywhere is model-generated</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Read an issued itinerary end to end</li><li>Search the page for a currency symbol, a number of dollars, or the words affordable, premium, from, starting</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Nothing. No price, no band, no range, no adjective standing in for one.</p>
+  <p class="why"><strong>Why this matters</strong> Cost is the advisor&#39;s to give, in their own words, in context. The projection never passes a price to the model, so there is no number for it to print — but this is the case that would catch it if that ever changed.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-42">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-43" data-id="G-43" data-role="guard"
+   data-pri="1" data-hash="57ttmf"
+   data-title="Present mode hides every working note, not most of them" data-expect="None of them are visible anywhere on the page." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-43</span>
+    <h4>Present mode hides every working note, not most of them</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Turn on present mode</li><li>Scroll the whole page slowly</li><li>Look specifically for: any mismatch sentence, any watch note, any &quot;Last verified&quot; date, the &quot;Ask about&quot; list, and the Issue block</li></ol>
+
+  <p class="expect"><strong>Expect</strong> None of them are visible anywhere on the page.</p>
+  <p class="why"><strong>Why this matters</strong> One surviving mismatch line is worse than none being hidden, because the advisor believes the screen is safe and stops watching it. The markup is always sent and only ever hidden, so a missed item is a missing attribute rather than a missing render.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-43">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-G-44" data-id="G-44" data-role="guard"
+   data-pri="2" data-hash="pfk0rp"
+   data-title="The tier letter is absent where the guide never assigned one" data-expect="No letter on the candidates. Letters in the list below, each with a tooltip giving its meaning." data-area="ASK WELL">
+  <div class="case-head">
+    <span class="cid">G-44</span>
+    <h4>The tier letter is absent where the guide never assigned one</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>On the design screen, look at the candidate cards</li><li>Then look at the &quot;Also in ... Village&quot; list below them</li></ol>
+
+  <p class="expect"><strong>Expect</strong> No letter on the candidates. Letters in the list below, each with a tooltip giving its meaning.</p>
+  <p class="why"><strong>Why this matters</strong> D means &quot;no verified formal WELL offer found&quot;. The deep profiles carry no tier at all, and defaulting the absent value to D made the workspace assert that about Anse Chastanet and Ladera in front of a client.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-44">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
+  <details class="area" open>
+    <summary>Playbook <span class="area-n">1</span></summary>
+    
+<article class="case" id="case-G-45" data-id="G-45" data-role="guard"
+   data-pri="2" data-hash="18a3tnk"
+   data-title="The Playbook shows its gaps instead of hiding them" data-expect="Each empty section says what is missing and what it costs, with a link to go and answer it. No section is silently omitted and none is filled with a plausible default." data-area="Playbook">
+  <div class="case-head">
+    <span class="cid">G-45</span>
+    <h4>The Playbook shows its gaps instead of hiding them</h4>
+    <span class="pri pri--2">P2</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>Sign in as an advisor with an empty or partial profile</li><li>Open /hub/campaign/playbook</li></ol>
+
+  <p class="expect"><strong>Expect</strong> Each empty section says what is missing and what it costs, with a link to go and answer it. No section is silently omitted and none is filled with a plausible default.</p>
+  <p class="why"><strong>Why this matters</strong> The campaign engine is limited by its inputs, not its model. A Playbook that quietly drops its empty half teaches an advisor nothing about why their copy reads generic.</p>
+
+  <div class="marks" role="group" aria-label="Result for G-45">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+  </details>
 </section>
 <section class="role" id="role-cross" data-role="cross">
   <div class="role-head">
@@ -5578,11 +6152,11 @@ header.top {
     <h2>Teardown</h2>
     <p class="role-note">Testing on production creates real rows. This removes them.</p>
     <div class="bar" aria-hidden="true"><span class="bar-fill" style="width:0%"></span></div>
-    <p class="role-count"><span class="done">0</span> of 6 recorded</p>
+    <p class="role-count"><span class="done">0</span> of 7 recorded</p>
   </div>
   
   <details class="area" open>
-    <summary>Cleanup <span class="area-n">6</span></summary>
+    <summary>Cleanup <span class="area-n">7</span></summary>
     
 <article class="case" id="case-T-01" data-id="T-01" data-role="teardown"
    data-pri="1" data-hash="e3bgq"
@@ -5758,6 +6332,37 @@ header.top {
   <p class="why"><strong>Why this matters</strong> The suggestions are the most valuable output of the day, and they are the easiest thing to lose.</p>
 
   <div class="marks" role="group" aria-label="Result for T-06">
+    <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
+    <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
+    <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
+    <button type="button" class="mark mark--na"      data-mark="na">N/A</button>
+    <button type="button" class="mark mark--clear"   data-mark="">Clear</button>
+  </div>
+
+  <label class="note-wrap">
+    <span>Suggestion or what went wrong</span>
+    <textarea class="note" rows="2" placeholder="Anything you would change, however small — this is the most useful thing you will produce today."></textarea>
+  </label>
+</article>
+<article class="case" id="case-T-07" data-id="T-07" data-role="teardown"
+   data-pri="1" data-hash="qfzcca"
+   data-title="Remove the ASK WELL test rows" data-expect="All five tables clear of test rows. Every link from this pass returns withdrawn or not found." data-area="Cleanup">
+  <div class="case-head">
+    <span class="cid">T-07</span>
+    <h4>Remove the ASK WELL test rows</h4>
+    <span class="pri pri--1">P1 · smoke</span>
+    <span class="stale" hidden title="This case was edited after you recorded a result">edited since you tested it</span>
+  </div>
+
+  
+  
+
+  <ol class="steps"><li>In Supabase, delete the design_sessions rows created during this pass</li><li>Confirm journey_consultations, design_candidates, journey_itineraries and design_generation emptied with them</li><li>Check no issued link still resolves</li></ol>
+
+  <p class="expect"><strong>Expect</strong> All five tables clear of test rows. Every link from this pass returns withdrawn or not found.</p>
+  <p class="why"><strong>Why this matters</strong> Everything cascades from journey_shares, so deleting the session should be enough — but a live itinerary link left resolving after a test pass is a real document pointing at nothing, and this is the only step that checks.</p>
+
+  <div class="marks" role="group" aria-label="Result for T-07">
     <button type="button" class="mark mark--pass"    data-mark="pass">Pass</button>
     <button type="button" class="mark mark--fail"    data-mark="fail">Fail</button>
     <button type="button" class="mark mark--blocked" data-mark="blocked">Blocked</button>
