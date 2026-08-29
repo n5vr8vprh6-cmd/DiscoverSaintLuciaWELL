@@ -86,6 +86,19 @@ const MEDIA = require(path.join(ROOT, 'content', 'properties-media.js'));
 
 /* ── Normalisation ───────────────────────────────────────────────────────── */
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+/* norm() is for MATCHING — it strips separators so "Nature & Renewal" and
+   "naturerenewal" collapse to one lookup key, which is exactly what an alias
+   table needs. It is the wrong function for anything that becomes a STORED
+   identifier: it turned "Discover Saint Lucia WELL" into
+   "discoversaintluciawell", and design_sessions.recipe_key is a column a human
+   reads while working out why a session looks the way it does. Same lesson the
+   COLLECTION slugs taught — an unreadable key is a key nobody checks. */
+const slug = (s) => String(s || '').toLowerCase()
+  /* Apostrophes are dropped, not treated as separators: Women's Renewal is
+     womens-renewal, not women-s-renewal. Curly and straight both. */
+  .replace(/['’]/g, '')
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const trim = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
 /* Field Guide village key -> this site's key. The only pair that differs is
@@ -303,7 +316,7 @@ const villages = VILLAGES.map((v) => {
 });
 
 const recipes = (guideCopy.COPY && guideCopy.COPY.recipes ? guideCopy.COPY.recipes : []).map((r) => ({
-  key: norm(r.name).slice(0, 40),
+  key: slug(r.name).slice(0, 40),
   name: r.name,
   sub: trim(r.sub),
   compass: splitKeys(String(r.compass).replace(/\+/g, '·'), compassKey),
@@ -324,7 +337,7 @@ const finderRows = (guideCopy.COPY && guideCopy.COPY.finder ? guideCopy.COPY.fin
 }));
 
 const suitability = (guideCopy.COPY && guideCopy.COPY.suitability ? guideCopy.COPY.suitability.rows : [])
-  .map((r) => ({ key: norm(r[0]).slice(0, 40), check: trim(r[0]), why: trim(r[1]) }));
+  .map((r) => ({ key: slug(r[0]).slice(0, 40), check: trim(r[0]), why: trim(r[1]) }));
 
 /* ── Emit ────────────────────────────────────────────────────────────────── */
 const generated = new Date().toISOString().slice(0, 10);
@@ -385,7 +398,20 @@ const body =
 if (CHECK) {
   const current = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
   /* The generated date changes every run, so compare everything else. */
-  const strip = (s) => s.replace(/Generated\s+:.*\n/, '').replace(/"generated":\s*"[^"]*"/, '');
+  /* LINE ENDINGS ARE NORMALISED FIRST, AND THE ORDER IS THE WHOLE FIX.
+     git checks these banks out with CRLF on Windows while the generator writes
+     LF. That alone would make a byte comparison fail, but the subtler half is
+     that `.` in a JavaScript regex does not match \r — so on a CRLF file
+     /Generated\s+:.*\n/ never matches, the date line survives the strip, and the
+     check reports "out of date" against a bank nobody has touched.
+
+     Normalising afterwards does not help: by then the date is still in both
+     strings and still different. It has to happen before anything else looks at
+     the text. A drift guard that cries wolf on a fresh clone is one people learn
+     to skip, which is worse than not having one. */
+  const strip = (s) => s.replace(/\r\n/g, '\n')
+    .replace(/Generated\s+:.*\n/, '')
+    .replace(/"generated":\s*"[^"]*"/, '');
   if (strip(current) !== strip(body)) {
     console.error('\n  content/well-knowledge.generated.js is out of date with the Field Guide.');
     console.error('  Run: node tools/build-well-knowledge.js — then READ THE DIFF.\n');

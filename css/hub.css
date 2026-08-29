@@ -1807,3 +1807,35 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
   .design .design-facts { grid-template-columns: 1fr; gap: .2rem 0; }
   .design .design-facts dt { padding-top: .8em; }
 }
+
+/* ── The one piece of writing ──────────────────────────────────────────────
+   Present mode does NOT hide the paragraph — it is the thing being read aloud.
+   It hides the button, the note and the flags around it, which are the
+   advisor's working apparatus. */
+.design .design-narr { max-width: 68ch; }
+.design .design-narr-body {
+  width: 100%; font: inherit; font-size: 1rem; line-height: 1.65;
+  color: var(--ink); background: transparent;
+  border: 1px solid var(--hairline-l); border-radius: 3px;
+  padding: .9rem 1rem; resize: vertical;
+}
+.design .design-narr-body:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+
+.design .design-narr-flags { margin-top: .8rem; }
+.design .design-flag {
+  margin: 0 0 .4em; padding-left: .9em; position: relative;
+  font-size: .88rem; color: var(--muted);
+}
+.design .design-flag::before {
+  content: ""; position: absolute; left: 0; top: .6em;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--mist);
+}
+/* Colour is the second signal; "high" already reads as a sentence telling the
+   advisor to check something before saying it. */
+.design .design-flag.is-high { color: var(--ink); }
+.design .design-flag.is-high::before { background: var(--coral); }
+
+.is-present .design .design-narr-body {
+  border-color: transparent; padding-left: 0; font-size: 1.15rem;
+}
+.is-present .design .design-narr-flags { display: none !important; }

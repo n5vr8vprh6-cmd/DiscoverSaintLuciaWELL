@@ -36,7 +36,7 @@
 'use strict';
 
 const { requireAdvisor } = require('../auth.js');
-const { str } = require('../core.js');
+const { str, json, body: readBody } = require('../core.js');
 const { hubPage, esc, emptyState } = require('../hub-render.js');
 const { journeyById } = require('../hub-data.js');
 const { maskJourney } = require('../hub-mask.js');
@@ -45,6 +45,9 @@ const K = require('../well-knowledge.js');
 const N = require('../need-state.js');
 const M = require('../design-match.js');
 const D = require('../design-data.js');
+const G = require('../design-generate.js');
+const { configured, reasonText } = require('../openai.js');
+const { rung } = require('../gtm.js');
 
 const BAND_WORD = {
   strong: 'Strong', partial: 'Partial', thin: 'Thin', absent: 'Absent', unknown: 'Not known'
@@ -74,6 +77,9 @@ module.exports = async function handler(req, res) {
   const caps = await D.capabilities();
   const bank = await K.version();
 
+  if (req.method === 'POST') return await generate(req, res, { advisor, id, raw, caps });
+
+
   /* Saved consultation wins; otherwise seed from what they actually selected in
      the Finder. hub-brief.js's discipline applies to the seed: it is a fixed
      mapping from what somebody chose, never an inference about them. */
@@ -102,6 +108,106 @@ module.exports = async function handler(req, res) {
     body: body_, js: ['/js/hub-design.js']
   });
 };
+
+/* ── Generation ───────────────────────────────────────────────────────────
+   JSON, not a redirect: this is called from the workspace while an advisor is
+   on a call, and a full page reload mid-consultation loses their scroll
+   position and their place in the conversation. The GET above stays a plain
+   page that works with JavaScript off — only the writing needs the browser.
+
+   IT RUNS INSIDE THE HUB ROUTER, which is why vercel.json now sets
+   maxDuration 60 on api/hub/index.js. The narrative asks openai.js for 20
+   seconds; inside a function with the platform default that is a 504 with
+   nothing written and no explanation — openai.js:47 records that exact bug
+   happening to the campaign builder.
+
+   VIEW-AS REFUSES, IN THE HANDLER. Not by hiding the button. Staff supporting
+   an advisor may read the workspace; putting words into somebody's mouth that
+   they will then read aloud to their own client is a different thing. Same
+   rule as gtm.js and account.js. */
+/* day_note IS REACHABLE AND HAS NO BUTTON YET. It is written, tested and swept
+   for leaks, but the UI that calls it is the day plan, which needs a recipe and
+   a night count this screen does not collect yet. Recording that here rather
+   than leaving it to be discovered: it is guarded exactly like narrative —
+   advisor-only, own Journey, view-as refused, rate-limited, ledgered — so it is
+   an unused door in a locked corridor rather than an open one. */
+const ACTIONS = { day_note: actionDayNote, narrative: actionNarrative };
+
+async function generate(req, res, v) {
+  const { advisor, id, raw, caps } = v;
+
+  if (advisor.viewingAs) {
+    return json(res, 403, { error: 'read_only',
+      message: 'You are viewing this advisor’s Hub. Writing under their name is not available here.' });
+  }
+
+  const form = readBody(req) || {};
+  const name = str(form.action, 20);
+  const run = Object.prototype.hasOwnProperty.call(ACTIONS, name) ? ACTIONS[name] : null;
+  if (!run) return json(res, 400, { error: 'bad_action' });
+
+  if (!configured()) {
+    return json(res, 503, { error: 'not_configured', message: reasonText('not_configured') });
+  }
+
+  /* FAILS CLOSED. mayGenerate() returns false when it could not count — a
+     missing ledger means generation refuses rather than proceeding uncounted,
+     because an uncounted generation is an unbounded one. */
+  const may = await D.mayGenerate(advisor.id);
+  if (!may.ok) {
+    return json(res, 429, { error: 'throttled', message: may.message ||
+      'That is more writing than this is meant to do in an hour. Nothing is lost — try again shortly.' });
+  }
+
+  const need = caps.consultation
+    ? D.toNeedState(await D.consultationFor(id, advisor.id)) || await N.seedFrom(raw.answers || {})
+    : await N.seedFrom(raw.answers || {});
+
+  const slugs = String(form.slugs || '').split(',').map((s) => str(s, 60)).filter(Boolean).slice(0, 6);
+  const recipeKey = str(form.recipe, 60) || null;
+
+  const out = await run(form, { advisor, need, slugs, recipeKey });
+
+  /* Recorded whether it worked or not. A ledger that only holds successes
+     cannot answer "why did this advisor's session take four minutes", which is
+     the question gtm.js:112 says the reason alone could not answer. */
+  if (caps.ledger) {
+    /* (advisorId, sessionId, entry) — the session is null until the advisor
+       opens one; the counter mayGenerate() reads is per advisor per hour, so a
+       note written before a session exists is still counted. */
+    await D.recordGeneration(advisor.id, null, {
+      kind: out.kind, model: out.model, ms: out.ms,
+      promptChars: out.promptChars, usage: out.usage,
+      reason: out.ok ? null : out.reason
+    });
+  }
+
+  if (!out.ok) {
+    return json(res, 502, { error: out.reason || 'failed', message: reasonText(out.reason) });
+  }
+
+  /* The flags travel WITH the text, never instead of it. An advisor who can see
+     the flagged sentence can fix it in a second; one shown "generation failed"
+     has to start again on a call, and the sentence was usually nearly right. */
+  return json(res, 200, {
+    ok: true, kind: out.kind, text: out.text,
+    flags: out.flags, high: out.high, ms: out.ms
+  });
+}
+
+function actionDayNote(form, ctx) {
+  return G.generateDayNote(Object.assign({}, ctx, {
+    day: {
+      key: str(form.dayKey, 20), label: str(form.dayLabel, 60), text: str(form.dayText, 200)
+    },
+    rung: rung(ctx.advisor)
+  }));
+}
+
+function actionNarrative(form, ctx) {
+  return G.generateNarrative(Object.assign({}, ctx, { rung: rung(ctx.advisor) }));
+}
+
 
 /* ── The page ─────────────────────────────────────────────────────────────
    Exported so tools/hub-preview.js renders THIS, against fixtures, rather than
@@ -142,6 +248,8 @@ function buildBody(v) {
         : emptyState('The knowledge bank is not on this deployment yet.',
             'Run node tools/build-well-knowledge.js and redeploy.')}
     </section>
+
+    ${narrative(id, shortlist, caps)}
 
     ${alsoIn(topVillage, also, vocab)}
 
@@ -276,6 +384,43 @@ function candidate(c) {
    half that drifts is the half nobody is looking at. */
 let TIER_MEANING = {};
 function tierMeaning(code) { return TIER_MEANING[code] || code; }
+
+/* ── The one piece of writing ─────────────────────────────────────────────
+   The only generated prose on this screen, and it is the last thing built
+   rather than the first. Everything above it is arithmetic the advisor can
+   check; this is a paragraph they will read aloud, so it arrives with the
+   claim flags attached and a plain textarea to fix it in.
+
+   IT IS NOT BEHIND THE OVERLAY. The shortlist is server-rendered in the same
+   response and appears when the page appears — in front of a prospect there is
+   no spinner between opening the workspace and having something to talk about.
+   Only this one block waits on a model, and only when the advisor asks it to.
+
+   NO JAVASCRIPT, NO BUTTON. The section still renders, still shows the textarea,
+   and an advisor can write the paragraph themselves — which is the safe
+   direction for that failure to go. */
+function narrative(id, shortlist, caps) {
+  const slugs = shortlist.slice(0, 3).map((c) => c.slug).join(',');
+  return `<section class="design-block" data-narrative data-share="${esc(id)}" data-slugs="${esc(slugs)}">
+  <h2>The shape of it</h2>
+  <p class="design-note" data-hide-in-present>A paragraph to read aloud, written from the codes
+    above and the places you have shortlisted — never from anything ${esc("they")} typed. Yours to
+    change; it is a draft, not an answer.</p>
+
+  <div class="design-narr">
+    <textarea class="design-narr-body" rows="7" data-narr-text
+      placeholder="Write it yourself, or ask for a draft to react to."></textarea>
+    <div class="design-narr-flags" data-narr-flags hidden></div>
+    <div class="design-actions" data-hide-in-present>
+      <button type="button" class="btn btn--ghost btn--sm" data-narr-go>Draft a paragraph</button>
+      <span class="design-hint" data-narr-status role="status"></span>
+    </div>
+  </div>
+
+  ${caps.consultation ? '' : `<p class="design-hint" data-hide-in-present>This will not be saved
+    yet — migration 022 is not on this deployment.</p>`}
+</section>`;
+}
 
 /* ── The rest of the village ─────────────────────────────────────────────── */
 function alsoIn(villageKey, also, vocab) {

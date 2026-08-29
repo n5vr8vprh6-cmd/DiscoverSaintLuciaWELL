@@ -73,7 +73,11 @@
     }
   ],
   "functions": {
-    "api/gtm.js": {
+    "api/hub/index.js": {
+      "includeFiles": "{css,js}/**",
+      "maxDuration": 60
+    },
+      "api/gtm.js": {
       "includeFiles": "{css,js}/**",
       "maxDuration": 60
     },

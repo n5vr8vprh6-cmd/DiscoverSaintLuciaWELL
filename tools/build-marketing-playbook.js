@@ -285,7 +285,20 @@ const body = banner + '\nmodule.exports = ' +
 
 if (CHECK) {
   const current = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : '';
-  const strip = (s) => s.replace(/Generated:.*\n/, '').replace(/"generated":\s*"[^"]*"/, '');
+  /* LINE ENDINGS ARE NORMALISED FIRST, AND THE ORDER IS THE WHOLE FIX.
+     git checks these banks out with CRLF on Windows while the generator writes
+     LF. That alone would make a byte comparison fail, but the subtler half is
+     that `.` in a JavaScript regex does not match \r — so on a CRLF file
+     /Generated:.*\n/ never matches, the date line survives the strip, and the
+     check reports "out of date" against a bank nobody has touched. This is what
+     it did, and the only reason the other two banks passed is that they happened
+     to be sitting in the working tree as LF at the time.
+
+     Normalising afterwards does not help: by then the date is still in both
+     strings and still different. */
+  const strip = (s) => s.replace(/\r\n/g, '\n')
+    .replace(/Generated:.*\n/, '')
+    .replace(/"generated":\s*"[^"]*"/, '');
   if (strip(current) !== strip(body)) {
     console.error('\n  content/marketing-playbook.js is out of date.');
     console.error('  Run: node tools/build-marketing-playbook.js — then READ THE DIFF.\n');

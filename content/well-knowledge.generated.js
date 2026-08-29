@@ -3104,7 +3104,7 @@ module.exports = {
   ],
   "recipes": [
     {
-      "key": "discoversaintluciawell",
+      "key": "discover-saint-lucia-well",
       "name": "Discover Saint Lucia WELL",
       "sub": "A first encounter with several wellbeing worlds.",
       "compass": [
@@ -3148,7 +3148,7 @@ module.exports = {
       "pacing": "Three nights is enough for one strong impression, not three. Pick the single Village that carries the trip and let the other two appear as a half-day each."
     },
     {
-      "key": "longevityrenewal",
+      "key": "longevity-renewal",
       "name": "Longevity & Renewal",
       "sub": "For the traveler explicitly seeking a deeper health reset.",
       "compass": [
@@ -3190,7 +3190,7 @@ module.exports = {
       "pacing": "Protect the days either side of the protocol. A structured programme placed straight after a long flight, or straight before one, is the most common way this journey underdelivers."
     },
     {
-      "key": "romanticwellbeing",
+      "key": "romantic-wellbeing",
       "name": "Romantic Wellbeing",
       "sub": "Relationship presence beyond a standard honeymoon itinerary.",
       "compass": [
@@ -3234,7 +3234,7 @@ module.exports = {
       "pacing": "Leave at least one day completely unbooked. Shared unstructured time is the ingredient couples most often say mattered, and it is the one an itinerary most often removes."
     },
     {
-      "key": "executivereset",
+      "key": "executive-reset",
       "name": "Executive Reset",
       "sub": "A high-performing traveler who needs less stimulation, not more productivity.",
       "compass": [
@@ -3278,7 +3278,7 @@ module.exports = {
       "pacing": "Sleep first, everything else second. Front-load rest, keep one anchor activity per day at most, and treat the re-entry day as part of the design rather than the end of it."
     },
     {
-      "key": "womensrenewal",
+      "key": "womens-renewal",
       "name": "Women’s Renewal",
       "sub": "A flexible planning family, not a diagnosis-specific product.",
       "compass": [
@@ -3322,7 +3322,7 @@ module.exports = {
       "pacing": "Book the specialist element first and build the rest of the journey around its availability — not the other way round. Confirm practitioner availability in writing before anything else is held."
     },
     {
-      "key": "activerecovery",
+      "key": "active-recovery",
       "name": "Active Recovery",
       "sub": "Movement used to rebuild energy, not exhaust it.",
       "compass": [
@@ -3495,12 +3495,12 @@ module.exports = {
   ],
   "suitability": [
     {
-      "key": "mobilityterrain",
+      "key": "mobility-terrain",
       "check": "Mobility / terrain",
       "why": "Jade Mountain, Anse Chastanet, Ladera and other hillside or open-air settings can involve steps, steep grades and environmental exposure."
     },
     {
-      "key": "climateopenaircomfort",
+      "key": "climate-open-air-comfort",
       "check": "Climate / open-air comfort",
       "why": "Heat, humidity, insects and open-wall rooms can be restorative for one client and uncomfortable for another."
     },
@@ -3510,22 +3510,22 @@ module.exports = {
       "why": "BodyHoliday and other high-program properties can have popular treatment and class slots; pre-arrival planning matters."
     },
     {
-      "key": "staffingsensitivespecialistcare",
+      "key": "staffing-sensitive-specialist-care",
       "check": "Staffing-sensitive specialist care",
       "why": "Physiotherapy, adapted care and medical-wellness services require provider availability and suitability screening."
     },
     {
-      "key": "includedvsextra",
+      "key": "included-vs-extra",
       "check": "Included vs extra",
       "why": "Do not assume “wellness resort” means the spa is included; the model varies widely."
     },
     {
-      "key": "facilityaccess",
+      "key": "facility-access",
       "check": "Facility access",
       "why": "Zoëtry and other properties may have rate or category conditions, or facility-charge ambiguity. Confirm in writing."
     },
     {
-      "key": "pricefreshness",
+      "key": "price-freshness",
       "check": "Price freshness",
       "why": "Dated and undated spa brochures are common. Reconfirm before quoting."
     }
