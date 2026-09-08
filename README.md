@@ -1054,7 +1054,15 @@ are unchanged, so every existing `mediaPicture(p.image)` caller is untouched.
   cleared frames**, filtered at assemble time in `design-itinerary.js` so a
   frozen copy can never carry one. An OTA-sourced frame (Expedia, Hotels.com…)
   is public-facing, not public domain, and is marked so it can be told apart.
-- **Several roots.** The script merges catalogues from every root given;
+- **Several roots.** The script merges catalogues from every root given. The
+  2026-09 supplement (`…-Asset-Library-Supplement-2026-09`, beside the main
+  library in Downloads) holds twelve frames researched from property sites on
+  2026-09-08: Calabash Cove's whole gallery, and a dining, lobby or exterior
+  frame for six others. **Zoëtry Marigot Bay could not be sourced** — hyatt.com
+  and hyattinclusivecollection.com refuse automated and in-app-browser requests,
+  marigotbay.com now sells land, booking.com serves a bot challenge — so it stays
+  hero-only until a frame arrives by hand.
+- **Roots, generally.** The script merges catalogues from every root given;
   research that fills gaps (Zoëtry and Calabash Cove have no source folder at
   all — their heroes are carried forward from the last build) lands in a
   supplement library beside the 2026-08-10 one, never inside this repo.

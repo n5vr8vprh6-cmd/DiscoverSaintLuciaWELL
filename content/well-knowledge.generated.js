@@ -789,6 +789,23 @@ module.exports = {
             "retrieved": "2026-08-10",
             "cleared": false,
             "credit": "Jade Mountain"
+          },
+          {
+            "kind": "dining",
+            "src": "/assets/properties/jade-mountain-dining-28c1d7-960.jpg",
+            "base": "/assets/properties/jade-mountain-dining-28c1d7",
+            "widths": [
+              640,
+              960
+            ],
+            "w": 1080,
+            "h": 720,
+            "alt": "Dinner for two on the Celestial Terrace at Jade Mountain, the Pitons behind.",
+            "source": "https://www.jademountain.com/dining",
+            "source_kind": "property",
+            "retrieved": "2026-09-08",
+            "cleared": false,
+            "credit": "Jade Mountain"
           }
         ],
         "rights_status": "Permission required / not verified"
@@ -963,19 +980,19 @@ module.exports = {
             "credit": "Anse Chastanet"
           },
           {
-            "kind": "spa",
-            "src": "/assets/properties/anse-chastanet-spa-9a00bd-960.jpg",
-            "base": "/assets/properties/anse-chastanet-spa-9a00bd",
+            "kind": "dining",
+            "src": "/assets/properties/anse-chastanet-dining-dc0ea1-960.jpg",
+            "base": "/assets/properties/anse-chastanet-dining-dc0ea1",
             "widths": [
               640,
               960
             ],
-            "w": 1098,
-            "h": 732,
-            "alt": "A facial treatment at the Anse Chastanet spa.",
-            "source": "https://ansechastanet.com/spa-wellness/",
+            "w": 1200,
+            "h": 800,
+            "alt": "A candlelit dinner cabana on the beach at Anse Chastanet at sunset.",
+            "source": "https://www.ansechastanet.com/gallery",
             "source_kind": "property",
-            "retrieved": "2026-08-10",
+            "retrieved": "2026-09-08",
             "cleared": false,
             "credit": "Anse Chastanet"
           },
@@ -1486,19 +1503,19 @@ module.exports = {
             "credit": "Sandals Grande St. Lucian"
           },
           {
-            "kind": "room",
-            "src": "/assets/properties/sandals-grande-st-lucian-room-5ae64b-960.jpg",
-            "base": "/assets/properties/sandals-grande-st-lucian-room-5ae64b",
+            "kind": "dining",
+            "src": "/assets/properties/sandals-grande-st-lucian-dining-3f873f-960.jpg",
+            "base": "/assets/properties/sandals-grande-st-lucian-dining-3f873f",
             "widths": [
               640,
               960
             ],
             "w": 1525,
             "h": 1017,
-            "alt": "A beachfront villa’s private pool and terrace at Sandals Grande St. Lucian.",
+            "alt": "An open-air restaurant terrace at the water’s edge, Sandals Grande St. Lucian.",
             "source": "https://www.sandals.com/grande-st-lucian/photos/",
             "source_kind": "property",
-            "retrieved": "2026-08-10",
+            "retrieved": "2026-09-08",
             "cleared": false,
             "credit": "Sandals Grande St. Lucian"
           }
@@ -1715,19 +1732,19 @@ module.exports = {
             "credit": "BodyHoliday Saint Lucia"
           },
           {
-            "kind": "activity",
-            "src": "/assets/properties/bodyholiday-activity-119e53-960.jpg",
-            "base": "/assets/properties/bodyholiday-activity-119e53",
+            "kind": "exterior",
+            "src": "/assets/properties/bodyholiday-exterior-ab2f0b-960.jpg",
+            "base": "/assets/properties/bodyholiday-exterior-ab2f0b",
             "widths": [
               640,
               960
             ],
-            "w": 1300,
-            "h": 866,
-            "alt": "Partner yoga in the infinity pool at BodyHoliday.",
+            "w": 1200,
+            "h": 800,
+            "alt": "The Wellness Centre at BodyHoliday, its arched courtyard and pavilion.",
             "source": "https://www.thebodyholiday.com/",
             "source_kind": "property",
-            "retrieved": "2026-08-10",
+            "retrieved": "2026-09-08",
             "cleared": false,
             "credit": "BodyHoliday Saint Lucia"
           },
@@ -2598,19 +2615,19 @@ module.exports = {
             "credit": "Ladera Resort"
           },
           {
-            "kind": "exterior",
-            "src": "/assets/properties/ladera-resort-exterior-a39f1b-960.jpg",
-            "base": "/assets/properties/ladera-resort-exterior-a39f1b",
+            "kind": "dining",
+            "src": "/assets/properties/ladera-resort-dining-aa2fdc-960.jpg",
+            "base": "/assets/properties/ladera-resort-dining-aa2fdc",
             "widths": [
               640,
               960
             ],
-            "w": 1920,
-            "h": 1280,
-            "alt": "The pool terrace at Ladera with the valley falling away behind.",
-            "source": "https://www.ladera.com/gallery/",
+            "w": 2000,
+            "h": 1333,
+            "alt": "A table at Dasheene at dusk, Petit Piton filling the open side of the room.",
+            "source": "https://www.ladera.com/gallery",
             "source_kind": "property",
-            "retrieved": "2026-08-10",
+            "retrieved": "2026-09-08",
             "cleared": false,
             "credit": "Ladera Resort"
           }
@@ -2814,19 +2831,19 @@ module.exports = {
             "credit": "Cap Maison Resort & Spa"
           },
           {
-            "kind": "room",
-            "src": "/assets/properties/cap-maison-room-62d6e8-960.jpg",
-            "base": "/assets/properties/cap-maison-room-62d6e8",
+            "kind": "lobby",
+            "src": "/assets/properties/cap-maison-lobby-f8700d-960.jpg",
+            "base": "/assets/properties/cap-maison-lobby-f8700d",
             "widths": [
               640,
               960
             ],
-            "w": 2560,
-            "h": 1706,
-            "alt": "A guest at the balcony rail of a Cap Maison room, garden and sea beyond.",
-            "source": "https://capmaison.com/photo-gallery/",
+            "w": 960,
+            "h": 640,
+            "alt": "The reception lounge at Cap Maison under a vaulted brick ceiling.",
+            "source": "https://capmaison.com/",
             "source_kind": "property",
-            "retrieved": "2026-08-10",
+            "retrieved": "2026-09-08",
             "cleared": false,
             "credit": "Cap Maison Resort & Spa"
           },
@@ -3594,9 +3611,112 @@ module.exports = {
             "retrieved": "",
             "cleared": false,
             "credit": "Calabash Cove Resort & Spa"
+          },
+          {
+            "kind": "lobby",
+            "src": "/assets/properties/calabash-cove-lobby-1e500d-960.jpg",
+            "base": "/assets/properties/calabash-cove-lobby-1e500d",
+            "widths": [
+              640,
+              960
+            ],
+            "w": 1000,
+            "h": 666,
+            "alt": "The open-air Lobby in the Sky at Calabash Cove, lounge seating around the red piano.",
+            "source": "https://www.calabashcove.com/gallery",
+            "source_kind": "property",
+            "retrieved": "2026-09-08",
+            "cleared": false,
+            "credit": "Calabash Cove Resort & Spa"
+          },
+          {
+            "kind": "spa",
+            "src": "/assets/properties/calabash-cove-spa-0c97c6-960.jpg",
+            "base": "/assets/properties/calabash-cove-spa-0c97c6",
+            "widths": [
+              640,
+              960
+            ],
+            "w": 1000,
+            "h": 666,
+            "alt": "A massage table set in a gazebo at Ti Spa, Calabash Cove.",
+            "source": "https://www.calabashcove.com/gallery",
+            "source_kind": "property",
+            "retrieved": "2026-09-08",
+            "cleared": false,
+            "credit": "Calabash Cove Resort & Spa"
+          },
+          {
+            "kind": "room",
+            "src": "/assets/properties/calabash-cove-room-c7b151-960.jpg",
+            "base": "/assets/properties/calabash-cove-room-c7b151",
+            "widths": [
+              640,
+              960
+            ],
+            "w": 1920,
+            "h": 1280,
+            "alt": "A bedroom at Calabash Cove opening onto its terrace above Bonaire Bay.",
+            "source": "https://www.calabashcove.com/gallery",
+            "source_kind": "property",
+            "retrieved": "2026-09-08",
+            "cleared": false,
+            "credit": "Calabash Cove Resort & Spa"
+          },
+          {
+            "kind": "dining",
+            "src": "/assets/properties/calabash-cove-dining-83b02d-960.jpg",
+            "base": "/assets/properties/calabash-cove-dining-83b02d",
+            "widths": [
+              640,
+              960
+            ],
+            "w": 1920,
+            "h": 1280,
+            "alt": "Tables laid at the Windsong restaurant, Calabash Cove, the sea beyond the rail.",
+            "source": "https://www.calabashcove.com/gallery",
+            "source_kind": "property",
+            "retrieved": "2026-09-08",
+            "cleared": false,
+            "credit": "Calabash Cove Resort & Spa"
+          },
+          {
+            "kind": "gym",
+            "src": "/assets/properties/calabash-cove-gym-d48fa2-960.jpg",
+            "base": "/assets/properties/calabash-cove-gym-d48fa2",
+            "widths": [
+              640,
+              960
+            ],
+            "w": 1920,
+            "h": 1280,
+            "alt": "The fitness room at Calabash Cove, treadmills facing the garden.",
+            "source": "https://www.calabashcove.com/gallery",
+            "source_kind": "property",
+            "retrieved": "2026-09-08",
+            "cleared": false,
+            "credit": "Calabash Cove Resort & Spa"
+          },
+          {
+            "kind": "activity",
+            "src": "/assets/properties/calabash-cove-activity-6292d6-960.jpg",
+            "base": "/assets/properties/calabash-cove-activity-6292d6",
+            "widths": [
+              640,
+              960
+            ],
+            "w": 1600,
+            "h": 1066,
+            "alt": "A yoga pose on the boardwalk deck over the water at Calabash Cove.",
+            "source": "https://www.calabashcove.com/gallery",
+            "source_kind": "property",
+            "retrieved": "2026-09-08",
+            "cleared": false,
+            "credit": "Calabash Cove Resort & Spa"
           }
         ],
-        "provenanceNote": "Supplied outside the catalogued asset library — no source page or retrieval date recorded."
+        "provenanceNote": "Supplied outside the catalogued asset library — no source page or retrieval date recorded.",
+        "rights_status": "Permission required / not verified"
       },
       "provenance": {
         "source": "field-guide-deep",

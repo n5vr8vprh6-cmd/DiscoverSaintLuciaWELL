@@ -130,14 +130,16 @@ GALLERY = {
          'Snorkellers over the reef in Anse Chastanet bay, the Pitons behind.'),
         ('09_wellness-spa_main-img-yoga.jpg', 'activity',
          'A partner yoga session beside a sanctuary pool at Jade Mountain.'),
+        ('51_dining-culinary_celestial-terrace-dinner.jpg', 'dining',
+         'Dinner for two on the Celestial Terrace at Jade Mountain, the Pitons behind.'),
     ],
     '03-anse-chastanet': [
         ('02_rooms-villas_anse-room1.jpg', 'room',
          'An open-sided hillside room at Anse Chastanet, madras-covered seating and the Pitons beyond.'),
         ('11_wellness-spa_ansechastanet-spa-3-medium.jpg', 'spa',
          'A guest in a robe at the rail of the Kai Mer spa above the sea.'),
-        ('09_wellness-spa_day-spapage-pampering-and-relaxationsection.jpg', 'spa',
-         'A facial treatment at the Anse Chastanet spa.'),
+        ('51_dining-culinary_beach-dinner-cabana.jpg', 'dining',
+         'A candlelit dinner cabana on the beach at Anse Chastanet at sunset.'),
         ('10_wellness-spa_sup-yoga.jpg', 'activity',
          'Stand-up paddleboard yoga on the calm water off Anse Chastanet beach.'),
         ('05_experiences-people_snorkeler-single.jpg', 'activity',
@@ -170,8 +172,8 @@ GALLERY = {
          'A twin treatment cabana on the beach with a soaking tub, open to the sea.'),
         ('11_wellness-spa_list-content-02-02-fbc2dc679c.avif', 'gym',
          'The fitness centre at Sandals Grande St. Lucian, treadmills facing the sea.'),
-        ('06_pool-beach-views_sgl-bp-pool-5cd6bbedc4.avif', 'room',
-         'A beachfront villa’s private pool and terrace at Sandals Grande St. Lucian.'),
+        ('51_dining-culinary_waterside-restaurant-terrace.jpg', 'dining',
+         'An open-air restaurant terrace at the water’s edge, Sandals Grande St. Lucian.'),
     ],
     '06-bodyholiday': [
         ('02_wellness-spa_img-4730.jpg', 'activity',
@@ -182,8 +184,8 @@ GALLERY = {
          'A guest room at BodyHoliday with a freestanding tub and garden view.'),
         ('08_wellness-spa_ff083c58-3b04-4ad5-8df2-71353fa3c541.webp', 'spa',
          'A head treatment in the Wellness Centre at BodyHoliday.'),
-        ('10_wellness-spa_dsc8328-1.jpg', 'activity',
-         'Partner yoga in the infinity pool at BodyHoliday.'),
+        ('51_exterior-aerial_wellness-centre-courtyard.jpg', 'exterior',
+         'The Wellness Centre at BodyHoliday, its arched courtyard and pavilion.'),
         ('13_wellness-spa_dsc8328.jpg', 'gym',
          'A mat class with stability balls in the fitness studio at BodyHoliday.'),
     ],
@@ -236,8 +238,8 @@ GALLERY = {
          'Ladera on its ridge below Petit Piton.'),
         ('12_wellness-spa_983a902b-80f2-4604-8f28-98a8996bbb34-m-large.jpg', 'activity',
          'A seated yoga session on a covered deck at Ladera.'),
-        ('08_other_tra-5285.jpg', 'exterior',
-         'The pool terrace at Ladera with the valley falling away behind.'),
+        ('51_dining-culinary_dasheene-sunset-petit-piton.jpg', 'dining',
+         'A table at Dasheene at dusk, Petit Piton filling the open side of the room.'),
     ],
     '11-cap-maison': [
         ('02_pool-beach-views_the-cap-maison-and-naked-fisherman-beach.jpg', 'exterior',
@@ -248,8 +250,8 @@ GALLERY = {
          'A dish under glass and a glass of white wine at The Cliff at Cap.'),
         ('10_wellness-spa_beach-010.jpg', 'spa',
          'A hanging chair on the Rock Maison deck above the sea at Cap Maison.'),
-        ('05_rooms-villas_img-8594x-1-scaled-1.jpg', 'room',
-         'A guest at the balcony rail of a Cap Maison room, garden and sea beyond.'),
+        ('51_other_reception-lounge.jpg', 'lobby',
+         'The reception lounge at Cap Maison under a vaulted brick ceiling.'),
         ('09_wellness-spa_courtyard-005-2.jpg', 'exterior',
          'The courtyard pool at Cap Maison between the white villas.'),
     ],
@@ -266,6 +268,24 @@ GALLERY = {
          'A treatment room at TheLifeCo St. Lucia.'),
         ('12_wellness-spa_cta-wellness.jpg', 'spa',
          'A massage under the palms at TheLifeCo.'),
+    ],
+    # From the 2026-09 supplement library (calabashcove.com/gallery). Zoëtry Marigot
+    # Bay has no entry: hyatt.com and hyattinclusivecollection.com refuse automated
+    # and in-app-browser requests, marigotbay.com now sells land, booking.com serves
+    # a bot challenge. Its hero is carried forward; its gallery waits.
+    '15-calabash-cove': [
+        ('51_other_lobby-in-the-sky.jpg', 'lobby',
+         'The open-air Lobby in the Sky at Calabash Cove, lounge seating around the red piano.'),
+        ('52_wellness-spa_ti-spa-gazebo.jpg', 'spa',
+         'A massage table set in a gazebo at Ti Spa, Calabash Cove.'),
+        ('53_rooms-villas_bedroom-bay-view.jpg', 'room',
+         'A bedroom at Calabash Cove opening onto its terrace above Bonaire Bay.'),
+        ('54_dining-culinary_windsong-restaurant.jpg', 'dining',
+         'Tables laid at the Windsong restaurant, Calabash Cove, the sea beyond the rail.'),
+        ('55_wellness-spa_fitness-room.jpg', 'gym',
+         'The fitness room at Calabash Cove, treadmills facing the garden.'),
+        ('56_wellness-spa_yoga-on-the-boardwalk.jpg', 'activity',
+         'A yoga pose on the boardwalk deck over the water at Calabash Cove.'),
     ],
     '13-stonefield-villa-resort': [
         ('02_wellness-spa_3-img-8202.jpg', 'activity',
@@ -286,6 +306,8 @@ GALLERY = {
 # Folders that arrived outside the catalogued library. Recorded so a missing
 # source URL reads as a known gap rather than looking like a scraping bug.
 PROVENANCE_GAP = {'14-zoetry-marigot-bay', '15-calabash-cove'}
+# Both heroes are carried forward from the last build when no root holds their
+# original; Calabash Cove's gallery comes from the 2026-09 supplement root.
 
 # Display names for the credit line where no catalogue row can supply one.
 CREDIT_FALLBACK = {
