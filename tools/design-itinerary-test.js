@@ -132,6 +132,25 @@ const RHYTHM = {
     Object.keys(brand).every((k) => IT.BRAND_FIELDS.indexOf(k) !== -1),
     Object.keys(brand).join(', '));
 
+  /* ── Photographs ─────────────────────────────────────────────────────── */
+  console.log('\n  Photographs: cleared frames only');
+  const frames = [
+    { kind: 'hero', base: '/assets/properties/x', widths: [640, 960], alt: 'Hero.', credit: 'X', cleared: false, source: 'https://x/hero' },
+    { kind: 'spa', base: '/assets/properties/x-spa-aaaaaa', widths: [640, 960], alt: 'Spa.', credit: 'X', cleared: false, source: 'https://x/spa' },
+    { kind: 'room', base: '/assets/properties/x-room-bbbbbb', widths: [640, 960], alt: 'Room.', credit: 'X', cleared: false, source: 'https://x/room' }
+  ];
+  const uncleared = { images: frames };
+  ok('nothing cleared, nothing shown', IT.clearedImage(uncleared) === null);
+  ok('no images at all is null, not a throw', IT.clearedImage(null) === null && IT.clearedImage({}) === null);
+  const some = { images: frames.map((f, i) => Object.assign({}, f, { cleared: i > 0 })) };   // spa + room cleared, hero not
+  const pick = IT.clearedImage(some);
+  ok('an uncleared hero is skipped for the first cleared frame', pick && pick.kind === 'spa', JSON.stringify(pick));
+  ok('a kind-aware ask is honoured when that frame is cleared', IT.clearedImage(some, 'room').kind === 'room');
+  ok('an ask for an uncleared kind falls back rather than leaking it', IT.clearedImage(some, 'hero').kind === 'spa');
+  ok('the frame carries only what a <picture> and a credit need',
+    Object.keys(pick).sort().join(',') === 'alt,base,credit,kind,widths', Object.keys(pick).join(','));
+  ok('cleared must be exactly true, not truthy',
+    IT.clearedImage({ images: [Object.assign({}, frames[0], { cleared: 'yes' })] }) === null);
   /* ── The token ───────────────────────────────────────────────────────── */
   console.log('\n  The token');
   const h = D.hashToken('some-token');

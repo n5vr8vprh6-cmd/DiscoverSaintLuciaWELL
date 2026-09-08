@@ -416,3 +416,59 @@
     });
   });
 })();
+
+/* ============================================================================
+   GALLERY — tap a thumb, the hero swaps in place
+   ----------------------------------------------------------------------------
+   The server rendered every frame and made every thumb a link to its own
+   image; that is the whole behaviour with JavaScript off. Here a tap rebuilds
+   the hero <picture> from the thumb's data-base / data-widths / data-alt —
+   the same srcset shape lib/components.js mediaPicture() emits — so the
+   browser is moving the server's markup around, not deciding anything. No
+   fetch, no modal: on a shared screen a modal covers the conversation.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  function srcset(base, widths, ext) {
+    return widths.map(function (w) { return base + '-' + w + '.' + ext + ' ' + w + 'w'; }).join(', ');
+  }
+
+  function picture(base, widths, alt, sizes) {
+    var pic = document.createElement('picture');
+    ['webp', 'jpg'].forEach(function (ext) {
+      var s = document.createElement('source');
+      s.type = ext === 'webp' ? 'image/webp' : 'image/jpeg';
+      s.srcset = srcset(base, widths, ext);
+      if (sizes) s.sizes = sizes;
+      pic.appendChild(s);
+    });
+    var img = document.createElement('img');
+    img.src = base + '-' + widths[widths.length - 1] + '.jpg';
+    img.alt = alt || '';
+    img.decoding = 'async';
+    pic.appendChild(img);
+    return pic;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-gallery]'), function (fig) {
+    var hero = fig.querySelector('.media-gallery-hero');
+    if (!hero) return;
+    var first = hero.querySelector('source');
+    var sizes = first ? first.getAttribute('sizes') : null;
+
+    fig.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('[data-thumb]') : null;
+      if (!a || !fig.contains(a)) return;
+      var widths = String(a.getAttribute('data-widths') || '').split(',').map(Number).filter(Boolean);
+      var base = a.getAttribute('data-base');
+      if (!base || !widths.length) return;         /* let the link open the image */
+      e.preventDefault();
+      while (hero.firstChild) hero.removeChild(hero.firstChild);
+      hero.appendChild(picture(base, widths, a.getAttribute('data-alt'), sizes));
+      Array.prototype.forEach.call(fig.querySelectorAll('[data-thumb]'), function (t) {
+        if (t === a) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current');
+      });
+    });
+  });
+})();

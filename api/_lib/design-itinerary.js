@@ -27,6 +27,12 @@
      who will talk around them. In front of a client, without that voice, they
      stop being craft and become an argument against the trip they are reading.
 
+     PHOTOGRAPHS ONLY WHEN CLEARED. Every frame in the bank carries the
+     property's own `cleared` flag, false until Duncan confirms reuse rights.
+     The workspace shows everything, marked; this document filters at assemble
+     time, so a frozen copy can never carry an uncleared image even if the flag
+     is later flipped back. One frame per place, the hero first.
+
      LAST VERIFIED DOES APPEAR. It is honest, and it is also the line that makes
      the advisor structurally necessary: a dated fact invites the question only
      a person can answer.
@@ -115,18 +121,34 @@ function days(recipe, nights, dayNotes) {
    price cannot reach this document even by accident. The verification date is
    added separately from provenance, because it is the one caveat that belongs
    in front of a client. */
-async function places(slugs) {
+/* The one frame a place shows the client. Cleared frames only — hero first,
+   or the frame of the asked-for kind when the day plan puts a spa or an
+   activity day here. Returns null rather than an uncleared frame. */
+function clearedImage(img, kind) {
+  const list = ((img && img.images) || []).filter((i) => i && i.cleared === true && i.base && i.widths);
+  if (!list.length) return null;
+  const pick = (kind && list.find((i) => i.kind === kind)) || list.find((i) => i.kind === 'hero') || list[0];
+  return { kind: pick.kind, base: pick.base, widths: pick.widths.slice(), alt: pick.alt || '', credit: pick.credit || '' };
+}
+
+async function places(slugs, kind) {
   const out = [];
   for (const slug of (slugs || []).slice(0, 6)) {
     const p = await K.mayAssert(String(slug));
     if (!p) continue;
     const prov = await K.provenanceFor(String(slug));
+    /* The image is read from the full record, not mayAssert(): a photograph
+       is not an assertion about the traveller, and it never reaches a prompt.
+       Named fields again — no source URL, no rights note, just what a <picture>
+       needs and the credit the property is owed. */
+    const full = await K.property(String(slug));
     out.push({
       slug: String(slug),
       name: p.name,
       hook: p.hook,
       villages: p.villages || [],
-      verified_at: (prov && prov.verified_at) || null
+      verified_at: (prov && prov.verified_at) || null,
+      image: clearedImage(full && full.image, kind)
     });
   }
   return out;
@@ -197,4 +219,4 @@ function readiness(doc) {
   return missing;
 }
 
-module.exports = { assemble, readiness, days, places, brandOf, BRAND_FIELDS };
+module.exports = { assemble, readiness, days, places, clearedImage, brandOf, BRAND_FIELDS };

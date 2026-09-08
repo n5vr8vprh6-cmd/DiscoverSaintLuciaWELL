@@ -135,6 +135,7 @@ silently shipping the wrong one.
 | `content/eclipse.js` | The signature journey (own midnight/copper world) |
 | `content/about.js` | What a Well Destination is, why Saint Lucia, contact |
 | `tools/build-property-images.py` | Turns the asset library into web derivatives |
+| `tools/media-test.js` | Every frame on disk, tagged, credited, sourced; the bank sees all of them |
 | `lib/layouts.js` | The three layouts and every chrome component |
 | `lib/components.js` | Section renderers (one per `type`) |
 | `lib/page.js` | `<head>`, metadata, JSON-LD, asset versioning |
@@ -1003,10 +1004,10 @@ Built from the 2026-08-10 asset library by
 argument; it rewrites `content/properties-media.js`.
 
 ```bash
-py tools/build-property-images.py <path-to-extracted-asset-library>
+py tools/build-property-images.py <asset-library-root> [<supplement-root> ...]
 ```
 
-Choices are **named explicitly** in `HEROES` / `VILLAGES` in that script rather
+Choices are **named explicitly** in `HEROES` / `GALLERY` / `VILLAGES` in that script rather
 than picked by a "largest landscape" heuristic, which reliably chose a bedroom
 over a Piton view. A named list is also reviewable in a diff.
 
@@ -1026,6 +1027,42 @@ Three things learned the hard way, all encoded in the script's comments:
 
 Every image is cropped to 3:2 so grids align, and nothing is upscaled — the
 widest derivative is whatever the source could give.
+
+### Galleries
+
+Since 2026-09-08 each deep property carries `images[]` — the hero first, then
+up to six frames tagged `kind` (`spa · room · lobby · gym · activity · dining ·
+exterior`). The Hub's Compare stage renders them as a thumbnail strip under the
+hero (`mediaGallery()` in `lib/components.js`); a tap swaps the hero in place,
+and with JavaScript off every thumb is a link to its image. The flat hero keys
+are unchanged, so every existing `mediaPicture(p.image)` caller is untouched.
+
+- **Picks were eyeballed, not mapped from the filename's category token** —
+  the catalogue lies often enough to matter (see above). Excluded on sight:
+  A'ila's renderings, marketing frames with text baked in, weddings,
+  stock-looking frames, and TheLifeCo's consultation / IV imagery (the field
+  guide's brief: *avoid unsupported medical imagery*).
+- **Gallery frames stop at 960 px** (`GALLERY_WIDTHS`); they are thumbnails
+  first and a 44 %-wide card image second. Basenames carry six hex characters
+  of the source's sha256 (`anse-chastanet-spa-3f9a1c`), so a replaced frame is
+  a new URL and the seven-day `/assets` cache can never serve the old one.
+- **Rights travel with every frame.** `source`, `retrieved`, `source_kind`
+  (`property · press · ota`) and `cleared: false` — the library's own README
+  says *treat every asset as permission required / not verified*, and nothing
+  is cleared until Duncan sets it. The workspace shows everything with an
+  advisor-only *not yet cleared* count; **the client document shows only
+  cleared frames**, filtered at assemble time in `design-itinerary.js` so a
+  frozen copy can never carry one. An OTA-sourced frame (Expedia, Hotels.com…)
+  is public-facing, not public domain, and is marked so it can be told apart.
+- **Several roots.** The script merges catalogues from every root given;
+  research that fills gaps (Zoëtry and Calabash Cove have no source folder at
+  all — their heroes are carried forward from the last build) lands in a
+  supplement library beside the 2026-08-10 one, never inside this repo.
+- `node tools/media-test.js` after every regeneration: every listed width on
+  disk in both formats, one hero per property, no more than seven, alt text
+  that is not a filename, and the bank's count equal to the manifest's —
+  `build-well-knowledge.js image()` is a copy-named-fields projection, which
+  is the one place a gallery can silently vanish.
 
 **Deployment note:** `.webp` must be served as `image/webp`. Python's
 `http.server` sends `application/octet-stream`, which browsers tolerate here

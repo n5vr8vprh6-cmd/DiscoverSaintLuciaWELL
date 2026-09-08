@@ -44,6 +44,7 @@ const { esc } = require('../hub-render.js');
    lib/ with ../../, and copying that path from there lands on api/lib/. */
 const { render } = require('../../../lib/page.js');
 const D = require('../design-data.js');
+const { mediaPicture } = require('../../../lib/components.js');
 
 module.exports = async function handler(req, res) {
   const url = new URL(req.url, 'https://x');
@@ -94,6 +95,10 @@ module.exports = async function handler(req, res) {
       <h2>Where</h2>
       <ul class="itin-places">
         ${doc.places.map((p) => `<li>
+          ${/* Frozen with the document, and only ever a cleared frame — the
+                filter ran at assemble time, so nothing here re-checks a flag. */''}
+          ${p.image && p.image.base ? `<figure class="itin-place-media">${mediaPicture(p.image, { sizes: '(min-width: 48rem) 40rem, 100vw' })}${
+            p.image.credit ? `<figcaption class="itin-place-credit">Photograph: ${esc(p.image.credit)}</figcaption>` : ''}</figure>` : ''}
           <h3>${esc(p.name)}</h3>
           ${p.hook ? `<p>${esc(p.hook)}</p>` : ''}
           ${/* The one caveat that belongs in front of a client, and the line

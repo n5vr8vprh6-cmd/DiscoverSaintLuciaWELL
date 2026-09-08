@@ -190,10 +190,26 @@ function fact(text, source, verifiedAt, confidence) {
 const facts = (arr, source, verifiedAt, confidence) =>
   [].concat(arr || []).map((t) => fact(t, source, verifiedAt, confidence)).filter(Boolean);
 
+/* Copy-named-fields, like every projection in this repo: a field reaches the
+   bank because it is listed here, not because it exists in the manifest.
+   `images` is the gallery — hero first, then up to six tagged frames — and
+   the ONE place a gallery can silently vanish is this list, so
+   tools/media-test.js checks the bank's count against the manifest's. */
+const IMAGE_FIELDS = ['kind', 'src', 'base', 'widths', 'w', 'h', 'alt', 'source', 'source_kind', 'retrieved', 'cleared', 'credit'];
+function pickImage(m) {
+  const out = {};
+  IMAGE_FIELDS.forEach((k) => { if (m[k] !== undefined) out[k] = m[k]; });
+  return out;
+}
 function image(folder) {
   const m = MEDIA.properties && MEDIA.properties[folder];
   if (!m) return null;
-  return { src: m.src, base: m.base, widths: m.widths, w: m.w, h: m.h, alt: m.alt, source: m.source, retrieved: m.retrieved };
+  const out = pickImage(m);
+  out.images = (m.images || []).map(pickImage);
+  if (m.renderingWarning) out.renderingWarning = m.renderingWarning;
+  if (m.provenanceNote) out.provenanceNote = m.provenanceNote;
+  if (m.rights_status) out.rights_status = m.rights_status;
+  return out;
 }
 
 /* ── The fifteen deep profiles ─────────────────────────────────────────────

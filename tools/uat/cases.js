@@ -1276,6 +1276,13 @@ const CASES = [
   expect: 'Version 2 with a different link. Version 1 still resolves.',
   why: 'Issuing again must not silently kill a link somebody is already holding. Withdrawing is a separate, deliberate act.' },
 
+{ id: 'A-67', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'ASK WELL',
+  title: 'Property gallery on Compare — thumbs, swap, credit, cleared',
+  steps: ['Open a Journey → Design → Compare with a shortlist that includes Anse Chastanet or Rabot',
+          'Look under the property photograph for a strip of labelled thumbnails (Overview · Rooms · Spa · …)',
+          'Tap a thumb; then press P; then disable JavaScript, reload and tap a thumb again'],
+  expect: 'The large photograph swaps in place with no scroll and no reload; the tapped thumb is outlined and its word is bold. Under the strip: "Photographs: <property>" and an amber "N not yet cleared" count. P keeps the whole gallery and removes only the not-yet-cleared count. With JavaScript off the same thumb opens the image itself. A property with a single photograph shows no strip at all.',
+  why: 'The gallery is the brochure moment on a shared screen, so it stays in Present mode; the clearance count is our paperwork, so it does not. Every frame is the property’s own photograph and nothing is cleared until Duncan says so — the count is the reminder that this is a sourced-and-credited draft, not a licence.' },
 { id: 'A-65', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'Playbook',
   title: 'Read the Playbook and fill in the priority traveller',
   steps: ['Open /hub/campaign and follow the link to Your Playbook',

@@ -60,7 +60,7 @@ const { rung } = require('../gtm.js');
 /* Three levels up to lib/, as itinerary.js and playbook.js learned the hard
    way. The same picture helper the consumer directory uses, so a srcset fix
    lands on both surfaces. */
-const { mediaPicture } = require('../../../lib/components.js');
+const { mediaPicture, mediaGallery } = require('../../../lib/components.js');
 
 /* ── The four stages ──────────────────────────────────────────────────────
    One screen, ?step=, one stage visible at a time. The pattern is
@@ -874,7 +874,7 @@ function propertyCard(id, c, need, chosen, fw) {
   const price = p.price && p.price.text;
 
   return `<li class="design-prop${carried ? ' is-carried' : ''}${p.image ? '' : ' design-prop--text'}" id="prop-${esc(c.slug)}"${accent}>
-  ${p.image ? `<div class="design-prop-media">${mediaPicture(p.image, { sizes: '(min-width: 60rem) 44vw, 100vw' })}</div>` : ''}
+  ${p.image ? `<div class="design-prop-media">${mediaGallery((p.image.images && p.image.images.length) ? p.image.images : [p.image], { sizes: '(min-width: 60rem) 44vw, 100vw', thumbSizes: '(min-width: 60rem) 7vw, 22vw' })}</div>` : ''}
   <div class="design-prop-body">
     ${p.modelTag ? `<p class="eyebrow">${esc(p.modelTag)}</p>` : ''}
     <h3>${esc(c.name)}</h3>

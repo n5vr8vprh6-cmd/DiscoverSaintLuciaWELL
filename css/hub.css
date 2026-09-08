@@ -2474,3 +2474,44 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
   .design .design-scale-lo { text-align: left; }
   .design .design-prop { grid-template-columns: 1fr; }
 }
+
+/* ── Compare · property gallery ─────────────────────────────────────────────
+   The hero stays the hero; up to six labelled thumbs sit under it in a strip.
+   Every thumb is a link (JS-off behaviour); with JS a tap swaps the hero in
+   place. aria-current marks the frame on show — a border, and the word, since
+   no colour carries meaning alone. */
+.design .design-prop-media .media-gallery { display: flex; flex-direction: column; height: 100%; margin: 0; }
+.design .design-prop-media .media-gallery--one { display: block; }
+.design .media-gallery-hero { flex: 1 1 auto; min-height: 0; display: flex; }
+.design .media-gallery-hero picture, .design .media-gallery-hero img { width: 100%; height: 100%; min-height: 0; object-fit: cover; aspect-ratio: auto; }
+.design .media-thumbs {
+  list-style: none; margin: 0; padding: .45rem .45rem .2rem;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(4.4rem, 1fr)); gap: .3rem;
+}
+.design .media-thumbs li { margin: 0; }
+.design .media-thumbs a {
+  display: block; text-decoration: none; color: var(--ink);
+  border: 2px solid transparent; border-radius: 3px; overflow: hidden; background: var(--paper);
+}
+.design .media-thumbs a:hover, .design .media-thumbs a:focus-visible { border-color: var(--v, var(--teal)); }
+.design .media-thumbs a[aria-current="true"] { border-color: var(--ink); }
+.design .media-thumbs picture, .design .media-thumbs img { height: auto; }
+.design .media-thumbs span {
+  display: block; font-size: .6rem; letter-spacing: .05em; text-transform: uppercase; text-align: center;
+  padding: .3em .2em .25em; color: var(--muted); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.design .media-thumbs a[aria-current="true"] span { color: var(--ink); font-weight: 600; }
+.design .media-credit { margin: auto 0 0; padding: .35rem .6rem .6rem; font-size: .72rem; line-height: 1.4; color: var(--muted); }
+.design .media-uncleared { margin-left: .4em; color: var(--gold-deep); font-weight: 600; }
+
+/* ── Client document · one photograph per place ─────────────────────────────
+   Cleared frames only (filtered at assemble time in design-itinerary.js). The
+   credit sits under the frame because the photograph is the property's. */
+.itin-places .itin-place-media { margin: 0 0 .9rem; }
+.itin-places .itin-place-media picture, .itin-places .itin-place-media img {
+  display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 3px;
+}
+.itin-places .itin-place-credit { margin: .35rem 0 0; font-size: .72rem; color: var(--muted); }
+@media print {
+  .itin-places .itin-place-media { break-inside: avoid; max-width: 60%; }
+}
