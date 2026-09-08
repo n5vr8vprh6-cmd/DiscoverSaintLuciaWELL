@@ -57,6 +57,56 @@ const G = require('../design-generate.js');
 const IT = require('../design-itinerary.js');
 const { configured, reasonText } = require('../openai.js');
 const { rung } = require('../gtm.js');
+/* Three levels up to lib/, as itinerary.js and playbook.js learned the hard
+   way. The same picture helper the consumer directory uses, so a srcset fix
+   lands on both surfaces. */
+const { mediaPicture } = require('../../../lib/components.js');
+
+/* ── The four stages ──────────────────────────────────────────────────────
+   One screen, ?step=, one stage visible at a time. The pattern is
+   campaign-profile.js: a derived position, one POST per action, a 303 back.
+
+   THE STORED STAGE IS A CONVENIENCE, NOT A FACT. design_sessions.stage carries
+   a CHECK that, until migration 023 lands, does not admit these four names —
+   so every stage write is best-effort (log, never fail the request) and the
+   position is DERIVED from what has actually been saved. A deployment that ran
+   ahead of the migration, which this project does routinely, loses nothing
+   but a hint.
+
+   Every headline speaks to the room, not to the advisor. The client is
+   reading over a shoulder and the stage name is part of the conversation. */
+const STAGES = ['understand', 'compare', 'shape', 'send'];
+const STAGE_LABEL = { understand: 'Understand', compare: 'Compare', shape: 'Shape', send: 'Send' };
+const STAGE_HEAD = {
+  understand: 'What you told us, and what I heard',
+  compare: 'Places worth comparing',
+  shape: 'The shape of the week',
+  send: 'What happens next'
+};
+
+/* Where the consultation actually is, from what exists. Never from the stored
+   stage — see above. */
+function resumeStage(stored, session) {
+  if (!stored) return 'understand';
+  const chosen = session && session.shortlist && session.shortlist.chosen;
+  if (!chosen || !chosen.length) return 'compare';
+  const days = session.day_plan && session.day_plan.days;
+  if (!days || !days.length) return 'shape';
+  return 'send';
+}
+
+/* Best-effort, and it must stay that way. */
+async function setStage(session, advisor, stage) {
+  if (!session || !session.id) return;
+  const r = await D.updateSession(session.id, advisor.id, { stage });
+  if (r && !r.ok && r.reason !== 'not_migrated') console.warn('design stage not recorded', r.reason);
+}
+
+/* A JSON caller wants a fragment back; a form caller wants a redirect. Decided
+   by what the request said it was sending, not by an action name. */
+function isJson(req) {
+  return /application\/json/i.test(String((req.headers && req.headers['content-type']) || ''));
+}
 
 const BAND_WORD = {
   strong: 'Strong', partial: 'Partial', thin: 'Thin', absent: 'Absent', unknown: 'Not known'
@@ -117,8 +167,11 @@ module.exports = async function handler(req, res) {
   const name = fullName(j) || 'This Journey';
 
   const frameworks = await K.frameworks();
+
+  const want = str(url.searchParams.get('step'), 12);
+  const step = STAGES.indexOf(want) !== -1 ? want : resumeStage(stored, session);
   const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
-                            topVillage, caps, bank, frameworks, issued, ranked, session,
+                            topVillage, caps, bank, frameworks, issued, ranked, session, step,
                             done: str(url.searchParams.get('done'), 20) });
 
   hubPage(res, {
@@ -157,14 +210,15 @@ module.exports = async function handler(req, res) {
    the fourth one. */
 const ACTIONS = {
   day_note: actionDayNote, narrative: actionNarrative,
-  issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name'
+  issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name',
+  consult: 'dispatched-by-name', choose: 'dispatched-by-name', decline: 'dispatched-by-name'
 };
 
 /* Actions posted by a plain <form> rather than by fetch. They redirect; the
    others answer in JSON. Kept as a list rather than inferred from a header,
    because "what does a failure look like to this caller" is a property of the
    action, not of the request that happened to arrive. */
-const FORM_ACTIONS = ['revoke', 'recipe'];
+const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline'];
 
 const backTo = (id, done) =>
   '/hub/journeys/' + encodeURIComponent(id) + '/design' + (done ? '?done=' + done : '');
@@ -207,6 +261,19 @@ async function generate(req, res, v) {
      action; these are the fourth and fifth. */
   if (name === 'revoke') {
     return await actionRevoke(res, form, { advisor, id, caps });
+  }
+
+  /* The three stage actions. Form posts above the OpenAI and ledger gates,
+     because none of them calls a model. Each re-reads the consultation itself
+     rather than trusting a value computed for a different action. */
+  if (name === 'consult' || name === 'choose' || name === 'decline') {
+    const seededNow = await N.seedFrom(raw.answers || {});
+    const storedNow = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
+    const ctx = { advisor, id, raw, caps, stored: storedNow, seeded: seededNow,
+      need: (storedNow && D.toNeedState(storedNow)) || seededNow, json: isJson(req) };
+    if (name === 'consult') return await actionConsult(res, form, ctx);
+    if (name === 'choose') return await actionChoose(res, form, ctx);
+    return await actionDecline(res, form, ctx);
   }
 
   if (name === 'recipe') {
@@ -314,6 +381,134 @@ function actionNarrative(form, ctx) {
 
    READINESS IS CHECKED IN SENTENCES, not booleans. "Not ready" with no reason
    is the message that makes somebody click again harder. */
+/* ── Stage 2 · carrying properties forward ─────────────────────────────────
+   Two writes that must agree: design_sessions.shortlist.chosen (what the rest
+   of the workspace reads) and design_candidates (the ledger). Both here, in
+   order, so they cannot drift. The full shortlist is saved first so a declined
+   property has a row to carry its reason. */
+async function actionChoose(res, form, v) {
+  const { advisor, id, need, stored, caps } = v;
+  const back = (done, step) => {
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=' + (step || 'compare'));
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated');
+
+  const chain = await openChain(advisor, id, need, stored);
+  if (!chain.ok) return back('consult_failed');
+  const session = chain.session;
+
+  const shortlist = await M.shortlistFor(need);
+  const known = shortlist.map((c) => c.slug);
+  const rawCarry = form.carry == null ? [] : (Array.isArray(form.carry) ? form.carry : [form.carry]);
+  const slugs = rawCarry.map((s) => str(s, 60)).filter((s) => known.indexOf(s) !== -1);
+  if (slugs.length > 3) return back('too_many');
+
+  await D.saveCandidates(session.id, advisor.id, shortlist);
+  const chose = await D.chooseCandidates(session.id, advisor.id, slugs);
+  if (!chose.ok && chose.reason !== 'not_migrated') return back('choose_failed');
+
+  await D.updateSession(session.id, advisor.id, {
+    shortlist: { chosen: slugs, at: new Date().toISOString(), bank: session.knowledge_version || null }
+  });
+  await setStage(session, advisor, slugs.length ? 'shape' : 'compare');
+  return back(slugs.length ? 'carried' : 'carried_none', slugs.length ? 'shape' : 'compare');
+}
+
+async function actionDecline(res, form, v) {
+  const { advisor, id, need, stored, caps } = v;
+  const back = (done) => {
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=compare');
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated');
+
+  const slug = str(form.slug, 60);
+  const reason = str(form.reason, 20);
+  const okReason = DECLINE_REASONS.some(([k]) => k === reason) ? reason : null;
+
+  const chain = await openChain(advisor, id, need, stored);
+  if (!chain.ok) return back('consult_failed');
+  const session = chain.session;
+
+  /* The row has to exist to carry a reason. Saving the whole shortlist here is
+     idempotent — saveCandidates replaces the session's rows — so a decline
+     before any choose still lands. */
+  const shortlist = await M.shortlistFor(need);
+  if (!shortlist.some((c) => c.slug === slug)) return back('declined');
+  await D.saveCandidates(session.id, advisor.id, shortlist);
+  const kept = (session.shortlist && session.shortlist.chosen) || [];
+  if (kept.length) await D.chooseCandidates(session.id, advisor.id, kept.filter((s) => s !== slug));
+  await D.declineCandidate(session.id, advisor.id, slug, okReason);
+  if (kept.indexOf(slug) !== -1) {
+    await D.updateSession(session.id, advisor.id, {
+      shortlist: Object.assign({}, session.shortlist, { chosen: kept.filter((s) => s !== slug) })
+    });
+  }
+  return back('declined');
+}
+
+/* ── Stage 1 · saving the consultation ────────────────────────────────────
+   THE FIRST WRITER OF seeded_from AND advisor_overrode WITH REAL CONTENT.
+   openChain() deliberately leaves them NULL because it records no review;
+   this records one, so it passes the seed and the diff. advisor_overrode is
+   N.overridden(seeded, edited) — the fields the advisor changed from what the
+   Finder proposed — which is the only data that will ever answer "is the
+   Finder reading people correctly?".
+
+   Codes are checked against the vocabulary and unknown values leave the field
+   untouched. These columns feed prompts downstream, so a text column with no
+   CHECK is only as clean as the code writing to it. */
+async function actionConsult(res, form, v) {
+  const { advisor, id, need, seeded, caps, json } = v;
+  const back = (done) => {
+    if (json) return jsonOut(res, done === 'saved', { done });
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=understand#consult');
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated');
+
+  const vocab = await N.vocabulary();
+  const allowed = (dim) => { const s = {}; (vocab[dim] || []).forEach((o) => { s[o.key] = true; }); return s; };
+  const pick = (dim, field) => {
+    const val = str(form[field || dim], 40);
+    if (val === '') return null;
+    return allowed(dim)[val] ? val : need[dim];
+  };
+  const edited = Object.assign({}, need, {
+    trigger: pick('trigger'), uncertainty: pick('uncertainty'), readiness: pick('readiness'),
+    budget: pick('budget'), party: pick('party'),
+    nights: form.nights === '' || form.nights == null ? null : Math.min(Math.max(parseInt(form.nights, 10) || 0, 1), 21) || null
+  });
+  const okC = allowed('constraints');
+  const rawC = form.constraints == null ? [] : (Array.isArray(form.constraints) ? form.constraints : [form.constraints]);
+  edited.constraints = rawC.map((c) => str(c, 40)).filter((c) => okC[c]).slice(0, 9);
+  ['rhythm', 'activity', 'social', 'experience'].forEach((k) => {
+    if (form[k] == null || form[k] === '') return;
+    const n = Number(form[k]);
+    if (Number.isFinite(n)) edited[k] = Math.min(Math.max(Math.round(n * 100) / 100, 0), 1);
+  });
+
+  const problems = N.validate(edited);
+  if (problems.length) { console.warn('consult refused', problems); return back('bad_consult'); }
+
+  const saved = await D.saveConsultation(id, advisor.id, edited, {
+    state: seeded, overrode: N.overridden(seeded, edited)
+  });
+  if (!saved.ok) return back(saved.reason === 'not_migrated' ? 'not_migrated' : 'consult_failed');
+
+  const session = await D.currentSession(id, advisor.id);
+  await setStage(session, advisor, 'understand');
+  return back('saved');
+}
+
+function jsonOut(res, ok, payload) {
+  return json(res, ok ? 200 : 400, Object.assign({ ok }, payload));
+}
+
 /* ── consultation → session, resolved or created ──────────────────────────
    Two callers now — issuing, and choosing a shape — so it lives once. Both
    need a session, and a session cannot exist without a consultation: 022
@@ -537,17 +732,15 @@ async function actionIssue(res, form, v) {
    a second template that looks the same until the day it does not. Everything
    it needs is a parameter; it reads no database and knows no advisor. */
 function buildBody(v) {
-  const { id, name, need, seeded, stored, vocab, shortlist, also, topVillage, caps, bank } = v;
-  const issued = v.issued || [];
-  const ranked = v.ranked || [];
-  const session = v.session || null;
-  const chosen = session && session.recipe_key;
-  const tied = shortlist.length && shortlist[0].tiedGroup;
+  const { id, name, caps, bank } = v;
+  const step = STAGES.indexOf(v.step) !== -1 ? v.step : 'understand';
 
   TIER_MEANING = {};
   ((v.frameworks && v.frameworks.tiers) || []).forEach((r) => { TIER_MEANING[r.code] = r.meaning; });
 
-  return `<div class="hub-main design">
+  const STAGE_RENDER = { understand: understandStage, compare: compareStage, shape: shapeStage, send: sendStage };
+
+  return `<div class="hub-main design design--${esc(step)}">
   <div class="wrap">
 
     ${flash(v.done)}
@@ -556,37 +749,17 @@ function buildBody(v) {
 
     <header class="design-head">
       <p class="eyebrow"><a href="/hub/journeys/${esc(id)}">${esc(name)}</a></p>
-      <h1>Design this journey</h1>
-      <p class="design-sub">Everything here is computed from what they told the Finder and what
-        you have added. Nothing on this page is written by a machine.</p>
+      ${rail(id, step)}
+      <h1>${esc(STAGE_HEAD[step])}</h1>
       <div class="design-actions">
         <button type="button" class="btn" data-present>Present mode</button>
         <span class="design-hint" data-hide-in-present>Hides your working notes. Press P.</span>
       </div>
     </header>
 
-    ${readTheTraveller(need, seeded, stored, vocab)}
+    ${STAGE_RENDER[step](v)}
 
-    <section class="design-block">
-      <h2>Directions worth comparing</h2>
-      ${tied ? `<p class="design-note" data-hide-in-present>
-        These ${shortlist.length} are indistinguishable on what has been said so far — they tie on
-        every axis. That is the moment to ask another question rather than pick one.</p>` : ''}
-      ${shortlist.length
-        ? `<ol class="design-list">${shortlist.map(candidate).join('')}</ol>`
-        : emptyState('The knowledge bank is not on this deployment yet.',
-            'Run node tools/build-well-knowledge.js and redeploy.')}
-    </section>
-
-    ${shape(id, ranked, chosen, caps)}
-
-    ${narrative(id, shortlist, caps, chosen)}
-
-    ${alsoIn(topVillage, also, vocab)}
-
-    ${issue(id, shortlist, caps, chosen)}
-
-    ${issuedVersions(id, issued, caps)}
+    ${stageNav(id, step)}
 
     <footer class="design-foot" data-hide-in-present>
       <p>Property intelligence verified ${esc(bank.verified.core || '—')}
@@ -597,6 +770,235 @@ function buildBody(v) {
 
   </div>
 </div>`;
+}
+
+/* ── The rail ─────────────────────────────────────────────────────────────
+   Four LINKS, not buttons. Navigation between stages needs no JavaScript and
+   no state — a link to ?step= is the whole mechanism. Done stages are the
+   ones before the current position in the derived order. */
+function rail(id, step) {
+  const now = STAGES.indexOf(step);
+  return `<ol class="design-rail" aria-label="Stages">${STAGES.map((s, i) => `
+    <li class="${i < now ? 'is-done' : i === now ? 'is-now' : ''}">
+      <a href="/hub/journeys/${esc(id)}/design?step=${s}"${i === now ? ' aria-current="step"' : ''}>
+        <span class="design-rail-n">${i + 1}</span> ${esc(STAGE_LABEL[s])}</a>
+    </li>`).join('')}</ol>`;
+}
+
+/* Forward and back, at the foot of every stage. Plain links. */
+function stageNav(id, step) {
+  const i = STAGES.indexOf(step);
+  const prev = i > 0 ? STAGES[i - 1] : null;
+  const next = i < STAGES.length - 1 ? STAGES[i + 1] : null;
+  return `<nav class="design-stagenav" data-hide-in-present>
+    ${prev ? `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}/design?step=${prev}">← ${esc(STAGE_LABEL[prev])}</a>` : '<span></span>'}
+    ${next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}">${esc(STAGE_LABEL[next])} →</a>` : ''}
+  </nav>`;
+}
+
+/* ── Stage 2 · Compare ────────────────────────────────────────────────────
+   Brochure cards, not report rows. The photograph, the hook, what is
+   included, the village in its own colour — the page a client would want to
+   be turned. The four bands and the mismatch sentences are still here and
+   still the honesty mechanism, but behind a disclosure the advisor opens and
+   Present mode closes: they stop being the first thing on the screen.
+
+   CHOOSING WRITES THE LEDGER. design_candidates was built by 022 as the only
+   table that will ever say whether the mapping is wrong, and nothing wrote it
+   until this. Every shortlisted property gets a row; the carried ones are
+   flagged; a put-aside one carries its reason.
+
+   ONE FORM, NO NESTING. The choose form wraps the cards; each card's
+   put-aside control points at its own form rendered after the main one via
+   the `form` attribute, because a form inside a form is not HTML. */
+function compareStage(v) {
+  const { id, need, shortlist, session, caps, topVillage, also, vocab, frameworks } = v;
+  const chosen = (session && session.shortlist && session.shortlist.chosen) || [];
+  const tied = shortlist.length && shortlist[0].tiedGroup;
+  const fw = frameworks || {};
+
+  const cards = shortlist.map((c) => propertyCard(id, c, need, chosen, fw)).join('');
+  const declines = shortlist.map((c) => `<form method="POST" id="decline-${esc(c.slug)}"
+    action="/hub/journeys/${esc(id)}/design?step=compare">
+    <input type="hidden" name="action" value="decline"><input type="hidden" name="slug" value="${esc(c.slug)}"></form>`).join('');
+
+  return `<section class="design-block design-compare">
+  ${tied ? `<p class="design-note" data-hide-in-present>These ${shortlist.length} tie on every axis
+    on what has been said so far. That is the moment to ask another question rather than pick one.</p>` : ''}
+  ${shortlist.length ? `
+  <form method="POST" action="/hub/journeys/${esc(id)}/design?step=compare" class="design-choose">
+    <input type="hidden" name="action" value="choose">
+    <ol class="design-props">${cards}</ol>
+    <div class="design-actions design-choose-actions" data-hide-in-present>
+      <button class="btn btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Carry these into the shape</button>
+      <span class="design-hint">Up to three. ${chosen.length ? chosen.length + ' carried so far.' : ''}
+        ${caps.consultation ? '' : esc(D.UNAVAILABLE.consultation)}</span>
+    </div>
+  </form>${declines}` : emptyState('The knowledge bank is not on this deployment yet.',
+        'Run node tools/build-well-knowledge.js and redeploy.')}
+</section>` + alsoIn(topVillage, also, vocab);
+}
+
+/* Which village colours a property for THIS traveller: the one of its villages
+   they weighted highest. Deterministic; ties go to the property's own order. */
+function villageFor(p, need) {
+  const vs = (p && p.villages) || [];
+  if (!vs.length) return null;
+  const w = (need && need.villages) || {};
+  return vs.slice().sort((a, b) => (w[b] || 0) - (w[a] || 0))[0];
+}
+
+/* The six-rung ladder with the property's band lit. Words, not a bar — a
+   client reads "Relax · Restore · Reconnect" and knows what it means. */
+function continuumStrip(p, fw) {
+  const order = fw.continuumOrder || [];
+  const names = {};
+  (fw.continuum || []).forEach((r) => { names[r.key] = r.name; });
+  const on = p.continuum || [];
+  if (!order.length) return '';
+  if (!on.length) return `<p class="design-depth design-depth--unknown">Depth not mapped for this property.</p>`;
+  return `<ol class="design-depth" aria-label="Depth">${order.map((k) => `<li class="${on.indexOf(k) !== -1 ? 'is-on' : ''}">${esc(names[k] || k)}</li>`).join('')}</ol>`;
+}
+
+const DECLINE_REASONS = [
+  ['style', 'Not their style'], ['terrain', 'Terrain or access'], ['depth', 'Too deep, or not deep enough'],
+  ['price', 'Price'], ['availability', 'Availability'], ['other', 'Something else']
+];
+
+function propertyCard(id, c, need, chosen, fw) {
+  const p = c.property || {};
+  const vk = villageFor(p, need);
+  const accent = vk ? ` style="--v: var(--v-${esc(vk)}); --v-ink: var(--v-${esc(vk)}-ink)"` : '';
+  const carried = chosen.indexOf(c.slug) !== -1;
+  const included = (p.included || []).slice(0, 3).map((f) => f.text || f);
+  const price = p.price && p.price.text;
+
+  return `<li class="design-prop${carried ? ' is-carried' : ''}${p.image ? '' : ' design-prop--text'}" id="prop-${esc(c.slug)}"${accent}>
+  ${p.image ? `<div class="design-prop-media">${mediaPicture(p.image, { sizes: '(min-width: 60rem) 44vw, 100vw' })}</div>` : ''}
+  <div class="design-prop-body">
+    ${p.modelTag ? `<p class="eyebrow">${esc(p.modelTag)}</p>` : ''}
+    <h3>${esc(c.name)}</h3>
+    ${p.hook ? `<p class="design-prop-hook">${esc(p.hook)}</p>` : ''}
+    ${p.bestFor ? `<p class="design-prop-best"><b>Best for</b> ${esc(p.bestFor)}</p>` : ''}
+    ${included.length ? `<ul class="design-prop-inc">${included.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
+    <div class="design-prop-meta">
+      <div class="chips">${(p.villages || []).map((k) => `<span class="chip chip--v" style="--v: var(--v-${esc(k)}); --v-ink: var(--v-${esc(k)}-ink)">${esc(villageName(k))}</span>`).join('')}</div>
+      ${continuumStrip(p, fw)}
+    </div>
+    ${c.verified_at ? `<p class="design-verified">Last verified ${esc(c.verified_at)}</p>` : ''}
+
+    <details class="design-why" data-hide-in-present>
+      <summary>Why this fits · what to watch</summary>
+      <div class="design-bands">${AXIS.map(([k, label]) => `<div class="band band-${esc(c.bands[k])}">
+        <span class="band-axis">${label}</span><span class="band-word">${esc(BAND_WORD[c.bands[k]] || c.bands[k])}</span></div>`).join('')}</div>
+      ${(c.mismatches || []).length ? `<ul class="design-mismatch">${c.mismatches.map((m) => `<li class="sev-${esc(m.severity)}">${esc(m.sentence)}${
+        m.evidence ? `<span class="design-ev">${esc(m.evidence)}</span>` : ''}</li>`).join('')}</ul>` : ''}
+      ${price ? `<div class="design-price"><h4>${esc(p.priceTag || 'Public planning price signal')}</h4>
+        <p>${esc(price)}</p><p class="design-hint">Planning guidance only. Never quote from this — every figure is reconfirmed before it is quoted to a client.</p></div>` : ''}
+    </details>
+
+    <div class="design-prop-actions" data-hide-in-present>
+      <label class="design-carry"><input type="checkbox" name="carry" value="${esc(c.slug)}"${carried ? ' checked' : ''}>
+        <span>${carried ? 'Carried into the shape' : 'Carry into the shape'}</span></label>
+      <span class="design-aside">
+        <select name="reason" form="decline-${esc(c.slug)}" aria-label="Why not">${DECLINE_REASONS.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join('')}</select>
+        <button class="btn btn--ghost btn--sm" type="submit" form="decline-${esc(c.slug)}">Put aside</button>
+      </span>
+    </div>
+  </div>
+</li>`;
+}
+
+function villageName(key) {
+  const names = { longevity: 'Longevity', rainforest: 'Nature & Renewal', ocean: 'Ocean & Restoration',
+    heritage: 'Heritage & Nourishment', movement: 'Movement & Adventure', connection: 'Connection & Romance' };
+  return names[key] || key;
+}
+
+/* ── Stages 3 and 4 wrap what already exists ───────────────────────────── */
+function shapeStage(v) {
+  const { id, ranked, session, caps, shortlist } = v;
+  const recipeKey = session && session.recipe_key;
+  return shape(id, ranked, recipeKey, caps) + narrative(id, shortlist, caps, recipeKey);
+}
+
+function sendStage(v) {
+  const { id, shortlist, session, caps, issued } = v;
+  const recipeKey = session && session.recipe_key;
+  return issue(id, shortlist, caps, recipeKey) + issuedVersions(id, issued || [], caps);
+}
+
+/* ── Stage 1 · Understand ─────────────────────────────────────────────────
+   What the Finder recorded, redesigned to be read across a table — and the
+   five things six answers cannot know, as controls the advisor taps while
+   asking. This is the consultation editor, and so the first writer of
+   seeded_from and advisor_overrode with real content. */
+function understandStage(v) {
+  const { id, need, seeded, stored, vocab, caps } = v;
+  return readTheTraveller(need, seeded, stored, vocab) + consultEditor(id, need, vocab, caps);
+}
+
+/* The editor. Every control is a native input inside one form, so it works
+   with JavaScript off; hub-design.js makes it save on change. Options come
+   from the vocabulary — nothing here is a free-text field, because the
+   consultation table has no free-text column and the prompt boundary depends
+   on that. */
+function consultEditor(id, need, vocab, caps) {
+  const opts = (dim) => vocab[dim] || [];
+  const on = (dim, key) => (need[dim] === key ? ' checked' : '');
+  const has = (arr, key) => ((arr || []).indexOf(key) !== -1 ? ' checked' : '');
+
+  const picks = (dim, name, cls) => `<div class="design-picks ${cls || ''}">${opts(dim).map((o) => `
+    <label class="design-pick"><input type="radio" name="${name}" value="${esc(o.key)}"${on(dim, o.key)}>
+      <span>${esc(o.label)}</span></label>`).join('')}</div>`;
+
+  /* Readiness is ordinal — dreaming → returning — so it is drawn as points on
+     a line rather than as a pile of chips. Still seven radios underneath. */
+  const steps = `<div class="design-steps">${opts('readiness').map((o, i) => `
+    <label class="design-step"><input type="radio" name="readiness" value="${esc(o.key)}"${on('readiness', o.key)}>
+      <span class="design-step-dot" aria-hidden="true"></span><span class="design-step-word">${esc(o.label)}</span></label>`).join('')}</div>`;
+
+  const scale = (k) => {
+    const s = opts('scales').filter((x) => x.key === k)[0];
+    if (!s) return '';
+    const val = need[k] == null ? 0.5 : Number(need[k]);
+    return `<label class="design-scale"><span class="design-scale-name">${esc(k)}</span>
+      <span class="design-scale-lo">${esc(s.low)}</span>
+      <input type="range" name="${esc(k)}" min="0" max="1" step="0.05" value="${val}">
+      <span class="design-scale-hi">${esc(s.high)}</span></label>`;
+  };
+
+  return `<section class="design-block design-consult">
+  <h2>What six answers cannot know</h2>
+  <p class="design-note" data-hide-in-present>Ask, and mark it as you go. Each one sharpens the shortlist
+    and the shape; none of them is guessed.</p>
+
+  <form method="POST" action="/hub/journeys/${esc(id)}/design?step=understand" class="design-consult-form" data-live data-fragment="consult">
+    <input type="hidden" name="action" value="consult">
+
+    <fieldset class="design-q"><legend>Why now</legend>${picks('trigger', 'trigger', 'design-picks--wide')}</fieldset>
+    <fieldset class="design-q"><legend>What could stop them</legend>${picks('uncertainty', 'uncertainty')}</fieldset>
+    <fieldset class="design-q"><legend>How ready</legend>${steps}</fieldset>
+    <fieldset class="design-q design-q--row">
+      <div><legend>Budget band</legend>${picks('budget', 'budget', 'design-picks--seg')}</div>
+      <div><legend>Nights</legend>
+        <div class="design-stepper"><button type="button" data-step="-1" aria-label="Fewer nights">−</button>
+          <input type="number" name="nights" min="1" max="21" value="${need.nights == null ? '' : esc(String(need.nights))}" placeholder="7">
+          <button type="button" data-step="1" aria-label="More nights">+</button></div></div>
+    </fieldset>
+    <fieldset class="design-q"><legend>Travelling as</legend>${picks('party', 'party', 'design-picks--seg')}</fieldset>
+    <fieldset class="design-q"><legend>Worth knowing</legend><div class="design-picks">${opts('constraints').map((o) => `
+      <label class="design-pick"><input type="checkbox" name="constraints" value="${esc(o.key)}"${has(need.constraints, o.key)}>
+        <span>${esc(o.label)}</span></label>`).join('')}</div></fieldset>
+    <fieldset class="design-q design-q--scales"><legend>How they like a trip to feel</legend>
+      ${['rhythm', 'activity', 'social', 'experience'].map(scale).join('')}</fieldset>
+
+    <div class="design-actions">
+      <button class="btn btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Save what we know</button>
+      <span class="design-hint" data-live-status role="status">${caps.consultation ? '' : esc(D.UNAVAILABLE.consultation)}</span>
+    </div>
+  </form>
+</section>`;
 }
 
 /* ── Banner ───────────────────────────────────────────────────────────────
@@ -625,17 +1027,13 @@ function readTheTraveller(need, seeded, stored, vocab) {
        weight leads and the rest recede — order and type weight carry it, so it
        still reads with colour stripped. */
     const top = bag[keys[0]];
-    return keys.map((k) => `<span class="chip${bag[k] === top ? ' chip--lead' : ''}">${
-      esc(label(dim, k))}</span>`).join('');
+    const accent = (k) => (dim === 'villages'
+      ? ` style="--v: var(--v-${esc(k)}); --v-ink: var(--v-${esc(k)}-ink)"` : '');
+    return keys.map((k) => `<span class="chip${bag[k] === top ? ' chip--lead' : ''}${
+      dim === 'villages' ? ' chip--v' : ''}"${accent(k)}>${esc(label(dim, k))}</span>`).join('');
   };
 
-  /* The fields six Finder answers cannot supply. Shown as gaps rather than
-     guesses: a blank an advisor fills is worth more than a value they have to
-     notice and undo. */
-  const gaps = [
-    ['trigger', 'Why now'], ['uncertainty', 'What could stop them'],
-    ['readiness', 'How ready'], ['budget', 'Budget band'], ['nights', 'Nights']
-  ].filter(([k]) => need[k] == null);
+
 
   const overrode = stored && stored.advisor_overrode && stored.advisor_overrode.length
     ? stored.advisor_overrode : null;
@@ -660,11 +1058,7 @@ function readTheTraveller(need, seeded, stored, vocab) {
       need.orientation ? esc(label('orientation', need.orientation)) : '<span class="design-empty">not yet</span>'}</dd>
   </dl>
 
-  ${gaps.length ? `<div class="design-gaps" data-hide-in-present>
-    <h3>Ask about</h3>
-    <p>Six answers cannot know these. They are blank rather than guessed.</p>
-    <ul>${gaps.map(([, l]) => `<li>${esc(l)}</li>`).join('')}</ul>
-  </div>` : ''}
+
 
   ${overrode ? `<p class="design-note" data-hide-in-present>
     You changed ${overrode.length} field${overrode.length === 1 ? '' : 's'} from what the Finder proposed:
@@ -738,8 +1132,8 @@ function narrative(id, shortlist, caps, chosen) {
   const slugs = shortlist.slice(0, 3).map((c) => c.slug).join(',');
   return `<section class="design-block" data-narrative data-share="${esc(id)}" data-slugs="${esc(slugs)}"
     data-recipe="${esc(chosen || '')}">
-  <h2>The shape of it</h2>
-  <p class="design-note" data-hide-in-present>A paragraph to read aloud, written from the codes
+  <h2>A paragraph to read aloud</h2>
+  <p class="design-note" data-hide-in-present>Written from the codes
     above and the places you have shortlisted — never from anything ${esc("they")} typed. Yours to
     change; it is a draft, not an answer.</p>
 
@@ -816,6 +1210,14 @@ const DONE = {
   withdrawn: ['good', 'Withdrawn. That link stops working immediately.'],
   withdraw_failed: ['bad', 'That could not be withdrawn. Reload and check which versions are live — it may already be gone, or belong to a Journey that has moved.'],
   not_migrated: ['bad', 'Issuing is not available on this deployment yet.'],
+  saved: ['good', 'Saved. The shortlist and the shape now know this.'],
+  bad_consult: ['bad', 'Something in that could not be saved as written. Nothing changed.'],
+  consult_failed: ['bad', 'That could not be saved. Nothing changed.'],
+  carried: ['good', 'Carried into the shape.'],
+  carried_none: ['good', 'Nothing carried yet — pick up to three when you are ready.'],
+  too_many: ['bad', 'Three at most. Put one aside first.'],
+  choose_failed: ['bad', 'That could not be recorded. Nothing changed.'],
+  declined: ['good', 'Put aside, and the reason kept.'],
   shape: ['good', 'Shape saved. The days will follow it.'],
   shape_cleared: ['good', 'Cleared. The days will just be numbered.'],
   shape_failed: ['bad', 'That shape could not be saved, so nothing changed.'],

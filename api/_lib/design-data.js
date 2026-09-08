@@ -273,6 +273,34 @@ async function saveCandidates(sessionId, advisorId, scored) {
   return { ok: true, saved: rows.length };
 }
 
+/* ── Which ones are carried into the shape ────────────────────────────────
+   Two writes in one call, deliberately: chosen=true for the slugs handed in,
+   chosen=false for every other row in the session. A single UPDATE that only
+   set the chosen ones would leave last week's choice standing beside this
+   week's, and the ledger would say the advisor carried five.
+
+   design_sessions.shortlist.chosen is the AUTHORITY the rest of the workspace
+   reads; this table is the LEDGER 022 built so that "was the mapping right" has
+   data. Written together by one handler, read only from the session. */
+async function chooseCandidates(sessionId, advisorId, slugs) {
+  const supabase = db();
+  if (!supabase) return { ok: false, reason: 'not_configured' };
+  const keep = (slugs || []).map(String).slice(0, 3);
+
+  const off = await supabase.from('design_candidates')
+    .update({ chosen: false })
+    .eq('session_id', sessionId).eq('advisor_id', advisorId);
+  if (off.error && isMissing(off.error)) return { ok: false, reason: 'not_migrated' };
+  if (off.error) return { ok: false, reason: 'write_failed' };
+
+  if (!keep.length) return { ok: true, chosen: 0 };
+  const on = await supabase.from('design_candidates')
+    .update({ chosen: true, declined_reason: null })
+    .eq('session_id', sessionId).eq('advisor_id', advisorId).in('property_slug', keep);
+  if (on.error) return { ok: false, reason: 'write_failed' };
+  return { ok: true, chosen: keep.length };
+}
+
 /* The one field worth more than the rest of this table. Why an advisor put a
    property down is the only signal that will ever say the mapping is wrong. */
 async function declineCandidate(sessionId, advisorId, slug, reason) {
@@ -342,7 +370,7 @@ module.exports = {
   capabilities, isMissing, UNAVAILABLE, LIMITS, SESSION_WRITABLE, MISSING,
   consultationFor, saveConsultation, toNeedState,
   currentSession, openSession, updateSession,
-  saveCandidates, declineCandidate,
+  saveCandidates, chooseCandidates, declineCandidate,
   countSince, mayGenerate, recordGeneration
 };
 

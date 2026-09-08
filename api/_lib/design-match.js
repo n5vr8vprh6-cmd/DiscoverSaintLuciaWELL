@@ -263,7 +263,11 @@ async function mismatchesFor(need, property, scored) {
   }
 
   const inclusionRule = rules.filter((r) => /included/i.test(r.check))[0];
-  if (need.budget === 'low' && /à la carte|a la carte/i.test(property.model || '') && inclusionRule) {
+  /* 'entry', not 'low'. The budget vocabulary is entry · mid · premium · open,
+     so this rule compared against a value that no need-state has ever carried
+     and never fired once. Invisible while nothing could set a budget; the
+     Understand stage now can. */
+  if (need.budget === 'entry' && /à la carte|a la carte/i.test(property.model || '') && inclusionRule) {
     add('inclusion_model', inclusionRule.why, inclusionRule.check, 'medium');
   }
 
@@ -342,6 +346,14 @@ async function shortlistFor(need, opts) {
     top[i].mismatches = await mismatchesFor(need, p, top[i]);
     top[i].verified_at = p.provenance.verified_at;
     top[i].watch = p.watch;
+    /* THE WHOLE BANK RECORD, for the screen. The Compare stage renders a
+       photograph, the hook, what is included and the price signal — all of which
+       the bank already carries and none of which a prompt may see. That split is
+       already made elsewhere: K.mayAssert() is the PROMPT boundary and returns
+       five fields; this is the ADVISOR surface and always had the full record.
+       Lifting it here rather than re-reading in the screen keeps buildBody pure
+       for tools/hub-preview.js. */
+    top[i].property = p;
     /* EVERY CANDIDATE CARRIES A LINE UNDER MISMATCH. Where no rule fires, the
        property's own watch note stands in. The absence of a warning must never
        render as a clean bill of health — that is how "nothing flagged" becomes

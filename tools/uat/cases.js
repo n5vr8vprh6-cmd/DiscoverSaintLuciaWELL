@@ -1245,12 +1245,12 @@ const CASES = [
 
 { id: 'A-61', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
   title: 'Design a journey end to end',
-  steps: ['Open a Journey you own and press "Design this journey"',
-          'Read the four bands on each candidate and the sentence under "What is wrong with it"',
-          'Press "Draft a paragraph" and wait',
-          'Choose a shape under "The shape of it" and press Use this shape',
-          'Set nights, add a note, press "Issue this plan" and confirm'],
-  expect: 'The shortlist and its reasons are on screen the moment the page loads, with no spinner. Only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button.',
+  steps: ['Open a Journey you own and press "Design this journey" — you land on Understand',
+          'Tap why now, how ready and a budget band; set nights; press Save what we know, then reload',
+          'Move to Compare: read a card, open "Why this fits · what to watch", tick two to carry, press Carry these into the shape',
+          'On Shape, choose a shape under "The shape of it" and press Use this shape; press "Draft a paragraph"',
+          'On Send, set nights, add a note, press "Issue this plan" and confirm'],
+  expect: 'Four stages on the rail, one at a time. Your taps on Understand survive a reload. Compare shows photographs and the reasoning is folded. The shortlist and its reasons are on screen the moment each stage loads, with no spinner; only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button.',
   why: 'This is the whole product in one pass. The shortlist arriving instantly is the difference between a tool an advisor opens in front of a prospect and one they prepare in private beforehand.' },
 
 { id: 'A-62', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',

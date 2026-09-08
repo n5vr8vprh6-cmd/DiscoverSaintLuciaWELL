@@ -324,3 +324,95 @@
     });
   });
 })();
+
+/* ============================================================================
+   LIVE SAVE — the consultation editor, without a reload
+   ----------------------------------------------------------------------------
+   Every control on the Understand stage is a native input inside one form, and
+   the form works with JavaScript off through a POST and a 303. This makes it
+   save on change instead, because the advisor is tapping while asking and a
+   full reload between "why now" and "how ready" is a beat lost in front of the
+   client.
+
+   ── IT SENDS THE SAME FIELDS TO THE SAME URL ──────────────────────────────
+   As JSON rather than urlencoded, so the server can answer in kind. Nothing is
+   computed here: which values are valid, what "overrode" means, whether the
+   save counts — all decided by the server, exactly as if the form had been
+   submitted. The browser only changes the status line.
+
+   ── FAILURE IS A SENTENCE, NOT A LOST ANSWER ─────────────────────────────
+   If the fetch fails the form is still a form. The advisor presses Save and
+   the 303 path does what it always did.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var forms = document.querySelectorAll('form[data-live]');
+  if (!forms.length) return;
+
+  function serialise(form) {
+    var out = {};
+    var fd = new FormData(form);
+    fd.forEach(function (value, key) {
+      if (Object.prototype.hasOwnProperty.call(out, key)) {
+        if (!Array.isArray(out[key])) out[key] = [out[key]];
+        out[key].push(value);
+      } else {
+        out[key] = value;
+      }
+    });
+    return out;
+  }
+
+  Array.prototype.forEach.call(forms, function (form) {
+    var status = form.querySelector('[data-live-status]');
+    var timer = null;
+    var inflight = false;
+
+    function say(text) { if (status) status.textContent = text || ''; }
+
+    function send() {
+      if (inflight) { timer = setTimeout(send, 400); return; }
+      inflight = true;
+      say('Saving…');
+      fetch(form.getAttribute('action') || location.pathname, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(serialise(form))
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        say(j && j.ok ? 'Saved.' : (j && j.message) || 'Not saved — press Save to retry.');
+      }).catch(function () {
+        say('Not saved — press Save to retry.');
+      }).then(function () { inflight = false; });
+    }
+
+    /* Debounced so a range being dragged posts once, not forty times. */
+    form.addEventListener('change', function () {
+      clearTimeout(timer);
+      timer = setTimeout(send, 250);
+    });
+    form.addEventListener('input', function (e) {
+      if (e.target && e.target.type === 'range') {
+        clearTimeout(timer);
+        timer = setTimeout(send, 600);
+      }
+    });
+  });
+
+  /* The nights stepper. The number input works alone; these two buttons are
+     the tappable version of typing. They dispatch change so the save above
+     fires. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-step]'), function (btn) {
+    btn.addEventListener('click', function () {
+      var wrap = btn.parentNode;
+      var input = wrap && wrap.querySelector('input[type="number"]');
+      if (!input) return;
+      var min = Number(input.min || 1), max = Number(input.max || 21);
+      var cur = parseInt(input.value, 10);
+      if (!Number.isFinite(cur)) cur = Number(input.placeholder) || min;
+      var next = Math.min(max, Math.max(min, cur + Number(btn.getAttribute('data-step'))));
+      input.value = String(next);
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+})();

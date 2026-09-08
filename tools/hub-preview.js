@@ -303,7 +303,10 @@ function login() {
    Journey's own Finder answers — so what this shows is what an advisor sees,
    including the mismatch sentences, rather than a mock-up that agrees with the
    design until somebody changes one of them. */
-async function designWorkspace() {
+/* One call per stage. The fixture session carries two chosen properties so the
+   Shape and Send stages have something to work from, and Compare shows them as
+   carried. */
+async function designWorkspace(step) {
   const K = require('../api/_lib/well-knowledge.js');
   const N = require('../api/_lib/need-state.js');
   const M = require('../api/_lib/design-match.js');
@@ -325,7 +328,9 @@ async function designWorkspace() {
        has already chosen one — so the preview shows both halves of the shape
        block: the week an advisor talks through, and the ranking underneath it. */
     ranked: bank.ready ? await M.rankRecipes(need) : [],
-    session: { id: 'fixture-session', recipe_key: 'longevity-renewal' },
+    step,
+    session: { id: 'fixture-session', recipe_key: 'longevity-renewal',
+      shortlist: { chosen: shortlist.slice(0, 2).map((c) => c.slug), at: new Date().toISOString() } },
     issued: [
       { id: 'fx-2', version: 2, issued_at: new Date(Date.now() - 2 * 86400000).toISOString(),
         share_expires_at: new Date(Date.now() + 120 * 86400000).toISOString(),
@@ -356,13 +361,20 @@ fs.mkdirSync(OUT, { recursive: true });
 /* The design workspace is async — it scores against the knowledge bank — so
    the write runs inside an IIFE rather than at module top level. */
 (async () => {
+/* One page per stage, each rendered by the screen's own dispatcher with ?step
+   set — so what the preview shows is the stage as an advisor would see it, not
+   a composite that exists nowhere. design.html stays as the resumed default. */
 PAGES.push(['design.html', 'Design · Marguerite Okonkwo', '/hub/journeys', ADVISOR, await designWorkspace()]);
+for (const stage of ['understand', 'compare', 'shape', 'send']) {
+  PAGES.push(['design-' + stage + '.html', 'Design · ' + stage + ' · Marguerite Okonkwo',
+    '/hub/journeys', ADVISOR, await designWorkspace(stage)]);
+}
 PAGES.forEach(([file, title, routePath, advisor, body]) => {
   const html = render({
     key: 'hub', path: routePath, layout: 'hub', surface: 'advisor',
     title: title + ' — Saint Lucia WELL', description: 'Private advisor workspace.',
     noindex: true, scripts: false, styles: ['/css/hub.css'], advisor,
-    js: file === 'design.html' ? ['/js/hub.js', '/js/hub-design.js'] : ['/js/hub.js']
+    js: /^design/.test(file) ? ['/js/hub.js', '/js/hub-design.js'] : ['/js/hub.js']
   }, body);
   fs.writeFileSync(path.join(OUT, file), html);
   console.log('  ' + path.relative(process.cwd(), path.join(OUT, file)));
