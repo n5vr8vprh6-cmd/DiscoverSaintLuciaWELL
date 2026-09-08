@@ -190,6 +190,46 @@ function fact(text, source, verifiedAt, confidence) {
 const facts = (arr, source, verifiedAt, confidence) =>
   [].concat(arr || []).map((t) => fact(t, source, verifiedAt, confidence)).filter(Boolean);
 
+/* ── Intensity ─────────────────────────────────────────────────────────────
+   Duncan's rubric (2026-09-08), authored in the field guide source as a band
+   RANGE per verified line and a `typical` range per property. Nothing here is
+   guessed: a line with no authored band is null, a property with no block is
+   null, and every value ships inferred: true until Duncan confirms it. The
+   client document never shows a band; the workspace shows it with the marker. */
+const BANDS = ['rest', 'low', 'medium', 'high'];
+const INTENSITY_RUBRIC = {
+  rest: 'Unbooked. A day with nothing asked of you.',
+  low: 'Yin or restorative yoga, sound baths, qi gong, tai chi, spa, cacao, dinners, sunrise walks.',
+  medium: 'Active yoga (Hatha, Vinyasa), Pilates, guided hikes, SUP yoga, pranayama, somatic work, functional training.',
+  high: 'Ashtanga, spin, combat, Krav Maga, scuba, a custom Piton summit, structured protocols, diagnostics.'
+};
+function bandRange(v) {
+  if (!Array.isArray(v) || !v.length) return null;
+  const lo = String(v[0]), hi = String(v[v.length - 1]);
+  if (BANDS.indexOf(lo) === -1 || BANDS.indexOf(hi) === -1) throw new Error('unknown intensity band: ' + JSON.stringify(v));
+  if (BANDS.indexOf(lo) > BANDS.indexOf(hi)) throw new Error('intensity range out of order: ' + JSON.stringify(v));
+  return [lo, hi];
+}
+/* Attach a band to each fact, by position. The authored array must match the
+   line count exactly — a silent misalignment would band the wrong sentence. */
+function bandFacts(list, bands, where) {
+  if (bands === undefined) return list;
+  if (!Array.isArray(bands) || bands.length !== list.length) {
+    throw new Error(where + ': intensity has ' + (bands || []).length + ' bands for ' + list.length + ' lines');
+  }
+  return list.map((f, i) => Object.assign({}, f, { intensity: bandRange(bands[i]), inferred: bands[i] != null ? true : undefined }));
+}
+function intensityOf(p, included, addons) {
+  const a = p.intensity;
+  if (!a) return null;
+  const spans = included.concat(addons).map((f) => f.intensity).filter(Boolean);
+  const idx = (b) => BANDS.indexOf(b);
+  const available = spans.length
+    ? [BANDS[Math.min.apply(null, spans.map((s) => idx(s[0])))], BANDS[Math.max.apply(null, spans.map((s) => idx(s[1])))]]
+    : null;
+  return { typical: bandRange(a.typical), available, inferred: true, authored: '2026-09-08' };
+}
+
 /* Copy-named-fields, like every projection in this repo: a field reaches the
    bank because it is listed here, not because it exists in the manifest.
    `images` is the gallery — hero first, then up to six tagged frames — and
@@ -247,8 +287,12 @@ const deep = (guideProps.DEEP || []).map((p) => {
     modelTag: trim(p.modelTag),
     hook: trim(p.lead),
 
-    included: facts(p.included, 'property_official', CORE_VERIFIED, 'VERIFIED OFFER'),
-    addons: facts(p.addons, 'property_official', CORE_VERIFIED, 'VERIFIED OFFER'),
+    included: bandFacts(facts(p.included, 'property_official', CORE_VERIFIED, 'VERIFIED OFFER'), p.intensity && p.intensity.included, p.slug + ' included'),
+    addons: bandFacts(facts(p.addons, 'property_official', CORE_VERIFIED, 'VERIFIED OFFER'), p.intensity && p.intensity.addons, p.slug + ' addons'),
+    /* typical is authored; available is derived from the lines above. */
+    intensity: intensityOf(p,
+      bandFacts(facts(p.included, 'property_official', CORE_VERIFIED, 'VERIFIED OFFER'), p.intensity && p.intensity.included, p.slug),
+      bandFacts(facts(p.addons, 'property_official', CORE_VERIFIED, 'VERIFIED OFFER'), p.intensity && p.intensity.addons, p.slug)),
     price: fact(p.price, 'property_official', CORE_VERIFIED, p.priceTag || 'PUBLIC PRICE'),
     priceTag: p.priceTag || null,
 
@@ -338,7 +382,14 @@ const recipes = (guideCopy.COPY && guideCopy.COPY.recipes ? guideCopy.COPY.recip
   compass: splitKeys(String(r.compass).replace(/\+/g, '·'), compassKey),
   depth: keysFrom(r.depth, continuumKey),
   villages: splitKeys(r.villages, villageKey),
-  rhythm: (r.rhythm || []).map((d) => ({ key: norm(d[0]), label: d[0], text: trim(d[1]) })),
+  rhythm: (r.rhythm || []).map((d) => {
+    const ph = { key: norm(d[0]), label: d[0], text: trim(d[1]) };
+    if (d[2] != null) {
+      if (BANDS.indexOf(String(d[2])) === -1) throw new Error(r.name + ' / ' + d[0] + ': unknown intensity ' + d[2]);
+      ph.intensity = String(d[2]); ph.inferred = true;
+    }
+    return ph;
+  }),
   start: trim(r.start),
   ask: trim(r.ask),
   pacing: trim(r.pacing) || null
@@ -407,6 +458,7 @@ const body =
     supporting,
     basecamps,
     recipes,
+    intensity: { bands: BANDS, rubric: INTENSITY_RUBRIC, inferred: true, authored: '2026-09-08' },
     finderRows,
     suitability
   }, null, 2) + ';\n';

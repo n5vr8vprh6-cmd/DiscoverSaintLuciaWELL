@@ -363,25 +363,45 @@ module.exports = {
           "text": "Fitness centre open 6:00 a.m.–11:00 p.m.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Scheduled group fitness and yoga; published class window 7:15 a.m.–5:00 p.m.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Technogym cardio and strength, Peloton, Concept2 and functional-training equipment.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Complimentary guest ice bath and in-room fitness support such as yoga mats.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -389,21 +409,48 @@ module.exports = {
           "text": "Rainforest Spa: signature rituals, massage, couples rituals, Tata Harper and Augustinus Bader facials, CACI, body treatments, teen services and beauty/hair.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Private personal training (30 / 60 min; individual, partner or group) and private yoga; an in-room surcharge can apply.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Recovery technology: Temazcal, PEMF mats, Therabody smart goggles, Normatec compression, Hyperice/Venom devices, LED/Theraface and salt-stone options.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Public examples: Augustinus Bader Full Body Ritual 80 min $255; Longevity Facial 80 min $305; Glow or Jet Lag Facial 50 min $205. Other menu and private-session pricing requires confirmation; VAT and service extra.",
         "source": "property_official",
@@ -610,25 +657,45 @@ module.exports = {
           "text": "Complimentary scheduled yoga; shared published schedule with Anse Chastanet, subject to change.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Cybex fitness studio.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Estate bike trails and daily escorted walks and hikes across the 600-acre estate.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Access to shared Anse Chastanet estate experiences and SUP yoga formats.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -636,21 +703,48 @@ module.exports = {
           "text": "Kai en Ciel treatments in the boutique spa or in the guest sanctuary; access to Kai Belté and Kai Mer at Anse Chastanet.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Classical massage and beauty plus Ayurvedic, holistic, chocolate and couples rituals.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Private yoga; in-sanctuary and specialty formats may carry supplements.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Current VOYA examples $45–$499. Undated wider menu: Swedish $120/$170; deep tissue $140/$190; couples $250/$350; Alchemy of Two 110 min $600; Ayurveda $140–$240; packages $260–$360. 10% service added; reconfirm older brochure figures.",
         "source": "property_official",
@@ -858,19 +952,34 @@ module.exports = {
           "text": "Scheduled yoga.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Many non-motorised activities and estate experiences.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Snorkelling and scuba context, tennis, sailing, kayaking, jungle biking and hiking, birding, organic farm, chocolate lab and art classes.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -878,21 +987,48 @@ module.exports = {
           "text": "Kai Belté and Kai Mer spa: massage, couples rituals, prenatal care, Ayurveda, chakra work, VOYA seaweed, aromatherapy, chocolate rituals, facials and salon.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Specialty movement: SUP yoga, meditation and pranayama, couples yoga, yoga hikes, physio-yoga, myofascial release, Pilates, posture work and breathwork.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "In-room treatment and Kai Mer location upgrades.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "high"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Extensive public menu: classic massage roughly $60–$215; couples $260–$360; Ayurveda and holistic commonly $125–$285; VOYA and aromatherapy up to $499; SUP yoga $35 group / $100 single private / $140 couple. Applicable VAT often included; 10% service typically added — verify activity tax wording.",
         "source": "property_official",
@@ -1097,13 +1233,23 @@ module.exports = {
           "text": "Fitness centre and a changing weekly activity and class program; inclusions vary by rate.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Spa facilities include eight treatment rooms, hydrotherapy terraces, steam and showers, salon, jacuzzi and gym.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -1111,21 +1257,48 @@ module.exports = {
           "text": "Massage, facials, wraps and scrubs, nails, waxing and hair; yoga, Pilates and personal training.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Female-focused services addressing menopause, postpartum recovery, hormonal and menstrual discomfort and aging, through physiotherapy, massage, yoga and skincare.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Oncology Aesthetics initiative with therapists trained to adapt care for people affected by cancer.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Public examples: menopause physio $240 / 60 min; postpartum physio $250 / 60 min; menopause massage $150–$190; Swedish $95/$130; deep tissue $110/$140; couples $300/$350; spa packages roughly $170–$295. 10% service plus VAT. The linked menu filename references 2022 — reconfirm all figures.",
         "source": "property_official",
@@ -1328,25 +1501,41 @@ module.exports = {
           "text": "PADI scuba for certified divers.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "high",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Snorkelling, waterskiing and wakeboarding, Hobie Cats, paddleboards, kayaks.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Tennis and land sports, fitness centre and golf green fees.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Stay-at-one / play-at-three access across Sandals Saint Lucia resorts, subject to transport and schedules.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": null
         }
       ],
       "addons": [
@@ -1354,15 +1543,37 @@ module.exports = {
           "text": "Red Lane Spa massage, facials, body treatments and couples services.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Island tours, private excursions, cabanas, candlelight dining and some training or certification.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "medium",
+          "high"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "No reliable current property-specific Red Lane tariff was public at the cutoff. Do not publish an unofficial planning range as a quote. Request the current spa menu and confirm any credits or certification fees in writing.",
         "source": "property_official",
@@ -1570,19 +1781,34 @@ module.exports = {
           "text": "One 50-minute / one-hour therapeutic treatment per full day, subject to stay rules.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Meditation, tai chi, Hatha / Ashtanga / Vinyasa yoga, stretch, spin, body tone, combat, aqua, Pilates and SUP yoga.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Golf, tennis, archery, volleyball, guided walks and bikes, windsurfing, waterskiing, kayaking, sailing, scuba and instruction.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -1590,27 +1816,59 @@ module.exports = {
           "text": "Acupuncture, Pavitra Ayurveda, Better Aging diagnostics, restorative beauty and specialist holistic or medical-wellness care.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Structured programs: Wellness Rehabilitation, Sleep Recovery, Corporate and Boost Immunity.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Private yoga and advanced or private sport instruction.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Feature Months add visiting experts and themes such as sailing, dance, WellFit Tribes, solos and yoga.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "medium",
+          "high"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Programs publicly listed from $325 (rehabilitation), $600 (corporate) and $800 (sleep recovery / immunity examples); PADI Scuba Diver $375 and Open Water $550. Specialist treatments and private sessions are largely quote-based.",
         "source": "property_official",
@@ -1809,7 +2067,12 @@ module.exports = {
           "text": "The current operating anchor is TheLifeCo, combining accommodation, nutrition, core therapies, medical consultation and scheduled activities.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -1817,9 +2080,22 @@ module.exports = {
           "text": "A’ILA’s broader future content references Halo Spa, forest yoga, hiking, diving, sailing, a marina and family or adults-only resort experiences. These phases were not open at the research cutoff.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": null
         }
       ],
+      "intensity": {
+        "typical": [
+          "medium",
+          "high"
+        ],
+        "available": [
+          "medium",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "TheLifeCo at A’ILA starting all-inclusive retreat and accommodation rates: Standard from $600 / night; Superior from $750; Suite from $800. No reliable current guest price for the future Halo Spa or A’ILA Cove / Palm activities.",
         "source": "property_official",
@@ -1974,13 +2250,23 @@ module.exports = {
           "text": "Breathing, meditation, yoga, stretching and toning, sound therapy, tai chi, Krav Maga, Pilates, Caribbean dance fitness and holistic fitness.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Water sports, archery, aqua fitness, volleyball and tennis, plus creative and social activities such as painting, crafts and mixology.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -1988,15 +2274,37 @@ module.exports = {
           "text": "Spa in the Water Garden: massage, therapeutic bodywork, Ayurveda, Elemis facials and wraps, couples rituals and beauty services.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "The Indulge in Wellness rate adds one treatment per full day.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Official linked undated brochure examples roughly $55–$600: Signature Serenity $72 / 50 min; deep remedial tissue $116; sports $127; reflexology $83/$132; Ayurveda $121–$219; couples offerings $105–$600; Water Garden Escape $385. Confirm current tax, service and repricing.",
         "source": "property_official",
@@ -2199,25 +2507,41 @@ module.exports = {
           "text": "Sunrise and sunset yoga on selected days.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Self-guided estate trails and a movement studio.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Tree-to-bean experience for hotel guests.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Complimentary beach shuttle.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": null
         }
       ],
       "addons": [
@@ -2225,15 +2549,37 @@ module.exports = {
           "text": "Beauté de Cacao Spa: cacao, citrus and thermal treatments; Swedish, deep tissue, aromatherapy and targeted recovery massage.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Bean-to-bar and Project Chocolat upgrades, water sports, boat trips and selected experiences.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "medium"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Current spa examples: targeted back $75 / 30 min; Piton Climb Leg $100 / 30 min; cacao facial $150; cacao wraps and scrubs $175; Swedish $175/$225; deep tissue $200/$250. 10% VAT included; 15% resort and service added. Meal-plan add-ons also published.",
         "source": "property_official",
@@ -2441,19 +2787,34 @@ module.exports = {
           "text": "Complimentary weekday yoga.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "A published rhythm including sunrise meditation, guided trail activity and restorative yoga; schedule subject to change.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Indoor and outdoor gym, yoga / Pilates studio, and nature trail and platform.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -2461,21 +2822,48 @@ module.exports = {
           "text": "Private sunrise or sunset yoga and personal training.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Custom Piton hike.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "high",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Lévé Spa treatments using volcanic, cacao, coconut and botanical ingredients.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Private yoga 60 min $215; custom Pitons hike 3–4 hours $375. Spa examples roughly $165–$295: Taste of St Lucia $295; bamboo $210–$265; volcanic scrub or wrap $185; banana-yogurt wrap $165. 10% tax plus 15% gratuity.",
         "source": "property_official",
@@ -2679,7 +3067,12 @@ module.exports = {
           "text": "Fitness facilities and general resort recreation.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "medium"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -2687,27 +3080,59 @@ module.exports = {
           "text": "Spa Maison facials, body treatments, massage, couples experiences and beauty.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Private yoga, meditation, shiatsu, reflexology and Thai yoga on request.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Guided running and hiking club using cliff and beach terrain.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Location personalization for massage.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "low"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Official linked 2023 brochure: facials mostly $85–$145; Swedish $60/$120; deep tissue $135; couples $240; body rituals roughly $100–$220; location supplements $20–$50; guided run or hike $20 per person. Reconfirm dated prices, tax and service, and current yoga availability.",
         "source": "property_official",
@@ -2913,25 +3338,45 @@ module.exports = {
           "text": "Programs for detox, weight loss, mental reset, nutrition, diabetes, hypertension, GetFit and longevity in 4-, 7-, 10–14- and 21-day formats.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Personalized nutrition, daily coaching, two body analyses, sauna and steam, detox support, medical consultations and 24/7 medical availability as described by the operator.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         },
         {
           "text": "Sunrise walks, yoga and meditation, functional training and educational talks.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Technology examples include CAROL bike, Robolex, cold plunge, pressotherapy and red light.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "high"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -2939,9 +3384,26 @@ module.exports = {
           "text": "Advanced services such as IV, ozone, HBOT and other biohacking or medical options require assessment and quote.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "high",
+            "high"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "medium",
+          "high"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Saint Lucia Standard room and program from $600 / night all-inclusive; A’ILA displays Superior from $750 and Suite from $800. Do not substitute global centre pricing for local Saint Lucia rates.",
         "source": "property_official",
@@ -3147,19 +3609,34 @@ module.exports = {
           "text": "Use of the yoga studio and fitness centre; class and private-session availability depends on schedule.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "900-square-foot outdoor yoga studio plus an indoor studio and mats.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Gym with universal machine, treadmills, free weights, kettlebells, body bars, balance balls and mats.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "high"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -3167,21 +3644,44 @@ module.exports = {
           "text": "Escape Spa massage, body scrubs, facials, salon and beauty using local fruit and plant extracts and essential oils.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Private and group yoga with certified instructors.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "4,000-square-foot event space for custom retreats.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": null
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "high"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "À-la-carte spa prices were not publicly itemized. Official rates exclude 15% tax. Solo Vacation Package $3,500 includes four nights, transfers, excursions, a one-hour Swedish massage, chocolate-making and more; a separate 3-night package is advertised at $3,295. Confirm current terms.",
         "source": "property_official",
@@ -3387,19 +3887,34 @@ module.exports = {
           "text": "Yoga, meditation, selected enrichment and a 20-minute wellness experience.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Examples: couples massage demonstration, ridge climb, botanical tour, scrub and lotion making, cocoa tea, coconut, cooking and Creole classes.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Fitness centre and spa environment with hydrotherapy, steam and sauna, treetop cabin and meditation garden; exact facility access must be confirmed.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "medium"
+          ],
+          "inferred": true
         }
       ],
       "addons": [
@@ -3407,21 +3922,48 @@ module.exports = {
           "text": "Marigot Body Bliss: massage plus detox-tea class plus a Sulphur Springs mud bath.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Marigot Body Ritual: massage plus springs plus hot-stone massage plus chocolate-making.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "A sunset cruise may be included for qualifying categories or stays; otherwise extra.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "medium"
+        ],
+        "available": [
+          "low",
+          "medium"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "Official packages: Marigot Body Bliss $540 for two; Marigot Body Ritual $790 for two. Third-party components may add charges. No full public spa tariff.",
         "source": "property_official",
@@ -3523,19 +4065,30 @@ module.exports = {
           "text": "Small fitness centre with cardio, weights, yoga mats and blocks.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "medium",
+            "medium"
+          ],
+          "inferred": true
         },
         {
           "text": "Resort amenities; the spa is à la carte.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Current management response says group yoga is not offered.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": null
         }
       ],
       "addons": [
@@ -3543,21 +4096,48 @@ module.exports = {
           "text": "Ti Spa massage, body wraps and scrubs, and other services using European technique and Saint Lucian plant and food traditions.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Treatments can be staged in scenic locations such as the boardwalk, gazebo, room patio or cottage.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         },
         {
           "text": "Guest evidence includes volcanic mud and sunset massage.",
           "source": "property_official",
           "verified_at": "10 Aug 2026",
-          "confidence": "VERIFIED OFFER"
+          "confidence": "VERIFIED OFFER",
+          "intensity": [
+            "low",
+            "low"
+          ],
+          "inferred": true
         }
       ],
+      "intensity": {
+        "typical": [
+          "low",
+          "low"
+        ],
+        "available": [
+          "low",
+          "medium"
+        ],
+        "inferred": true,
+        "authored": "2026-09-08"
+      },
       "price": {
         "text": "No reliable current itemized Ti Spa menu was public at the cutoff. Request the treatment menu and clarify boardwalk, gazebo and in-room supplements, tax and service before sale.",
         "source": "property_official",
@@ -4870,22 +5450,30 @@ module.exports = {
         {
           "key": "day1",
           "label": "Day 1",
-          "text": "Arrive and restore"
+          "text": "Arrive and restore",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "day2",
           "label": "Day 2",
-          "text": "Nature and vitality"
+          "text": "Nature and vitality",
+          "intensity": "medium",
+          "inferred": true
         },
         {
           "key": "day3",
           "label": "Day 3",
-          "text": "Culture and reflection"
+          "text": "Culture and reflection",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "optional",
           "label": "Optional",
-          "text": "Ocean extension"
+          "text": "Ocean extension",
+          "intensity": "medium",
+          "inferred": true
         }
       ],
       "start": "Start with Sugar Beach, Zoëtry, Ladera or Rabot depending on hotel fit; add destination experiences through a DMC or approved partners.",
@@ -4912,22 +5500,30 @@ module.exports = {
         {
           "key": "open",
           "label": "Open",
-          "text": "Arrival decompression"
+          "text": "Arrival decompression",
+          "intensity": "rest",
+          "inferred": true
         },
         {
           "key": "core",
           "label": "Core",
-          "text": "Structured protocol days"
+          "text": "Structured protocol days",
+          "intensity": "high",
+          "inferred": true
         },
         {
           "key": "integrate",
           "label": "Integrate",
-          "text": "Gentle nature and ocean"
+          "text": "Gentle nature and ocean",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "close",
           "label": "Close",
-          "text": "Protected transition home"
+          "text": "Protected transition home",
+          "intensity": "rest",
+          "inferred": true
         }
       ],
       "start": "TheLifeCo as the primary structured anchor; BodyHoliday for a less clinical, more resort-integrated alternative.",
@@ -4956,22 +5552,30 @@ module.exports = {
         {
           "key": "open",
           "label": "Open",
-          "text": "Private arrival"
+          "text": "Private arrival",
+          "intensity": "rest",
+          "inferred": true
         },
         {
           "key": "share",
           "label": "Share",
-          "text": "Spa and nature together"
+          "text": "Spa and nature together",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "savour",
           "label": "Savour",
-          "text": "Cacao, food and culture"
+          "text": "Cacao, food and culture",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "close",
           "label": "Close",
-          "text": "Sunset and ocean integration"
+          "text": "Sunset and ocean integration",
+          "intensity": "low",
+          "inferred": true
         }
       ],
       "start": "Jade Mountain, Cap Maison, Ladera, Rabot, The Landings or Calabash Cove depending on the tone you want.",
@@ -5000,22 +5604,30 @@ module.exports = {
         {
           "key": "open",
           "label": "Open",
-          "text": "Decompress and protect sleep"
+          "text": "Decompress and protect sleep",
+          "intensity": "rest",
+          "inferred": true
         },
         {
           "key": "build",
           "label": "Build",
-          "text": "Gentle movement, nature, spa"
+          "text": "Gentle movement, nature, spa",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "oneday",
           "label": "One day",
-          "text": "A meaningful cultural or ocean day"
+          "text": "A meaningful cultural or ocean day",
+          "intensity": "medium",
+          "inferred": true
         },
         {
           "key": "close",
           "label": "Close",
-          "text": "Deliberate re-entry"
+          "text": "Deliberate re-entry",
+          "intensity": "rest",
+          "inferred": true
         }
       ],
       "start": "Sugar Beach, BodyHoliday, Ladera or Jade Mountain; TheLifeCo if the client explicitly wants a structured protocol.",
@@ -5044,22 +5656,30 @@ module.exports = {
         {
           "key": "open",
           "label": "Open",
-          "text": "Gentle arrival"
+          "text": "Gentle arrival",
+          "intensity": "rest",
+          "inferred": true
         },
         {
           "key": "support",
           "label": "Support",
-          "text": "Provider-appropriate specialist care if desired"
+          "text": "Provider-appropriate specialist care if desired",
+          "intensity": "medium",
+          "inferred": true
         },
         {
           "key": "restore",
           "label": "Restore",
-          "text": "Nourishment, movement, nature and ocean"
+          "text": "Nourishment, movement, nature and ocean",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "close",
           "label": "Close",
-          "text": "Spacious return"
+          "text": "Spacious return",
+          "intensity": "rest",
+          "inferred": true
         }
       ],
       "start": "The Landings for women’s physiotherapy and adapted services; BodyHoliday or TheLifeCo for structured wellness depending on fit; restorative resorts arranged around the specialist layer.",
@@ -5088,22 +5708,30 @@ module.exports = {
         {
           "key": "open",
           "label": "Open",
-          "text": "Start gently"
+          "text": "Start gently",
+          "intensity": "low",
+          "inferred": true
         },
         {
           "key": "build",
           "label": "Build",
-          "text": "Move to the chosen activity"
+          "text": "Move to the chosen activity",
+          "intensity": "medium",
+          "inferred": true
         },
         {
           "key": "alternate",
           "label": "Alternate",
-          "text": "Exertion and recovery, in turn"
+          "text": "Exertion and recovery, in turn",
+          "intensity": "high",
+          "inferred": true
         },
         {
           "key": "close",
           "label": "Close",
-          "text": "Ocean and spa integration"
+          "text": "Ocean and spa integration",
+          "intensity": "low",
+          "inferred": true
         }
       ],
       "start": "Anse Chastanet, BodyHoliday, Ladera, Sandals Grande, the Jade Mountain estate, StolenTime.",
@@ -5111,6 +5739,22 @@ module.exports = {
       "pacing": "Alternate. Never place two high-exertion days back to back, and put the hardest day early enough that there is room to recover inside the trip."
     }
   ],
+  "intensity": {
+    "bands": [
+      "rest",
+      "low",
+      "medium",
+      "high"
+    ],
+    "rubric": {
+      "rest": "Unbooked. A day with nothing asked of you.",
+      "low": "Yin or restorative yoga, sound baths, qi gong, tai chi, spa, cacao, dinners, sunrise walks.",
+      "medium": "Active yoga (Hatha, Vinyasa), Pilates, guided hikes, SUP yoga, pranayama, somatic work, functional training.",
+      "high": "Ashtanga, spin, combat, Krav Maga, scuba, a custom Piton summit, structured protocols, diagnostics."
+    },
+    "inferred": true,
+    "authored": "2026-09-08"
+  },
   "finderRows": [
     {
       "says": "“I just need to get away.”",
