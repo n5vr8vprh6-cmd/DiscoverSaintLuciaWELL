@@ -163,7 +163,19 @@ function buildBody(v) {
   return `<div class="hub-main playbook">
   <div class="wrap wrap--narrow">
 
-    ${saved ? '<p class="hub-flash">Saved. Your next campaign will use it.</p>' : ''}
+    ${/* IT SAID "Your next campaign will use it", AND NOTHING DOES.
+          gtm-generate.js's icpBlock() reads the doctrine bank — the island-wide
+          archetype — not this advisor's row. Seven columns are written here and
+          read by no prompt.
+
+          The copy is corrected rather than the engine, deliberately and for now:
+          wiring the ICP into the campaign prompt changes what every future plan
+          says, so it wants a before-and-after on a real profile rather than
+          being folded into an unrelated change. But a screen that claims an
+          effect it does not have is worse than a feature that is visibly
+          waiting, so it stops claiming it today. The gap copy below still
+          explains why answering matters — that part was always true. */''}
+    ${saved ? '<p class="hub-flash">Saved.</p>' : ''}
 
     <p class="hub-back"><a href="/hub/campaign">← Campaign</a></p>
 

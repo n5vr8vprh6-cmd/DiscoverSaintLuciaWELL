@@ -131,7 +131,12 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'narrative',
-        slugs: root.getAttribute('data-slugs') || ''
+        slugs: root.getAttribute('data-slugs') || '',
+        /* The server has always read form.recipe here and the browser has never
+           sent it, so the paragraph was written without the shape of the journey
+           it describes. The value is server-rendered onto the section from the
+           session, so it cannot disagree with what the document will use. */
+        recipe: root.getAttribute('data-recipe') || ''
       })
     }).then(function (r) {
       return r.json().then(function (j) { return { status: r.status, body: j }; });
@@ -295,6 +300,7 @@
       body: JSON.stringify({
         action: 'issue',
         slugs: root.getAttribute('data-slugs') || '',
+        recipe: root.getAttribute('data-recipe') || '',
         nights: nights ? nights.value : '',
         note: note ? note.value : ''
       })

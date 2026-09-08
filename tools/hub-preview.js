@@ -321,6 +321,19 @@ async function designWorkspace() {
   return buildBody({
     id: j.id, name: fullName(j), need, seeded: need, stored: null,
     vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
+    /* Ranked for real against this fixture's own need-state, and a session that
+       has already chosen one — so the preview shows both halves of the shape
+       block: the week an advisor talks through, and the ranking underneath it. */
+    ranked: bank.ready ? await M.rankRecipes(need) : [],
+    session: { id: 'fixture-session', recipe_key: 'longevity-renewal' },
+    issued: [
+      { id: 'fx-2', version: 2, issued_at: new Date(Date.now() - 2 * 86400000).toISOString(),
+        share_expires_at: new Date(Date.now() + 120 * 86400000).toISOString(),
+        revoked_at: null, view_count: 3, last_viewed_at: new Date(Date.now() - 7200000).toISOString() },
+      { id: 'fx-1', version: 1, issued_at: new Date(Date.now() - 9 * 86400000).toISOString(),
+        share_expires_at: null, revoked_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+        view_count: 1, last_viewed_at: new Date(Date.now() - 8 * 86400000).toISOString() }
+    ],
     caps: { database: true, consultation: true, itinerary: true, ledger: true },
     bank
   });

@@ -45,7 +45,7 @@
 
 const { requireAdvisor } = require('../auth.js');
 const { str, json, body: readBody } = require('../core.js');
-const { hubPage, esc, emptyState } = require('../hub-render.js');
+const { hubPage, esc, emptyState, since } = require('../hub-render.js');
 const { journeyById } = require('../hub-data.js');
 const { maskJourney } = require('../hub-mask.js');
 const { fullName } = require('../hub-brief.js');
@@ -106,11 +106,20 @@ module.exports = async function handler(req, res) {
     .sort((a, b) => need.villages[b] - need.villages[a])[0] || null;
   const also = topVillage ? await K.alsoInVillage(topVillage) : { supporting: [], basecamps: [] };
 
+  /* What has already been sent. Only reachable once there is a session, which
+     is only true after a first issue — so on a fresh workspace this is empty
+     and the block says so rather than being absent. */
+  const session = caps.consultation ? await D.currentSession(id, advisor.id) : null;
+  const ranked = bank.ready ? await M.rankRecipes(need) : [];
+  const issued = (caps.itinerary && session)
+    ? await D.itinerariesFor(advisor.id, session.id) : [];
+
   const name = fullName(j) || 'This Journey';
 
   const frameworks = await K.frameworks();
   const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
-                            topVillage, caps, bank, frameworks });
+                            topVillage, caps, bank, frameworks, issued, ranked, session,
+                            done: str(url.searchParams.get('done'), 20) });
 
   hubPage(res, {
     path: '/hub/journeys', title: 'Design · ' + name, advisor,
@@ -146,20 +155,68 @@ module.exports = async function handler(req, res) {
    before it reaches run() — the entry here exists so an unknown action is still
    the only thing that 400s. Marked rather than left as a trap for whoever adds
    the fourth one. */
-const ACTIONS = { day_note: actionDayNote, narrative: actionNarrative, issue: 'dispatched-by-name' };
+const ACTIONS = {
+  day_note: actionDayNote, narrative: actionNarrative,
+  issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name'
+};
+
+/* Actions posted by a plain <form> rather than by fetch. They redirect; the
+   others answer in JSON. Kept as a list rather than inferred from a header,
+   because "what does a failure look like to this caller" is a property of the
+   action, not of the request that happened to arrive. */
+const FORM_ACTIONS = ['revoke', 'recipe'];
+
+const backTo = (id, done) =>
+  '/hub/journeys/' + encodeURIComponent(id) + '/design' + (done ? '?done=' + done : '');
 
 async function generate(req, res, v) {
   const { advisor, id, raw, caps } = v;
 
-  if (advisor.viewingAs) {
-    return json(res, 403, { error: 'read_only',
-      message: 'You are viewing this advisor’s Hub. Writing under their name is not available here.' });
-  }
-
+  /* Read and classify BEFORE refusing, so the refusal can be shaped for the
+     caller. Parsing a body is not an effect; nothing below this line writes
+     anything until view-as has been checked. */
   const form = readBody(req) || {};
   const name = str(form.action, 20);
   const run = Object.prototype.hasOwnProperty.call(ACTIONS, name) ? ACTIONS[name] : null;
   if (!run) return json(res, 400, { error: 'bad_action' });
+  const isForm = FORM_ACTIONS.indexOf(name) !== -1;
+
+  /* VIEW-AS REFUSES EVERYTHING, in the handler, first. A form action gets a
+     redirect and a flash — handing a JSON blob to somebody who submitted a form
+     with JavaScript off is a dead end with no way back. */
+  if (advisor.viewingAs) {
+    if (isForm) {
+      res.statusCode = 303;
+      res.setHeader('Location', backTo(id, 'readonly'));
+      return res.end();
+    }
+    return json(res, 403, { error: 'read_only',
+      message: 'You are viewing this advisor’s Hub. Writing under their name is not available here.' });
+  }
+
+  /* ── THE FORK, AND WHY IT SITS EXACTLY HERE ───────────────────────────────
+     Below this line are two gates that exist ONLY because a model is about to
+     be called: an OpenAI key, and a ledger to count the call in. Actions that
+     write a row and call nothing must not be held behind either — a missing
+     key is no reason to refuse to withdraw a live link from a client, and
+     failing closed on an absent ledger would refuse it too.
+
+     The view-as refusal is deliberately ABOVE this fork rather than repeated
+     inside each branch, so an action added later cannot skip it by taking a new
+     path. That is the trap the ACTIONS comment warns about for the third
+     action; these are the fourth and fifth. */
+  if (name === 'revoke') {
+    return await actionRevoke(res, form, { advisor, id, caps });
+  }
+
+  if (name === 'recipe') {
+    const seededNow = await N.seedFrom(raw.answers || {});
+    const storedNow = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
+    return await actionRecipe(res, form, {
+      advisor, id, caps, stored: storedNow,
+      need: (storedNow && D.toNeedState(storedNow)) || seededNow
+    });
+  }
 
   if (!configured()) {
     return json(res, 503, { error: 'not_configured', message: reasonText('not_configured') });
@@ -174,9 +231,15 @@ async function generate(req, res, v) {
       'That is more writing than this is meant to do in an hour. Nothing is lost — try again shortly.' });
   }
 
-  const need = caps.consultation
-    ? D.toNeedState(await D.consultationFor(id, advisor.id)) || await N.seedFrom(raw.answers || {})
-    : await N.seedFrom(raw.answers || {});
+  /* THE SEED IS KEPT BESIDE THE STATE, not discarded once the state exists.
+     journey_consultations.seeded_from and .advisor_overrode are the only
+     columns that will ever answer "is the Finder reading people correctly?",
+     and they can only be written by something that still holds both. Read the
+     stored row ONCE here rather than again inside actionIssue — two reads of
+     the same row are two chances for them to disagree. */
+  const seeded = await N.seedFrom(raw.answers || {});
+  const stored = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
+  const need = (stored && D.toNeedState(stored)) || seeded;
 
   const slugs = String(form.slugs || '').split(',').map((s) => str(s, 60)).filter(Boolean).slice(0, 6);
   const recipeKey = str(form.recipe, 60) || null;
@@ -186,8 +249,10 @@ async function generate(req, res, v) {
      and what it returns is a link rather than a paragraph — so it takes its
      own path out rather than being bent into the ledger shape below. */
   if (name === 'issue') {
-    return await actionIssue(res, form, { advisor, id, need, slugs, recipeKey, caps });
+    return await actionIssue(res, form,
+      { advisor, id, need, seeded, stored, slugs, recipeKey, caps });
   }
+
 
   const out = await run(form, { advisor, need, slugs, recipeKey });
 
@@ -249,6 +314,129 @@ function actionNarrative(form, ctx) {
 
    READINESS IS CHECKED IN SENTENCES, not booleans. "Not ready" with no reason
    is the message that makes somebody click again harder. */
+/* ── consultation → session, resolved or created ──────────────────────────
+   Two callers now — issuing, and choosing a shape — so it lives once. Both
+   need a session, and a session cannot exist without a consultation: 022
+   declares design_sessions.consultation_id NOT NULL, and passing null there
+   is the defect that made Issue fail at the last step of a live call.
+
+   Returns the same { ok, reason, message } shape as design-data.js so a
+   caller can hand the message straight to the advisor. */
+async function openChain(advisor, id, need, stored) {
+  let consultationId = stored && stored.id;
+
+  if (!consultationId) {
+    /* NO `seeded` ARGUMENT, AND THAT IS THE CAREFUL PART. saveConsultation
+       writes seeded_from and advisor_overrode when handed a seed, and 022
+       calls those two "the only thing that will ever answer: is the Finder
+       reading people correctly?".
+
+       advisor_overrode defaults to empty, and empty means "the advisor changed
+       nothing". But no screen can edit a consultation yet — the advisor CANNOT
+       change anything — so recording the seed here would write "the Finder was
+       right" on every consultation for as long as the editor is missing. That
+       is worse than teaching nothing: it manufactures a false answer to the
+       one question the columns exist for.
+
+       So seeded_from stays NULL, which honestly reads as "no advisor review
+       was recorded", and the analysis is `where seeded_from is not null`. When
+       the editor ships, THAT path passes { state, overrode } from
+       N.overridden(seeded, edited). Do not "improve" this by passing the seed. */
+    const saved = await D.saveConsultation(id, advisor.id, need);
+    if (!saved.ok) {
+      return { ok: false, reason: saved.reason,
+        message: saved.message || 'Could not record the consultation, so nothing was changed.' };
+    }
+    consultationId = saved.id;
+  }
+
+  const existing = await D.currentSession(id, advisor.id);
+  if (existing) return { ok: true, session: existing };
+
+  /* versionStamp(), not bank.bank. The former is edition PLUS generation date
+     and its own comment says it is the value frozen onto a session at creation;
+     the latter names two different banks either side of a regeneration. */
+  const opened = await D.openSession(consultationId, id, advisor.id, await K.versionStamp());
+  if (!opened.ok) {
+    return { ok: false, reason: opened.reason,
+      message: opened.message || 'Could not open a session.' };
+  }
+  return { ok: true, session: opened.session };
+}
+
+/* ── Choosing a shape ─────────────────────────────────────────────────────
+   A plain form POST and a 303, so it works with JavaScript off and a refresh
+   never re-submits. It calls no model, which is why generate() dispatches it
+   above the OpenAI and ledger gates.
+
+   The key is validated against the bank rather than trusted: an unknown recipe
+   would reach design-itinerary.js as a null lookup and silently produce the
+   shapeless days this whole change exists to remove. Empty is allowed and
+   means "number the days", which is a real choice. */
+async function actionRecipe(res, form, v) {
+  const { advisor, id, need, stored, caps } = v;
+
+  if (!caps.consultation) {
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, 'not_migrated'));
+    return res.end();
+  }
+
+  const asked = str(form.recipe, 60);
+  const known = (await K.recipes()).map((r) => r.key);
+  const key = asked && known.indexOf(asked) !== -1 ? asked : null;
+  if (asked && !key) {
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, 'bad_recipe'));
+    return res.end();
+  }
+
+  const chain = await openChain(advisor, id, need, stored);
+  if (!chain.ok) {
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, 'shape_failed'));
+    return res.end();
+  }
+
+  await D.updateSession(chain.session.id, advisor.id, { recipe_key: key });
+
+  res.statusCode = 303;
+  res.setHeader('Location', backTo(id, key ? 'shape' : 'shape_cleared'));
+  return res.end();
+}
+
+/* ── Withdraw ─────────────────────────────────────────────────────────────
+   A plain form POST, so it works with JavaScript off, and a 303 back to the
+   workspace so a refresh never re-submits.
+
+   IT IS IRREVERSIBLE, AND MORE SO THAN IT LOOKS. revokeItinerary() nulls the
+   token hash as well as stamping revoked_at, so the link cannot be turned
+   back on — there is no readable copy of the token anywhere to restore. The
+   button label has to carry that, because a confirm() is not there when
+   JavaScript is off and the label always is.
+
+   It makes no model call, which is why generate() dispatches it above the
+   OpenAI and ledger gates: a missing key is no reason to refuse to withdraw a
+   live document from somebody's client. */
+async function actionRevoke(res, form, v) {
+  const { advisor, id, caps } = v;
+
+  if (!caps.itinerary) {
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, 'not_migrated'));
+    return res.end();
+  }
+
+  const target = str(form.itinerary, 64);
+  const out = target
+    ? await D.revokeItinerary(advisor.id, target)
+    : { ok: false, reason: 'not_found' };
+
+  res.statusCode = 303;
+  res.setHeader('Location', backTo(id, out.ok ? 'withdrawn' : 'withdraw_failed'));
+  return res.end();
+}
+
 async function actionIssue(res, form, v) {
   const { advisor, id, need, slugs, recipeKey, caps } = v;
 
@@ -262,16 +450,32 @@ async function actionIssue(res, form, v) {
       message: 'That is a lot of documents in one hour. Nothing is lost — try again shortly.' });
   }
 
-  /* A session is what an itinerary hangs off, and an advisor who has worked
-     through the shortlist without one should not be stopped at the last step
-     to be told so. Opened here if it does not exist yet. */
-  let session = await D.currentSession(id, advisor.id);
-  if (!session) {
-    const bank = await K.version();
-    const opened = await D.openSession(null, id, advisor.id, bank.bank);
-    if (!opened.ok) return json(res, 503, { error: opened.reason, message: opened.message || 'Could not open a session.' });
-    session = opened.session;
-  }
+  /* ── The chain: consultation → session → itinerary ────────────────────────
+     A session is what an itinerary hangs off, and an advisor who has worked
+     through the shortlist without one should not be stopped at the last step to
+     be told so. Both are opened here if they do not exist yet.
+
+     THE CONSULTATION IS NOT OPTIONAL, and this used to pass null for it.
+     022 declares design_sessions.consultation_id NOT NULL, so the insert raised
+     23502 and the advisor got "Could not open a session" at the last step of a
+     live call. It was invisible until the migration landed — before that
+     caps.itinerary is false and the button is honestly disabled, which is
+     exactly why it shipped.
+
+     Creating the row rather than relaxing the column: the schema says a session
+     belongs to a consultation, and a session that belongs to nothing has no
+     answer to "designed against what?". It also means seeded_from starts being
+     written from the first issue, which is the only way that question ever gets
+     data. */
+  const chain = await openChain(advisor, id, need, stored);
+  if (!chain.ok) return json(res, 503, { error: chain.reason, message: chain.message });
+  const session = chain.session;
+
+  /* THE SESSION IS THE AUTHORITY ON THE SHAPE, not the form. The advisor chose
+     it in its own form and it was saved; the form field is only how the browser
+     echoes it back. Falling back to the stored value means the JavaScript path
+     and the no-JavaScript path cannot disagree about what the document says. */
+  const shapeKey = recipeKey || session.recipe_key || null;
 
   const nights = Number(form.nights) || (need && need.nights) || null;
   const advisorNote = str(form.note, 4000);
@@ -279,7 +483,7 @@ async function actionIssue(res, form, v) {
   /* The two paragraphs. If either fails the issue fails — a document that
      opens with nothing is not a document, and half-issuing would leave a live
      token pointing at a fragment. */
-  const gen = { need, advisor, slugs, recipeKey, rung: rung(advisor) };
+  const gen = { need, advisor, slugs, recipeKey: shapeKey, rung: rung(advisor) };
   const open = await G.generateItinOpen(gen);
   const close = await G.generateItinClose(gen);
 
@@ -298,7 +502,7 @@ async function actionIssue(res, form, v) {
   }
 
   const doc = await IT.assemble({
-    recipeKey, nights, slugs,
+    recipeKey: shapeKey, nights, slugs,
     open: open.text, close: close.text,
     dayNotes: (session.day_plan && session.day_plan.notes) || {},
     advisorNote
@@ -334,6 +538,10 @@ async function actionIssue(res, form, v) {
    it needs is a parameter; it reads no database and knows no advisor. */
 function buildBody(v) {
   const { id, name, need, seeded, stored, vocab, shortlist, also, topVillage, caps, bank } = v;
+  const issued = v.issued || [];
+  const ranked = v.ranked || [];
+  const session = v.session || null;
+  const chosen = session && session.recipe_key;
   const tied = shortlist.length && shortlist[0].tiedGroup;
 
   TIER_MEANING = {};
@@ -341,6 +549,8 @@ function buildBody(v) {
 
   return `<div class="hub-main design">
   <div class="wrap">
+
+    ${flash(v.done)}
 
     ${banner(caps, bank)}
 
@@ -368,11 +578,15 @@ function buildBody(v) {
             'Run node tools/build-well-knowledge.js and redeploy.')}
     </section>
 
-    ${narrative(id, shortlist, caps)}
+    ${shape(id, ranked, chosen, caps)}
+
+    ${narrative(id, shortlist, caps, chosen)}
 
     ${alsoIn(topVillage, also, vocab)}
 
-    ${issue(id, shortlist, caps)}
+    ${issue(id, shortlist, caps, chosen)}
+
+    ${issuedVersions(id, issued, caps)}
 
     <footer class="design-foot" data-hide-in-present>
       <p>Property intelligence verified ${esc(bank.verified.core || '—')}
@@ -520,9 +734,10 @@ function tierMeaning(code) { return TIER_MEANING[code] || code; }
    NO JAVASCRIPT, NO BUTTON. The section still renders, still shows the textarea,
    and an advisor can write the paragraph themselves — which is the safe
    direction for that failure to go. */
-function narrative(id, shortlist, caps) {
+function narrative(id, shortlist, caps, chosen) {
   const slugs = shortlist.slice(0, 3).map((c) => c.slug).join(',');
-  return `<section class="design-block" data-narrative data-share="${esc(id)}" data-slugs="${esc(slugs)}">
+  return `<section class="design-block" data-narrative data-share="${esc(id)}" data-slugs="${esc(slugs)}"
+    data-recipe="${esc(chosen || '')}">
   <h2>The shape of it</h2>
   <p class="design-note" data-hide-in-present>A paragraph to read aloud, written from the codes
     above and the places you have shortlisted — never from anything ${esc("they")} typed. Yours to
@@ -559,10 +774,11 @@ function narrative(id, shortlist, caps) {
 
    HIDDEN IN PRESENT MODE. The client is watching this screen; "Issue" and a
    raw share link are the advisor's apparatus, not part of the conversation. */
-function issue(id, shortlist, caps) {
+function issue(id, shortlist, caps, chosen) {
   const slugs = shortlist.slice(0, 3).map((c) => c.slug).join(',');
   return `<section class="design-block design-issue" data-hide-in-present
-    data-issue data-share="${esc(id)}" data-slugs="${esc(slugs)}">
+    data-issue data-share="${esc(id)}" data-slugs="${esc(slugs)}"
+    data-recipe="${esc(chosen || '')}">
   <h2>Send it</h2>
   <p class="design-note">Freezes what is on this screen into a document and gives you a link
     to send. The link can be withdrawn later; what it points at cannot be edited, so issuing
@@ -592,6 +808,147 @@ function issue(id, shortlist, caps) {
   <div class="design-issued" data-issue-result hidden></div>
 </section>`;
 }
+
+/* One line, said once, at the top. Every outcome an action can have needs a
+   sentence here or the redirect lands silently and the advisor cannot tell
+   whether anything happened. */
+const DONE = {
+  withdrawn: ['good', 'Withdrawn. That link stops working immediately.'],
+  withdraw_failed: ['bad', 'That could not be withdrawn. Reload and check which versions are live — it may already be gone, or belong to a Journey that has moved.'],
+  not_migrated: ['bad', 'Issuing is not available on this deployment yet.'],
+  shape: ['good', 'Shape saved. The days will follow it.'],
+  shape_cleared: ['good', 'Cleared. The days will just be numbered.'],
+  shape_failed: ['bad', 'That shape could not be saved, so nothing changed.'],
+  bad_recipe: ['bad', 'That is not one of the shapes in the guide. Nothing changed.'],
+  readonly: ['bad', 'Nothing was changed — you are viewing this Hub, not signed in as its owner.']
+};
+
+/* ── The shape of the journey ─────────────────────────────────────────────
+   Six recipes sit in the bank. Until this existed, no screen could pick one,
+   so every issued document had numbered days and nothing else — the pinned-
+   ends-stretch-the-middle logic in design-itinerary.js never ran.
+
+   RANKED, NEVER PRE-SELECTED. design-match.js scores them on the same three
+   axes as a property and returns them in order with bands; nothing is chosen
+   until the advisor chooses it. A bare list of six gets picked by position,
+   and a silently-applied shape is exactly "a value they have to notice and
+   undo" — the thing this screen refuses to do for the fields six Finder
+   answers cannot know.
+
+   "Number the days" is a real option, not an absence. Some journeys genuinely
+   have no shape yet, and design-itinerary.js accepts that deliberately.
+
+   PRESENT MODE KEEPS THE CHOSEN SHAPE AND HIDES THE COMPARISON. The week is
+   what the advisor talks through with the prospect; the six-way ranking and
+   the Partial/Thin bands are apparatus.
+
+   A plain form. No JavaScript required, and none used. */
+function shape(id, ranked, chosen, caps) {
+  if (!ranked.length) return '';
+  const picked = ranked.filter((r) => r.key === chosen)[0] || null;
+
+  return `<section class="design-block design-shape">
+  <h2>The shape of it</h2>
+
+  ${picked ? `<div class="design-shape-picked">
+    <p class="design-shape-name">${esc(picked.name)}</p>
+    ${picked.sub ? `<p class="design-note">${esc(picked.sub)}</p>` : ''}
+    ${picked.rhythm.length ? `<ol class="design-rhythm">${picked.rhythm.map((d) => `<li>
+      <span>${esc(d.label)}</span> ${esc(d.text)}</li>`).join('')}</ol>` : ''}
+  </div>` : `<p class="design-empty" data-hide-in-present>No shape chosen — the days will be
+    numbered and empty. Pick one below, or leave it if this journey does not have a shape yet.</p>`}
+
+  <form method="POST" action="/hub/journeys/${esc(id)}/design" data-hide-in-present>
+    <input type="hidden" name="action" value="recipe">
+    <p class="design-note">Ranked against what they told the Finder. Nothing is chosen for you.</p>
+    <ul class="design-recipes">
+      ${ranked.map((r) => `<li>
+        <label class="design-recipe">
+          <input type="radio" name="recipe" value="${esc(r.key)}"${r.key === chosen ? ' checked' : ''}>
+          <span class="design-recipe-name">${esc(r.name)}</span>
+          <span class="design-recipe-bands">${
+            ['place', 'direction', 'depth'].map((k) => `<b class="band-${esc(r.bands[k])}">${
+              esc(BAND_WORD[r.bands[k]] || r.bands[k])}</b>`).join('')}</span>
+          ${r.matched.length ? `<span class="design-recipe-why">${esc(r.matched.join(' · '))}</span>` : ''}
+        </label>
+      </li>`).join('')}
+      <li>
+        <label class="design-recipe">
+          <input type="radio" name="recipe" value=""${chosen ? '' : ' checked'}>
+          <span class="design-recipe-name">Number the days</span>
+          <span class="design-recipe-why">No shape yet. The document will list the nights and nothing more.</span>
+        </label>
+      </li>
+    </ul>
+    <button class="btn btn--ghost btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Use this shape</button>
+    ${caps.consultation ? '' : `<span class="design-hint">${esc(D.UNAVAILABLE.consultation)}</span>`}
+  </form>
+</section>`;
+}
+
+function flash(done) {
+  const hit = DONE[done];
+  if (!hit) return '';
+  return `<p class="hub-flash${hit[0] === 'bad' ? ' hub-flash--bad' : ''}">${esc(hit[1])}</p>`;
+}
+
+/* ── What has already been sent ───────────────────────────────────────────
+   The only place an advisor can see that a client is holding something, and
+   the only place they can take it back.
+
+   THE LINK IS NOT HERE, AND THE BLOCK SAYS SO. design-data.js keeps a sha256
+   and nothing else, so there is no readable copy to show — an advisor who
+   lost it will look here first, and silence would read as a bug rather than
+   as the design.
+
+   "Opened three times, last Tuesday" is the sentence 022 writes as the reason
+   the counter exists at all: useful to an advisor, and it identifies nobody.
+
+   HIDDEN IN PRESENT MODE. A live share link and a Withdraw button are the
+   last things that should be on screen with the client watching. */
+function issuedVersions(id, issued, caps) {
+  if (!caps.itinerary) {
+    return `<section class="design-block design-issued-list" data-hide-in-present>
+  <h2>Already sent</h2>
+  <p class="design-note">${esc(D.UNAVAILABLE.itinerary)}</p>
+</section>`;
+  }
+  if (!issued.length) return '';
+
+  return `<section class="design-block design-issued-list" data-hide-in-present>
+  <h2>Already sent</h2>
+  <p class="design-note">The link itself cannot be shown again — nothing here holds a readable
+    copy of it. If it has been lost, issue a new version.</p>
+  <ul class="design-versions">${issued.map((r) => version(id, r)).join('')}</ul>
+</section>`;
+}
+
+function version(id, r) {
+  const dead = Boolean(r.revoked_at);
+  const expired = r.share_expires_at && new Date(r.share_expires_at) < new Date();
+  const views = Number(r.view_count || 0);
+
+  return `<li class="design-version${dead ? ' is-dead' : ''}">
+    <div>
+      <p class="design-version-n">Version ${esc(String(r.version))}${
+        dead ? ' — withdrawn' : expired ? ' — expired' : ''}</p>
+      <p class="design-version-when">Issued ${esc(since(r.issued_at))}. ${
+        views === 0 ? 'Not opened yet.'
+          : 'Opened ' + views + (views === 1 ? ' time' : ' times')
+            + (r.last_viewed_at ? ', last ' + since(r.last_viewed_at) : '') + '.'}${
+        r.share_expires_at && !dead ? ' The link stops working ' + esc(onDay(r.share_expires_at)) + '.' : ''}</p>
+    </div>
+    ${dead || expired ? '' : `<form method="POST" action="/hub/journeys/${esc(id)}/design">
+      <input type="hidden" name="action" value="revoke">
+      <input type="hidden" name="itinerary" value="${esc(r.id)}">
+      <button class="btn btn--ghost btn--sm" type="submit" data-revoke>Withdraw version ${
+        esc(String(r.version))}</button>
+      <span class="design-hint">The link stops working immediately and cannot be turned back on.</span>
+    </form>`}
+  </li>`;
+}
+
+const onDay = (iso) => { try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return 'later'; } };
 
 /* ── The rest of the village ─────────────────────────────────────────────── */
 function alsoIn(villageKey, also, vocab) {

@@ -358,4 +358,63 @@ async function shortlistFor(need, opts) {
   return top;
 }
 
-module.exports = { scoreProperty, mismatchesFor, shortlistFor, normalise, bandFor, SHORTLIST };
+/* ── Which shape is this journey ──────────────────────────────────────────
+   A recipe decides the day headings in a document a client keeps. Six of them
+   sit in the bank and, until now, no screen could pick one — so every issued
+   itinerary had numbered days and no shape.
+
+   RANKED, NOT CHOSEN. This returns an ordered list with bands; it selects
+   nothing. Two reasons, both already written down in this codebase. A bare
+   dropdown of six gets picked by position — content/journey.js records array
+   order silently sending everyone to Longevity. And applying one silently is
+   exactly "a value they have to notice and undo", which design.js refuses on
+   behalf of the fields six Finder answers cannot know.
+
+   THE BREADTH PENALTY IS THE SAME AS scoreProperty AND MUST STAY THAT WAY.
+   `true` on villages, `false` on compass. It will be tempting to turn the
+   village penalty off here on the reasoning that a three-village recipe
+   VISITS three villages rather than being vaguely three things — and with
+   Finder-seeded village weights being diffuse, that hands every consultation
+   to discover-saint-lucia-well, which is the same bug this file already
+   carries a long comment about. Decide it with tools/design-coverage.js, not
+   by argument. */
+async function rankRecipes(need) {
+  const fw = await K.frameworks();
+  const order = fw.continuumOrder || [];
+  const recipes = await K.recipes();
+
+  const scored = recipes.map((r) => {
+    const place = overlap(normalise(need.villages), r.villages, true);
+    const direction = overlap(normalise(need.compass), r.compass, false);
+    const depth = depthOverlap(order, need.continuumFloor, need.continuumCeiling, r.depth);
+
+    return {
+      key: r.key,
+      name: r.name,
+      sub: r.sub || null,
+      rhythm: r.rhythm || [],
+      bands: {
+        place: bandFor(place.raw),
+        direction: bandFor(direction.raw),
+        depth: depth.known ? (depth.need ? bandFor(depth.raw) : 'unknown') : 'unknown'
+      },
+      /* The terms that actually matched, so the advisor reads a reason rather
+         than a ranking. Same as a candidate card. */
+      matched: (place.matched || []).concat(direction.matched || []),
+      order: [place.raw, direction.raw, depth.raw]
+    };
+  });
+
+  /* Lexicographic, like scoreProperty. No composite, and nothing here is
+     called a best match. */
+  scored.sort((a, b) => {
+    for (let i = 0; i < a.order.length; i++) {
+      if (b.order[i] !== a.order[i]) return b.order[i] - a.order[i];
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  return scored;
+}
+
+module.exports = { scoreProperty, mismatchesFor, shortlistFor, normalise, bandFor, SHORTLIST, rankRecipes };

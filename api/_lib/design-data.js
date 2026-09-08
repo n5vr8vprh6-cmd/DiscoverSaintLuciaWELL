@@ -43,6 +43,21 @@ const { db } = require('./core.js');
 const MISSING = ['42703', '42P01', 'PGRST204', 'PGRST205'];
 const isMissing = (e) => e && MISSING.indexOf(String(e.code)) !== -1;
 
+/* A CONSTRAINT VIOLATION IS NOT A MISSING MIGRATION, and these must NOT join
+   MISSING above. The header there argues that reporting a real error as "not
+   migrated yet" sends somebody to the wrong file, and that is exactly what this
+   would be: 23502 is a not-null violation and 23503 a broken foreign key, and
+   both mean the schema is present and correct and the CODE handed it something
+   the schema refuses.
+
+   This exists because openSession() passed a null consultation_id into a NOT
+   NULL column. The insert failed, the error was neither missing nor matched,
+   and it surfaced as a generic write_failed — "Could not open a session" — at
+   the last step of a live consultation, with nothing pointing at the column
+   that actually refused. */
+const CONSTRAINT = { 23502: 'a required value was null', 23503: 'a referenced row does not exist' };
+const constraintOf = (e) => (e && CONSTRAINT[String(e.code)]) || null;
+
 /* What a screen is allowed to say about each degradation. Prose lives here so
    two screens cannot describe the same missing table differently. */
 const UNAVAILABLE = {
@@ -189,6 +204,14 @@ async function openSession(consultationId, shareId, advisorId, knowledgeVersion)
 
   if (error) {
     if (isMissing(error)) return { ok: false, reason: 'not_migrated', message: UNAVAILABLE.consultation };
+    /* Named rather than swallowed — see CONSTRAINT above. This is the exact
+       path that failed silently, so it is the one that must say what happened. */
+    const why = constraintOf(error);
+    if (why) {
+      console.error('openSession — ' + why, error.code, error.message);
+      return { ok: false, reason: 'constraint',
+        message: 'A session could not be opened: ' + why + '. Nothing was issued.' };
+    }
     console.error('openSession', error.code, error.message);
     return { ok: false, reason: 'write_failed' };
   }
@@ -483,12 +506,24 @@ async function recordView(id, current) {
 async function revokeItinerary(advisorId, id) {
   const supabase = db();
   if (!supabase) return { ok: false, reason: 'no_database' };
-  const { error } = await supabase.from('journey_itineraries')
+  /* .select() MATTERS HERE. An update that matches no row is not an error in
+     PostgREST, so scoping by advisor_id — correct, and the only thing standing
+     between advisors — used to return { ok: true } having revoked nothing. Not
+     a hole: nothing was revoked. But with a Withdraw button in front of it the
+     screen would say "withdrawn" about a document that is still live, which is
+     the worst possible moment to be wrong.
+
+     Not hypothetical either: introductions.js moves ownership of these rows
+     when a pooled Journey is handed over, so a stale tab genuinely can hold an
+     id its advisor no longer owns. */
+  const { data, error } = await supabase.from('journey_itineraries')
     .update({ revoked_at: new Date().toISOString(), share_token_hash: null })
-    .eq('id', id).eq('advisor_id', advisorId);
+    .eq('id', id).eq('advisor_id', advisorId)
+    .select('id, version');
   if (error && isMissing(error)) return { ok: false, reason: 'not_migrated' };
   if (error) return { ok: false, reason: 'write_failed' };
-  return { ok: true };
+  if (!data || !data.length) return { ok: false, reason: 'not_found' };
+  return { ok: true, version: data[0].version };
 }
 
 /* Everything issued for one session, newest first. The advisor's own list. */

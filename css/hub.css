@@ -2222,3 +2222,61 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
    punctuation and produced one run-on line. */
 .playbook .pb-anatomy { margin: 0 0 .8em; padding-left: 1.3em; }
 .playbook .pb-anatomy li { margin-bottom: .25em; line-height: 1.5; }
+
+/* ── What has already been sent ────────────────────────────────────────────
+   A ledger, not a card grid. An advisor reads this to answer one question —
+   "is the client holding something, and is it still live?" — so the state is
+   the first thing on each row and withdrawal sits beside it rather than behind
+   a menu. A withdrawn version stays visible and greyed: knowing you withdrew
+   version 1 is the reason version 2 exists. */
+.design .design-issued-list { border-top: 1px solid var(--hairline-l); padding-top: 1.6rem; }
+.design .design-versions { list-style: none; margin: 1.2rem 0 0; padding: 0; }
+.design .design-version {
+  display: flex; flex-wrap: wrap; gap: .6rem 1.5rem;
+  align-items: baseline; justify-content: space-between;
+  padding: .9rem 0; border-top: 1px solid var(--hairline-l);
+}
+.design .design-version.is-dead { color: var(--muted); }
+.design .design-version-n { margin: 0 0 .2em; font-weight: 600; }
+.design .design-version-when { margin: 0; font-size: .86rem; color: var(--muted); }
+.design .design-version form { display: flex; flex-direction: column; gap: .3rem; align-items: flex-start; }
+.design .design-version .design-hint { max-width: 26ch; }
+
+/* ── The shape of the journey ──────────────────────────────────────────────
+   Ranked, never pre-selected. The bands reuse the candidate card's border
+   colours so an advisor reads them the same way in both places — the word is
+   the signal, the colour is the second one. */
+.design .design-shape-picked { margin-bottom: 1.4rem; }
+.design .design-shape-name {
+  font-family: var(--serif-display); font-size: var(--fs-h3);
+  line-height: 1.2; margin: 0 0 .2em;
+}
+.design .design-rhythm { list-style: none; margin: 1rem 0 0; padding: 0; }
+.design .design-rhythm li {
+  display: grid; grid-template-columns: 5rem 1fr; gap: .8rem;
+  padding: .5rem 0; border-top: 1px solid var(--hairline-l);
+}
+.design .design-rhythm span { color: var(--muted); font-size: .86rem; }
+
+.design .design-recipes { list-style: none; margin: 1rem 0 1.2rem; padding: 0; }
+.design .design-recipes > li { border-top: 1px solid var(--hairline-l); }
+.design .design-recipe {
+  display: grid; grid-template-columns: 1.2rem 1fr; gap: .2rem .7rem;
+  padding: .8rem 0; cursor: pointer; align-items: baseline;
+}
+.design .design-recipe input { grid-row: 1 / span 3; }
+.design .design-recipe-name { font-weight: 600; }
+.design .design-recipe-bands { grid-column: 2; display: flex; gap: .9rem; }
+.design .design-recipe-bands b {
+  font-size: .68rem; letter-spacing: var(--track-label); text-transform: uppercase;
+  font-weight: 600; color: var(--muted); border-top: 2px solid var(--hairline-l);
+  padding-top: .2em;
+}
+.design .design-recipe-bands b.band-strong { border-top-color: var(--teal); color: var(--ink); }
+.design .design-recipe-bands b.band-partial { border-top-color: var(--gold); }
+.design .design-recipe-bands b.band-thin { border-top-color: var(--mist); }
+.design .design-recipe-why { grid-column: 2; color: var(--muted); font-size: .86rem; }
+
+@media (max-width: 40rem) {
+  .design .design-rhythm li { grid-template-columns: 1fr; gap: .1rem; }
+}

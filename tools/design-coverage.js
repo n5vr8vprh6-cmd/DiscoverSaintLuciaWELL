@@ -145,7 +145,44 @@ const optionsFor = (id) => {
     console.log('      Strong throughout is a broad property fitting broad briefs.');
     console.log('      Thin or absent means it is riding ties, and the weights need work.');
   }
-  if (!bad) console.log('\n  ✓ every property surfaces');
+  /* ── RECIPES, over the same matrix ─────────────────────────────────────
+     A recipe decides the day headings in a document a client keeps, and the
+     six of them are scored on three of the same four axes. The failure mode
+     is identical to a property that never surfaces: a shape nobody can be
+     offered is a shape that does not exist.
+
+     THIS IS ALSO THE ONLY HONEST WAY TO SETTLE THE BREADTH PENALTY.
+     design-match.js keeps penaliseBreadth ON for villages, and it is tempting
+     to turn it off for recipes on the reasoning that a three-village recipe
+     VISITS three villages rather than being vaguely three things. With
+     Finder-seeded village weights being diffuse, turning it off hands nearly
+     everything to discover-saint-lucia-well. Change the flag, run this, and
+     read the distribution — do not decide it by argument. */
+  const recipes = await K.recipes();
+  const first = {};
+  recipes.forEach((r) => { first[r.key] = 0; });
+
+  for (let i = 0; i < combos.length; i++) {
+    const ranked = await M.rankRecipes(await N.seedFrom(combos[i]));
+    if (ranked.length) first[ranked[0].key]++;
+  }
+
+  console.log('\n  SHAPES — ranked first, over the same ' + combos.length + ' need-states');
+  recipes.forEach((r) => {
+    console.log('    ' + r.key.padEnd(30) +
+      String(first[r.key]).padStart(4) + '  (' + Math.round(first[r.key] / combos.length * 100) + '%)');
+  });
+
+  const unreachable = recipes.filter((r) => !first[r.key]);
+  if (unreachable.length) {
+    bad = true;
+    console.log('\n  x NEVER SUGGESTED — no need-state ranks these first:');
+    unreachable.forEach((r) => console.log('      ' + r.name + '  villages=' +
+      (r.villages || []).join('|') + '  compass=' + (r.compass || []).join('|')));
+    console.log('      A shape nobody can be offered is a shape that does not exist.');
+  }
+
+  if (!bad) console.log('\n  ✓ every property surfaces, and every shape can be suggested');
   console.log('');
   process.exit(bad ? 1 : 0);
 })();

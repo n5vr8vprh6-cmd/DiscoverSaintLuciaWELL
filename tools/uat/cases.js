@@ -1248,6 +1248,7 @@ const CASES = [
   steps: ['Open a Journey you own and press "Design this journey"',
           'Read the four bands on each candidate and the sentence under "What is wrong with it"',
           'Press "Draft a paragraph" and wait',
+          'Choose a shape under "The shape of it" and press Use this shape',
           'Set nights, add a note, press "Issue this plan" and confirm'],
   expect: 'The shortlist and its reasons are on screen the moment the page loads, with no spinner. Only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button.',
   why: 'This is the whole product in one pass. The shortlist arriving instantly is the difference between a tool an advisor opens in front of a prospect and one they prepare in private beforehand.' },
@@ -1325,7 +1326,7 @@ const CASES = [
 
 { id: 'G-40', pass: 'ASK WELL', role: 'guard', priority: 1, area: 'ASK WELL',
   title: 'A withdrawn plan says withdrawn, not missing',
-  steps: ['Revoke an issued itinerary', 'Open its link in a private window'],
+  steps: ['On the design screen, find "Already sent" and press Withdraw on the live version', 'Open its link in a private window'],
   expect: '"This plan has been withdrawn", and a line pointing them back to their advisor. Not a 404, and nothing about what the document used to contain.',
   why: 'A 404 tells a client they were forgotten and sends them nowhere. Withdrawn tells them to pick up the phone, which is the only correct next step.' },
 
