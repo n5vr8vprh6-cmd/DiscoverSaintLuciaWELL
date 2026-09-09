@@ -861,10 +861,14 @@ TravelClick / SynXis / bespoke, all JavaScript, and the pages carry only spa,
 meal-plan and transfer figures). Expedia renders dated room prices in a real
 browser and refuses a plain fetch (429), so the harvest is the in-app browser
 stepping through property pages with `chkin`/`chkout` set and reading the
-room cards. After about forty page loads Expedia raised a human check; the
-harvest resumes at a slower cadence and the table grows in place. Monthly
-sample weeks first (thirteen, including the festive week); weekly density is
-a job for a scheduled refresh, not a session.
+room cards. After about forty page loads Expedia raised a human check, which
+Duncan cleared by hand; the rest ran at one load every ~16 seconds. Result:
+137 cells across 13 properties (Jade Mountain shows only 5 weeks — it sells
+mostly direct — and Zoëtry 7). `to` is the dearest room SHOWN that day, which
+at Christmas can be a whole residence: Sugar Beach's 2026-12-21 cell tops out
+at $22,721 because that was the only thing left. Monthly sample weeks
+(thirteen, including the festive week); weekly density is a job for a
+scheduled refresh, not a session.
 
 ### What reaches OpenAI, and what cannot
 
