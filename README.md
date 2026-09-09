@@ -832,6 +832,40 @@ Migration `023-design-stepped.sql` renames the stage vocabulary to the four
 the screen shows and adds `travel_from`, `estimate`, `sent_at`.
 `node tools/design-shape-test.js` proves the rules offline.
 
+### Public rates · `content/rates.js`, `api/_lib/rates.js`
+
+The estimate on the Send stage is arithmetic over a lookup, never a model's
+guess. `content/rates.observed.json` holds what a real browser saw on
+expedia.com for one property, one seven-night stay from a sample Monday, two
+adults — every room row with its nightly price — and `tools/build-rates.js`
+turns it into `content/rates.js`: one cell per property per sample week, a
+RANGE from the cheapest to the dearest room shown, the cheapest room named,
+the day it was seen, the page it came from. Three words matter:
+
+| `confidence` | Meaning |
+|---|---|
+| `OBSERVED PUBLIC RATE` | What a stranger would have been quoted on that page on `observed`. Not a tariff, not a quote. |
+| `PUBLISHED TARIFF` | A figure the property or operator publishes itself (TheLifeCo's programme rates, Anse Chastanet's transfer prices). |
+| `QUOTE / CONFIRM` | Nothing dependable found. The estimate shows a dash. |
+
+`api/_lib/rates.js` is the **only** module that requires the table.
+`nightly(slug, date)` takes the observed week nearest the date, only within 45
+days, and answers `QUOTE / CONFIRM` otherwise — no interpolation, no inferred
+seasons. `tools/rates-test.js` and the privacy sweep both assert that after
+every prompt module has loaded, `content/rates.js` is not in `require.cache`:
+the price firewall is a missing `require` path, not a filter.
+
+**How the observations were made (2026-09-09).** Every property site was
+probed first; none publishes a nightly tariff (booking engines are
+TravelClick / SynXis / bespoke, all JavaScript, and the pages carry only spa,
+meal-plan and transfer figures). Expedia renders dated room prices in a real
+browser and refuses a plain fetch (429), so the harvest is the in-app browser
+stepping through property pages with `chkin`/`chkout` set and reading the
+room cards. After about forty page loads Expedia raised a human check; the
+harvest resumes at a slower cadence and the table grows in place. Monthly
+sample weeks first (thirteen, including the festive week); weekly density is
+a job for a scheduled refresh, not a session.
+
 ### What reaches OpenAI, and what cannot
 
 ASK WELL and WELL Campaign both call a third-party model, so this needs stating

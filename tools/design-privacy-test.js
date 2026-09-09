@@ -219,6 +219,17 @@ function expect(label, payload) {
   const nestedOut = await P.project(nested);
   sweep('project() with sentinels as weight keys and codes', nestedOut);
 
+  /* ── 5. The price firewall ────────────────────────────────────────────── */
+  console.log('\n  No prompt module has loaded the rate table');
+  /* Structural, not a sweep: everything that builds a prompt has now run, and
+     content/rates.js must not be in require.cache. A number can only reach a
+     prompt through a require path, and there is none. */
+  const ratesPath = require('path').normalize(require('path').join(__dirname, '..', 'content', 'rates.js'));
+  const loaded = Object.keys(require.cache).some((k) => require('path').normalize(k) === ratesPath);
+  checks++;
+  if (loaded) { failures++; console.log('    FAIL  content/rates.js was loaded by a prompt module'); }
+  else console.log('    ok    content/rates.js is not in require.cache after every prompt was built');
+
   /* ── The verdict ──────────────────────────────────────────────────────── */
   console.log('\n  ' + '─'.repeat(64));
   if (failures) {
