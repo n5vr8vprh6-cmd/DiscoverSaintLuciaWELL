@@ -58,6 +58,8 @@ const IT = require('../design-itinerary.js');
 const S = require('../design-shape.js');
 const E = require('../design-estimate.js');
 const { renderDocument } = require('./itinerary.js');
+const IM = require('../itinerary-mail.js');
+const { maskEmail } = require('../hub-mask.js');
 const { configured, reasonText } = require('../openai.js');
 const { rung } = require('../gtm.js');
 /* Three levels up to lib/, as itinerary.js and playbook.js learned the hard
@@ -209,6 +211,7 @@ module.exports = async function handler(req, res) {
                             topVillage, caps, bank, frameworks, issued, ranked, session, step,
                             chosenSlugs, chosenProps, recipe, plan, estimate, previewDoc, travelFrom,
                             brand: IT.brandOf(advisor),
+                            clientEmail: raw.consumer_email ? maskEmail(raw.consumer_email) : null,
                             done: str(url.searchParams.get('done'), 20) });
 
   hubPage(res, {
@@ -357,7 +360,7 @@ async function generate(req, res, v) {
      own path out rather than being bent into the ledger shape below. */
   if (name === 'issue') {
     return await actionIssue(res, form,
-      { advisor, id, need, seeded, stored, slugs, recipeKey, caps });
+      { advisor, id, need, seeded, stored, slugs, recipeKey, caps, raw, json: isJson(req) });
   }
 
 
@@ -781,7 +784,15 @@ async function actionRevoke(res, form, v) {
 }
 
 async function actionIssue(res, form, v) {
-  const { advisor, id, need, slugs, recipeKey, caps } = v;
+  const { advisor, id, need, slugs, recipeKey, caps, raw } = v;
+  const stored = v.stored;
+  const wantsEmail = form.email === 'on' || form.email === true || form.email === 'true' || form.email === '1';
+  const isForm = v.json === false;
+  const back = (done) => { res.statusCode = 303; res.setHeader('Location', backTo(id, done) + '&step=send'); return res.end(); };
+  /* With JavaScript off a 303 cannot show the token, so the only way the link
+     reaches anyone is the email. Refuse to mint a link nobody will see. */
+  if (isForm && !wantsEmail) return back('issue_needs_email');
+  if (isForm && !(raw && raw.consumer_email)) return back('issue_no_address');
 
   if (!caps.itinerary) {
     return json(res, 503, { error: 'not_migrated', message: D.UNAVAILABLE.itinerary });
@@ -811,7 +822,7 @@ async function actionIssue(res, form, v) {
      written from the first issue, which is the only way that question ever gets
      data. */
   const chain = await openChain(advisor, id, need, stored);
-  if (!chain.ok) return json(res, 503, { error: chain.reason, message: chain.message });
+  if (!chain.ok) return isForm ? back('issue_failed') : json(res, 503, { error: chain.reason, message: chain.message });
   const session = chain.session;
 
   /* THE SESSION IS THE AUTHORITY ON THE SHAPE, not the form. The advisor chose
@@ -865,20 +876,36 @@ async function actionIssue(res, form, v) {
 
   const missing = IT.readiness(doc);
   if (missing.length) {
+    if (isForm) return back('issue_not_ready');
     return json(res, 400, { error: 'not_ready',
       message: 'This still needs ' + missing.join(', ') + '.' });
   }
 
   const issued = await D.issueItinerary(advisor.id, session.id, id, doc, IT.brandOf(advisor));
   if (!issued.ok) {
+    if (isForm) return back('issue_failed');
     return json(res, 502, { error: issued.reason,
       message: issued.reason === 'version_race'
         ? 'Another version was issued at the same moment. Reload and try again.'
         : 'Could not issue that. Nothing has been sent.' });
   }
 
-  /* THE ONE TIME THE TOKEN EXISTS IN THE CLEAR. */
+  /* THE ONE TIME THE TOKEN EXISTS IN THE CLEAR — so the mail goes now or never.
+     A failed mail does not fail the issue: the document is live; the advisor
+     copies the link and sends it themselves. sent_at is written only when
+     the mail actually left. */
+  let emailed = false, emailError = null, emailedTo = null;
+  if (wantsEmail) {
+    if (!(raw && raw.consumer_email)) { emailError = 'no_recipient'; }
+    else {
+      const sent = await IM.send({ journey: raw, advisor, url: '/j/' + issued.token, version: issued.version });
+      if (sent.ok) { emailed = true; emailedTo = maskEmail(raw.consumer_email); if (caps.sent_at) await D.markSent(advisor.id, issued.id); }
+      else emailError = sent.error;
+    }
+  }
+  if (isForm) return back(emailed ? 'issued_emailed' : 'issued_not_emailed');
   return json(res, 200, {
+    emailed, emailError, emailedTo,
     ok: true, version: issued.version,
     url: '/j/' + issued.token,
     expires_at: issued.expires_at,
@@ -1208,7 +1235,7 @@ function sendStage(v) {
   return reviewBlock(plan, chosenProps || {}, need, recipe)
     + estimateBlock(id, estimate, caps, v.travelFrom)
     + previewBlock(previewDoc, brand)
-    + issue(id, shortlist, caps, recipeKey)
+    + issue(id, shortlist, caps, recipeKey, v.clientEmail)
     + issuedVersions(id, issued || [], caps);
 }
 
@@ -1519,7 +1546,7 @@ function narrative(id, shortlist, caps, chosen) {
 
    HIDDEN IN PRESENT MODE. The client is watching this screen; "Issue" and a
    raw share link are the advisor's apparatus, not part of the conversation. */
-function issue(id, shortlist, caps, chosen) {
+function issue(id, shortlist, caps, chosen, clientEmail) {
   const slugs = shortlist.slice(0, 3).map((c) => c.slug).join(',');
   return `<section class="design-block design-issue" data-hide-in-present
     data-issue data-share="${esc(id)}" data-slugs="${esc(slugs)}"
@@ -1529,16 +1556,23 @@ function issue(id, shortlist, caps, chosen) {
     to send. The link can be withdrawn later; what it points at cannot be edited, so issuing
     again makes a new version rather than changing this one.</p>
 
+  <form method="POST" action="/hub/journeys/${esc(id)}/design?step=send" data-issue-form>
+  <input type="hidden" name="action" value="issue">
+  <input type="hidden" name="slugs" value="${esc(slugs)}">
+  <input type="hidden" name="recipe" value="${esc(chosen || '')}">
   <div class="design-issue-fields design-issue-fields--one">
     <label class="hub-field hub-field--wide">
       <span class="hub-field-label">A note from you (optional)</span>
-      <textarea rows="3" data-issue-note
+      <textarea rows="3" name="note" data-issue-note
         placeholder="The thing only you know. Appears in your name, unchanged."></textarea>
     </label>
+    ${clientEmail ? `<label class="design-issue-email"><input type="checkbox" name="email" data-issue-email checked>
+      <span>Also email the link to <b>${esc(clientEmail)}</b> — from journeys@, copied to you, replies come to you. Issue again to send again.</span></label>`
+      : `<p class="design-hint">This Journey has no email address, so the link can only be copied.</p>`}
   </div>
 
   <div class="design-actions">
-    <button type="button" class="btn btn--gold btn--sm" data-issue-go${
+    <button type="submit" class="btn btn--gold btn--sm" data-issue-go${
       caps.itinerary ? '' : ' disabled'}>Issue this plan</button>
     <span class="design-hint" data-issue-status role="status">${
       caps.itinerary ? '' : esc(D.UNAVAILABLE.itinerary)}</span>
@@ -1547,6 +1581,7 @@ function issue(id, shortlist, caps, chosen) {
   ${/* Filled in by the client once, and never re-fetched. The server does not
        hold this value in any readable form after the response. */''}
   <div class="design-issued" data-issue-result hidden></div>
+  </form>
 </section>`;
 }
 
@@ -1571,6 +1606,12 @@ const DONE = {
   day_failed: ['bad', 'That day could not be saved. Nothing changed.'],
   no_nights: ['bad', 'Set the nights on Understand first — there are no days to edit yet.'],
   estimate_saved: ['good', 'Figures saved. The document will carry them, marked as yours.'],
+  issued_emailed: ['good', 'Issued and emailed. The link is in their inbox, copied to you.'],
+  issued_not_emailed: ['bad', 'Issued, but the email did not go. The link is live — open the version below and send it yourself.'],
+  issue_needs_email: ['bad', 'With JavaScript off the link can only be emailed — tick the box and issue again.'],
+  issue_no_address: ['bad', 'This Journey has no email address, so with JavaScript off there is no way to hand over the link.'],
+  issue_not_ready: ['bad', 'Not ready to issue yet — it still needs a place, a shape and the two paragraphs.'],
+  issue_failed: ['bad', 'That could not be issued. Nothing has been sent.'],
   estimate_failed: ['bad', 'Those figures could not be saved. Nothing changed.'],
   no_estimate_column: ['bad', 'Estimates need migration 023 on this deployment.'],
   shape_cleared: ['good', 'Cleared. The days will just be numbered.'],
@@ -1687,7 +1728,7 @@ function version(id, r) {
     <div>
       <p class="design-version-n">Version ${esc(String(r.version))}${
         dead ? ' — withdrawn' : expired ? ' — expired' : ''}</p>
-      <p class="design-version-when">Issued ${esc(since(r.issued_at))}. ${
+      <p class="design-version-when">Issued ${esc(since(r.issued_at))}.${r.sent_at ? ' Emailed to the client ' + esc(since(r.sent_at)) + '.' : ' Not emailed — the link was copied.'} ${
         views === 0 ? 'Not opened yet.'
           : 'Opened ' + views + (views === 1 ? ' time' : ' times')
             + (r.last_viewed_at ? ', last ' + since(r.last_viewed_at) : '') + '.'}${

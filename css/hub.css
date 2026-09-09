@@ -2715,3 +2715,8 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 }
 
 .itin-day-where { margin: .25em 0 0; font-size: .85rem; color: var(--muted); }
+
+/* Email at issue */
+.design .design-issue-email { display: flex; gap: .7rem; align-items: flex-start; font-size: .92rem; line-height: 1.5; max-width: 60ch; margin-top: .4rem; }
+.design .design-issue-email input { width: 1.15rem; height: 1.15rem; margin-top: .2rem; accent-color: var(--ink); flex: none; }
+.design .design-issued-sent { margin: .8rem 0 0; font-weight: 600; }

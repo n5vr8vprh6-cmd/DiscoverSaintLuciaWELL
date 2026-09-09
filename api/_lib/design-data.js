@@ -579,13 +579,26 @@ async function itinerariesFor(advisorId, sessionId) {
   const supabase = db();
   if (!supabase) return [];
   const { data, error } = await supabase.from('journey_itineraries')
-    .select('id, version, issued_at, share_expires_at, revoked_at, view_count, last_viewed_at')
+    .select('id, version, issued_at, share_expires_at, revoked_at, view_count, last_viewed_at, sent_at')
     .eq('advisor_id', advisorId).eq('session_id', sessionId)
     .order('version', { ascending: false });
   if (error) return [];
   return data || [];
 }
 
+/* ── Sent ─────────────────────────────────────────────────────────────────
+   A fact ABOUT the artifact, like view_count: deliberately outside
+   itinerary_frozen()'s list (023). Best-effort — the mail has gone. */
+async function markSent(advisorId, itineraryId) {
+  const supabase = db();
+  if (!supabase) return { ok: false, reason: 'not_configured' };
+  const { error } = await supabase.from('journey_itineraries')
+    .update({ sent_at: new Date().toISOString() }).eq('id', itineraryId).eq('advisor_id', advisorId);
+  if (error) { console.warn('markSent', error.code, error.message); return { ok: false, reason: isMissing(error) ? 'not_migrated' : 'write_failed' }; }
+  return { ok: true };
+}
+
+module.exports.markSent = markSent;
 module.exports.issueItinerary = issueItinerary;
 module.exports.itineraryByToken = itineraryByToken;
 module.exports.itinerariesFor = itinerariesFor;

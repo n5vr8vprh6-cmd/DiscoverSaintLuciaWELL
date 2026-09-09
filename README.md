@@ -860,6 +860,22 @@ document prints with *Version n · issued date · prepared by · Planning
 estimate, not a quote* in its header and a **Save as PDF** button; the token
 is never printed on the page.
 
+### Email at issue · `api/_lib/itinerary-mail.js`
+
+The token is shown once and stored only as a sha256, so the **only** moment a
+link can be emailed is the request that minted it. Email is therefore a
+checkbox on Issue — *Also email the link to j•••@example.com* — not a button
+afterwards; issue again to send again. The envelope is the introduction's:
+from `journeys@` (`NOTIFY_FROM`), to the traveller, cc the advisor, reply-to
+the advisor. Two sentences and the link, a plain-text part, first name only,
+no figure, **never an attachment** — a link can be withdrawn, a PDF cannot.
+`journey_itineraries.sent_at` (023) records that it left; *Already sent* says
+*Emailed to the client …*. A failed mail does not fail the issue: the
+document is live and the advisor copies the link. With JavaScript off a 303
+cannot show the token, so a form-posted Issue requires the box ticked or
+refuses with *With JavaScript off the link can only be emailed*.
+`node tools/itinerary-mail-test.js`.
+
 ### Public rates · `content/rates.js`, `api/_lib/rates.js`
 
 The estimate on the Send stage is arithmetic over a lookup, never a model's

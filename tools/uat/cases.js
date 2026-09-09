@@ -1299,6 +1299,14 @@ const CASES = [
   expect: 'Stay lines show nights × the February nightly range and the cheapest room seen on 2026-09-09; a line with no observed week shows a dash and the total says how many lines are still to confirm. A typed figure is marked "yours" and joins the total; clearing returns the line to the public rate. P turns the inputs into plain text and hides sources and the add-a-line control. The preview is the client document with the estimate; the issued /j/:token carries the same lines, "seen" dates, "Planning estimate, not a quote", a Version n · issued date header, a Save as PDF button — and no token anywhere on the page.',
   why: 'This is the paper-or-plastic moment. The client sees a dated range, never a figure, never a quote; the advisor edits in the open and every edit says so. Nothing here is a booking action, and the one call to action on the document is still a person.' },
 
+{ id: 'A-70', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
+  title: 'Issue with the email box ticked — the link arrives, cc the advisor, no figures in the mail',
+  steps: ['As UAT1 on a Journey whose traveller email is a test inbox you can read, open Send',
+          'Leave "Also email the link to …" ticked and issue; then check the inbox and the advisor cc',
+          'Read "Already sent"; then disable JavaScript, untick nothing, and issue again; then untick the box and issue with JavaScript off'],
+  expect: 'The page shows the link once and "Emailed to j•••@…, copied to you." The mail is from journeys@, to the traveller, cc the advisor, reply-to the advisor; two sentences and the link; no dollar figure, no attachment, first name only. "Already sent" says "Emailed to the client just now". With JavaScript off and the box ticked the page reloads with "Issued and emailed"; with the box unticked it refuses: "With JavaScript off the link can only be emailed."',
+  why: 'The token exists in the clear for one request, so the mail must go inside it or never. A PDF would be a copy nobody can withdraw; a link can be. A failed mail must not fail the issue — the document is live and the advisor can still copy the link.' },
+
 { id: 'A-65', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'Playbook',
   title: 'Read the Playbook and fill in the priority traveller',
   steps: ['Open /hub/campaign and follow the link to Your Playbook',

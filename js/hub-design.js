@@ -119,7 +119,11 @@
     });
   }
 
-  go.addEventListener('click', function () {
+  /* The button is a submit inside a real form (the JavaScript-off path). With
+     JavaScript, the click is taken over and the same fields go as JSON, so the
+     token can be shown once on this page. */
+  go.addEventListener('click', function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
     if (busy) return;
     busy = true;
     go.disabled = true;
@@ -198,6 +202,12 @@
   var result = root.querySelector('[data-issue-result]');
   var nights = root.querySelector('[data-issue-nights]');
   var note = root.querySelector('[data-issue-note]');
+  var emailBox = root.querySelector('[data-issue-email]');
+  var issueForm = root.querySelector('[data-issue-form]');
+  /* With JavaScript running the form must never submit on its own: the 303
+     path cannot show the token. Submit is cancelled here and the click handler
+     below does the work. */
+  if (issueForm) issueForm.addEventListener('submit', function (ev) { ev.preventDefault(); });
   if (!go || go.disabled) return;
 
   var busy = false;
@@ -266,6 +276,19 @@
 
     result.appendChild(row);
 
+    if (data.emailed) {
+      var sent = document.createElement('p');
+      sent.className = 'design-issued-sent';
+      sent.textContent = 'Emailed to ' + (data.emailedTo || 'the client') + ', copied to you.';
+      result.appendChild(sent);
+    } else if (data.emailError) {
+      var nf = document.createElement('p');
+      nf.className = 'design-flag is-high';
+      nf.textContent = data.emailError === 'mail_not_configured' ? 'Email is not configured on this deployment — copy the link and send it yourself.'
+        : data.emailError === 'no_recipient' ? 'This Journey has no email address — copy the link and send it yourself.'
+        : 'The email did not go — the link is live; copy it and send it yourself.';
+      result.appendChild(nf);
+    }
     if (data.expires_at) {
       var exp = document.createElement('p');
       exp.className = 'design-issued-exp';
@@ -302,7 +325,8 @@
         slugs: root.getAttribute('data-slugs') || '',
         recipe: root.getAttribute('data-recipe') || '',
         nights: nights ? nights.value : '',
-        note: note ? note.value : ''
+        note: note ? note.value : '',
+        email: Boolean(emailBox && emailBox.checked)
       })
     }).then(function (r) { return r.json(); }).then(function (j) {
       if (!j.ok) {

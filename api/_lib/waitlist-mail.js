@@ -141,4 +141,4 @@ function sendNotice(f) {
   });
 }
 
-module.exports = { sendJoined, sendNotice, noticeTo };
+module.exports = { sendJoined, sendNotice, noticeTo, toText };
