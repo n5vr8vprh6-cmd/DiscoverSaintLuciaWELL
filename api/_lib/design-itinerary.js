@@ -62,6 +62,7 @@
 'use strict';
 
 const K = require('./well-knowledge.js');
+const S = require('./design-shape.js');
 
 /* ── What a day looks like ────────────────────────────────────────────────
    The recipe supplies the shape and the advisor supplies the nights, so a
@@ -179,6 +180,7 @@ async function assemble(input) {
   const i = input || {};
   const recipe = i.recipeKey ? await K.recipe(String(i.recipeKey)) : null;
   const bank = await K.version();
+  const placeList = await places(i.slugs);
 
   return {
     /* Schema version, so a reader added in two years can tell what it is
@@ -189,8 +191,15 @@ async function assemble(input) {
     nights: Number.isFinite(Number(i.nights)) ? Number(i.nights) : null,
     open: str(i.open),
     close: str(i.close),
-    days: days(recipe, i.nights, i.dayNotes),
-    places: await places(i.slugs),
+    /* The Shape stage builds day_plan; when it exists it IS the days —
+       phase, intensity word, property, the advisor's note. Without one the
+       recipe is laid over the nights as before, so an older session still
+       issues. Property names are resolved from `places`, which is already
+       the frozen, named list; readDays() never sees a bank record. */
+    days: (i.dayPlan && Array.isArray(i.dayPlan.days) && i.dayPlan.days.length)
+      ? S.readDays(i.dayPlan, (slug) => { const p = placeList.find((x) => x.slug === slug); return p ? p.name : null; })
+      : days(recipe, i.nights, i.dayNotes),
+    places: placeList,
     /* The advisor's own words, if they wrote any. Optional and unstyled — this
        is the slot for what only they know. */
     advisorNote: str(i.advisorNote),
@@ -213,7 +222,7 @@ function str(v) {
 function readiness(doc) {
   const missing = [];
   if (!doc.places.length) missing.push('at least one place');
-  if (!doc.days.length) missing.push('a shape — choose a recipe, or set the nights');
+  if (!doc.days.length) missing.push('a shape — set the nights on Understand, then lay the days on Shape');
   if (!doc.open) missing.push('an opening paragraph');
   if (!doc.close) missing.push('a closing paragraph');
   return missing;

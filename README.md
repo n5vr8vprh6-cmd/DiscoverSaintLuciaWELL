@@ -814,6 +814,24 @@ what it destroyed.
 person's name, email and phone. No delete here touches it. The screen says so,
 and tells you to ask the advisor — which the Undertaking obliges them to do.
 
+### The Shape stage · `api/_lib/design-shape.js`
+
+A shape is a recipe laid across N nights, a property on each day, an
+intensity on each day, rest where the pacing rule demands it. `skeleton()`
+lays the recipe's phases (ends pinned, middle stretched), places the carried
+properties by phase, and seeds each day's intensity from the phase's authored
+band bounded by the property's typical range. Every value the advisor touches
+is theirs (`applyEdit`, `mergePlan`); `pacingFlags()` turns the guide's own
+sentences into checks (two high days back to back, no rest in seven, a high
+arrival or departure) shown advisor-only beside the arc. The arc is a CSS grid
+the server renders; with JavaScript a day's form posts as JSON and the
+server's re-rendered arc swaps in. Intensity bands come from the field-guide
+source (Duncan's rubric, 2026-09-08) and are `inferred: true` until confirmed.
+The client document shows the word for each day and never a property's band.
+Migration `023-design-stepped.sql` renames the stage vocabulary to the four
+the screen shows and adds `travel_from`, `estimate`, `sent_at`.
+`node tools/design-shape-test.js` proves the rules offline.
+
 ### What reaches OpenAI, and what cannot
 
 ASK WELL and WELL Campaign both call a third-party model, so this needs stating

@@ -311,6 +311,7 @@ async function designWorkspace(step) {
   const N = require('../api/_lib/need-state.js');
   const M = require('../api/_lib/design-match.js');
   const { buildBody } = require('../api/_lib/hub-screens/design.js');
+  const S = require('../api/_lib/design-shape.js');
 
   const j = JOURNEYS[0];
   const need = await N.seedFrom(j.answers || {});
@@ -321,15 +322,27 @@ async function designWorkspace(step) {
     .sort((a, b) => need.villages[b] - need.villages[a])[0] || null;
   const also = topVillage ? await K.alsoInVillage(topVillage) : { supporting: [], basecamps: [] };
 
+  /* The shape, laid the way actionRecipe lays it: the fixture's two carried
+     properties across seven nights of the Longevity arc, with one day edited
+     so the arc shows an advisor's hand. */
+  const chosenSlugs = shortlist.slice(0, 2).map((c) => c.slug);
+  const chosenProps = {};
+  for (const s of chosenSlugs) { const p = await K.property(s); if (p) chosenProps[s] = p; }
+  const recipe = await K.recipe('longevity-renewal');
+  const needWithNights = Object.assign({}, need, { nights: 7 });
+  let plan = S.skeleton({ recipe, nights: 7, chosen: chosenSlugs, properties: chosenProps });
+  plan = S.applyEdit(plan, 5, { intensity: 'rest', note: 'Nothing booked. The day the week is remembered by.' }, { chosen: chosenSlugs }).plan;
+
   return buildBody({
-    id: j.id, name: fullName(j), need, seeded: need, stored: null,
+    id: j.id, name: fullName(j), need: needWithNights, seeded: need, stored: null,
     vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
     /* Ranked for real against this fixture's own need-state, and a session that
        has already chosen one — so the preview shows both halves of the shape
        block: the week an advisor talks through, and the ranking underneath it. */
     ranked: bank.ready ? await M.rankRecipes(need) : [],
     step,
-    session: { id: 'fixture-session', recipe_key: 'longevity-renewal',
+    chosenSlugs, chosenProps, recipe, plan,
+    session: { id: 'fixture-session', recipe_key: 'longevity-renewal', day_plan: plan,
       shortlist: { chosen: shortlist.slice(0, 2).map((c) => c.slug), at: new Date().toISOString() } },
     issued: [
       { id: 'fx-2', version: 2, issued_at: new Date(Date.now() - 2 * 86400000).toISOString(),
@@ -339,7 +352,7 @@ async function designWorkspace(step) {
         share_expires_at: null, revoked_at: new Date(Date.now() - 3 * 86400000).toISOString(),
         view_count: 1, last_viewed_at: new Date(Date.now() - 8 * 86400000).toISOString() }
     ],
-    caps: { database: true, consultation: true, itinerary: true, ledger: true },
+    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true },
     bank
   });
 }

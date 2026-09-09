@@ -104,7 +104,7 @@ console.log('\n  DESIGN DATA — DEGRADATION\n  ' + '─'.repeat(60) + '\n');
   console.log('\n  What a session update may touch');
   ok('the allow-list is exactly the working fields',
     D.SESSION_WRITABLE.slice().sort().join(',') ===
-      ['day_plan', 'narrative', 'recipe_key', 'shortlist', 'stage', 'status'].join(','),
+      ['day_plan', 'estimate', 'narrative', 'recipe_key', 'shortlist', 'stage', 'status'].join(','),
     D.SESSION_WRITABLE.join(','));
   ['advisor_id', 'share_id', 'consultation_id', 'knowledge_version', 'id'].forEach((col) => {
     ok('it cannot write ' + col, D.SESSION_WRITABLE.indexOf(col) === -1,

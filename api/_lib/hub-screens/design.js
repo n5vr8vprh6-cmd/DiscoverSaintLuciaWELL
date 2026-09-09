@@ -55,6 +55,7 @@ const M = require('../design-match.js');
 const D = require('../design-data.js');
 const G = require('../design-generate.js');
 const IT = require('../design-itinerary.js');
+const S = require('../design-shape.js');
 const { configured, reasonText } = require('../openai.js');
 const { rung } = require('../gtm.js');
 /* Three levels up to lib/, as itinerary.js and playbook.js learned the hard
@@ -90,7 +91,7 @@ function resumeStage(stored, session) {
   if (!stored) return 'understand';
   const chosen = session && session.shortlist && session.shortlist.chosen;
   if (!chosen || !chosen.length) return 'compare';
-  const days = session.day_plan && session.day_plan.days;
+  const days = session.day_plan && session.day_plan.days;   /* laid by design-shape.js */
   if (!days || !days.length) return 'shape';
   return 'send';
 }
@@ -98,12 +99,25 @@ function resumeStage(stored, session) {
 /* Best-effort, and it must stay that way. */
 async function setStage(session, advisor, stage) {
   if (!session || !session.id) return;
-  const r = await D.updateSession(session.id, advisor.id, { stage });
-  if (r && !r.ok && r.reason !== 'not_migrated') console.warn('design stage not recorded', r.reason);
+  /* Best-effort until 023 lands: its CHECK admits the four words the screen
+     shows, 022's did not, and 23514 is not a missing migration. Never fail a
+     request over a bookmark — the resume position is derived, not read. */
+  try {
+    const r = await D.updateSession(session.id, advisor.id, { stage });
+    if (!r.ok) console.warn('setStage', stage, r.reason || 'refused');
+  } catch (e) { console.warn('setStage', stage, String(e && e.message)); }
+}
+/* The plan the stage shows: the stored one when it has days, else a fresh
+   skeleton (which is what the first edit will save). Null when there are no
+   nights yet — the arc then says where to set them. */
+function planFor(session, recipe, need, chosenSlugs, chosenProps) {
+  const stored = session && session.day_plan;
+  if (stored && Array.isArray(stored.days) && stored.days.length) return stored;
+  const nights = need && need.nights;
+  if (!nights) return null;
+  return S.skeleton({ recipe, nights, chosen: chosenSlugs, properties: chosenProps });
 }
 
-/* A JSON caller wants a fragment back; a form caller wants a redirect. Decided
-   by what the request said it was sending, not by an action name. */
 function isJson(req) {
   return /application\/json/i.test(String((req.headers && req.headers['content-type']) || ''));
 }
@@ -161,6 +175,16 @@ module.exports = async function handler(req, res) {
      and the block says so rather than being absent. */
   const session = caps.consultation ? await D.currentSession(id, advisor.id) : null;
   const ranked = bank.ready ? await M.rankRecipes(need) : [];
+  /* The shape. Chosen properties as full records (the SCREEN boundary; the
+     prompt boundary is mayAssert and none of this reaches one), the recipe,
+     and the plan — stored if the advisor has laid one, otherwise a skeleton
+     from the recipe and the nights, unsaved until a day is touched. */
+  const chosenSlugs = (session && session.shortlist && session.shortlist.chosen) || [];
+  const chosenProps = {};
+  for (const s of chosenSlugs) { const p = await K.property(s); if (p) chosenProps[s] = p; }
+  const recipe = session && session.recipe_key ? await K.recipe(session.recipe_key) : null;
+  const plan = planFor(session, recipe, need, chosenSlugs, chosenProps);
+
   const issued = (caps.itinerary && session)
     ? await D.itinerariesFor(advisor.id, session.id) : [];
 
@@ -172,6 +196,7 @@ module.exports = async function handler(req, res) {
   const step = STAGES.indexOf(want) !== -1 ? want : resumeStage(stored, session);
   const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
                             topVillage, caps, bank, frameworks, issued, ranked, session, step,
+                            chosenSlugs, chosenProps, recipe, plan,
                             done: str(url.searchParams.get('done'), 20) });
 
   hubPage(res, {
@@ -211,14 +236,15 @@ module.exports = async function handler(req, res) {
 const ACTIONS = {
   day_note: actionDayNote, narrative: actionNarrative,
   issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name',
-  consult: 'dispatched-by-name', choose: 'dispatched-by-name', decline: 'dispatched-by-name'
+  consult: 'dispatched-by-name', choose: 'dispatched-by-name', decline: 'dispatched-by-name',
+  day: 'dispatched-by-name'
 };
 
 /* Actions posted by a plain <form> rather than by fetch. They redirect; the
    others answer in JSON. Kept as a list rather than inferred from a header,
    because "what does a failure look like to this caller" is a property of the
    action, not of the request that happened to arrive. */
-const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline'];
+const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day'];
 
 const backTo = (id, done) =>
   '/hub/journeys/' + encodeURIComponent(id) + '/design' + (done ? '?done=' + done : '');
@@ -266,13 +292,14 @@ async function generate(req, res, v) {
   /* The three stage actions. Form posts above the OpenAI and ledger gates,
      because none of them calls a model. Each re-reads the consultation itself
      rather than trusting a value computed for a different action. */
-  if (name === 'consult' || name === 'choose' || name === 'decline') {
+  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day') {
     const seededNow = await N.seedFrom(raw.answers || {});
     const storedNow = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
     const ctx = { advisor, id, raw, caps, stored: storedNow, seeded: seededNow,
       need: (storedNow && D.toNeedState(storedNow)) || seededNow, json: isJson(req) };
     if (name === 'consult') return await actionConsult(res, form, ctx);
     if (name === 'choose') return await actionChoose(res, form, ctx);
+    if (name === 'day') return await actionDay(res, form, ctx);
     return await actionDecline(res, form, ctx);
   }
 
@@ -321,6 +348,9 @@ async function generate(req, res, v) {
   }
 
 
+  /* A day note is written against a session that now exists by the time a
+     day is edited — record it there rather than as null (a plan-era gap). */
+  const sessionNow = (name === 'day_note' && caps.consultation) ? await D.currentSession(id, advisor.id) : null;
   const out = await run(form, { advisor, need, slugs, recipeKey });
 
   /* Recorded whether it worked or not. A ledger that only holds successes
@@ -330,7 +360,7 @@ async function generate(req, res, v) {
     /* (advisorId, sessionId, entry) — the session is null until the advisor
        opens one; the counter mayGenerate() reads is per advisor per hour, so a
        note written before a session exists is still counted. */
-    await D.recordGeneration(advisor.id, null, {
+    await D.recordGeneration(advisor.id, sessionNow ? sessionNow.id : null, {
       kind: out.kind, model: out.model, ms: out.ms,
       promptChars: out.promptChars, usage: out.usage,
       reason: out.ok ? null : out.reason
@@ -495,14 +525,68 @@ async function actionConsult(res, form, v) {
   const problems = N.validate(edited);
   if (problems.length) { console.warn('consult refused', problems); return back('bad_consult'); }
 
+  /* 023: the month they travel, as the first of that month. Written only
+     when the column has been probed present; a form field the database
+     cannot hold is dropped, not fatal. */
+  const extra = {};
+  if (caps.travel_from) {
+    const m = str(form.travel_from, 10);
+    extra.travel_from = /^\d{4}-\d{2}$/.test(m) ? m + '-01' : (/^\d{4}-\d{2}-\d{2}$/.test(m) ? m : null);
+  }
   const saved = await D.saveConsultation(id, advisor.id, edited, {
     state: seeded, overrode: N.overridden(seeded, edited)
-  });
+  }, extra);
   if (!saved.ok) return back(saved.reason === 'not_migrated' ? 'not_migrated' : 'consult_failed');
 
   const session = await D.currentSession(id, advisor.id);
   await setStage(session, advisor, 'understand');
   return back('saved');
+}
+
+/* ── One day of the shape ─────────────────────────────────────────────────
+   A plain form per day (works with JavaScript off, 303 back to the day) or
+   the same fields as JSON from hub-design.js, which then receives the arc
+   re-rendered BY THE SERVER to swap in. The browser moves markup the server
+   wrote; it decides nothing. Validation is design-shape.js applyEdit —
+   property must be one the advisor carried, band one of four words. */
+async function actionDay(res, form, v) {
+  const { advisor, id, need, stored, caps, json } = v;
+  const n = parseInt(form.day, 10);
+  const back = (done, ok) => {
+    if (json) return jsonOut(res, ok !== false, { done });
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=shape#day-' + (Number.isFinite(n) ? n : 1));
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated', false);
+  if (!Number.isFinite(n)) return back('bad_day', false);
+
+  const chain = await openChain(advisor, id, need, stored);
+  if (!chain.ok) return back('day_failed', false);
+  const session = chain.session;
+  const chosen = (session.shortlist && session.shortlist.chosen) || [];
+  const props = {};
+  for (const s of chosen) { const p = await K.property(s); if (p) props[s] = p; }
+  const recipe = session.recipe_key ? await K.recipe(session.recipe_key) : null;
+  const plan = planFor(session, recipe, need, chosen, props);
+  if (!plan) return back('no_nights', false);
+
+  const patch = {};
+  if (form.property !== undefined) patch.property = str(form.property, 60);
+  if (form.intensity !== undefined) patch.intensity = str(form.intensity, 10);
+  if (form.note !== undefined) { patch.note = str(form.note, S.NOTE_MAX); patch.noteSource = str(form.noteSource, 10) === 'model' ? 'model' : 'advisor'; }
+  const edited = S.applyEdit(plan, n, patch, { chosen });
+  if (!edited.ok) { console.warn('day refused', edited.problems); return back('bad_day', false); }
+
+  const saved = await D.updateSession(session.id, advisor.id, { day_plan: edited.plan });
+  if (!saved.ok) return back(saved.reason === 'not_migrated' ? 'not_migrated' : 'day_failed', false);
+  await setStage(session, advisor, 'shape');
+
+  if (json) {
+    /* The arc, re-rendered by the same function the page uses. */
+    return jsonOut(res, true, { done: 'day_saved', fragment: arc(edited.plan, props, need, recipe) });
+  }
+  return back('day_saved');
 }
 
 function jsonOut(res, ok, payload) {
@@ -593,10 +677,23 @@ async function actionRecipe(res, form, v) {
     return res.end();
   }
 
-  await D.updateSession(chain.session.id, advisor.id, { recipe_key: key });
+  /* Lay the days for the new shape, keeping any day the advisor has already
+     edited (mergePlan). Without nights there is nothing to lay yet, and the
+     arc says so rather than guessing a week. */
+  const recipeNow = key ? await K.recipe(key) : null;
+  const chosenNow = (chain.session.shortlist && chain.session.shortlist.chosen) || [];
+  const propsNow = {};
+  for (const s of chosenNow) { const p = await K.property(s); if (p) propsNow[s] = p; }
+  const patch = { recipe_key: key };
+  if (need && need.nights) {
+    patch.day_plan = S.mergePlan(chain.session.day_plan,
+      S.skeleton({ recipe: recipeNow, nights: need.nights, chosen: chosenNow, properties: propsNow }));
+  }
+  await D.updateSession(chain.session.id, advisor.id, patch);
+  await setStage(chain.session, advisor, 'shape');
 
   res.statusCode = 303;
-  res.setHeader('Location', backTo(id, key ? 'shape' : 'shape_cleared'));
+  res.setHeader('Location', backTo(id, key ? 'shape' : 'shape_cleared') + '&step=shape');
   return res.end();
 }
 
@@ -699,6 +796,7 @@ async function actionIssue(res, form, v) {
   const doc = await IT.assemble({
     recipeKey: shapeKey, nights, slugs,
     open: open.text, close: close.text,
+    dayPlan: session.day_plan || null,
     dayNotes: (session.day_plan && session.day_plan.notes) || {},
     advisorNote
   });
@@ -916,10 +1014,123 @@ function villageName(key) {
 }
 
 /* ── Stages 3 and 4 wrap what already exists ───────────────────────────── */
+/* ── Stage 3 · Shape ──────────────────────────────────────────────────────
+   The rubric, answered on one screen: beginning · middle · end are the
+   recipe's phases; intensity is a word on each day; breaks are rest days.
+   The arc is server-rendered — a CSS grid with one column per day — so it
+   needs no JavaScript to draw. Colour is the village of the day's property;
+   fill is the intensity; the WORD sits in the column because no colour
+   carries meaning alone. Editing a day is a plain form; with JavaScript the
+   same fields go as JSON and the server's re-rendered arc swaps in.
+
+   THE CUES ARE FOR THE ADVISOR. The recipe's ask, its pacing rule with the
+   plan checked against it, the continuum's own sentence about this depth,
+   and each property's bestFor — prompts to their experience, hidden in
+   Present mode. The client sees the arc; the advisor tells the story. */
 function shapeStage(v) {
-  const { id, ranked, session, caps, shortlist } = v;
+  const { id, ranked, session, caps, shortlist, need, frameworks, chosenProps, recipe, plan } = v;
   const recipeKey = session && session.recipe_key;
-  return shape(id, ranked, recipeKey, caps) + narrative(id, shortlist, caps, recipeKey);
+  return arcBlock(id, plan, chosenProps || {}, need, recipe, frameworks, caps)
+    + shape(id, ranked, recipeKey, caps)
+    + narrative(id, shortlist, caps, recipeKey);
+}
+
+const INTENSITY_WORD = { rest: 'Rest', low: 'Low', medium: 'Medium', high: 'High' };
+
+function arcBlock(id, plan, props, need, recipe, fw, caps) {
+  const nights = need && need.nights;
+  if (!plan) {
+    return `<section class="design-block design-arcblock">
+  <h2>The shape of the week</h2>
+  <p class="design-empty">${nights ? 'No days yet.' : 'How many nights? Set that on <a href="/hub/journeys/' + esc(id) + '/design?step=understand#consult">Understand</a> and the days appear here.'}</p>
+</section>`;
+  }
+  /* The alternate rule is Active Recovery's own sentence; read it off the recipe rather than a key. */
+  const flags = S.pacingFlags(plan, { alternate: Boolean(recipe && /^alternate/i.test(recipe.pacing || '')) });
+  const depthKey = need && (need.continuumCeiling || need.continuumFloor);
+  const rung = depthKey && ((fw && fw.continuum) || []).find((r) => r.key === depthKey);
+  const chosen = Object.keys(props);
+
+  return `<section class="design-block design-arcblock">
+  <h2>${esc(String(plan.days.length))} nights, day by day</h2>
+  <div class="design-arcwrap">
+    <div data-fragment-slot="arc">${arc(plan, props, need, recipe)}</div>
+    <aside class="design-cues" data-hide-in-present>
+      ${recipe && recipe.ask ? `<p class="design-cue-ask">${esc(recipe.ask)}</p>` : ''}
+      ${recipe && recipe.pacing ? `<p class="design-cue-rule"><b>The rule</b> ${esc(recipe.pacing)}</p>` : ''}
+      ${rung && rung.plan ? `<p class="design-cue-depth"><b>${esc(rung.name)} in a day</b> ${esc(rung.plan)}</p>` : ''}
+      ${flags.length ? `<ul class="design-cue-flags">${flags.map((f) => `<li>${esc(f.text)}</li>`).join('')}</ul>`
+        : `<p class="design-cue-ok">Paced within the guide’s rules.</p>`}
+      <p class="design-cue-inferred">Intensity bands are inferred from each property’s verified offer until confirmed.</p>
+    </aside>
+  </div>
+
+  <div class="design-days" data-hide-in-present>
+    ${plan.days.map((d) => dayEditor(id, d, props, chosen, caps)).join('')}
+  </div>
+</section>`;
+}
+
+/* The arc itself. Re-rendered whole by actionDay for the live swap. */
+function arc(plan, props, need, recipe) {
+  const days = plan.days;
+  const spans = S.phaseSpans(days);
+  const vk = (slug) => { const p = props[slug]; return p ? villageFor(p, need) : null; };
+  return `<div class="design-arc" style="--days: ${days.length}">
+    <p class="design-sr">${esc(arcSummary(days, props))}</p>
+    <ol class="design-arc-phases">${spans.map((s) => `<li style="grid-column: ${s.from + 1} / ${s.to + 1}">${esc(s.label || '')}</li>`).join('')}</ol>
+    <ol class="design-arc-days">${days.map((d) => {
+      const k = vk(d.property);
+      const accent = k ? ` style="--v: var(--v-${esc(k)}); --v-ink: var(--v-${esc(k)}-ink)"` : '';
+      const band = d.intensity || 'unset';
+      return `<li class="design-arc-day is-${esc(band)}${d.edited ? ' is-edited' : ''}" id="arc-day-${d.n}"${accent}>
+        <a class="design-arc-col" href="#day-${d.n}" aria-label="Day ${d.n}, ${esc(INTENSITY_WORD[band] || 'intensity not set')}">
+          <span class="design-arc-bar"><span class="design-arc-word">${esc(INTENSITY_WORD[band] || 'not set')}</span></span>
+        </a>
+        <span class="design-arc-n">Day ${d.n}</span>
+        <span class="design-arc-prop">${d.property && props[d.property] ? esc(props[d.property].name) : '<span class="design-arc-none">no place</span>'}</span>
+        ${d.note ? `<span class="design-arc-note">${esc(d.note)}</span>` : ''}
+      </li>`; }).join('')}</ol>
+  </div>`;
+}
+
+function arcSummary(days, props) {
+  return days.map((d) => 'Day ' + d.n + ': ' + (INTENSITY_WORD[d.intensity] || 'not set')
+    + (d.property && props[d.property] ? ' at ' + props[d.property].name : '')).join('. ');
+}
+
+/* One day's form. Native controls, one submit; with JavaScript, saves on
+   change and swaps the arc. "Draft a note" is day_note's button at last. */
+function dayEditor(id, d, props, chosen, caps) {
+  const p = d.property && props[d.property];
+  return `<details class="design-day" id="day-${d.n}">
+    <summary><span class="design-day-n">Day ${d.n}</span> <span class="design-day-sum">${esc(d.phaseText || 'No phase')} · ${esc(INTENSITY_WORD[d.intensity] || 'intensity not set')}${p ? ' · ' + esc(p.name) : ''}</span></summary>
+    <form method="POST" action="/hub/journeys/${esc(id)}/design?step=shape" class="design-day-form" data-live data-fragment="arc" data-day="${d.n}">
+      <input type="hidden" name="action" value="day">
+      <input type="hidden" name="day" value="${d.n}">
+      <fieldset class="design-q"><legend>Where</legend>
+        <div class="design-picks design-picks--seg">${chosen.map((s) => `<label class="design-pick"><input type="radio" name="property" value="${esc(s)}"${d.property === s ? ' checked' : ''}><span>${esc(props[s] ? props[s].name : s)}</span></label>`).join('')}
+          ${chosen.length ? '' : '<span class="design-hint">Carry a place on Compare first.</span>'}</div></fieldset>
+      <fieldset class="design-q"><legend>How much is asked of them</legend>
+        <div class="design-picks design-picks--seg design-picks--band">${S.BANDS.map((b) => `<label class="design-pick"><input type="radio" name="intensity" value="${b}"${d.intensity === b ? ' checked' : ''}><span>${esc(INTENSITY_WORD[b])}</span></label>`).join('')}</div>
+        ${p && p.intensity && p.intensity.typical ? `<p class="design-hint">${esc(p.name)} is typically ${esc(p.intensity.typical.join('–'))}${p.intensity.available ? ', with ' + esc(p.intensity.available.join('–')) + ' available' : ''} <em>(inferred)</em>.</p>` : ''}
+      </fieldset>
+      ${p && p.bestFor ? `<p class="design-day-best"><b>${esc(p.name)} is best for</b> ${esc(p.bestFor)}</p>` : ''}
+      <fieldset class="design-q"><legend>A line for this day</legend>
+        <textarea name="note" rows="2" maxlength="${S.NOTE_MAX}" data-day-note placeholder="What this day is for them — in your words, or ask for a draft to react to.">${esc(d.note || '')}</textarea>
+        <input type="hidden" name="noteSource" value="${esc(d.noteSource || 'advisor')}" data-day-note-source>
+        <div class="design-actions">
+          <button type="button" class="btn btn--ghost btn--sm" data-daynote data-day-key="${esc(d.phase || 'day' + d.n)}" data-day-label="Day ${d.n}" data-day-text="${esc(d.phaseText || '')}">Draft a line</button>
+          <span class="design-hint" data-daynote-status role="status"></span>
+        </div>
+        <p class="design-daynote-out" data-daynote-out hidden></p>
+      </fieldset>
+      <div class="design-actions">
+        <button class="btn btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Save day ${d.n}</button>
+        <span class="design-hint" data-live-status role="status">${caps.consultation ? '' : esc(D.UNAVAILABLE.consultation)}</span>
+      </div>
+    </form>
+  </details>`;
 }
 
 function sendStage(v) {
@@ -935,7 +1146,7 @@ function sendStage(v) {
    seeded_from and advisor_overrode with real content. */
 function understandStage(v) {
   const { id, need, seeded, stored, vocab, caps } = v;
-  return readTheTraveller(need, seeded, stored, vocab) + consultEditor(id, need, vocab, caps);
+  return readTheTraveller(need, seeded, stored, vocab) + consultEditor(id, need, vocab, caps, stored);
 }
 
 /* The editor. Every control is a native input inside one form, so it works
@@ -943,7 +1154,7 @@ function understandStage(v) {
    from the vocabulary — nothing here is a free-text field, because the
    consultation table has no free-text column and the prompt boundary depends
    on that. */
-function consultEditor(id, need, vocab, caps) {
+function consultEditor(id, need, vocab, caps, stored) {
   const opts = (dim) => vocab[dim] || [];
   const on = (dim, key) => (need[dim] === key ? ' checked' : '');
   const has = (arr, key) => ((arr || []).indexOf(key) !== -1 ? ' checked' : '');
@@ -986,7 +1197,13 @@ function consultEditor(id, need, vocab, caps) {
           <input type="number" name="nights" min="1" max="21" value="${need.nights == null ? '' : esc(String(need.nights))}" placeholder="7">
           <button type="button" data-step="1" aria-label="More nights">+</button></div></div>
     </fieldset>
-    <fieldset class="design-q"><legend>Travelling as</legend>${picks('party', 'party', 'design-picks--seg')}</fieldset>
+    <fieldset class="design-q design-q--row">
+      <div><legend>Travelling as</legend>${picks('party', 'party', 'design-picks--seg')}</div>
+      <div><legend>When</legend>
+        ${caps.travel_from
+          ? `<input class="design-month" type="month" name="travel_from" value="${esc(String((stored && stored.travel_from) || '').slice(0, 7))}" aria-label="Month of travel">`
+          : '<span class="design-hint">Dates need migration 023.</span>'}</div>
+    </fieldset>
     <fieldset class="design-q"><legend>Worth knowing</legend><div class="design-picks">${opts('constraints').map((o) => `
       <label class="design-pick"><input type="checkbox" name="constraints" value="${esc(o.key)}"${has(need.constraints, o.key)}>
         <span>${esc(o.label)}</span></label>`).join('')}</div></fieldset>
@@ -1218,7 +1435,11 @@ const DONE = {
   too_many: ['bad', 'Three at most. Put one aside first.'],
   choose_failed: ['bad', 'That could not be recorded. Nothing changed.'],
   declined: ['good', 'Put aside, and the reason kept.'],
-  shape: ['good', 'Shape saved. The days will follow it.'],
+  shape: ['good', 'Arc chosen. The days are laid out below.'],
+  day_saved: ['good', 'Saved. The arc follows it.'],
+  bad_day: ['bad', 'That day could not be saved as written. Nothing changed.'],
+  day_failed: ['bad', 'That day could not be saved. Nothing changed.'],
+  no_nights: ['bad', 'Set the nights on Understand first — there are no days to edit yet.'],
   shape_cleared: ['good', 'Cleared. The days will just be numbered.'],
   shape_failed: ['bad', 'That shape could not be saved, so nothing changed.'],
   bad_recipe: ['bad', 'That is not one of the shapes in the guide. Nothing changed.'],
@@ -1250,13 +1471,11 @@ function shape(id, ranked, chosen, caps) {
   const picked = ranked.filter((r) => r.key === chosen)[0] || null;
 
   return `<section class="design-block design-shape">
-  <h2>The shape of it</h2>
+  <h2>Which arc</h2>
 
   ${picked ? `<div class="design-shape-picked">
     <p class="design-shape-name">${esc(picked.name)}</p>
     ${picked.sub ? `<p class="design-note">${esc(picked.sub)}</p>` : ''}
-    ${picked.rhythm.length ? `<ol class="design-rhythm">${picked.rhythm.map((d) => `<li>
-      <span>${esc(d.label)}</span> ${esc(d.text)}</li>`).join('')}</ol>` : ''}
   </div>` : `<p class="design-empty" data-hide-in-present>No shape chosen — the days will be
     numbered and empty. Pick one below, or leave it if this journey does not have a shape yet.</p>`}
 
@@ -1268,8 +1487,9 @@ function shape(id, ranked, chosen, caps) {
         <label class="design-recipe">
           <input type="radio" name="recipe" value="${esc(r.key)}"${r.key === chosen ? ' checked' : ''}>
           <span class="design-recipe-name">${esc(r.name)}</span>
+          <span class="design-recipe-arc" aria-hidden="true">${(r.rhythm || []).map((ph) => `<i class="is-${esc(ph.intensity || 'unset')}" title="${esc(ph.label)}: ${esc(ph.intensity || 'not set')}"></i>`).join('')}</span>
           <span class="design-recipe-bands">${
-            ['place', 'direction', 'depth'].map((k) => `<b class="band-${esc(r.bands[k])}">${
+            [['place', 'Places'], ['direction', 'Direction'], ['depth', 'Depth']].map(([k, ax]) => `<b class="band-${esc(r.bands[k])}"><span>${ax}</span>${
               esc(BAND_WORD[r.bands[k]] || r.bands[k])}</b>`).join('')}</span>
           ${r.matched.length ? `<span class="design-recipe-why">${esc(r.matched.join(' · '))}</span>` : ''}
         </label>
@@ -1282,7 +1502,7 @@ function shape(id, ranked, chosen, caps) {
         </label>
       </li>
     </ul>
-    <button class="btn btn--ghost btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Use this shape</button>
+    <button class="btn btn--ghost btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Lay the days this way</button>
     ${caps.consultation ? '' : `<span class="design-hint">${esc(D.UNAVAILABLE.consultation)}</span>`}
   </form>
 </section>`;

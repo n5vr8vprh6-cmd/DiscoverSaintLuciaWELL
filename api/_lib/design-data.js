@@ -72,7 +72,8 @@ const UNAVAILABLE = {
    head:true reads no rows. */
 async function capabilities() {
   const supabase = db();
-  const out = { database: Boolean(supabase), consultation: false, itinerary: false, ledger: false };
+  const out = { database: Boolean(supabase), consultation: false, itinerary: false, ledger: false,
+    travel_from: false, estimate: false, sent_at: false, stage: false };
   if (!supabase) return out;
 
   const probe = async (table) => {
@@ -90,6 +91,22 @@ async function capabilities() {
   out.consultation = await probe('journey_consultations');
   out.itinerary = await probe('journey_itineraries');
   out.ledger = await probe('design_generation');
+
+  /* 023's columns. A column probe: selecting it raises 42703 when the
+     migration has not landed, which isMissing() classifies. The stage
+     vocabulary rename rides with them, so `stage` is the signal that
+     setStage() may write the four words rather than log them. */
+  const column = async (table, col) => {
+    const { error } = await supabase.from(table).select(col).limit(1);
+    if (!error) return true;
+    if (isMissing(error)) return false;
+    console.error('design-data probe ' + table + '.' + col, String(error.message || error.code));
+    return true;
+  };
+  out.travel_from = out.consultation && await column('journey_consultations', 'travel_from');
+  out.estimate = out.consultation && await column('design_sessions', 'estimate');
+  out.sent_at = out.itinerary && await column('journey_itineraries', 'sent_at');
+  out.stage = out.estimate;   /* 023 lands the rename and the column together */
   return out;
 }
 
@@ -107,7 +124,7 @@ async function consultationFor(shareId, advisorId) {
 
 /* Upsert on share_id, which is unique — so the screen is a save rather than a
    create-or-find dance, the same reasoning 011 gives for gtm_profile. */
-async function saveConsultation(shareId, advisorId, state, seeded) {
+async function saveConsultation(shareId, advisorId, state, seeded, extra) {
   const supabase = db();
   if (!supabase) return { ok: false, reason: 'not_configured' };
 
@@ -142,6 +159,9 @@ async function saveConsultation(shareId, advisorId, state, seeded) {
     row.seeded_from = seeded.state || null;
     row.advisor_overrode = seeded.overrode || [];
   }
+  /* 023: a date, never text. Only written when the caller has probed the
+     column — an upsert naming a column that is not there fails whole. */
+  if (extra && extra.travel_from !== undefined) row.travel_from = extra.travel_from || null;
 
   const { data, error } = await supabase
     .from('journey_consultations').upsert(row, { onConflict: 'share_id' })
@@ -218,7 +238,7 @@ async function openSession(consultationId, shareId, advisorId, knowledgeVersion)
   return { ok: true, session: data };
 }
 
-const SESSION_WRITABLE = ['stage', 'status', 'recipe_key', 'shortlist', 'day_plan', 'narrative'];
+const SESSION_WRITABLE = ['stage', 'status', 'recipe_key', 'shortlist', 'day_plan', 'narrative', 'estimate'];
 
 async function updateSession(sessionId, advisorId, patch) {
   const supabase = db();

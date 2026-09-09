@@ -381,6 +381,8 @@
         body: JSON.stringify(serialise(form))
       }).then(function (r) { return r.json(); }).then(function (j) {
         say(j && j.ok ? 'Saved.' : (j && j.message) || 'Not saved — press Save to retry.');
+        /* Anyone listening (the arc swap) gets the server's reply as-is. */
+        if (j && j.ok) form.dispatchEvent(new CustomEvent('live:saved', { bubbles: true, detail: j }));
       }).catch(function () {
         say('Not saved — press Save to retry.');
       }).then(function () { inflight = false; });
@@ -392,7 +394,7 @@
       timer = setTimeout(send, 250);
     });
     form.addEventListener('input', function (e) {
-      if (e.target && e.target.type === 'range') {
+      if (e.target && (e.target.type === 'range' || e.target.tagName === 'TEXTAREA')) {
         clearTimeout(timer);
         timer = setTimeout(send, 600);
       }
@@ -469,6 +471,95 @@
       Array.prototype.forEach.call(fig.querySelectorAll('[data-thumb]'), function (t) {
         if (t === a) t.setAttribute('aria-current', 'true'); else t.removeAttribute('aria-current');
       });
+    });
+  });
+})();
+
+/* ============================================================================
+   THE ARC — the server redraws it, the browser swaps it
+   ----------------------------------------------------------------------------
+   Each day is a plain form (see LIVE SAVE above, which posts it as JSON on
+   change). When the reply carries `fragment`, it is the arc re-rendered by the
+   same server function that drew the page, and it replaces the slot named by
+   the form's data-fragment. Nothing is computed here: not a colour, not a
+   height, not a word.
+
+   "Draft a line" is day_note's button. The sentence comes back and, if the
+   advisor has typed nothing, lands in the textarea and saves; if they have,
+   it is offered beside their words and never over them.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  var slots = document.querySelectorAll('[data-fragment-slot]');
+  if (!slots.length) return;
+
+  /* Fragment swap: listen for the live-save result. LIVE SAVE dispatches a
+     `live:saved` event on the form with the parsed JSON. */
+  document.addEventListener('live:saved', function (e) {
+    var form = e.target;
+    var name = form && form.getAttribute && form.getAttribute('data-fragment');
+    var j = e.detail || {};
+    if (!name || !j.fragment) return;
+    var slot = document.querySelector('[data-fragment-slot="' + name + '"]');
+    if (!slot) return;
+    slot.innerHTML = j.fragment;
+  });
+
+  /* Draft a line. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-daynote]'), function (btn) {
+    var form = btn.closest('form');
+    if (!form) return;
+    var ta = form.querySelector('[data-day-note]');
+    var src = form.querySelector('[data-day-note-source]');
+    var status = form.querySelector('[data-daynote-status]');
+    var out = form.querySelector('[data-daynote-out]');
+    var page = document.querySelector('[data-narrative]');
+    var slugs = page ? page.getAttribute('data-slugs') : '';
+    var recipe = page ? page.getAttribute('data-recipe') : '';
+
+    function say(t) { if (status) status.textContent = t || ''; }
+
+    function accept(text) {
+      ta.value = text;
+      if (src) src.value = 'model';
+      ta.dispatchEvent(new Event('change', { bubbles: true }));
+      if (out) { out.hidden = true; out.textContent = ''; }
+      say('Drafted. Yours to change.');
+    }
+
+    ta.addEventListener('input', function () { if (src) src.value = 'advisor'; });
+
+    btn.addEventListener('click', function () {
+      btn.disabled = true;
+      say('Drafting…');
+      fetch(form.getAttribute('action') || location.pathname, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'day_note',
+          dayKey: btn.getAttribute('data-day-key'),
+          dayLabel: btn.getAttribute('data-day-label'),
+          dayText: btn.getAttribute('data-day-text'),
+          slugs: slugs, recipe: recipe
+        })
+      }).then(function (r) { return r.json(); }).then(function (j) {
+        if (!j || !j.ok || !j.text) { say((j && j.message) || 'No draft this time — write it in your own words.'); return; }
+        if (!ta.value.trim()) { accept(j.text); return; }
+        /* They have written something. Offer, never overwrite. */
+        if (out) {
+          out.hidden = false;
+          out.textContent = '';
+          var q = document.createElement('span'); q.textContent = j.text + ' ';
+          var use = document.createElement('button'); use.type = 'button'; use.className = 'btn btn--ghost btn--sm';
+          use.textContent = 'Use this instead';
+          use.addEventListener('click', function () { accept(j.text); });
+          out.appendChild(q); out.appendChild(use);
+        }
+        say('A draft is offered below your line.');
+      }).catch(function () {
+        say('No draft this time — write it in your own words.');
+      }).then(function () { btn.disabled = false; });
     });
   });
 })();
