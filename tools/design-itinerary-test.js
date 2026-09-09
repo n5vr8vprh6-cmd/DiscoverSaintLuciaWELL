@@ -105,6 +105,23 @@ const RHYTHM = {
       flat.indexOf('"' + k + '"') === -1);
   });
 
+  /* ── The estimate (reversed rule, 2026-09-09) ─────────────────────────── */
+  console.log('\n  The estimate travels frozen, dated, and never a bank price');
+  const E = require('../api/_lib/design-estimate.js');
+  const S = require('../api/_lib/design-shape.js');
+  const plan = S.skeleton({ recipe: { key: 'r', rhythm: [{ key: 'a', label: 'A', text: 'A', intensity: 'low' }] }, nights: 3, chosen: ['anse-chastanet'] });
+  const est = E.freeze(await E.build({ plan, travelFrom: '2027-02-08', names: { 'anse-chastanet': 'Anse Chastanet' } }));
+  const withEst = await IT.assemble({ slugs: ['anse-chastanet'], open: 'o', close: 'c', dayPlan: plan, travelFrom: '2027-02-08', estimate: est });
+  ok('the document carries the estimate', withEst.estimate && withEst.estimate.lines.length >= 1);
+  ok('every estimate line is dated or says to confirm', withEst.estimate.lines.every((l) => l.observed || l.confidence === 'QUOTE / CONFIRM' || l.edited));
+  ok('the estimate header says not a quote', /not a quote/.test(withEst.estimate.header));
+  ok('the travel date travels', withEst.travel_from === '2027-02-08');
+  const flatEst = JSON.stringify(withEst);
+  ok('still no bank price, priceTag, watch or mismatch in a document with an estimate',
+    ['"price"', '"priceTag"', '"watch"', 'mismatch'].every((k) => flatEst.indexOf(k) === -1));
+  ok('no source URL or room type leaks into the frozen estimate', flatEst.indexOf('expedia') === -1 && flatEst.indexOf('roomType') === -1);
+  ok('a malformed estimate is dropped, not stored', (await IT.assemble({ slugs: [], estimate: { nope: true } })).estimate === null);
+
   /* A mismatch sentence is written for an advisor who is in the room. */
   ok('no mismatch rules reach the document',
     flat.indexOf('mismatch') === -1 && flat.indexOf('depth_gap') === -1);

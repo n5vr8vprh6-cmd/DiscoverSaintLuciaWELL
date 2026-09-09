@@ -56,6 +56,8 @@ const D = require('../design-data.js');
 const G = require('../design-generate.js');
 const IT = require('../design-itinerary.js');
 const S = require('../design-shape.js');
+const E = require('../design-estimate.js');
+const { renderDocument } = require('./itinerary.js');
 const { configured, reasonText } = require('../openai.js');
 const { rung } = require('../gtm.js');
 /* Three levels up to lib/, as itinerary.js and playbook.js learned the hard
@@ -185,6 +187,15 @@ module.exports = async function handler(req, res) {
   const recipe = session && session.recipe_key ? await K.recipe(session.recipe_key) : null;
   const plan = planFor(session, recipe, need, chosenSlugs, chosenProps);
 
+  /* The estimate: built from the plan and the lookup every time, then the
+     advisor's stored edits laid over it. And the document as it would issue
+     right now, for the preview — same assembler, same renderer. */
+  const travelFrom = stored && stored.travel_from ? String(stored.travel_from).slice(0, 10) : null;
+  const names = {}; Object.keys(chosenProps).forEach((s) => { names[s] = chosenProps[s].name; });
+  const estimate = plan ? E.applyEdits(await E.build({ plan, travelFrom, names }), session && session.estimate) : null;
+  const previewDoc = await IT.assemble({ recipeKey: session && session.recipe_key, nights: need.nights, slugs: chosenSlugs,
+    open: null, close: null, dayPlan: plan, travelFrom, estimate: estimate ? E.freeze(estimate) : null, advisorNote: null });
+
   const issued = (caps.itinerary && session)
     ? await D.itinerariesFor(advisor.id, session.id) : [];
 
@@ -196,7 +207,8 @@ module.exports = async function handler(req, res) {
   const step = STAGES.indexOf(want) !== -1 ? want : resumeStage(stored, session);
   const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
                             topVillage, caps, bank, frameworks, issued, ranked, session, step,
-                            chosenSlugs, chosenProps, recipe, plan,
+                            chosenSlugs, chosenProps, recipe, plan, estimate, previewDoc, travelFrom,
+                            brand: IT.brandOf(advisor),
                             done: str(url.searchParams.get('done'), 20) });
 
   hubPage(res, {
@@ -237,14 +249,14 @@ const ACTIONS = {
   day_note: actionDayNote, narrative: actionNarrative,
   issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name',
   consult: 'dispatched-by-name', choose: 'dispatched-by-name', decline: 'dispatched-by-name',
-  day: 'dispatched-by-name'
+  day: 'dispatched-by-name', estimate: 'dispatched-by-name'
 };
 
 /* Actions posted by a plain <form> rather than by fetch. They redirect; the
    others answer in JSON. Kept as a list rather than inferred from a header,
    because "what does a failure look like to this caller" is a property of the
    action, not of the request that happened to arrive. */
-const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day'];
+const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day', 'estimate'];
 
 const backTo = (id, done) =>
   '/hub/journeys/' + encodeURIComponent(id) + '/design' + (done ? '?done=' + done : '');
@@ -292,7 +304,7 @@ async function generate(req, res, v) {
   /* The three stage actions. Form posts above the OpenAI and ledger gates,
      because none of them calls a model. Each re-reads the consultation itself
      rather than trusting a value computed for a different action. */
-  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day') {
+  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day' || name === 'estimate') {
     const seededNow = await N.seedFrom(raw.answers || {});
     const storedNow = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
     const ctx = { advisor, id, raw, caps, stored: storedNow, seeded: seededNow,
@@ -300,6 +312,7 @@ async function generate(req, res, v) {
     if (name === 'consult') return await actionConsult(res, form, ctx);
     if (name === 'choose') return await actionChoose(res, form, ctx);
     if (name === 'day') return await actionDay(res, form, ctx);
+    if (name === 'estimate') return await actionEstimate(res, form, ctx);
     return await actionDecline(res, form, ctx);
   }
 
@@ -589,6 +602,44 @@ async function actionDay(res, form, v) {
   return back('day_saved');
 }
 
+/* ── The advisor's figures ────────────────────────────────────────────────
+   Stores EDITS, not values: { edits: {key: {from,to}}, custom: [...] }. The
+   table is rebuilt from the lookup on every read, so a rate refresh flows
+   through and an edited line stays edited. Plain form or JSON; the JSON
+   reply carries the re-rendered total so the browser swaps one cell. */
+async function actionEstimate(res, form, v) {
+  const { advisor, id, need, stored, caps, json } = v;
+  const back = (done, ok) => {
+    if (json) return jsonOut(res, ok !== false, { done });
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=send#estimate');
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated', false);
+  if (!caps.estimate) return back('no_estimate_column', false);
+  const chain = await openChain(advisor, id, need, stored);
+  if (!chain.ok) return back('estimate_failed', false);
+  const session = chain.session;
+  const chosen = (session.shortlist && session.shortlist.chosen) || [];
+  const props = {};
+  for (const s of chosen) { const p = await K.property(s); if (p) props[s] = p; }
+  const recipe = session.recipe_key ? await K.recipe(session.recipe_key) : null;
+  const plan = planFor(session, recipe, need, chosen, props);
+  if (!plan) return back('no_nights', false);
+  const names = {}; chosen.forEach((s) => { if (props[s]) names[s] = props[s].name; });
+  const travelFrom = stored && stored.travel_from ? String(stored.travel_from).slice(0, 10) : null;
+  const base = await E.build({ plan, travelFrom, names });
+  const saved = E.readEdits(form, base.lines.map((l) => l.key));
+  const wrote = await D.updateSession(session.id, advisor.id, { estimate: saved });
+  if (!wrote.ok) return back(wrote.reason === 'not_migrated' ? 'no_estimate_column' : 'estimate_failed', false);
+  await setStage(session, advisor, 'send');
+  if (json) {
+    const est = E.applyEdits(base, saved);
+    return jsonOut(res, true, { done: 'estimate_saved', fragment: estimateTotal(est) });
+  }
+  return back('estimate_saved');
+}
+
 function jsonOut(res, ok, payload) {
   return json(res, ok ? 200 : 400, Object.assign({ ok }, payload));
 }
@@ -793,9 +844,20 @@ async function actionIssue(res, form, v) {
     return json(res, 502, { error: reason || 'failed', message: reasonText(reason) });
   }
 
+  /* The estimate, built now from the lookup and the advisor's stored edits,
+     then frozen with the dates its figures were observed. */
+  const chosenNow = (session.shortlist && session.shortlist.chosen) || [];
+  const propsNow = {}; for (const s of chosenNow) { const p = await K.property(s); if (p) propsNow[s] = p; }
+  const recipeNow = shapeKey ? await K.recipe(shapeKey) : null;
+  const planNow = planFor(session, recipeNow, need, chosenNow, propsNow);
+  const namesNow = {}; chosenNow.forEach((s) => { if (propsNow[s]) namesNow[s] = propsNow[s].name; });
+  const travelFromNow = stored && stored.travel_from ? String(stored.travel_from).slice(0, 10) : null;
+  const estimateNow = planNow ? E.freeze(E.applyEdits(await E.build({ plan: planNow, travelFrom: travelFromNow, names: namesNow }), session.estimate)) : null;
+
   const doc = await IT.assemble({
-    recipeKey: shapeKey, nights, slugs,
+    recipeKey: shapeKey, nights: (planNow && planNow.nights) || nights, slugs: chosenNow.length ? chosenNow : slugs,
     open: open.text, close: close.text,
+    travelFrom: travelFromNow, estimate: estimateNow,
     dayPlan: session.day_plan || null,
     dayNotes: (session.day_plan && session.day_plan.notes) || {},
     advisorNote
@@ -1133,10 +1195,82 @@ function dayEditor(id, d, props, chosen, caps) {
   </details>`;
 }
 
+/* ── Stage 4 · Send ───────────────────────────────────────────────────────
+   Review the week, put figures beside it, read the document as it will
+   issue, then issue. The estimate is arithmetic over a dated lookup plus
+   the advisor's own hand — never a model's — and the client sees it as a
+   range labelled not a quote. Present mode keeps the review and the
+   estimate (the client is meant to see both) and hides the edit affordances,
+   the provenance and the issue apparatus. */
 function sendStage(v) {
-  const { id, shortlist, session, caps, issued } = v;
+  const { id, shortlist, session, caps, issued, plan, chosenProps, need, recipe, estimate, previewDoc, brand } = v;
   const recipeKey = session && session.recipe_key;
-  return issue(id, shortlist, caps, recipeKey) + issuedVersions(id, issued || [], caps);
+  return reviewBlock(plan, chosenProps || {}, need, recipe)
+    + estimateBlock(id, estimate, caps, v.travelFrom)
+    + previewBlock(previewDoc, brand)
+    + issue(id, shortlist, caps, recipeKey)
+    + issuedVersions(id, issued || [], caps);
+}
+
+function reviewBlock(plan, props, need, recipe) {
+  if (!plan) return `<section class="design-block"><h2>The week</h2><p class="design-empty">No days laid yet — set the nights on Understand and lay the arc on Shape.</p></section>`;
+  return `<section class="design-block design-review">
+  <h2>The week, as it stands</h2>
+  ${arc(plan, props, need, recipe)}
+</section>`;
+}
+
+const CONF_WORD = { 'OBSERVED PUBLIC RATE': 'public rate', 'PUBLISHED TARIFF': 'published', 'QUOTE / CONFIRM': 'to confirm', ADVISOR: 'yours' };
+
+function estimateBlock(id, est, caps, travelFrom) {
+  if (!est) return '';
+  const lines = est.lines.concat(est.custom || []);
+  const cell = (l) => `<tr class="design-est-row kind-${esc(l.kind)}${l.edited ? ' is-edited' : ''}${l.confidence === E.QUOTE ? ' is-quote' : ''}">
+      <th scope="row"><span class="design-est-label">${esc(l.label)}</span>${l.unit ? `<span class="design-est-unit">${esc(l.unit)}</span>` : ''}${l.why ? `<span class="design-est-why" data-hide-in-present>${esc(l.why)}</span>` : ''}</th>
+      <td class="design-est-figs"><label><span class="design-sr">from</span><input type="text" inputmode="numeric" name="from:${esc(l.key)}" value="${l.from == null ? '' : esc(String(l.from))}" placeholder="—"${l.kind === 'custom' ? ' readonly' : ''}></label>
+        <span class="design-est-dash">–</span>
+        <label><span class="design-sr">to</span><input type="text" inputmode="numeric" name="to:${esc(l.key)}" value="${l.to == null ? '' : esc(String(l.to))}" placeholder="—"${l.kind === 'custom' ? ' readonly' : ''}></label></td>
+      <td class="design-est-conf"><span class="design-est-word">${esc(CONF_WORD[l.confidence] || l.confidence)}</span>${l.observed ? `<span data-hide-in-present>seen ${esc(l.observed)}</span>` : ''}${l.source ? `<a data-hide-in-present href="${esc(l.source)}" target="_blank" rel="noopener">source</a>` : ''}</td>
+    </tr>`;
+  return `<section class="design-block design-estimate" id="estimate">
+  <h2>What it might cost</h2>
+  <p class="design-note">${esc(E.header(est))}${travelFrom ? '' : ' No travel month is set on Understand, so each line shows the year’s span rather than a season.'}</p>
+  <form method="POST" action="/hub/journeys/${esc(id)}/design?step=send" class="design-est-form" data-live data-fragment="est-total">
+    <input type="hidden" name="action" value="estimate">
+    <table class="design-est">
+      <thead data-hide-in-present><tr><th scope="col">Line</th><th scope="col">From – to (USD)</th><th scope="col">Basis</th></tr></thead>
+      <tbody>${lines.map(cell).join('')}</tbody>
+      <tfoot><tr><th scope="row">Estimated total</th><td colspan="2" data-fragment-slot="est-total">${estimateTotal(est)}</td></tr></tfoot>
+    </table>
+    <details class="design-est-add" data-hide-in-present>
+      <summary>Add a line</summary>
+      ${[0, 1, 2].map((n) => `<div class="design-est-addrow"><input type="text" name="custom_label" placeholder="What it is" maxlength="80" value="${esc(((est.custom || [])[n] || {}).label || '')}">
+        <input type="text" inputmode="numeric" name="custom_from" placeholder="from" value="${((est.custom || [])[n] || {}).from == null ? '' : esc(String(est.custom[n].from))}">
+        <input type="text" inputmode="numeric" name="custom_to" placeholder="to" value="${((est.custom || [])[n] || {}).to == null ? '' : esc(String(est.custom[n].to))}"></div>`).join('')}
+      <p class="design-hint">Clear a line’s figures to go back to the public rate. Anything you type is marked as yours.</p>
+    </details>
+    <div class="design-actions" data-hide-in-present>
+      <button class="btn btn--sm" type="submit"${caps.estimate ? '' : ' disabled'}>Save figures</button>
+      <span class="design-hint" data-live-status role="status">${caps.estimate ? '' : 'Estimates need migration 023.'}</span>
+    </div>
+  </form>
+</section>`;
+}
+
+/* The total cell alone, so the live save swaps one thing. */
+function estimateTotal(est) {
+  const tot = est.total || {};
+  return `<b class="design-est-total">${esc(E.range(tot.from, tot.to))}</b> <span class="design-est-sub">${tot.complete ? 'all lines included' : (tot.missing || 0) + (tot.missing === 1 ? ' line' : ' lines') + ' still to confirm'}</span>`;
+}
+
+/* The document as it would issue, through the one renderer. */
+function previewBlock(doc, brand) {
+  if (!doc) return '';
+  return `<section class="design-block design-preview" data-hide-in-present>
+  <details class="design-why"><summary>Preview the document as it will issue</summary>
+    <div class="design-preview-frame">${renderDocument(doc, brand, { preview: true })}</div>
+  </details>
+</section>`;
 }
 
 /* ── Stage 1 · Understand ─────────────────────────────────────────────────
@@ -1395,11 +1529,7 @@ function issue(id, shortlist, caps, chosen) {
     to send. The link can be withdrawn later; what it points at cannot be edited, so issuing
     again makes a new version rather than changing this one.</p>
 
-  <div class="design-issue-fields">
-    <label class="hub-field">
-      <span class="hub-field-label">Nights</span>
-      <input type="number" min="1" max="21" data-issue-nights placeholder="7">
-    </label>
+  <div class="design-issue-fields design-issue-fields--one">
     <label class="hub-field hub-field--wide">
       <span class="hub-field-label">A note from you (optional)</span>
       <textarea rows="3" data-issue-note
@@ -1440,6 +1570,9 @@ const DONE = {
   bad_day: ['bad', 'That day could not be saved as written. Nothing changed.'],
   day_failed: ['bad', 'That day could not be saved. Nothing changed.'],
   no_nights: ['bad', 'Set the nights on Understand first — there are no days to edit yet.'],
+  estimate_saved: ['good', 'Figures saved. The document will carry them, marked as yours.'],
+  estimate_failed: ['bad', 'Those figures could not be saved. Nothing changed.'],
+  no_estimate_column: ['bad', 'Estimates need migration 023 on this deployment.'],
   shape_cleared: ['good', 'Cleared. The days will just be numbered.'],
   shape_failed: ['bad', 'That shape could not be saved, so nothing changed.'],
   bad_recipe: ['bad', 'That is not one of the shapes in the guide. Nothing changed.'],

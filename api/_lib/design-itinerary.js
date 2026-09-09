@@ -17,8 +17,13 @@
    These are product decisions, not policy, and each one is the reason this
    cannot quietly become a self-serve booking tool:
 
-     NO PRICES, EVER. Dropped at the projection, so there is no number here to
-     leak. Cost is the advisor's to give, in their own words, in context.
+     NO BANK PRICE, EVER. `price` and `priceTag` are dropped at the projection,
+     so no property's public price signal can reach this document. What CAN,
+     since 2026-09-09 and on Duncan's decision, is the ESTIMATE: a range built
+     by design-estimate.js from dated public-rate observations plus the
+     advisor's own edits, labelled not a quote. No model has ever seen a
+     price and none does now — the prompt rule is unchanged; only what the
+     document may carry changed.
 
      NO OPTION TREE, NO AVAILABILITY, NO BOOKING ACTION. A reader cannot
      configure anything. There is one path forward and it is a conversation.
@@ -203,6 +208,10 @@ async function assemble(input) {
     /* The advisor's own words, if they wrote any. Optional and unstyled — this
        is the slot for what only they know. */
     advisorNote: str(i.advisorNote),
+    /* When they travel, and what it might cost. Both optional; both frozen
+       here so the document keeps the dates its figures were observed on. */
+    travel_from: /^\d{4}-\d\d-\d\d$/.test(String(i.travelFrom || '')) ? String(i.travelFrom) : null,
+    estimate: i.estimate && Array.isArray(i.estimate.lines) ? i.estimate : null,
     verified: {
       core: bank.verified.core || null,
       expanded: bank.verified.expanded || null

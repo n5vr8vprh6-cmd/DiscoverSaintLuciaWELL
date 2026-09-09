@@ -55,11 +55,17 @@ const properties = {};
   if (!rooms.length) return;           /* sold out or nothing rendered: no cell */
   const cheapest = rooms.slice().sort((a, b) => a.p - b.p)[0];
   const dearest = rooms.slice().sort((a, b) => b.p - a.p)[0];
+  /* The second-cheapest room: with the cheapest, it brackets what "a standard
+     room" costs that week. The dearest room shown at Christmas is a penthouse. */
+  const sorted = rooms.slice().sort((a, b) => a.p - b.p);
+  const next = sorted[1] || sorted[0];
   const p = properties[slug] || (properties[slug] = { region: null, taxRule: null, basis: null, weeks: [] });
   p.weeks.push({
     weekOf: weekOf(r.in),
     from: cheapest.p,
     to: dearest.p,
+    toNext: next.p,
+    roomNext: next.n,
     roomType: cheapest.n,
     rooms: rooms.length,
     observed: r.at,

@@ -58,7 +58,7 @@ async function nightly(slug, dateISO) {
   const after = weeks.filter((w) => day(w.weekOf) > want).sort((a, b) => day(a.weekOf) - day(b.weekOf))[0];
   const pick = [before, after].filter(Boolean).sort((a, b) => Math.abs(day(a.weekOf) - want) - Math.abs(day(b.weekOf) - want))[0];
   if (pick && Math.abs(day(pick.weekOf) - want) <= SPAN_DAYS * 86400000) {
-    return { slug, from: pick.from, to: pick.to, roomType: pick.roomType, weekOf: pick.weekOf, observed: pick.observed,
+    return { slug, from: pick.from, to: pick.to, toNext: pick.toNext || pick.to, roomNext: pick.roomNext || null, roomType: pick.roomType, weekOf: pick.weekOf, observed: pick.observed,
       source: pick.source, source_kind: pick.source_kind, confidence: pick.confidence, rooms: pick.rooms, basis: p.basis || null, taxRule: p.taxRule || null };
   }
   if (p.published) return Object.assign({ slug, why: 'no observed week near this date; the operator’s published rate' }, p.published);

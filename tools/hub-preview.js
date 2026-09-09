@@ -312,6 +312,8 @@ async function designWorkspace(step) {
   const M = require('../api/_lib/design-match.js');
   const { buildBody } = require('../api/_lib/hub-screens/design.js');
   const S = require('../api/_lib/design-shape.js');
+  const E = require('../api/_lib/design-estimate.js');
+  const IT = require('../api/_lib/design-itinerary.js');
 
   const j = JOURNEYS[0];
   const need = await N.seedFrom(j.answers || {});
@@ -333,6 +335,18 @@ async function designWorkspace(step) {
   let plan = S.skeleton({ recipe, nights: 7, chosen: chosenSlugs, properties: chosenProps });
   plan = S.applyEdit(plan, 5, { intensity: 'rest', note: 'Nothing booked. The day the week is remembered by.' }, { chosen: chosenSlugs }).plan;
 
+  /* The estimate for the fixture week, February 2027, with one line edited
+     by the advisor and one custom line — so Send shows every state a row can
+     have: public rate, published, yours, to confirm. */
+  const names = {}; chosenSlugs.forEach((s) => { names[s] = chosenProps[s].name; });
+  const base = await E.build({ plan, travelFrom: '2027-02-08', names });
+  const savedEst = { edits: { [base.lines[0].key]: { from: base.lines[0].from || 4000, to: (base.lines[0].to || 5000) + 500 } },
+    custom: [{ label: 'Private Gros Piton guide, two people', from: 360, to: 360 }], at: new Date().toISOString() };
+  const estimate = E.applyEdits(base, savedEst);
+  const previewDoc = await IT.assemble({ recipeKey: 'longevity-renewal', nights: 7, slugs: chosenSlugs, open: null, close: null,
+    dayPlan: plan, travelFrom: '2027-02-08', estimate: E.freeze(estimate), advisorNote: null });
+  FIXTURE_DOC = previewDoc;
+
   return buildBody({
     id: j.id, name: fullName(j), need: needWithNights, seeded: need, stored: null,
     vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
@@ -341,7 +355,7 @@ async function designWorkspace(step) {
        block: the week an advisor talks through, and the ranking underneath it. */
     ranked: bank.ready ? await M.rankRecipes(need) : [],
     step,
-    chosenSlugs, chosenProps, recipe, plan,
+    chosenSlugs, chosenProps, recipe, plan, estimate, previewDoc, travelFrom: '2027-02-08', brand: { first_name: 'Marguerite', last_name: 'Okonkwo', business: 'Okonkwo Travel', email: 'm@example.invalid', phone: '+1 416 555 0142' },
     session: { id: 'fixture-session', recipe_key: 'longevity-renewal', day_plan: plan,
       shortlist: { chosen: shortlist.slice(0, 2).map((c) => c.slug), at: new Date().toISOString() } },
     issued: [
@@ -360,6 +374,7 @@ async function designWorkspace(step) {
 /* ── Write ───────────────────────────────────────────────────────────────
    The path is passed through as the real route, not as the preview filename,
    so the nav's current-page state is the one the deployed Hub will show. */
+let FIXTURE_DOC = null;
 const PAGES = [
   ['index.html',    'Home',       '/hub',          ADVISOR, home()],
   ['journeys.html', 'Journeys',   '/hub/journeys', ADVISOR, journeys()],
@@ -381,6 +396,18 @@ PAGES.push(['design.html', 'Design · Marguerite Okonkwo', '/hub/journeys', ADVI
 for (const stage of ['understand', 'compare', 'shape', 'send']) {
   PAGES.push(['design-' + stage + '.html', 'Design · ' + stage + ' · Marguerite Okonkwo',
     '/hub/journeys', ADVISOR, await designWorkspace(stage)]);
+}
+/* The client document, rendered by the same function /j/:token uses, in the
+   same conversion-layout shell, with the fixture's frozen estimate. */
+if (FIXTURE_DOC) {
+  const { renderDocument } = require('../api/_lib/hub-screens/itinerary.js');
+  const brand = { first_name: 'Marguerite', last_name: 'Okonkwo', business: 'Okonkwo Travel', email: 'm@example.invalid', phone: '+1 416 555 0142' };
+  const doc = Object.assign({}, FIXTURE_DOC, { open: 'You said you wanted to come back feeling like yourself again, and that the week had to have room in it.\n\nThis is the shape we talked through: a protocol at the start, the sea at the end, and one day with nothing in it at all.', close: 'Nothing here is booked. When you are ready, call me and we will hold the dates.' });
+  const html = render({ key: 'itinerary', path: '/j', layout: 'conversion', surface: 'consumer', conversion: { context: 'A personal plan' },
+    title: 'A Saint Lucia WELL journey — Saint Lucia WELL', description: 'A personal travel plan.', noindex: true, scripts: false, js: [], styles: ['/css/hub.css'], advisor: null },
+    renderDocument(doc, brand, { version: 2, issued_at: new Date().toISOString() }));
+  fs.writeFileSync(path.join(OUT, 'itinerary.html'), html);
+  console.log('  ' + path.relative(process.cwd(), path.join(OUT, 'itinerary.html')));
 }
 PAGES.forEach(([file, title, routePath, advisor, body]) => {
   const html = render({

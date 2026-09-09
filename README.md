@@ -832,6 +832,34 @@ Migration `023-design-stepped.sql` renames the stage vocabulary to the four
 the screen shows and adds `travel_from`, `estimate`, `sent_at`.
 `node tools/design-shape-test.js` proves the rules offline.
 
+### The estimate · `api/_lib/design-estimate.js`
+
+**A rule reversed, and one that did not.** Until 2026-09-09 the client
+document carried no price so that it could not become a self-serve booking
+page. On Duncan's decision it now carries a **planning estimate**: each run of
+nights at a place is one line (nights × the observed nightly range for that
+property in that week, the cheapest room named, the day it was seen), arrival
+and departure transfers by region, one transfer per change of place, and any
+line the advisor adds. The total is a range, never a figure. A line with no
+dependable rate shows a dash and is excluded from the total, which then says so.
+The advisor edits any figure or adds a line on the Send stage; an edited line
+says *yours*. `design_sessions.estimate` stores the edits, not the values —
+the table is rebuilt from the lookup on every read and frozen into the
+document at issue with the dates its figures were observed. The header is one
+sentence, written once: *Planning estimate, not a quote. Built from public
+rates observed on … for two adults; every figure is reconfirmed before anything
+is booked.* What did **not** reverse: no model has ever seen a price and none
+does now. `design-need.js` still drops `price` and `priceTag`; rule 6 in every
+prompt stands; `design-estimate.js` and `design-generate.js` do not import each
+other. `node tools/design-estimate-test.js`.
+
+The document (`/j/:token`) is rendered by one exported function,
+`renderDocument(doc, brand, meta)`, which the Send stage also calls for its
+preview of the unfrozen draft — so a second template cannot drift. An issued
+document prints with *Version n · issued date · prepared by · Planning
+estimate, not a quote* in its header and a **Save as PDF** button; the token
+is never printed on the page.
+
 ### Public rates · `content/rates.js`, `api/_lib/rates.js`
 
 The estimate on the Send stage is arithmetic over a lookup, never a model's

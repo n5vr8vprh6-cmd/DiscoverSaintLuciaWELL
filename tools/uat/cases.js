@@ -1291,6 +1291,14 @@ const CASES = [
   expect: 'The arc redraws without a reload after each change (with JS) and after a 303 without. Columns take the village colour of their place; Rest is a dashed outline. Two adjacent High days raise a flag beside the arc naming the days; Rest clears the seven-night no-rest flag. P keeps the arc, phases, places and notes and removes the day editors, the flags and the inferred marker.',
   why: 'This is the most important screen in the intelligence layer: it is where the advisor shows the week rather than takes an order. The arc has to be legible across a table with the word doing the work, and the pacing rules are the guide’s own sentences turned into checks — advisor-only, because a flag read cold by a client is an argument against the trip.' },
 
+{ id: 'A-69', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
+  title: 'Send — the estimate resolves to the travel month, edits are marked, the preview is the document',
+  steps: ['On Understand set the travel month to February 2027 and 7 nights; carry two places; lay the arc; open Send',
+          'Read "What it might cost": one line per run of nights at a place, transfers by region, a total range',
+          'Type a figure into a "to be confirmed" line; clear an observed line back to blank; add a custom line; press P; open the preview; then issue and open /j/:token'],
+  expect: 'Stay lines show nights × the February nightly range and the cheapest room seen on 2026-09-09; a line with no observed week shows a dash and the total says how many lines are still to confirm. A typed figure is marked "yours" and joins the total; clearing returns the line to the public rate. P turns the inputs into plain text and hides sources and the add-a-line control. The preview is the client document with the estimate; the issued /j/:token carries the same lines, "seen" dates, "Planning estimate, not a quote", a Version n · issued date header, a Save as PDF button — and no token anywhere on the page.',
+  why: 'This is the paper-or-plastic moment. The client sees a dated range, never a figure, never a quote; the advisor edits in the open and every edit says so. Nothing here is a booking action, and the one call to action on the document is still a person.' },
+
 { id: 'A-65', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'Playbook',
   title: 'Read the Playbook and fill in the priority traveller',
   steps: ['Open /hub/campaign and follow the link to Your Playbook',
@@ -1356,8 +1364,8 @@ const CASES = [
   title: 'No cost figure anywhere is model-generated',
   steps: ['Read an issued itinerary end to end',
           'Search the page for a currency symbol, a number of dollars, or the words affordable, premium, from, starting'],
-  expect: 'Nothing. No price, no band, no range, no adjective standing in for one.',
-  why: 'Cost is the advisor\'s to give, in their own words, in context. The projection never passes a price to the model, so there is no number for it to print — but this is the case that would catch it if that ever changed.' },
+  expect: 'The only figures on the page are inside "What this might cost": a range per line, each dated ("seen 2026-09-09") or marked to be confirmed or your advisor’s figure, under a header that says planning estimate, not a quote. Nothing in the opening or closing paragraphs, the days or the places carries a price, a band or an adjective standing in for one — and every figure traces to a dated pricing row or an advisor edit.',
+  why: 'The rule reversed on 2026-09-09: the client may see an ESTIMATE, arithmetic over dated public-rate observations plus the advisor\'s edits. The rule that did not reverse: no model ever sees a price. The projection still drops price and priceTag, so a figure in the prose is the case this catches.' },
 
 { id: 'G-43', pass: 'ASK WELL', role: 'guard', priority: 1, area: 'ASK WELL',
   title: 'Present mode hides every working note, not most of them',

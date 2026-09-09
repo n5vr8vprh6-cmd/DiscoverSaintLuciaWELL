@@ -17,10 +17,17 @@
    design-itinerary.js and the itinerary_frozen() trigger in 022.
 
    ── WHAT IS NOT ON THIS PAGE, ON PURPOSE ──────────────────────────────────
-   No price. No availability. No option tree. No booking action. No mismatch,
-   no watch-out. These are design decisions rather than policy, and together
+   No availability. No option tree. No booking action. No mismatch, no
+   watch-out. These are design decisions rather than policy, and together
    they are the reason this cannot drift into a self-serve booking tool: there
    is exactly one way forward from here and it is a named person.
+
+   THE ESTIMATE IS ON THIS PAGE, SINCE 2026-09-09. Reversed on Duncan's
+   decision: the client sees a planning estimate — a RANGE, every line dated
+   with the day its public rate was observed, labelled not a quote. It is
+   arithmetic over content/rates.js plus the advisor's edits (design-
+   estimate.js); no model has ever seen a price and none does now. A range
+   with a named person under it is still not a booking page.
 
    LAST VERIFIED does appear. It is honest, and it is the line that makes the
    advisor structurally necessary — a dated fact invites the one question only
@@ -62,9 +69,18 @@ module.exports = async function handler(req, res) {
 
   const doc = row.document || {};
   const brand = row.brand || {};
-  const who = [brand.first_name, brand.last_name].filter(Boolean).join(' ');
+  page(res, 200, esc(doc.title || 'Your journey'),
+    renderDocument(doc, brand, { version: row.version, issued_at: row.issued_at }));
+};
 
-  const body = `<div class="itin">
+/* ── The document, rendered ────────────────────────────────────────────────
+   ONE template. The Send stage previews the unfrozen draft through this same
+   function (meta.preview), so a second template that looks the same until the
+   day it does not cannot exist. */
+function renderDocument(doc, brand, meta) {
+  doc = doc || {}; brand = brand || {}; meta = meta || {};
+  const who = [brand.first_name, brand.last_name].filter(Boolean).join(' ');
+  return `<div class="itin${meta.preview ? ' itin--preview' : ''}">
   <div class="wrap wrap--narrow">
 
     <header class="itin-head">
@@ -72,7 +88,9 @@ module.exports = async function handler(req, res) {
       <h1>${esc(doc.title || 'A Saint Lucia WELL journey')}</h1>
       ${doc.recipe ? `<p class="itin-shape">${esc(doc.recipe.name)}${
         doc.recipe.sub ? ' — ' + esc(doc.recipe.sub) : ''}</p>` : ''}
+      ${meta.version ? `<p class="itin-meta">Version ${esc(String(meta.version))}${meta.issued_at ? ' · issued ' + esc(onDay(meta.issued_at)) : ''}${who ? ' · prepared by ' + esc(who) : ''} · Planning estimate, not a quote</p>` : ''}
     </header>
+    ${meta.preview ? `<p class="itin-preview-note">Preview. The opening and closing paragraphs are written when you issue; the estimate below is what the client will see.</p>` : ''}
 
     ${doc.open ? `<div class="itin-open">${paras(doc.open)}</div>` : ''}
 
@@ -84,6 +102,7 @@ module.exports = async function handler(req, res) {
           <p class="itin-day-n">${esc(d.label)}</p>
           <div>
             ${d.shape ? `<p class="itin-day-shape">${esc(d.shape)}</p>` : ''}
+            ${d.property || d.intensity ? `<p class="itin-day-where">${d.property ? esc(d.property) : ''}${d.property && d.intensity ? ' · ' : ''}${d.intensity ? esc({ rest: 'a rest day', low: 'gentle', medium: 'active', high: 'demanding' }[d.intensity] || d.intensity) : ''}</p>` : ''}
             ${d.note ? `<p class="itin-day-note">${esc(d.note)}</p>` : ''}
           </div>
         </li>`).join('')}
@@ -110,6 +129,8 @@ module.exports = async function handler(req, res) {
       </ul>
     </section>` : ''}
 
+    ${estimateBlock(doc.estimate)}
+
     ${doc.advisorNote ? `
     <section class="itin-block itin-note">
       <h2>From ${esc(brand.first_name || 'your advisor')}</h2>
@@ -131,6 +152,7 @@ module.exports = async function handler(req, res) {
         ${brand.email ? `<a href="mailto:${esc(brand.email)}">${esc(brand.email)}</a>` : ''}
         ${brand.phone ? `<a href="tel:${esc(String(brand.phone).replace(/[^\d+]/g, ''))}">${esc(brand.phone)}</a>` : ''}
       </p>
+      ${meta.preview ? '' : `<p class="itin-print"><button type="button" class="btn btn--ghost btn--sm" onclick="window.print()">Save as PDF</button> <span>Prints without the link.</span></p>`}
       ${doc.verified && doc.verified.core
         ? `<p class="itin-prov">Property intelligence verified ${esc(doc.verified.core)}${
             doc.verified.expanded ? ' (wider scan ' + esc(doc.verified.expanded) + ')' : ''}.</p>` : ''}
@@ -138,9 +160,31 @@ module.exports = async function handler(req, res) {
 
   </div>
 </div>`;
+}
 
-  page(res, 200, esc(doc.title || 'Your journey'), body);
-};
+/* ── The estimate, as the client reads it ──────────────────────────────────
+   Frozen lines, a dash where nothing dependable was found, a total that is a
+   range and says when it is incomplete. The header sentence comes from
+   design-estimate.js so the workspace and the document cannot disagree. */
+function estimateBlock(est) {
+  if (!est || !Array.isArray(est.lines) || !est.lines.length) return '';
+  const fmt = (n) => (Number.isFinite(n) ? '$' + Math.round(n).toLocaleString('en-US') : '—');
+  const range = (a, b) => (!Number.isFinite(a) || !Number.isFinite(b) ? '—' : a === b ? fmt(a) : fmt(a) + '–' + fmt(b));
+  const t = est.total || {};
+  return `<section class="itin-block itin-estimate">
+      <h2>What this might cost</h2>
+      <p class="itin-est-head">${esc(est.header || 'Planning estimate, not a quote.')}</p>
+      <table class="itin-est">
+        <tbody>${est.lines.map((l) => `<tr class="kind-${esc(l.kind || 'line')}${l.edited ? ' is-edited' : ''}">
+          <th scope="row">${esc(l.label)}${l.unit ? `<span>${esc(l.unit)}</span>` : ''}</th>
+          <td>${range(l.from, l.to)}${l.confidence === 'QUOTE / CONFIRM' ? `<span>to be confirmed</span>` : l.edited ? `<span>your advisor’s figure</span>` : (l.observed ? `<span>seen ${esc(l.observed)}</span>` : '')}</td>
+        </tr>`).join('')}</tbody>
+        <tfoot><tr><th scope="row">${t.complete ? 'Estimated total' : 'Estimated total so far'}<span>${t.complete ? 'all lines included' : (t.missing || 0) + (t.missing === 1 ? ' line' : ' lines') + ' still to be confirmed'}</span></th><td>${range(t.from, t.to)}</td></tr></tfoot>
+      </table>
+    </section>`;
+}
+
+const onDay = (iso) => { try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
 
 /* Blank lines are paragraph breaks, and that is the whole of the formatting.
    The generated prose is plain text and must stay plain text — anything that
@@ -232,3 +276,6 @@ function page(res, status, title, body) {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   res.end(html);
 }
+
+module.exports.renderDocument = renderDocument;
+module.exports.estimateBlock = estimateBlock;
