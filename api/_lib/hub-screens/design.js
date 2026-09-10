@@ -94,16 +94,11 @@ const STAGE_HEAD = {
   send: 'What happens next'
 };
 
-/* Where the consultation actually is, from what exists. Never from the stored
-   stage — see above. */
-function resumeStage(stored, session) {
-  if (!stored) return 'understand';
-  const chosen = session && session.shortlist && session.shortlist.chosen;
-  if (!chosen || !chosen.length) return 'compare';
-  const days = session.day_plan && session.day_plan.days;   /* laid by design-shape.js */
-  if (!days || !days.length) return 'shape';
-  return 'send';
-}
+/* Without ?step the workspace opens on Understand, every time. It used to
+   derive a resume position from what was stored, which sent "Design this
+   journey" straight to Compare the moment a consultation existed — Duncan's
+   first note on 2026-09-10. The rail is how you move on. */
+function resumeStage() { return 'understand'; }
 
 /* Best-effort, and it must stay that way. */
 async function setStage(session, advisor, stage) {
@@ -619,10 +614,12 @@ async function actionConsult(res, form, v) {
   const travelFrom = extra.travel_from !== undefined ? extra.travel_from : ((v.stored && v.stored.travel_from) || null);
   const shortlistNow = await M.shortlistFor(edited);
   const floorNow = await U.floor({ shortlist: shortlistNow, travelFrom, nights: edited.nights });
-  const heardHtml = U.heard({ need: edited, vocab, notes: notesNow, travelFrom, floor: floorNow });
+  const heardHtml = U.heard({ need: edited, vocab, notes: notesNow, travelFrom, floor: floorNow, id, firstName: (v.raw && v.raw.consumer_first) || null });
   return back('saved', {
     fragment: heardHtml,
-    fragments: { consult: heardHtml, 'budget-word': U.budgetWord(edited, floorNow), floor: U.floorLine(floorNow), 'whisper-energy': U.whisper(edited, shortlistNow) },
+    fragments: { consult: heardHtml, 'budget-word': U.budgetWord(edited, floorNow), floor: U.floorLine(floorNow), 'whisper-energy': U.whisper(edited, shortlistNow),
+      /* The island band, re-rendered from the new shortlist — the map answering as the answers change. */
+      island: U.islandInner({ id, need: edited, vocab, shortlist: shortlistNow }) },
     answered: U.answeredCount(edited, travelFrom, notesNow)
   });
 }
@@ -1108,9 +1105,13 @@ function stageNav(id, step, v) {
       </ol>
     </div>
   </div>` : '';
+  /* On Understand the forward link is the gold CTA inside the What-I-heard
+     card (design-understand.js heard()), so the nav here carries only the way
+     back to the Journey. */
+  const forward = step === 'understand' ? '' : (next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}"${prepare}>${esc(STAGE_LABEL[next])} →</a>` : '');
   return `<nav class="design-stagenav">
-    ${prev ? `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}/design?step=${prev}">← ${esc(STAGE_LABEL[prev])}</a>` : '<span></span>'}
-    ${next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}"${prepare}>${esc(STAGE_LABEL[next])} →</a>` : ''}
+    ${prev ? `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}/design?step=${prev}">← ${esc(STAGE_LABEL[prev])}</a>` : `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}">← Back to the Journey</a>`}
+    ${forward}
   </nav>${overlay}`;
 }
 
@@ -1221,7 +1222,6 @@ function propertyCard(id, c, need, chosen, fw, v_) {
       ${continuumStrip(p, fw)}
     </div>
     ${c.verified_at ? `<p class="design-verified">Last verified ${esc(c.verified_at)}</p>` : ''}
-    ${storyBlock(id, c.slug, (v_.placeNotes || {})[c.slug] || '', v_.caps)}
 
     <details class="design-why">
       <summary>Why this fits · what to watch</summary>

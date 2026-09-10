@@ -27,7 +27,12 @@
 (function () {
   'use strict';
 
-  Array.prototype.forEach.call(document.querySelectorAll('[data-island]'), function (root) {
+  /* A WeakSet, not an attribute: markup the server re-sends must never arrive
+     looking already bound. */
+  var bound = new WeakSet();
+  function bind(root) {
+    if (bound.has(root)) return;
+    bound.add(root);
     var svg = root.querySelector('.island-svg');
     var pins = [].slice.call(root.querySelectorAll('[data-pin]'));
     var cards = [].slice.call(root.querySelectorAll('[data-pin-card]'));
@@ -69,6 +74,14 @@
       /* Within 60 units of a pin, or nothing changes — the last card stays. */
       if (best && bestD <= 60 * 60) show(best.getAttribute('data-pin'));
     });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-island]'), bind);
+  /* After a live save the island band is the server's new markup; bind again. */
+  document.addEventListener('fragment:swapped', function (e) {
+    var slot = e.detail && e.detail.slot;
+    if (!slot) return;
+    Array.prototype.forEach.call(slot.querySelectorAll('[data-island]'), bind);
   });
 })();
 
@@ -547,7 +560,9 @@
     if (!Object.keys(frags).length) return;
     Object.keys(frags).forEach(function (k) {
       var slot = document.querySelector('[data-fragment-slot="' + k + '"]');
-      if (slot) slot.innerHTML = frags[k];
+      if (!slot) return;
+      slot.innerHTML = frags[k];
+      document.dispatchEvent(new CustomEvent('fragment:swapped', { detail: { name: k, slot: slot } }));
     });
     if (typeof j.answered === 'number' && form.querySelector) {
       var count = form.querySelector('[data-answered]');
@@ -625,11 +640,12 @@
    ========================================================================== */
 (function () {
   'use strict';
-  var link = document.querySelector('a[data-prepare]');
   var overlay = document.querySelector('[data-prepare-overlay]');
-  if (!link || !overlay) return;
+  if (!overlay) return;
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  link.addEventListener('click', function (e) {
+  document.addEventListener('click', function (e) {
+    var link = e.target && e.target.closest ? e.target.closest('a[data-prepare]') : null;
+    if (!link) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     overlay.hidden = false;
@@ -641,30 +657,3 @@
   });
 })();
 
-/* ============================================================================
-   SEND WHAT I HEARD — posts as JSON so the page keeps its place
-   ----------------------------------------------------------------------------
-   The button is a real form (303 without JavaScript). Here it posts as JSON
-   and writes the server's sentence into the status line.
-   ========================================================================== */
-(function () {
-  'use strict';
-  var form = document.querySelector('form[data-heard-send]');
-  if (!form) return;
-  var status = form.querySelector('[data-heard-status]');
-  var btn = form.querySelector('button');
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (btn) btn.disabled = true;
-    if (status) status.textContent = 'Sending…';
-    fetch(form.getAttribute('action'), { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'heard_send' }) })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (status) status.textContent = j && j.ok ? 'Sent just now to ' + (j.to || 'them') + '. Copied to you; replies come to you.'
-          : (j && j.message) || 'That could not be sent. Read it aloud, or try again in a moment.';
-      })
-      .catch(function () { if (status) status.textContent = 'That could not be sent. Read it aloud, or try again in a moment.'; })
-      .then(function () { if (btn) btn.disabled = false; });
-  });
-})();

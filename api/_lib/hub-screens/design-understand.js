@@ -110,8 +110,13 @@ function quote(answers) {
   if (pace) second.push(`at a${/^[aeiou]/i.test(pace.label) ? 'n' : ''} ${lower1(pace.label)} pace`);
   if (orientation) second.push(`<q>${esc(lower1(orientation.label))}</q>`);
   if (!first.length && !second.length) return '';
-  return `<p class="design-quote">${first.length ? 'You said ' + first.join(', and ') + '.' : ''}${
-    second.length ? ' ' + upper1(second.join(', ')) + '.' : ''}</p>`;
+  /* A white card with a large gold quotation mark — type, not an icon; the
+     brand's own glyph — so the client's words are visibly theirs. */
+  return `<div class="design-quote-card">
+    <span class="design-quote-mark" aria-hidden="true">“</span>
+    <p class="design-quote">${first.length ? 'You said ' + first.join(', and ') + '.' : ''}${
+      second.length ? ' ' + upper1(second.join(', ')) + '.' : ''}</p>
+  </div>`;
 }
 
 function told(v) {
@@ -123,28 +128,21 @@ function told(v) {
     return keys.map((k) => `<span class="chip${bag[k] === top ? ' chip--lead' : ''}">${esc(upper1(say(vocab, dim, k)))}</span>`).join('');
   };
 
-  /* A cue per leading away-from state — the advisor's opening. */
+  /* A cue per leading away-from state — the question the advisor asks, in
+     the second person, with "Ask:" as the advisor's own prompt. */
   const away = leaders(need.current);
-  const cues = away.map((k) => `Ask what <b>${esc(say(vocab, 'current', k))}</b> looks like for them right now.`);
-
-  const FIELD_WORD = { triggers: 'why now', uncertainties: 'what would make them hesitate', readiness: 'where the decision is',
-    party: 'who is coming', budget: 'the budget band', budgetUsd: 'the budget', nights: 'nights', constraints: 'things to plan around',
-    rhythm: 'structure', activity: 'energy', social: 'company', experience: 'familiarity', orientation: 'relationship to wellness',
-    current: 'away from', desired: 'toward', villages: 'places', compass: 'direction', continuumFloor: 'depth', continuumCeiling: 'depth' };
-  const overrodeRaw = stored && stored.advisor_overrode && stored.advisor_overrode.length ? stored.advisor_overrode : null;
-  const overrode = overrodeRaw ? overrodeRaw.map((k) => FIELD_WORD[k] || k).filter((w, i, a) => a.indexOf(w) === i) : null;
+  const cues = away.map((k) => `<span class="design-cue-ask">Ask:</span> “What does <b>${esc(say(vocab, 'current', k))}</b> look like for you right now?”`);
 
   return `<section class="design-band design-band--told">
   <h2>What you told us</h2>
   ${quote(answers)}
   <div class="design-states">
-    <div><h3>Moving away from</h3><div class="chips">${chips('current', need.current)}</div></div>
+    <div><h3>Moving away from</h3><div class="chips chips--away">${chips('current', need.current)}</div></div>
     <div class="design-arrow" aria-hidden="true">→</div>
-    <div><h3>Toward</h3><div class="chips">${chips('desired', need.desired)}</div></div>
+    <div><h3>Toward</h3><div class="chips chips--toward">${chips('desired', need.desired)}</div></div>
   </div>
   ${cues.length ? `<p class="design-cue">${cues.join(' ')}</p>` : ''}
   ${caps.notes ? noteField('told', notes, 'What they said about it', 'How it shows up for them — their words, as you heard them.', v.id) : ''}
-  ${overrode ? `<p class="design-note">You changed ${overrode.length} thing${overrode.length === 1 ? '' : 's'} from what the answers suggested: ${esc(overrode.join(', '))}.</p>` : ''}
 </section>`;
 }
 
@@ -162,14 +160,23 @@ function noteField(key, notes, heading, hint, id, standalone) {
   return `<form method="POST" action="/hub/journeys/${esc(id)}/design?step=understand" class="design-told-form" data-live data-fragment="consult" data-partial="1">
       <input type="hidden" name="action" value="consult"><input type="hidden" name="partial" value="1">
       ${field}
-      <div class="design-actions"><button class="btn btn--ghost btn--sm" type="submit">Save</button><span class="design-hint" data-live-status role="status"></span></div>
+      <div class="design-actions"><button class="btn btn--gold btn--sm" type="submit">Save</button><span class="design-hint" data-live-status role="status"></span></div>
     </form>`;
 }
 
 /* ── Band 2 · Where the island answers it ─────────────────────────────────── */
 
+/* The band's inside is a fragment slot: when the answers change, the server
+   re-renders this from the new shortlist and the browser swaps it in — the
+   map answering as you talk. */
 function islandBand(v) {
-  const { id, need, vocab, shortlist, placeNotes, caps } = v;
+  return `<section class="design-band design-band--white design-band--island">
+  <div data-fragment-slot="island">${islandInner(v)}</div>
+</section>`;
+}
+
+function islandInner(v) {
+  const { id, need, vocab, shortlist } = v;
   const w = need.villages || {};
   const lead = leaders(w);
   const isLead = (k) => Boolean(k) && lead.indexOf(k) !== -1;
@@ -188,8 +195,10 @@ function islandBand(v) {
       href: `/hub/journeys/${encodeURIComponent(id)}/design?step=compare#prop-${encodeURIComponent(c.slug)}`,
       lat: p.geo.lat, lng: p.geo.lng, town: p.geo.town, approx: p.geo.approx,
       village: vk, villageName: vk ? label(vocab, 'villages', vk) : '',
-      lead: isLead(vk), image: p.image || null, hook: p.hook || null,
-      story: (placeNotes && placeNotes[c.slug]) || ''
+      lead: isLead(vk), image: p.image || null, hook: p.hook || null
+      /* The advisor's story about the place stays in the data layer
+         (advisor_place_notes) and off this screen — Duncan is working it into
+         the training rather than the tool for this version. */
     };
   }).filter(Boolean);
 
@@ -210,29 +219,16 @@ function islandBand(v) {
       (lead.length ? ` — ${n > 1 ? 'most of them' : 'it sits'} in ${esc(joinAnd(lead.map((k) => label(vocab, 'villages', k))))}.` : '.');
   }
 
-  /* The story reads on the card; the form to write or change it folds away
-     so the card stays a card. */
-  const storyForm = (p) => (caps.placeNotes ? `<details class="design-story-wrap">
-      <summary>${p.story ? 'Change your story about this place' : 'Add your own story about this place'}</summary>
-      <form method="POST" action="/hub/journeys/${esc(id)}/design?step=understand" class="design-story" data-live data-fragment="story-${esc(p.slug)}">
-        <input type="hidden" name="action" value="place_note"><input type="hidden" name="slug" value="${esc(p.slug)}"><input type="hidden" name="step" value="understand">
-        <textarea id="story-${esc(p.slug)}" name="body" rows="2" maxlength="400" aria-label="Your story about this place" placeholder="A stay, a moment, the thing to say when it comes up.">${esc(p.story || '')}</textarea>
-        <span class="design-field-hint">Yours alone — shown to you here and on Compare, never to the client.</span>
-        <div class="design-actions"><button class="btn btn--ghost btn--sm" type="submit">Save</button><span class="design-hint" data-live-status role="status"></span></div>
-      </form>
-    </details>` : '');
-
-  return `<section class="design-band design-band--white design-band--island">
-  <h2>Where the island answers it</h2>
+  return `<h2>Where the island answers it</h2>
   <p class="design-island-sentence">${sentence}</p>
-  ${islandMap(ISLAND, pins, legend, { title: 'Saint Lucia, with the places we are considering', caption: false, extra: storyForm })}
-</section>`;
+  ${islandMap(ISLAND, pins, legend, { title: 'Saint Lucia, with the places we are considering', caption: false })}`;
 }
 
 /* ── Band 3 · Let's get into the details ─────────────────────────────────── */
 
 function details(v) {
-  const { id, need, stored, vocab, caps, suggestedMonth, notes, floor, shortlist, clientEmail } = v;
+  const { id, need, stored, vocab, caps, suggestedMonth, notes, floor, shortlist, firstName } = v;
+  const thisMonth = new Date().toISOString().slice(0, 7);
   const multi = Boolean(caps.conversation);
   const opts = (dim) => vocab[dim] || [];
   const has = (arr, key) => ((arr || []).indexOf(key) !== -1 ? ' checked' : '');
@@ -258,7 +254,7 @@ function details(v) {
       <span class="design-scale-lo${val < 0.4 ? ' is-on' : ''}">${esc(s.low)}</span>
       <input type="range" id="scale-${k}" name="${esc(k)}" min="0" max="1" step="0.05" value="${val}" aria-label="${esc(SCALE_NAME[k] || k)}: ${esc(s.low)} to ${esc(s.high)}">
       <span class="design-scale-hi${val > 0.6 ? ' is-on' : ''}">${esc(s.high)}</span></div>` +
-      (k === 'activity' ? `<p class="design-whisper" data-fragment-slot="whisper-energy">${whisper(need, shortlist)}</p>` : '');
+      (k === 'activity' ? `<div class="design-whisper" data-fragment-slot="whisper-energy">${whisper(need, shortlist)}</div>` : '');
   };
 
   const storedMonth = stored && stored.travel_from ? String(stored.travel_from).slice(0, 7) : '';
@@ -277,7 +273,7 @@ function details(v) {
         <div class="design-field">
           <label class="design-field-label" for="travel_from">When</label>
           ${caps.travel_from
-            ? `<input class="design-month" type="month" id="travel_from" name="travel_from" value="${esc(month)}"${monthSuggested ? ' data-suggested="true"' : ''} aria-describedby="travel_from-hint">
+            ? `<input class="design-month" type="month" id="travel_from" name="travel_from" min="${thisMonth}" value="${esc(month)}"${monthSuggested ? ' data-suggested="true"' : ''} aria-describedby="travel_from-hint">
                <span class="design-field-hint" id="travel_from-hint" data-suggest-hint>${monthSuggested ? 'Suggested from your answers — change it if you know.' : 'The month you mean to travel.'}</span>`
             : '<span class="design-hint">Dates need migration 023.</span>'}
         </div>
@@ -306,21 +302,23 @@ function details(v) {
   const around = chips('constraints', 'constraints', need.constraints, 'checkbox') +
     (notesOn ? noteField('around', notes, 'Details', 'Dates that are fixed, what the diet is, who the children are.', id) : '');
 
+  /* The figure, and beside it the tick that lets the advisor look past it —
+     the question is theirs to ask; the tick records the answer. */
   const budgetBlock = multi ? `<div class="design-budget">
         <label class="design-field-label" for="budget_usd">About how much, all in</label>
         <div class="design-budget-row">
           <span class="design-money"><span class="design-money-sign" aria-hidden="true">$</span>
             <input type="number" id="budget_usd" name="budget_usd" min="0" step="100" inputmode="numeric" value="${budget == null ? '' : esc(String(budget))}" placeholder="18,000" aria-describedby="budget-hint"></span>
-          <span class="design-budget-word" data-fragment-slot="budget-word">${budgetWord(need, floor)}</span>
+          <label class="design-pick design-pick--multi design-pick--open"><input type="checkbox" name="budget_open" value="1"${open ? ' checked' : ''} aria-describedby="open-hint"><span>Open, if it is right</span></label>
         </div>
         <span class="design-field-hint" id="budget-hint">US dollars · the whole trip · everyone travelling. A rough number is fine.</span>
+        <p class="design-budget-word" data-fragment-slot="budget-word">${budgetWord(need, floor)}</p>
+        <p class="design-cue design-cue--small" id="open-hint"><span class="design-cue-ask">Ask:</span> “If the right week cost more than that, would you want to see it?” <span class="design-hint">The tick is what lets us make the most of the trip rather than fit it to a number.</span></p>
         <p class="design-floor" data-fragment-slot="floor">${floorLine(floor)}</p>
-        <label class="design-pick design-pick--multi design-pick--open"><input type="checkbox" name="budget_open" value="1"${open ? ' checked' : ''}><span>Open, if it is right</span></label>
       </div>` : chips('budget', 'budget', null, 'radio', 'design-picks--seg');
 
   const answered = answeredCount(need, month, notes);
-  const heardHtml = heard({ need, vocab, notes, travelFrom: month, floor });
-  const sentAt = stored && stored.heard_sent_at ? String(stored.heard_sent_at) : null;
+  const heardHtml = heard({ need, vocab, notes, travelFrom: month, floor, id, firstName });
 
   return `<section class="design-band design-band--details" id="consult">
   <h2>Let’s get into the details</h2>
@@ -337,37 +335,18 @@ function details(v) {
     ${ask(6, 'where', 'Where are we in the decision?', 'Dreaming, or picking?', steps)}
     ${ask(7, 'budget', 'Roughly what feels right, all in?', 'For the whole trip, everyone in. A range is fine; we will make it real together.', budgetBlock)}
 
-    <div class="design-heard" data-fragment-slot="consult">${heardHtml}</div>
-
     <div class="design-actions design-consult-actions">
-      <button class="btn btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Save what we know</button>
+      <button class="btn btn--gold btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Save what we know</button>
       <span class="design-hint" data-answered>${answered} of 7 answered</span>
       <span class="design-hint" data-live-status role="status">${caps.consultation ? '' : esc(D_UNAVAILABLE().consultation)}</span>
     </div>
-  </form>
 
-  ${heardSendForm(id, clientEmail, sentAt, caps)}
+    <div class="design-heard" data-fragment-slot="consult">${heardHtml}</div>
+  </form>
 </section>`;
 }
-
-/* "Send what I heard" — its own form so a plain submit works, and a JSON post
-   from hub-design.js when scripted. Needs a client address. */
-function heardSendForm(id, clientEmail, sentAt, caps) {
-  if (!caps.consultation) return '';
-  if (!clientEmail) return `<p class="design-hint design-heard-send">This Journey has no email address, so what you heard can only be read aloud.</p>`;
-  return `<form method="POST" action="/hub/journeys/${esc(id)}/design?step=understand" class="design-heard-send" data-heard-send>
-    <input type="hidden" name="action" value="heard_send">
-    <button class="btn btn--ghost btn--sm" type="submit">Send what I heard to ${esc(clientEmail)}</button>
-    <span class="design-hint" data-heard-status role="status">${sentAt ? 'Sent ' + esc(since(sentAt)) + '. Copied to you; replies come to you.' : 'Copied to you; replies come to you. Nothing is booked or quoted.'}</span>
-  </form>`;
-}
-function since(iso) {
-  const t = Date.parse(iso); if (!Number.isFinite(t)) return 'earlier';
-  const m = Math.round((Date.now() - t) / 60000);
-  if (m < 1) return 'just now'; if (m < 60) return m + (m === 1 ? ' minute ago' : ' minutes ago');
-  const h = Math.round(m / 60); if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago');
-  const d = Math.round(h / 24); return d + (d === 1 ? ' day ago' : ' days ago');
-}
+/* "Send what I heard" left this stage on 2026-09-10 — Duncan will place it on
+   Send. composeHeard()/sendHeard() and the heard_send action stay for that. */
 
 /* How many of the seven sections carry anything. Server-side, from the row. */
 function answeredCount(need, month, notes) {
@@ -400,7 +379,13 @@ async function floor(input) {
     const hi = Number.isFinite(cell.toNext) ? cell.toNext : cell.to;
     if (Number.isFinite(cell.from) && Number.isFinite(hi)) stays.push({ slug: c.slug, name: c.name, from: cell.from * nights, to: hi * nights, observed: cell.observed || null });
   }
-  if (!stays.length) return null;
+  if (!stays.length) {
+    /* Nothing priced for that month: say which months the lookup covers,
+       rather than going quiet. `none: true` tells floorLine() why. */
+    const sp = await R.span();
+    return { none: true, month: monthName(i.travelFrom), nights,
+      covers: sp ? { first: monthName(sp.first), last: monthName(sp.last) } : null, places: (i.shortlist || []).length };
+  }
   stays.sort((a, b) => a.from - b.from);
   const cheapest = stays[0];
   const transfers = (await R.transfers(null)).filter((t) => /^uvf-/.test(t.key) && Number.isFinite(t.from));
@@ -415,6 +400,10 @@ async function floor(input) {
 
 function floorLine(f) {
   if (!f) return '<span class="design-empty">A starting figure appears once there is a month and a night count.</span>';
+  if (f.none) {
+    return `<span class="design-empty">No public rates for ${esc(f.month)}${f.covers ? ` — the lookup covers ${esc(f.covers.first)} to ${esc(f.covers.last)}` : ''}${
+      f.places ? '' : ', and there are no places to price yet'}.</span>`;
+  }
   return `The places we’re considering start from about <b>${money(f.from)}</b> for ${f.nights} night${f.nights === 1 ? '' : 's'} in ${esc(f.month)} — ${
     esc(f.cheapestName)}, standard room, two adults${f.transfers ? ', with transfers' : ''} — <b>before flights</b>.${
     f.observed ? ` <span class="design-floor-seen">Public rates seen ${esc(f.observed)}.</span>` : ''}`;
@@ -423,14 +412,14 @@ function floorLine(f) {
 /* The word beside the figure, with its arithmetic — and where it sits
    against the floor. */
 function budgetWord(need, f) {
-  if (need.budget === 'open') return 'Open, if it is right.';
   const b = need.budgetUsd, n = need.nights;
-  if (!b) return '<span class="design-empty">reads as — once there is a figure</span>';
+  const openTail = need.budget === 'open' ? ' · <b>a guide, not a ceiling</b>' : '';
+  if (!b) return need.budget === 'open' ? 'Open — <b>a guide, not a ceiling</b>.' : '<span class="design-empty">reads as — once there is a figure</span>';
   const band = N.bandFor(b, n);
   const BAND = { entry: 'Value-led', mid: 'Comfortable', premium: 'Premium' };
-  if (!band) return `${money(b)} all in · <span class="design-empty">set the nights to read it as a band</span>`;
+  if (!band) return `${money(b)} all in${openTail} · <span class="design-empty">set the nights to read it as a band</span>`;
   const vs = f && f.from ? (b < f.from ? ` · <b class="design-under">below where these places start (${money(f.from)}) — worth saying now</b>` : '') : '';
-  return `reads as <b>${BAND[band]}</b> · about ${money(b / n)} a night across the stay${vs}`;
+  return `reads as <b>${BAND[band]}</b> · about ${money(b / n)} a night across the stay${openTail}${vs}`;
 }
 
 /* ── The whisper ──────────────────────────────────────────────────────────
@@ -450,7 +439,7 @@ function whisper(need, shortlist) {
     return restorative ? (hi <= 2 && lo <= 1) : hi === 3;
   }).map((c) => c.name).slice(0, 3);
   if (!names.length) return '';
-  return `${restorative ? 'Restorative' : 'Active'} points to <b>${esc(joinAnd(names))}</b> <span class="design-inferred">· from each place’s typical intensity, inferred</span>`;
+  return `<p>${restorative ? 'Restorative' : 'Active'} points to <b>${esc(joinAnd(names))}</b>.</p><p class="design-inferred">From each place’s typical intensity, inferred.</p>`;
 }
 
 /* ── What I heard ─────────────────────────────────────────────────────────
@@ -507,19 +496,31 @@ function heardParts(hv) {
   return { parts, said };
 }
 
+/* The crown jewel of the stage: an ink card, the paragraph large, the notes
+   quoted, the advisor's closing prompt, and the one call to action — on to
+   Compare, carrying the "preparing options" moment. */
 function heard(hv) {
   const { parts, said } = heardParts(hv);
-  if (!parts.length && !said.length) {
-    return `<h3 class="design-heard-h">What I heard</h3>
-      <p class="design-heard-p design-empty">Nothing marked yet. As you mark answers, this reads them back.</p>`;
-  }
-  return `<h3 class="design-heard-h">What I heard</h3>
-      ${parts.length ? `<p class="design-heard-p">${esc(parts.join(' '))}</p>` : ''}
+  const first = hv.firstName ? String(hv.firstName) : '';
+  const cta = hv.id ? `<div class="design-heard-cta">
+        <a class="btn btn--gold" href="/hub/journeys/${esc(hv.id)}/design?step=compare" data-prepare="${esc(first)}">Let’s compare the places →</a>
+        <span class="design-heard-ctahint">Takes a moment — the island is matched against everything above.</span>
+      </div>` : '';
+  const body = (!parts.length && !said.length)
+    ? `<p class="design-heard-p design-heard-p--empty">Nothing marked yet. As you mark answers, this reads them back.</p>`
+    : `${parts.length ? `<p class="design-heard-p">${esc(parts.join(' '))}</p>` : ''}
       ${said.map((s) => `<p class="design-heard-words"><span class="design-heard-who">${esc(s.label)}:</span> “${esc(s.text)}”</p>`).join('')}`;
+  return `<div class="design-heard-card">
+      <div class="design-heard-head"><h3 class="design-heard-h">What I heard</h3><span class="design-heard-mark" aria-hidden="true">${RING}</span></div>
+      ${body}
+      <p class="design-cue design-cue--ink"><span class="design-cue-ask">Ask:</span> “Anything you feel is missing before we lay this out?”</p>
+      ${cta}
+    </div>`;
 }
+const RING = `<svg width="28" height="28" viewBox="0 0 26 26" aria-hidden="true" focusable="false"><circle cx="13" cy="13" r="11.5" fill="none" stroke="#00A6A8" stroke-width="1.5"/><circle cx="13" cy="13" r="7" fill="none" stroke="#D9A03C" stroke-width="1.5"/><circle cx="13" cy="13" r="2.6" fill="#EF6A4A"/></svg>`;
 /* Plain text, for the recap email. */
 function heardText(hv) { return heardParts(hv).parts.join(' '); }
 function heardNotes(hv) { return heardParts(hv).said.map((s) => ({ label: s.label, text: s.text })); }
 
-module.exports = { understandStage, heard, heardText, heardNotes, budgetWord, floor, floorLine, whisper, answeredCount, quote,
+module.exports = { understandStage, islandInner, heard, heardText, heardNotes, budgetWord, floor, floorLine, whisper, answeredCount, quote,
   SCALE_NAME, HIDE_CONSTRAINTS, WORDS_MAX, NOTE_LABEL };

@@ -839,26 +839,33 @@ server-rendered, all working with JavaScript off, nothing in the third person,
 every heading a question you could say aloud:
 
 1. **What you told us.** The client's own Finder answers quoted first, in the
-   Finder's phrasing (*"You said you need 'space to think clearly', and 'the
-   rainforest' called you first"*), then away → toward in **spoken words**
-   (`say` on each state in the playbook: *running hot*, not *Overstimulated*),
-   a cue per leading away-from state for the advisor to dig in, and the first
-   note — *What they said about it*. Under the headline: *With Marguerite
-   Okonkwo · Okonkwo Travel*, the same name the document carries.
+   Finder's phrasing, in a white card behind a gold quotation mark (*"You said
+   you need 'space to think clearly', and 'the rainforest' called you
+   first"*), then away → toward in **spoken words** (`say` on each state in
+   the playbook: *running hot*, not *Overstimulated*; the toward chips tinted
+   teal), a cue per leading away-from state in the second person — *Ask:
+   "What does running hot look like for you right now?"* — and the first note,
+   *What they said about it*. Under the headline: *With Marguerite Okonkwo ·
+   Okonkwo Travel*, the same name the document carries.
 2. **Where the island answers it.** One server-built sentence — *"Five places
-   on the island answer moving from running hot toward here, fully — most of
-   them in Nature & Renewal"* — then **the island**: Saint Lucia's real
-   coastline with the places we're considering pinned by the village they
+   on the island answer moving from running hot toward steady and fully here —
+   most of them in Nature & Renewal"* — then **the island**: Saint Lucia's
+   real coastline with the places we're considering pinned by the village they
    answer for this traveller, lead villages full-weight and labelled, a card
-   beside the map (photograph, village, name, town, one line, and **the
-   advisor's own story about the place**) for the pin under the pointer or the
-   one with focus, every pin a link to its card on Compare. The outline is
+   beside the map (photograph, village, name, town, one line) for the pin
+   under the pointer or the one with focus, every pin a link to its card on
+   Compare. The whole band is a fragment: when the answers change and save,
+   the server re-renders it from the new shortlist and the browser swaps it in
+   — the map answers as you talk. (The advisor's own story about a place —
+   `advisor_place_notes` — is stored and kept off the screen for this version;
+   Duncan is working it into the training.) The outline is
    `content/island.js`, generated once by `tools/build-island-map.js` from
    geoBoundaries (CC BY 4.0 — credited in the SVG `<desc>` and the stage
    footer). Pin positions are `geo` on each deep property in the Field Guide,
    each with its source; six are placed from an address and say so.
-3. **Let's get into the details.** Seven questions, single column, simple →
-   open → sensitive after the Interaction Design Foundation's form guidance —
+3. **Let's get into the details.** Seven questions, each a white card, single
+   column, simple → open → sensitive after the Interaction Design Foundation's
+   form guidance —
    when · how long · who; why are you travelling, and why now (multi-select,
    *Extra notes*); what would make you hesitate (multi-select with *Something
    else*, notes); how do you like a trip to feel (four named scales; **Energy
@@ -866,18 +873,25 @@ every heading a question you could say aloud:
    typical intensity — the other three have no data to point with and say
    nothing); anything we should plan around (*Something else*, *Details*);
    where are we in the decision; roughly what feels right, all in (a dollar
-   figure, the derived band beside it, and **the floor** — *"the places we're
-   considering start from about $X for 7 nights in February … before flights"*
-   from `rates.js`, with a figure under it called out). Every control ≥ 44px,
-   a visible label and hint, a focus ring, *n of 7 answered*. Then **What I
-   heard** — one paragraph from the codes and every note quoted with its label,
-   re-rendered by the server on each save — and **Send what I heard**, which
-   emails it to the client, copied to the advisor, on the itinerary's envelope
-   (`itinerary-mail.js composeHeard()`); `heard_sent_at` records when.
-   **Compare →** plays a short *Preparing Janice's options…* interstitial
-   (server-rendered, hidden; the script reveals it, waits ~2.4 s, and follows
-   the link; under a second with reduced motion; a plain link without
-   JavaScript). The options were computed before the ring turned.
+   figure with *Open, if it is right* beside it — the advisor's question, *"If
+   the right week cost more than that, would you want to see it?"*, so the
+   trip is made the most of rather than fitted to a number — the derived band
+   beneath, and **the floor** — *"the places we're considering start from
+   about $X for 7 nights in February … before flights"* from `rates.js`, a
+   figure under it called out, and a month the table does not cover told
+   which months it does; the month picker refuses the past). Every control
+   ≥ 44px, a visible label and hint, a focus ring, *n of 7 answered*. Then
+   **What I heard**, the crown jewel: an ink card, the paragraph from the
+   codes large, every note quoted with its label, the advisor's closing prompt
+   — *Ask: "Anything you feel is missing before we lay this out?"* — and the
+   one gold call to action, **Let's compare the places →**, which plays a
+   short *Preparing Janice's options…* interstitial (server-rendered, hidden;
+   the script reveals it, waits ~2.4 s, and follows the link; under a second
+   with reduced motion; a plain link without JavaScript). The options were
+   computed before the ring turned. *Send what I heard*
+   (`itinerary-mail.js composeHeard()`, `heard_sent_at`) is built and waits
+   for the Send stage. Without `?step`, the workspace opens on Understand,
+   every time.
 
 There is **no Present mode**. It hid the advisor's working notes behind a
 toggle; Duncan removed it on 2026-09-10 — *"might as well make the experience

@@ -2917,3 +2917,97 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 @media (max-width: 52rem) {
   .design .design-whisper { margin-left: 0; }
 }
+
+/* ── Understand · polish pass (2026-09-10) ──────────────────────────────────
+   Duncan's third review: room to breathe, cards per question, colour where
+   the eye should land, one dark block for the crown jewel, one gold CTA.
+   A vertical scale of .5 · 1 · 1.5 · 2.5 · 4rem, and no hint wrapping short. */
+.design .design-head { margin-bottom: 3rem; }
+.design .design-rail { margin: 1.4rem 0 2.4rem; }
+/* padding-BLOCK only: the white band sets its own padding-inline to bleed to
+   the viewport edge and keep the text on the measure. */
+.design .design-band { padding-block: 3.5rem 4rem; }
+.design .design-band > h2, .design .design-band [data-fragment-slot="island"] > h2 { margin-bottom: 1.2em; }
+.design .design-band--told { padding-top: 1rem; }
+.design .design-with { margin: .1em 0 0; }
+
+/* The client's words, in a white card behind a gold quotation mark. */
+.design .design-quote-card {
+  position: relative; background: #FFFFFF; border: 1px solid var(--hairline-l); border-radius: 4px;
+  padding: 2rem 2.5rem 2rem 5.25rem; max-width: 52rem; margin: 0 0 2.5rem;
+}
+.design .design-quote-mark {
+  position: absolute; left: 1.6rem; top: .55rem; font-family: var(--serif-display); font-size: 5rem; line-height: 1;
+  color: var(--gold); user-select: none;
+}
+.design .design-quote { max-width: 40ch; margin: 0; }
+
+/* Away → toward: close together, the arrow between, colour on where they are going. */
+.design .design-states { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1.25rem 2rem; margin: 0 0 1.5rem; }
+.design .design-states > div { min-width: 0; }
+.design .design-arrow { padding-top: 1.55rem; color: var(--gold-deep); }
+.design .chips--toward .chip { background: rgba(11,110,112,.10); border-color: var(--teal); color: var(--ink); }
+.design .chips--toward .chip--lead { background: rgba(11,110,112,.16); font-weight: 600; }
+.design .chips--away .chip { background: transparent; }
+.design .design-states .chip { font-size: .95rem; padding: .42em .9em; }
+
+/* Cues: "Ask:" as the advisor's prompt, the question in the second person. */
+.design .design-cue { max-width: 64ch; margin: 1.6em 0 .6em; }
+.design .design-cue-ask { font-family: var(--sans); font-style: normal; font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gold-deep); margin-right: .5em; }
+.design .design-cue--small { font-size: .95rem; margin: .8em 0 .4em; }
+.design .design-cue--small .design-hint { display: block; font-style: normal; margin-top: .3em; }
+
+/* Line lengths. Nothing wraps under eight words at the desk width. */
+.design .design-field-hint { max-width: 62ch; }
+.design .design-ask-cue { max-width: 64ch; }
+.design .design-floor { max-width: 64ch; }
+.design .design-island-sentence { max-width: 48ch; }
+.design .design-words .design-field-hint { max-width: none; }
+
+/* Each question a card. */
+.design .design-consult-form { display: grid; gap: 1.5rem; margin-top: 1rem; }
+.design .design-ask {
+  background: #FFFFFF; border: 1px solid var(--hairline-l); border-top: 1px solid var(--hairline-l); border-radius: 4px;
+  padding: 2.25rem 2.5rem 2.5rem; margin: 0;
+}
+.design .design-ask:first-of-type { border-top: 1px solid var(--hairline-l); padding-top: 2.25rem; }
+.design .design-ask legend { margin-bottom: .6em; }
+.design .design-ask-n { border-color: var(--gold-deep); color: var(--gold-deep); }
+.design .design-ask-cue { margin-bottom: 1.6em; }
+.design .design-ask:focus-within::before { left: 0; top: 1.5rem; bottom: 1.5rem; border-radius: 0 2px 2px 0; }
+.design .design-consult-actions { padding: .5rem 0 0; }
+
+/* Budget: the figure and the tick side by side; the word beneath. */
+.design .design-budget-row { align-items: center; }
+.design .design-pick--open { margin: 0; align-self: center; }
+.design .design-budget-word { margin: .2rem 0 0; }
+.design .design-whisper { display: grid; gap: .15rem; margin: -.2rem 0 .6rem 8.5rem; }
+.design .design-whisper p { margin: 0; }
+.design .design-whisper:empty { display: none; }
+
+/* What I heard — the ink card. The one dark block on the stage. */
+.design .design-heard { border-top: 0; padding: 1.5rem 0 0; max-width: none; }
+.design .design-heard-card {
+  background: var(--ink); color: var(--paper); border-radius: 6px; padding: 2.5rem 2.75rem 2.5rem;
+  border-top: 4px solid var(--gold); max-width: 62rem;
+}
+.design .design-heard-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.4rem; }
+.design .design-heard-card .design-heard-h { color: var(--mist); margin: 0; }
+.design .design-heard-mark { display: inline-flex; opacity: .9; }
+.design .design-heard-card .design-heard-p { font-size: clamp(1.5rem, 2.2vw, 2rem); line-height: 1.35; color: var(--paper); max-width: 34ch; margin: 0 0 1.2em; }
+.design .design-heard-card .design-heard-p--empty { color: var(--mist); font-size: 1.25rem; font-style: italic; }
+.design .design-heard-card .design-heard-words { color: rgba(251,248,241,.88); font-size: 1.08rem; max-width: 60ch; margin: 0 0 .6em; }
+.design .design-heard-card .design-heard-who { color: var(--gold); font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; font-style: normal; font-family: var(--sans); display: block; margin-bottom: .15em; }
+.design .design-cue--ink { color: var(--mist); margin: 1.8em 0 1.6em; font-size: 1.08rem; }
+.design .design-cue--ink b, .design .design-cue--ink .design-cue-ask { color: var(--gold); }
+.design .design-heard-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.4rem; padding-top: 1.6rem; border-top: 1px solid rgba(251,248,241,.16); }
+.design .design-heard-cta .btn { font-size: .92rem; padding: .9em 1.6em; }
+.design .design-heard-ctahint { color: var(--mist); font-size: .84rem; max-width: 34ch; }
+
+@media (max-width: 52rem) {
+  .design .design-quote-card { padding: 1.6rem 1.4rem 1.6rem 3.6rem; }
+  .design .design-quote-mark { left: .9rem; font-size: 4rem; }
+  .design .design-ask { padding: 1.6rem 1.25rem 1.8rem; }
+  .design .design-heard-card { padding: 1.8rem 1.4rem; }
+  .design .design-states { gap: 1rem 1.25rem; }
+}

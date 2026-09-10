@@ -83,4 +83,13 @@ async function version() {
   return { built: t.built || null, currency: t.currency || 'USD', properties: Object.keys(t.properties || {}).length, cells, basis: t.basis || null };
 }
 
-module.exports = { nightly, transfers, experiences, regionOf, version, QUOTE, SPAN_DAYS };
+/* The first and last week anything was observed for, across every property —
+   so a screen can say "the lookup covers October 2026 to September 2027"
+   instead of going quiet when a date falls outside it. */
+async function span() {
+  const t = table();
+  const weeks = Object.keys(t.properties || {}).flatMap((s) => (t.properties[s].weeks || []).map((w) => w.weekOf)).filter(Boolean).sort();
+  return weeks.length ? { first: weeks[0], last: weeks[weeks.length - 1] } : null;
+}
+
+module.exports = { nightly, transfers, experiences, regionOf, version, span, QUOTE, SPAN_DAYS };

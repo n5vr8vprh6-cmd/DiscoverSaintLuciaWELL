@@ -52,19 +52,22 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
 
   console.log('\n  Three bands, the client first');
   ok('three bands: told · island (white) · details', count(html, /class="design-band /g) === 3 && /design-band--white design-band--island/.test(html));
-  ok('the stage opens with her own Finder words, quoted', /<p class="design-quote">You said you need <q>space to think clearly<\/q>, and <q>the rainforest<\/q> called you first\. With family, at a gentle pace, <q>a balance of exploring and restoring<\/q>\.<\/p>/.test(html), html.match(/<p class="design-quote">.*?<\/p>/) && html.match(/<p class="design-quote">.*?<\/p>/)[0]);
-  ok('away → toward speaks the spoken form, not the label', /running hot/.test(plain) && !/>Overstimulated</.test(html));
-  ok('a cue per leading away-from state', /Ask what <b>running hot<\/b> looks like for them right now\./.test(html));
-  ok('a note under the first band, in its own small form', /name="note_told"/.test(html) && /class="design-told-form"[^>]*data-live/.test(html) && /name="partial" value="1"/.test(html));
+  ok('the stage opens with her own Finder words, quoted, in a card behind a quotation mark', /<div class="design-quote-card">\s*<span class="design-quote-mark"[^>]*>“<\/span>\s*<p class="design-quote">You said you need <q>space to think clearly<\/q>, and <q>the rainforest<\/q> called you first\. With family, at a gentle pace, <q>a balance of exploring and restoring<\/q>\.<\/p>/.test(html), html.match(/<p class="design-quote">.*?<\/p>/) && html.match(/<p class="design-quote">.*?<\/p>/)[0]);
+  ok('away → toward speaks the spoken form, not the label, and toward is the coloured column', /running hot/.test(plain) && !/>Overstimulated</.test(html) && /chips chips--toward/.test(html));
+  ok('the cue is the question itself, in the second person, behind "Ask:"', /<span class="design-cue-ask">Ask:<\/span> “What does <b>running hot<\/b> look like for you right now\?”/.test(html));
+  ok('a note under the first band, in its own small form, with a gold Save', /name="note_told"/.test(html) && /class="design-told-form"[^>]*data-live/.test(html) && /name="partial" value="1"/.test(html) && /design-told-form[\s\S]*?btn--gold/.test(html));
+  ok('the override note is gone', !/from what the answers suggested/.test(plain));
   ok('no third person on the page: no "they are", no "their words"', !/\bWhere they are\b|\bIn their words\b|\bWhat brought this on\b|\bThe frame\b/.test(plain));
   ok('warm words: no "shortlist", "Finder" or "properties" in the page text', !/shortlist|Finder|propert(y|ies)/.test(plain), plain.match(/.{30}(shortlist|Finder|propert(y|ies)).{30}/g));
   ok('nothing hidden for a mode that no longer exists', !/hide-in-present|data-present|Present mode/.test(html));
 
   console.log('\n  The island band');
+  ok('the band\'s inside is a fragment slot, so the map answers as the answers change', /<section class="design-band design-band--white design-band--island">\s*<div data-fragment-slot="island">/.test(html));
+  ok('islandInner() renders the same inside on its own', U.islandInner(v).indexOf('<h2>Where the island answers it</h2>') === 0);
   ok('the sentence counts the places and names the move', /place[s]? on the island answer/.test(plain) && /moving from <b>running hot<\/b>/.test(html));
   ok('no caption under the map; the credit lives in the stage footer', !/class="island-caption"/.test(html));
+  ok('no story prompts on the page — the training carries them for now', !/place_note|ZZSTORY|Your story|Your note/.test(html));
   if (shortlist.length) {
-    ok('the advisor\'s story shows on its card and has an edit form', /ZZSTORY/.test(html) && count(html, /name="action" value="place_note"/g) >= 1);
     ok('every pin links to its card on Compare', count(html, /href="\/hub\/journeys\/j-test\/design\?step=compare#prop-/g) >= 1);
   } else ok('bank not generated — island skipped', true);
 
@@ -78,9 +81,12 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
   ok('the four notes carry their text, and each says where it stays', count(html, /Never sent to the model, never on the client document/g) === 4 && /ZZTOLD/.test(html) && /ZZWHY/.test(html) && /ZZHES/.test(html) && /ZZAROUND/.test(html));
   ok('the legacy in_their_words is not shown when notes.why exists', !/ZZLEGACY/.test(html));
   ok('the scales have names, and Energy carries a whisper slot', /Structure/.test(plain) && /data-fragment-slot="whisper-energy"/.test(html));
-  ok('the budget is a number input with the figure, the open tick, and a floor line', /name="budget_usd"[^>]*value="18000"/.test(html) && /name="budget_open"/.test(html) && /data-fragment-slot="floor"/.test(html));
-  ok('the read-back slot, the answered count and the send button', /data-fragment-slot="consult"/.test(html) && /7 of 7 answered/.test(html) && /name="action" value="heard_send"/.test(html) && /Send what I heard to j•••@example\.invalid/.test(plain));
-  ok('the interstitial is not this module\'s business (design.js renders it)', !/data-prepare/.test(html));
+  ok('the budget is a number input with the figure; the open tick sits beside it, once; the floor line beneath', /name="budget_usd"[^>]*value="18000"/.test(html) && count(html, /name="budget_open"/g) === 1 && /design-budget-row">[\s\S]*?name="budget_open"[\s\S]*?<\/div>\s*<span class="design-field-hint"/.test(html) && /data-fragment-slot="floor"/.test(html));
+  ok('the open tick carries the advisor\'s question', /If the right week cost more than that, would you want to see it\?/.test(plain));
+  ok('the month cannot be in the past', /name="travel_from" min="\d{4}-\d{2}"/.test(html));
+  ok('the read-back slot and the answered count; the send button has left for the Send stage', /data-fragment-slot="consult"/.test(html) && /7 of 7 answered/.test(html) && !/heard_send/.test(html) && !/Send what I heard/.test(plain));
+  ok('the gold Save', /btn btn--gold btn--sm" type="submit"[^>]*>Save what we know/.test(html));
+  ok('the crown jewel: an ink card with the closing prompt and the one CTA carrying the interstitial', /class="design-heard-card"/.test(html) && /Anything you feel is missing before we lay this out\?/.test(plain) && /<a class="btn btn--gold" href="\/hub\/journeys\/j-test\/design\?step=compare" data-prepare="Janice">Let’s compare the places →<\/a>/.test(html));
 
   console.log('\n  The floor');
   if (floor) {
@@ -91,13 +97,17 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
   } else ok('no floor without priced places (bank not generated)', true);
   ok('no month → no floor; no nights → no floor', (await U.floor({ shortlist, travelFrom: null, nights: 7 })) === null && (await U.floor({ shortlist, travelFrom: '2027-02-01', nights: null })) === null);
   ok('the empty floor line asks for a month and nights', /once there is a month and a night count/.test(U.floorLine(null)));
+  const past = await U.floor({ shortlist, travelFrom: '2026-04-01', nights: 5 });
+  ok('a month outside the rate table says which months the lookup covers, not nothing',
+    ready ? (past && past.none && /No public rates for April 2026 — the lookup covers \w+ \d{4} to \w+ \d{4}\./.test(U.floorLine(past))) : true, past && U.floorLine(past));
+  ok('"open" reads as a guide, not a ceiling, beside the figure', /a guide, not a ceiling/.test(U.budgetWord(Object.assign({}, need, { budget: 'open' }), floor)));
 
   console.log('\n  The whisper');
   const wr = U.whisper(Object.assign({}, need, { activity: 0.2 }), shortlist);
   const wa = U.whisper(Object.assign({}, need, { activity: 0.9 }), shortlist);
   ok('the middle third whispers nothing', U.whisper(Object.assign({}, need, { activity: 0.5 }), shortlist) === '');
-  ok('restorative and active each name places or stay silent, and say inferred when they speak',
-    (wr === '' || (/Restorative points to/.test(wr) && /inferred/.test(wr))) && (wa === '' || (/Active points to/.test(wa) && /inferred/.test(wa))));
+  ok('restorative and active each name places or stay silent, and say inferred on their own line when they speak',
+    (wr === '' || (/Restorative points to/.test(wr) && /<p class="design-inferred">/.test(wr))) && (wa === '' || (/Active points to/.test(wa) && /<p class="design-inferred">/.test(wa))));
   ok('a scale with no data behind it has no whisper function at all', typeof U.whisper === 'function' && !/social|rhythm|experience/.test(U.whisper.toString().split('const x')[1] || ''));
 
   console.log('\n  The read-back');
@@ -114,7 +124,7 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
 
   console.log('\n  Before the migrations');
   const old24 = U.understandStage(Object.assign({}, v, { caps: { database: true, consultation: true, travel_from: true, conversation: true, notes: false, placeNotes: false } }));
-  ok('024 only: the why note still has a home, the other three do not appear, no story forms', /name="note_why"/.test(old24) && !/name="note_told"|name="note_hesitate"|name="note_around"/.test(old24) && !/place_note/.test(old24));
+  ok('024 only: the why note still has a home, the other three do not appear', /name="note_why"/.test(old24) && !/name="note_told"|name="note_hesitate"|name="note_around"/.test(old24));
   const old23 = U.understandStage(Object.assign({}, v, { caps: { database: true, consultation: true, travel_from: true, conversation: false, notes: false, placeNotes: false } }));
   ok('023 only: one radio per question, the band radio, and it says which migration', count(old23, /type="radio" name="trigger"/g) === 7 && count(old23, /type="radio" name="budget"/g) === 4 && /migration 024/.test(old23));
 
