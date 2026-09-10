@@ -3056,7 +3056,11 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 .design .design-eclipse .design-pick input:checked + span { background: var(--eclipse-copper); border-color: var(--eclipse-copper); color: var(--eclipse-on-copper); }
 .design .design-eclipse .design-pick input:focus-visible + span { outline-color: var(--eclipse-copper-l); }
 .design .design-eclipse-recorded { font-family: var(--sans); font-size: .84rem; color: var(--eclipse-copper-l); min-height: 1.2em; }
-.design .design-eclipse-programs { display: grid; gap: .45rem; max-width: 26rem; margin-top: .4rem; }
+.design .design-eclipse-programs { display: grid; gap: .45rem; max-width: 26rem; margin-top: 1.8rem; padding-top: 1.8rem; border-top: 1px solid rgba(232,223,210,.16); }
+.design .design-eclipse-form .design-actions { margin-top: .4rem; }
+/* After the Eclipse band, a hairline resets the flow before the details. */
+.design .design-band--eclipse { padding-block: 3.5rem 3.5rem; }
+.design .design-band--eclipse + .design-band--details { border-top: 1px solid var(--hairline-l); }
 .design .design-eclipse-programs label { font-family: var(--sans); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(232,223,210,.7); }
 .design .design-eclipse-programs select {
   font: inherit; font-size: .95rem; padding: .55rem .8rem; min-height: 2.75rem; border-radius: 3px;
@@ -3064,7 +3068,8 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 }
 .design .design-eclipse-programs select:focus-visible { outline: 2px solid var(--eclipse-copper-l); outline-offset: 2px; }
 .design .design-eclipse-programs .design-hint { color: rgba(232,223,210,.6); }
-.design .design-eclipse .btn { background: transparent; color: var(--eclipse-sand); border-color: rgba(232,223,210,.5); }
+.design .design-eclipse .btn { background: var(--eclipse-copper); color: var(--eclipse-on-copper); border-color: var(--eclipse-copper); }
+.design .design-eclipse .btn:hover { background: var(--eclipse-copper-l); border-color: var(--eclipse-copper-l); }
 @media (max-width: 52rem) {
   .design .design-eclipse { padding: 1.8rem 1.4rem; }
   .design .design-eclipse .eclipse-mark { width: 2.5rem; right: 1.2rem; top: 1.2rem; }
