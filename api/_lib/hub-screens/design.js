@@ -70,6 +70,9 @@ const { mediaPicture, mediaGallery } = require('../../../lib/components.js');
    seven-question conversation and the read-back. Pure — everything it needs
    arrives in v — so hub-preview.js renders it exactly as the Hub does. */
 const U = require('./design-understand.js');
+/* Compare lives in its own file too: the brochure cards with their reasons
+   open, the toggle, the summary, add-a-place. */
+const C = require('./design-compare.js');
 const { ringMark } = require('../../../lib/brand.js');
 
 /* ── The four stages ──────────────────────────────────────────────────────
@@ -212,6 +215,12 @@ module.exports = async function handler(req, res) {
      the same lookup the estimate uses), the advisor's own stories about
      places, and the four notes read off the row. */
   const floor = step === 'understand' ? await U.floor({ shortlist, travelFrom, nights: need.nights }) : null;
+  /* Compare's extras: places the advisor added by hand (scored the same way),
+     the stay price per place for the travel month, and the directory for the
+     Add-a-place select. */
+  const added = step === 'compare' ? await C.addedCards(session, need, shortlist) : [];
+  const rateCells = step === 'compare' ? await C.ratesFor(shortlist.concat(added), travelFrom) : {};
+  const directory = step === 'compare' ? await C.directory(shortlist.concat(added).map((c) => c.slug)) : [];
   const placeNotes = caps.placeNotes ? await D.placeNotesFor(advisor.id) : {};
   const notes = D.notesOf(stored);
   const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
@@ -221,6 +230,7 @@ module.exports = async function handler(req, res) {
                                screen marks as such until the advisor touches it. */
                             suggestedMonth: N.travelFromWindow(raw.travel_window),
                             floor, placeNotes, notes, answers: raw.answers || {},
+                            added, rateCells, directory,
                             firstName: j.consumer_first || null,
                             brand: IT.brandOf(advisor),
                             clientEmail: raw.consumer_email ? maskEmail(raw.consumer_email) : null,
@@ -265,14 +275,15 @@ const ACTIONS = {
   issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name',
   consult: 'dispatched-by-name', choose: 'dispatched-by-name', decline: 'dispatched-by-name',
   day: 'dispatched-by-name', estimate: 'dispatched-by-name',
-  place_note: 'dispatched-by-name', heard_send: 'dispatched-by-name', eclipse: 'dispatched-by-name'
+  place_note: 'dispatched-by-name', heard_send: 'dispatched-by-name', eclipse: 'dispatched-by-name',
+  add_place: 'dispatched-by-name', remove_place: 'dispatched-by-name'
 };
 
 /* Actions posted by a plain <form> rather than by fetch. They redirect; the
    others answer in JSON. Kept as a list rather than inferred from a header,
    because "what does a failure look like to this caller" is a property of the
    action, not of the request that happened to arrive. */
-const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day', 'estimate', 'place_note', 'heard_send', 'eclipse'];
+const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day', 'estimate', 'place_note', 'heard_send', 'eclipse', 'add_place', 'remove_place'];
 
 const backTo = (id, done) =>
   '/hub/journeys/' + encodeURIComponent(id) + '/design' + (done ? '?done=' + done : '');
@@ -320,7 +331,7 @@ async function generate(req, res, v) {
   /* The three stage actions. Form posts above the OpenAI and ledger gates,
      because none of them calls a model. Each re-reads the consultation itself
      rather than trusting a value computed for a different action. */
-  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day' || name === 'estimate' || name === 'place_note' || name === 'heard_send' || name === 'eclipse') {
+  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day' || name === 'estimate' || name === 'place_note' || name === 'heard_send' || name === 'eclipse' || name === 'add_place' || name === 'remove_place') {
     const seededNow = await N.seedFrom(raw.answers || {});
     const storedNow = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
     const ctx = { advisor, id, raw, caps, stored: storedNow, seeded: seededNow,
@@ -329,6 +340,7 @@ async function generate(req, res, v) {
     if (name === 'place_note') return await actionPlaceNote(res, form, ctx);
     if (name === 'heard_send') return await actionHeardSend(res, form, ctx);
     if (name === 'eclipse') return await actionEclipse(res, form, ctx);
+    if (name === 'add_place' || name === 'remove_place') return await actionPlace(res, form, ctx, name);
     if (name === 'choose') return await actionChoose(res, form, ctx);
     if (name === 'day') return await actionDay(res, form, ctx);
     if (name === 'estimate') return await actionEstimate(res, form, ctx);
@@ -449,8 +461,9 @@ function actionNarrative(form, ctx) {
    order, so they cannot drift. The full shortlist is saved first so a declined
    property has a row to carry its reason. */
 async function actionChoose(res, form, v) {
-  const { advisor, id, need, stored, caps } = v;
-  const back = (done, step) => {
+  const { advisor, id, need, stored, caps, json } = v;
+  const back = (done, step, more) => {
+    if (json) return jsonOut(res, done === 'carried' || done === 'carried_none', Object.assign({ done }, more || {}));
     res.statusCode = 303;
     res.setHeader('Location', backTo(id, done) + '&step=' + (step || 'compare'));
     return res.end();
@@ -462,20 +475,30 @@ async function actionChoose(res, form, v) {
   const session = chain.session;
 
   const shortlist = await M.shortlistFor(need);
-  const known = shortlist.map((c) => c.slug);
+  const addedCards = await C.addedCards(session, need, shortlist);
+  const known = shortlist.concat(addedCards).map((c) => c.slug);
   const rawCarry = form.carry == null ? [] : (Array.isArray(form.carry) ? form.carry : [form.carry]);
-  const slugs = rawCarry.map((s) => str(s, 60)).filter((s) => known.indexOf(s) !== -1);
-  if (slugs.length > 3) return back('too_many');
+  const slugs = rawCarry.map((s) => str(s, 60)).filter((s) => known.indexOf(s) !== -1).filter((s, i, a) => a.indexOf(s) === i);
+  if (slugs.length > C.MAX_CARRY) return back('too_many');
 
   await D.saveCandidates(session.id, advisor.id, shortlist);
   const chose = await D.chooseCandidates(session.id, advisor.id, slugs);
   if (!chose.ok && chose.reason !== 'not_migrated') return back('choose_failed');
 
+  const prev = session.shortlist || {};
   await D.updateSession(session.id, advisor.id, {
-    shortlist: { chosen: slugs, at: new Date().toISOString(), bank: session.knowledge_version || null }
+    shortlist: { chosen: slugs, added: Array.isArray(prev.added) ? prev.added : [], at: new Date().toISOString(), bank: session.knowledge_version || null }
   });
-  await setStage(session, advisor, slugs.length ? 'shape' : 'compare');
-  return back(slugs.length ? 'carried' : 'carried_none', slugs.length ? 'shape' : 'compare');
+  await setStage(session, advisor, 'compare');
+  /* A live toggle stays on Compare and gets the summary and the count back;
+     a plain submit stays on Compare too — the way on is the summary's CTA. */
+  return back(slugs.length ? 'carried' : 'carried_none', 'compare', {
+    fragments: {
+      'compare-summary': C.summary({ id, need, chosen: slugs, cards: shortlist.concat(addedCards), firstName: (v.raw && v.raw.consumer_first) || null }),
+      'compare-count': C.countLine(slugs.length)
+    },
+    chosen: slugs
+  });
 }
 
 async function actionDecline(res, form, v) {
@@ -499,8 +522,9 @@ async function actionDecline(res, form, v) {
      idempotent — saveCandidates replaces the session's rows — so a decline
      before any choose still lands. */
   const shortlist = await M.shortlistFor(need);
-  if (!shortlist.some((c) => c.slug === slug)) return back('declined');
-  await D.saveCandidates(session.id, advisor.id, shortlist);
+  const addedCards = await C.addedCards(session, need, shortlist);
+  if (!shortlist.concat(addedCards).some((c) => c.slug === slug)) return back('declined');
+  await D.saveCandidates(session.id, advisor.id, shortlist.concat(addedCards));
   const kept = (session.shortlist && session.shortlist.chosen) || [];
   if (kept.length) await D.chooseCandidates(session.id, advisor.id, kept.filter((s) => s !== slug));
   await D.declineCandidate(session.id, advisor.id, slug, okReason);
@@ -550,10 +574,17 @@ async function actionConsult(res, form, v) {
   };
   const nights = form.nights === '' || form.nights == null ? null
     : Math.min(Math.max(parseInt(form.nights, 10) || 0, 1), 21) || null;
+  const countOf = (k, min, max) => (form[k] === '' || form[k] == null ? null : Math.min(Math.max(parseInt(form[k], 10) || 0, min), max));
+  /* Up to three Well Pillars, each weighted 1 — the matcher normalises. */
+  const pillarPicks = list('pillars', 'pillars', 3);
+  const pillarsNow = {};
+  pillarPicks.forEach((k) => { pillarsNow[k] = 1; });
 
   const partial = form.partial === '1' || form.partial === 1 || form.partial === true;
   const edited = partial ? Object.assign({}, need) : Object.assign({}, need, {
     readiness: pick('readiness'), party: pick('party'), nights,
+    adults: countOf('adults', 0, 12), children: countOf('children', 0, 8), rooms: countOf('rooms', 0, 6),
+    pillars: form.pillars === undefined && !partial ? {} : (partial ? need.pillars : pillarsNow),
     constraints: list('constraints', 'constraints', 9),
     /* 024: lists. Before it, the single radio — as a one-item list, so the
        need-state has one shape whichever migration the deployment is on. */
@@ -602,6 +633,7 @@ async function actionConsult(res, form, v) {
     extra.in_their_words = notesNow.why || null;
   }
   if (caps.notes) extra.notes = notesNow;
+  if (caps.rooms && !partial) extra.rooms = true;
   const saved = await D.saveConsultation(id, advisor.id, edited, {
     state: seeded, overrode: N.overridden(seeded, edited)
   }, extra);
@@ -708,6 +740,36 @@ async function actionEclipse(res, form, v) {
       consult: U.heard({ need: edited, vocab, notes, travelFrom, floor: floorNow, id, firstName: (v.raw && v.raw.consumer_first) || null })
     }
   });
+}
+
+
+/* ── Add a place from the directory, or remove one ────────────────────────
+   Added slugs live in session.shortlist.added. An added place is scored by
+   the same matcher on render (C.addedCards) so it carries the same words; it
+   shows no rank because it was not ranked. Removing it also drops it from
+   the chosen set. */
+async function actionPlace(res, form, v, name) {
+  const { advisor, id, need, stored, caps } = v;
+  const slug = str(form.slug, 80);
+  const back = (done) => {
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=compare' + (slug ? '#prop-' + encodeURIComponent(slug) : ''));
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated');
+  if (!slug || !(await K.property(slug))) return back('place_failed');
+  const chain = await openChain(advisor, id, need, stored);
+  if (!chain.ok) return back('consult_failed');
+  const session = chain.session;
+  const prev = session.shortlist || {};
+  const added = (Array.isArray(prev.added) ? prev.added : []).filter((s) => s !== slug);
+  const chosen = (prev.chosen || []).filter((s) => name === 'add_place' || s !== slug);
+  if (name === 'add_place') added.push(slug);
+  const r = await D.updateSession(session.id, advisor.id, {
+    shortlist: Object.assign({}, prev, { chosen, added, at: new Date().toISOString() })
+  });
+  if (!r.ok) return back('place_failed');
+  return back(name === 'add_place' ? 'place_added' : 'place_removed');
 }
 
 /* ── One day of the shape ─────────────────────────────────────────────────
@@ -1129,24 +1191,25 @@ function stageNav(id, step, v) {
      the markup is rendered here, hidden; hub-design.js only reveals it, waits,
      and follows the link. Without JavaScript the link is a link. */
   const first = v && v.firstName ? String(v.firstName) : '';
-  const prepare = step === 'understand' && next ? ` data-prepare="${esc(first)}"` : '';
-  const overlay = step === 'understand' && next ? `
+  const PREPARE = {
+    understand: { h: 'Preparing ' + (first ? esc(first) + '’s' : 'your') + ' options…', steps: ['Reading what you told us', 'Matching the island’s villages', 'Checking what each place offers'] },
+    compare: { h: 'Shaping ' + (first ? esc(first) + '’s' : 'your') + ' journey…', steps: ['Laying the days across the week', 'Placing each place by phase', 'Pacing within the guide’s rules'] }
+  };
+  const pre = PREPARE[step];
+  const prepare = pre && next ? ` data-prepare="${esc(first)}"` : '';
+  const overlay = pre && next ? `
   <div class="design-prepare" data-prepare-overlay hidden role="status" aria-live="polite">
     <div class="design-prepare-inner">
       ${ringMark(72, 1.4)}
-      <p class="design-prepare-h">Preparing ${first ? esc(first) + '’s' : 'your'} options…</p>
-      <ol class="design-prepare-steps">
-        <li>Reading what you told us</li>
-        <li>Matching the island’s villages</li>
-        <li>Checking what each place offers</li>
-      </ol>
+      <p class="design-prepare-h">${pre.h}</p>
+      <ol class="design-prepare-steps">${pre.steps.map((s) => `<li>${s}</li>`).join('')}</ol>
     </div>
   </div>` : '';
   /* On Understand the forward link is the gold CTA inside the What-I-heard
      card (design-understand.js heard()), so the nav here carries only the way
      back to the Journey. */
   const forward = next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}"${prepare}>${esc(STAGE_LABEL[next])} →</a>` : '';
-  return `<nav class="design-stagenav${step === 'understand' ? ' design-stagenav--center' : ''}">
+  return `<nav class="design-stagenav${step === 'understand' ? ' design-stagenav--center' : ''}${step === 'compare' ? ' design-stagenav--middle' : ''}">
     ${prev ? `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}/design?step=${prev}">← ${esc(STAGE_LABEL[prev])}</a>` : `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}">← Back to the Journey</a>`}
     ${forward}
   </nav>${overlay}`;
@@ -1168,6 +1231,10 @@ function stageNav(id, step, v) {
    put-aside control points at its own form rendered after the main one via
    the `form` attribute, because a form inside a form is not HTML. */
 function compareStage(v) {
+  return C.compareStage(v) + alsoIn(v.topVillage, v.also, v.vocab);
+}
+
+function compareStageLegacy(v) {
   const { id, need, shortlist, session, caps, topVillage, also, vocab, frameworks } = v;
   const chosen = (session && session.shortlist && session.shortlist.chosen) || [];
   const tied = shortlist.length && shortlist[0].tiedGroup;
@@ -1657,11 +1724,11 @@ const DONE = {
   saved: ['good', 'Saved. The shortlist and the shape now know this.'],
   bad_consult: ['bad', 'Something in that could not be saved as written. Nothing changed.'],
   consult_failed: ['bad', 'That could not be saved. Nothing changed.'],
-  carried: ['good', 'Carried into the shape.'],
-  carried_none: ['good', 'Nothing carried yet — pick up to three when you are ready.'],
-  too_many: ['bad', 'Three at most. Put one aside first.'],
+  carried: ['good', 'Saved. The journey list is updated.'],
+  carried_none: ['good', 'Nothing in the journey yet — add up to three when you are ready.'],
+  too_many: ['bad', 'Three at most. Set one aside first.'],
   choose_failed: ['bad', 'That could not be recorded. Nothing changed.'],
-  declined: ['good', 'Put aside, and the reason kept.'],
+  declined: ['good', 'Set aside, and the reason kept.'],
   shape: ['good', 'Arc chosen. The days are laid out below.'],
   day_saved: ['good', 'Saved. The arc follows it.'],
   bad_day: ['bad', 'That day could not be saved as written. Nothing changed.'],
@@ -1690,7 +1757,10 @@ const DONE = {
   heard_not_configured: ['bad', 'Email is not configured on this deployment.'],
   eclipse_saved: ['good', 'Recorded.'],
   eclipse_failed: ['bad', 'That could not be recorded. Nothing changed.'],
-  eclipse_not_migrated: ['bad', 'Recording Eclipse interest needs migration 026 on this deployment.']
+  eclipse_not_migrated: ['bad', 'Recording Eclipse interest needs migration 026 on this deployment.'],
+  place_added: ['good', 'Added. Scored the same way, shown without a rank.'],
+  place_removed: ['good', 'Removed.'],
+  place_failed: ['bad', 'That place could not be added. Nothing changed.']
 };
 
 /* ── The shape of the journey ─────────────────────────────────────────────

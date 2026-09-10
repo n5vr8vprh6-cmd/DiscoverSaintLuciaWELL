@@ -926,6 +926,36 @@ reads it back; `node tools/island-map-test.js` checks the coastline, the
 fifteen pins and the markup contract; `node tools/need-state-test.js` the
 lists, the spoken forms, the band and the suggested month.
 
+### The Compare stage · `api/_lib/hub-screens/design-compare.js`
+
+Brochure cards with their reasons open — the fold went with Present mode.
+Each card, top to bottom: the gallery; the model tag; a **rank** (*1st of 5*)
+beside the name — a rank, never a score, because fit is four words on four
+axes and is never summed; a **verdict** sentence built from the bands by
+`design-match.js verdict()` (*"Strong on place and depth; your direction isn't
+in its offer."*); the four bands as words; hook, best-for, three included
+lines; villages; the continuum graded pale teal → ink; **What to watch** (the
+mismatch rule engine's sentences); the **stay price** from `rates.js` for the
+travel month — per room a night, two adults, dated — and a per-person figure
+when Understand has adults · children · rooms (migration 027); the Field
+Guide's treatment menu under a disclosure; a **toggle chip** (*Add to the
+journey* → *In the journey*, three at most, client- and server-enforced) and
+*Set aside* with a reason. **Add a place** brings any of the thirty in from
+the directory (`session.shortlist.added`), scored by `M.scoreOne()` so it
+carries the same words, shown without a rank because it was not ranked;
+Collection entries say *Directory entry · profile to follow* because the
+expanded scan never profiled them. The foot is the ink summary — what is
+carried, each with its verdict — and one gold CTA, *Let's shape the journey →*,
+with its interstitial.
+
+**The four axes.** Place: their village weights against the property's
+villages, cosine with a breadth penalty. Direction: their Compass directions
+against the property's, coverage. Depth: the rung range asked against the
+property's band, fraction covered. What matters most (Ingredients): their Well
+Pillars — now asked on Understand, up to three — against the property's.
+Strong ≥ .5 · partial ≥ .25 · thin > 0 · absent · not asked. Order is
+lexicographic, place first. `node tools/design-compare-test.js`.
+
 ### The Shape stage · `api/_lib/design-shape.js`
 
 A shape is a recipe laid across N nights, a property on each day, an

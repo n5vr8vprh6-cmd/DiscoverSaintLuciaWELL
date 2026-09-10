@@ -324,6 +324,22 @@ function details(v) {
       (k === 'activity' ? `<div class="design-whisper" data-fragment-slot="whisper-energy">${whisper(need, shortlist)}</div>` : '');
   };
 
+  /* A small stepper for a count: the same markup as nights. */
+  const counter = (name, labelText, value, min, max) => `<div class="design-counter">
+            <span class="design-counter-label" id="${name}-label">${esc(labelText)}</span>
+            <div class="design-stepper"><button type="button" data-step="-1" aria-label="Fewer ${esc(labelText.toLowerCase())}">−</button>
+              <input type="number" name="${name}" min="${min}" max="${max}" inputmode="numeric" value="${value == null ? '' : esc(String(value))}" placeholder="${min}" aria-labelledby="${name}-label">
+              <button type="button" data-step="1" aria-label="More ${esc(labelText.toLowerCase())}">+</button></div>
+          </div>`;
+
+  /* What matters most: up to three of the eight Well Pillars. Lights the
+     fourth axis on Compare (Ingredients), which no screen had ever asked. */
+  const pillarKeys = Object.keys(need.pillars || {});
+  const pillars = `<div class="design-picks">${opts('pillars').map((o) => `
+    <label class="design-pick design-pick--multi"><input type="checkbox" name="pillars" value="${esc(o.key)}"${pillarKeys.indexOf(o.key) !== -1 ? ' checked' : ''} data-max-group="pillars" data-max="3">
+      <span>${esc(String(o.label).replace(/^Well /, ''))}</span></label>`).join('')}</div>
+    <span class="design-field-hint">Up to three. These are the eight Well Pillars the island's places are described by.</span>`;
+
   const storedMonth = stored && stored.travel_from ? String(stored.travel_from).slice(0, 7) : '';
   const month = storedMonth || (suggestedMonth ? String(suggestedMonth).slice(0, 7) : '');
   const monthSuggested = !storedMonth && Boolean(month);
@@ -357,6 +373,15 @@ function details(v) {
           <span class="design-field-label" id="party-label">Who is coming</span>
           <div role="group" aria-labelledby="party-label">${chips('party', 'party', null, 'radio', 'design-picks--seg')}</div>
         </div>
+        ${caps.rooms ? `<div class="design-field design-field--wide design-party">
+          <span class="design-field-label" id="party-count-label">How many</span>
+          <div class="design-party-row" role="group" aria-labelledby="party-count-label">
+            ${counter('adults', 'Adults', need.adults, 1, 12)}
+            ${counter('children', 'Children', need.children, 0, 8)}
+            ${counter('rooms', 'Rooms', need.rooms, 1, 6)}
+          </div>
+          <span class="design-field-hint">Turns a per-room rate into a figure a person on the next stage.</span>
+        </div>` : ''}
       </div>`;
 
   const notesOn = Boolean(caps.notes);
@@ -399,14 +424,15 @@ function details(v) {
     ${ask(1, 'frame', 'When are you thinking, for how long, and who’s coming?', null, frame)}
     ${ask(2, 'why', 'Why are you travelling — and why now?', 'Sometimes it’s a date on the calendar; sometimes a feeling that’s been building.', whyNow)}
     ${ask(3, 'way', 'What would make you hesitate?', null, hesitate)}
-    ${ask(4, 'feel', 'How do you like a trip to feel?', 'Would you rather have a plan, or a blank day?', `<div class="design-scales">${['rhythm', 'activity', 'social', 'experience'].map(scale).join('')}</div>`)}
-    ${ask(5, 'around', 'Anything we should plan around?', 'Dates, food, mobility, children — the things a good plan is built around.', around)}
-    ${ask(6, 'where', 'Where are we in the decision?', 'Dreaming, or picking?', steps)}
-    ${ask(7, 'budget', 'Roughly what feels right, all in?', 'For the whole trip, everyone in. A range is fine; we will make it real together.', budgetBlock)}
+    ${ask(4, 'matters', 'What matters most on a trip like this?', 'Food, nature, movement, the mind — pick the two or three that have to be there.', pillars)}
+    ${ask(5, 'feel', 'How do you like a trip to feel?', 'Would you rather have a plan, or a blank day?', `<div class="design-scales">${['rhythm', 'activity', 'social', 'experience'].map(scale).join('')}</div>`)}
+    ${ask(6, 'around', 'Anything we should plan around?', 'Dates, food, mobility, children — the things a good plan is built around.', around)}
+    ${ask(7, 'where', 'Where are we in the decision?', 'Dreaming, or picking?', steps)}
+    ${ask(8, 'budget', 'Roughly what feels right, all in?', 'For the whole trip, everyone in. A range is fine; we will make it real together.', budgetBlock)}
 
     <div class="design-actions design-consult-actions">
       <button class="btn btn--gold btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Save what we know</button>
-      <span class="design-hint" data-answered>${answered} of 7 answered</span>
+      <span class="design-hint" data-answered>${answered} of 8 answered</span>
       <span class="design-hint" data-live-status role="status">${caps.consultation ? '' : esc(D_UNAVAILABLE().consultation)}</span>
     </div>
 
@@ -425,6 +451,7 @@ function answeredCount(need, month, notes) {
     Boolean(month || need.nights || need.party),
     Boolean((need.triggers || []).length || n.why),
     Boolean((need.uncertainties || []).length || n.hesitate),
+    Boolean(Object.keys(need.pillars || {}).length),
     scalesTouched,
     Boolean((need.constraints || []).length || n.around),
     Boolean(need.readiness),
@@ -554,6 +581,11 @@ function heardParts(hv) {
 
   const cons = (need.constraints || []).filter((k) => HIDE_CONSTRAINTS.indexOf(k) === -1 && k !== 'other').map((k) => lower1(label(vocab, 'constraints', k)));
   if (cons.length) parts.push('Planning around ' + joinAnd(cons) + '.');
+
+  const pil = Object.keys(need.pillars || {}).map((k) => lower1(String(label(vocab, 'pillars', k)).replace(/^Well /, '')));
+  if (pil.length) parts.push(upper1(joinAnd(pil)) + ' matter most.');
+  const people = (Number(need.adults) || 0) + (Number(need.children) || 0);
+  if (people) parts.push(`${need.adults || 0} adult${need.adults === 1 ? '' : 's'}${need.children ? ` and ${need.children} child${need.children === 1 ? '' : 'ren'}` : ''}${need.rooms ? `, ${need.rooms} room${need.rooms === 1 ? '' : 's'}` : ''}.`);
 
   if (need.eclipseInterest === true) parts.push('Curious how Eclipse would shape it.');
 

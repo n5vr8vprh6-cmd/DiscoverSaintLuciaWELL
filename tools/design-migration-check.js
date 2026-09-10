@@ -130,6 +130,11 @@ async function selects(table, cols) {
   if (m26.ok) console.log('    ✓ eclipse_interest present');
   else { bad++; console.log('    ✗ 026 not applied: ' + (m26.body || m26.status)); }
 
+  console.log('\n  027 — rooms');
+  const m27 = await selects('journey_consultations', 'rooms,adults,children');
+  if (m27.ok) console.log('    ✓ rooms present (with adults and children from 022)');
+  else { bad++; console.log('    ✗ 027 not applied: ' + (m27.body || m27.status)); }
+
   console.log('\n  ' + '─'.repeat(64));
   if (bad) {
     console.log('  ✗ 022 is not fully applied. Run db/migrations/022-journey-design.sql');

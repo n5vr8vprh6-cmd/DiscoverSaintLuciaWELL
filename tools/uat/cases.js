@@ -1251,7 +1251,7 @@ const CASES = [
   title: 'Design a journey end to end',
   steps: ['Open a Journey you own and press "Design this journey" — you land on Understand',
           'Set the month and nights, tick two things under "What brought this on", type a sentence in "In their words", set "Where they are" and type a budget figure; watch "What I heard" change; press Save what we know, then reload',
-          'Move to Compare: read a card, open "Why this fits · what to watch", tick two to carry, press Carry these into the shape',
+          'Move to Compare: read a card top to bottom — rank, verdict, four bands, what to watch, stay price — tap "Add to the journey" on two, then "Let’s shape the journey →" in the summary',
           'On Shape, choose a shape under "The shape of it" and press Use this shape; press "Draft a paragraph"',
           'On Send, set nights, add a note, press "Issue this plan" and confirm'],
   expect: 'Four stages on the rail, one at a time. Your taps on Understand survive a reload. Compare shows photographs and the reasoning is folded. The shortlist and its reasons are on screen the moment each stage loads, with no spinner; only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button.',
@@ -1349,6 +1349,14 @@ const CASES = [
           'Open Understand on a Journey that answered "Not really"'],
   expect: 'A midnight-and-copper block headed "You recognised something." It describes a state, never names a condition, says Eclipse is a practitioner-led curated journey — five days, one sequence across several places — and shows "From $7,500 · a person · five days · programme and stays, before flights" with "Every figure is confirmed before anything is booked." Two ticks only, no Book or Choose. "Signature Wellness Programs" is a dropdown with Eclipse selected and "Coming soon" greyed. After the tick: "Recorded — Shape will start from Eclipse.", the read-back gains "Curious how Eclipse would shape it.", it survives a reload, and Shape shows "Eclipse interest recorded on Understand." The "Not really" Journey shows no Eclipse block at all. Before migration 026 the block shows without the ticks and names the migration.',
   why: 'Eclipse is the deepest thing on the island and the easiest to mis-sell. The Finder\'s own gate decides who is shown it; the copy describes rather than diagnoses; the price is a "from", in one place, with a confirmation line; and the only control records interest the advisor asked about. The Eclipse-centred shape itself is the Shape pass\'s work.' },
+
+{ id: 'A-77', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
+  title: 'Compare — rank and verdict, the stay price a person, add a place, three at most, the summary',
+  steps: ['On Understand set 7 nights, February, 2 adults · 1 child · 1 room, and pick three under "What matters most"; open Compare',
+          'Read the top card: the rank beside the name, the verdict sentence, the four bands, "What to watch", "Stay price"',
+          'Tap "Add to the journey" on three cards, then try a fourth; set one aside with a reason; add Ti Kaye from the directory; reload; press "Let’s shape the journey →"'],
+  expect: 'Cards run most-to-least fit with "1st of 5" style ranks, never a number out of 100. The verdict reads like "Strong on place and depth; your direction isn’t in its offer." and the bands beneath agree; "What matters most" shows a real band, not "Not asked". Stay price reads "From $X a night · room type · two adults · February" with "About $Y a person a night for 3 across 1 room" and a "seen <date>" line; a place without a rate says "we’ll quote it". The fourth toggle is disabled with "Three at most"; the count says "3 of 3". Ti Kaye appears as a dashed card, "Added by you · Directory entry · profile to follow", no rank, with Remove, and survives a reload. The ink summary lists the carried places with their verdicts and the gold CTA plays "Shaping <first name>’s journey…" then lands on Shape.',
+  why: 'Duncan’s Compare review: a visible rubric that is not a competition, the reasoning up front now the screen is transparent, a real stay price instead of a spa menu, a toggle with a running count, a way to bring in any property, and a summary that hands off to the journey. Every figure keeps its "reconfirmed before anything is quoted" line.' },
 
 { id: 'A-65', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'Playbook',
   title: 'Read the Playbook and fill in the priority traveller',

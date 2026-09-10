@@ -208,7 +208,7 @@ async function seedFrom(answers) {
     readiness: null,
     orientation: orientationKey(a.orientation),
     party: comp ? comp.party : null,
-    adults: null, children: null, mobility: null,
+    adults: null, children: null, rooms: null, mobility: null,
     nights: null, budget: null, budgetUsd: null,
     /* Eclipse: null until the advisor asks; true / false once they have. The
        Finder's recognition answer gates whether the question is put at all. */
@@ -300,7 +300,7 @@ async function validate(state) {
     problems.push('continuumFloor sits deeper than continuumCeiling');
   }
 
-  ['adults', 'children', 'nights'].forEach((k) => {
+  ['adults', 'children', 'nights', 'rooms'].forEach((k) => {
     if (s[k] == null) return;
     if (!Number.isInteger(s[k]) || s[k] < 0) problems.push(k + ': must be a whole number');
   });

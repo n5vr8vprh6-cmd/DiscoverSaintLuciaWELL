@@ -74,7 +74,7 @@ const UNAVAILABLE = {
 async function capabilities() {
   const supabase = db();
   const out = { database: Boolean(supabase), consultation: false, itinerary: false, ledger: false,
-    travel_from: false, estimate: false, sent_at: false, stage: false, conversation: false, notes: false, placeNotes: false, eclipse: false };
+    travel_from: false, estimate: false, sent_at: false, stage: false, conversation: false, notes: false, placeNotes: false, eclipse: false, rooms: false };
   if (!supabase) return out;
 
   const probe = async (table) => {
@@ -116,6 +116,8 @@ async function capabilities() {
   out.placeNotes = await probe('advisor_place_notes');
   /* 026: whether they want to hear how Eclipse would shape it. */
   out.eclipse = out.consultation && await column('journey_consultations', 'eclipse_interest');
+  /* 027: rooms, so a per-room rate can be said a person. */
+  out.rooms = out.consultation && await column('journey_consultations', 'rooms');
   return out;
 }
 
@@ -209,6 +211,10 @@ async function saveConsultation(shareId, advisorId, state, seeded, extra) {
   if (extra && extra.eclipse) {
     row.eclipse_interest = typeof state.eclipseInterest === 'boolean' ? state.eclipseInterest : null;
   }
+  /* 027: rooms. adults and children ride in the literal above. */
+  if (extra && extra.rooms) {
+    row.rooms = state.rooms == null ? null : state.rooms;
+  }
 
   const { data, error } = await supabase
     .from('journey_consultations').upsert(row, { onConflict: 'share_id' })
@@ -245,6 +251,7 @@ function toNeedState(row) {
     continuumFloor: row.continuum_floor, continuumCeiling: row.continuum_ceiling,
     rhythm: row.rhythm, activity: row.activity, social: row.social, experience: row.experience,
     adults: row.adults, children: row.children, nights: row.nights,
+    rooms: row.rooms == null ? null : row.rooms,
     constraints: row.constraints || []
     /* in_their_words is deliberately NOT here. It lives on the row, is shown
        from the row, and is never part of a need-state. */

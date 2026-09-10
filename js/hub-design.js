@@ -657,3 +657,57 @@
   });
 })();
 
+/* ============================================================================
+   COMPARE — the toggle, three at most
+   ----------------------------------------------------------------------------
+   Each card's "Add to the journey" is a checkbox chip inside the choose form,
+   which LIVE SAVE already posts as JSON on change; the server answers with
+   the summary and the count as fragments. Here: the word on the chip flips,
+   the card takes its carried state, and once three are ticked the rest
+   disable with a title that says why — the server refuses a fourth too.
+   The same helper caps any checkbox group marked data-max-group (the pillars
+   on Understand).
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  function capGroup(inputs, max, why) {
+    var on = inputs.filter(function (i) { return i.checked; }).length;
+    inputs.forEach(function (i) {
+      var full = on >= max && !i.checked;
+      i.disabled = full;
+      var label = i.closest('label');
+      if (label) { if (full) label.setAttribute('title', why); else label.removeAttribute('title'); }
+    });
+  }
+
+  var form = document.querySelector('form.design-choose[data-max-carry]');
+  if (form) {
+    var max = Number(form.getAttribute('data-max-carry')) || 3;
+    var boxes = [].slice.call(form.querySelectorAll('input[data-carry]'));
+    function paint() {
+      boxes.forEach(function (b) {
+        var card = b.closest('.design-prop');
+        var word = b.parentNode.querySelector('[data-carry-word]');
+        if (card) card.classList.toggle('is-carried', b.checked);
+        if (word) word.textContent = b.checked ? word.getAttribute('data-on') : word.getAttribute('data-off');
+      });
+      capGroup(boxes, max, 'Three at most — set one aside first.');
+    }
+    boxes.forEach(function (b) { b.addEventListener('change', paint); });
+    paint();
+  }
+
+  var groups = {};
+  [].slice.call(document.querySelectorAll('input[data-max-group]')).forEach(function (i) {
+    var g = i.getAttribute('data-max-group');
+    (groups[g] = groups[g] || []).push(i);
+  });
+  Object.keys(groups).forEach(function (g) {
+    var inputs = groups[g];
+    var max = Number(inputs[0].getAttribute('data-max')) || 3;
+    var paintG = function () { capGroup(inputs, max, 'Up to ' + max + ' — untick one first.'); };
+    inputs.forEach(function (i) { i.addEventListener('change', paintG); });
+    paintG();
+  });
+})();

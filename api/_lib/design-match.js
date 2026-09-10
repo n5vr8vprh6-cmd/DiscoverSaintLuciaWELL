@@ -429,4 +429,49 @@ async function rankRecipes(need) {
   return scored;
 }
 
-module.exports = { scoreProperty, mismatchesFor, shortlistFor, normalise, bandFor, SHORTLIST, rankRecipes };
+/* ── One sentence from four words ─────────────────────────────────────────
+   The Compare card's verdict. Built from the bands and nothing else, so the
+   card and the summary say the same thing, and so it stays an argument the
+   advisor can have — "strong on place" names the axis, and the bands
+   underneath show the rest. Unknown axes are left out: an axis nobody asked
+   about is not a weakness. */
+const AXIS_WORD = { place: 'place', direction: 'direction', depth: 'depth', ingredients: 'what matters most' };
+function verdict(bands) {
+  const b = bands || {};
+  const of = (band) => Object.keys(AXIS_WORD).filter((k) => b[k] === band).map((k) => AXIS_WORD[k]);
+  const join = (xs) => (xs.length <= 1 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1]);
+  const strong = of('strong'), partial = of('partial'), thin = of('thin'), absent = of('absent');
+  const parts = [];
+  if (strong.length) parts.push('Strong on ' + join(strong));
+  if (partial.length) parts.push((parts.length ? 'partly on ' : 'Partly on ') + join(partial));
+  if (thin.length) parts.push((parts.length ? 'only a little on ' : 'Only a little on ') + join(thin));
+  let s = parts.join('; ');
+  if (absent.length) {
+    const miss = 'your ' + join(absent) + (absent.length > 1 ? " aren't" : " isn't") + ' in its offer';
+    s = s ? s + '; ' + miss : miss.charAt(0).toUpperCase() + miss.slice(1);
+  }
+  if (!s) return 'Nothing to compare against yet — the answers above decide this.';
+  return s + '.';
+}
+
+/* Score one named property the way shortlistFor() scores its list — the same
+   tail, so a place the advisor adds by hand carries the same words as one the
+   ranking found. Null when the slug is not in the bank. */
+async function scoreOne(need, slug) {
+  const p = await K.property(slug);
+  if (!p) return null;
+  const s = await scoreProperty(need, p);
+  s.mismatches = await mismatchesFor(need, p, s);
+  s.verified_at = p.provenance && p.provenance.verified_at;
+  s.watch = p.watch;
+  s.property = p;
+  s.added = true;
+  if (!s.mismatches.length) {
+    s.mismatches = [{ rule: 'none_fired',
+      sentence: 'No rule fired against this need-state. That is not a clean bill of health — read the watch note.',
+      evidence: (p.watch && p.watch[0] && p.watch[0].text) || null, severity: 'low' }];
+  }
+  return s;
+}
+
+module.exports = { scoreProperty, mismatchesFor, shortlistFor, scoreOne, verdict, normalise, bandFor, SHORTLIST, rankRecipes };

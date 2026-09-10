@@ -3074,3 +3074,84 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
   .design .design-eclipse { padding: 1.8rem 1.4rem; }
   .design .design-eclipse .eclipse-mark { width: 2.5rem; right: 1.2rem; top: 1.2rem; }
 }
+
+/* ── Compare · the brochure with its reasons open (2026-09-10) ──────────────
+   Rank, verdict and the four bands under the name; what to watch as a list;
+   the stay price from the lookup; a toggle chip that fills; the ink summary
+   at the foot. Reasons are on the card because the screen is transparent. */
+.design .design-compare-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .6rem 2rem; margin: 0 0 1.6rem; }
+.design .design-compare-count { font-family: var(--serif); font-size: 1.05rem; color: var(--ink); margin: 0; }
+.design .design-prop-body { padding: 1.6rem 1.9rem 1.5rem; }
+.design .design-prop-title { display: flex; align-items: baseline; gap: .9rem; flex-wrap: wrap; margin: 0 0 .5em; }
+.design .design-prop-title h3 { margin: 0; }
+.design .design-rank {
+  font-family: var(--serif-display); font-size: 1.15rem; color: var(--gold-deep); white-space: nowrap;
+  display: inline-flex; align-items: baseline; gap: .3em;
+}
+.design .design-rank small { font-family: var(--sans); font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.design .design-verdict { font-family: var(--serif); font-size: 1.08rem; line-height: 1.45; color: var(--ink); margin: 0 0 .9em; max-width: 52ch; }
+.design .design-prop .design-bands { margin: 0 0 1.4rem; }
+.design .design-prop-villages { margin: .4rem 0 .7rem; }
+.design .design-watch { margin: 1.2rem 0 0; }
+.design .design-watch h4 { font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); margin: 0 0 .5em; }
+.design .design-watch .design-mismatch { border-top: 0; padding-top: 0; }
+.design .design-prop--added { border-style: dashed; }
+
+/* The continuum, graded pale teal → ink. The word is the meaning; the grade
+   says "shallow to deep" without a legend. Space above it, as asked. */
+.design .design-depth { margin-top: .9rem; gap: .25rem; }
+.design .design-depth li { border-top-width: 3px; color: var(--mist); }
+.design .design-depth li.is-on { color: var(--ink); }
+.design .design-depth li.rung-1.is-on { border-top-color: #8FD3D0; }
+.design .design-depth li.rung-2.is-on { border-top-color: #4FB3B0; }
+.design .design-depth li.rung-3.is-on { border-top-color: var(--teal); }
+.design .design-depth li.rung-4.is-on { border-top-color: var(--gold); }
+.design .design-depth li.rung-5.is-on { border-top-color: var(--gold-deep); }
+.design .design-depth li.rung-6.is-on { border-top-color: var(--ink); }
+
+/* The stay price. */
+.design .design-stay { margin: 1.2rem 0 0; padding: .9rem 1rem; background: var(--paper-2); border-radius: 3px; }
+.design .design-stay h4 { margin: 0 0 .35em; font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--gold-deep); }
+.design .design-stay-line { font-family: var(--serif); font-size: 1.05rem; margin: 0 0 .2em; color: var(--ink); }
+.design .design-stay-line b { font-size: 1.2rem; font-weight: 600; }
+.design .design-stay-per { margin: 0 0 .3em; font-size: .95rem; color: var(--ink); }
+.design .design-stay-per b { font-weight: 600; }
+.design .design-stay-none { font-family: var(--serif); font-style: italic; color: var(--muted); margin: 0; }
+.design .design-menu { margin: .8rem 0 0; font-size: .9rem; }
+.design .design-menu summary { cursor: pointer; font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); list-style: none; }
+.design .design-menu summary::-webkit-details-marker { display: none; }
+.design .design-menu summary::before { content: "+ "; }
+.design .design-menu[open] summary::before { content: "\2212 "; }
+.design .design-menu p { margin: .6em 0 0; line-height: 1.5; color: var(--muted); }
+
+/* The toggle chip: a checkbox chip that fills when the place is in the journey. */
+.design .design-carry { font-weight: 400; gap: 0; }
+.design .design-carry input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.design .design-carry span { font-weight: 600; }
+.design .design-carry input:disabled + span { opacity: .45; cursor: not-allowed; }
+.design .design-prop.is-carried { border-color: var(--teal); box-shadow: inset 4px 0 0 var(--teal); }
+.design .design-prop.is-carried .design-prop-media { position: relative; }
+
+/* Add a place. */
+.design .design-addplace { margin: 2rem 0 2.5rem; padding: 1.4rem 1.6rem; background: #FFFFFF; border: 1px dashed var(--hairline-l); border-radius: 4px; display: grid; gap: .5rem; max-width: 40rem; }
+.design .design-addplace-row { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.design .design-addplace select { font: inherit; font-size: .95rem; min-height: 2.75rem; padding: .45rem .7rem; border: 1px solid var(--hairline-l); border-radius: 3px; background: var(--paper); color: var(--ink); min-width: 18rem; }
+
+/* The summary ink card reuses the read-back card; the list of carried places. */
+.design .design-summary-list { list-style: none; margin: 0 0 1.4em; padding: 0; display: grid; gap: 1rem; }
+.design .design-summary-list li { display: grid; gap: .15rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(251,248,241,.14); }
+.design .design-summary-list li:last-child { border-bottom: 0; }
+.design .design-summary-list b { font-family: var(--serif-display); font-size: 1.35rem; font-weight: 400; color: var(--paper); }
+.design .design-summary-verdict { font-family: var(--serif); color: rgba(251,248,241,.85); font-size: 1rem; }
+.design .design-summary-frame { font-size: 1.15rem !important; color: var(--mist) !important; }
+.design .design-heard-card .btn[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+.design .design-compare-summary { margin-top: 1rem; }
+
+/* Compare's footer nav sits in the middle, as asked. */
+.design .design-stagenav--middle { justify-content: center; gap: 1.25rem; padding: 2rem 0; border-bottom: 1px solid var(--hairline-l); margin-bottom: 1.5rem; }
+
+/* Understand · how many: three small counters in a row; the pillars chips. */
+.design .design-party-row { display: flex; flex-wrap: wrap; gap: 1.25rem 2rem; }
+.design .design-counter { display: grid; gap: .4rem; }
+.design .design-counter-label { font-family: var(--sans); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.design .design-party .design-field-hint { margin-top: .2rem; }

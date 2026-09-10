@@ -31,12 +31,13 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
   const seeded = await N.seedFrom(answers);
   const vocab = await N.vocabulary();
   const row = {
-    current_states: seeded.current, desired_states: seeded.desired, village_weights: seeded.villages, compass_weights: seeded.compass, pillar_weights: {},
+    current_states: seeded.current, desired_states: seeded.desired, village_weights: seeded.villages, compass_weights: seeded.compass,
     trigger: 'life-transition', uncertainty: 'value', triggers: ['life-transition', 'accumulated-fatigue'], uncertainties: ['value', 'food', 'other'],
     readiness: 'comparing', party: 'family', orientation: seeded.orientation, budget: 'premium', budget_usd: 18000, mobility: null,
     in_their_words: 'ZZLEGACY', notes: { told: 'ZZTOLD mornings are the worst', why: 'ZZWHY the year has emptied me out', hesitate: 'ZZHES her husband', around: 'ZZAROUND coeliac' },
     continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
-    rhythm: seeded.rhythm, activity: 0.2, social: seeded.social, experience: 0.3, adults: null, children: null, nights: 7,
+    rhythm: seeded.rhythm, activity: 0.2, social: seeded.social, experience: 0.3, adults: 2, children: 1, rooms: 1, nights: 7,
+    pillar_weights: { nature: 1, food: 1, mind: 1 },
     constraints: ['dietary', 'dates', 'other'], travel_from: '2027-02-01', advisor_overrode: ['budgetUsd', 'triggers'], heard_sent_at: null
   };
   const need = D.toNeedState(row);
@@ -44,7 +45,7 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
   const ready = (await K.version()).ready;
   const shortlist = ready ? await M.shortlistFor(need) : [];
   const floor = await U.floor({ shortlist, travelFrom: '2027-02-01', nights: 7 });
-  const caps = { database: true, consultation: true, travel_from: true, conversation: true, notes: true, placeNotes: true, eclipse: true };
+  const caps = { database: true, consultation: true, travel_from: true, conversation: true, notes: true, placeNotes: true, eclipse: true, rooms: true };
   const v = { id: 'j-test', need, seeded, stored: row, vocab, caps, shortlist, suggestedMonth: '2027-02-01', notes, answers,
     floor, placeNotes: shortlist.length ? { [shortlist[0].slug]: 'ZZSTORY stayed here in 2024' } : {}, clientEmail: 'j•••@example.invalid', firstName: 'Janice', brand: {} };
   const html = U.understandStage(v);
@@ -92,7 +93,10 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
 
   console.log('\n  The details');
   ok('#consult anchor on the details band', /id="consult"/.test(html));
-  ok('seven questions, every heading a question you could say aloud', count(html, /class="design-ask"/g) === 7 && count(html, /class="design-ask-h">[^<]*\?<\/span>/g) === 7);
+  ok('eight questions, every heading a question you could say aloud', count(html, /class="design-ask"/g) === 8 && count(html, /class="design-ask-h">[^<]*\?<\/span>/g) === 8);
+  ok('what matters most: the eight pillars as chips, up to three, with the stored three ticked',
+    count(html, /name="pillars"/g) === 8 && count(html, /name="pillars" value="[a-z]+" checked/g) === 3 && /data-max="3"/.test(html) && /What matters most on a trip like this\?/.test(plain));
+  ok('how many: adults, children and rooms as counters in the frame', /name="adults"[^>]*value="2"/.test(html) && /name="children"[^>]*value="1"/.test(html) && /name="rooms"[^>]*value="1"/.test(html));
   ok('the headings Duncan asked for', /When are you thinking, for how long, and who’s coming\?/.test(plain) && /Why are you travelling — and why now\?/.test(plain) && /What would make you hesitate\?/.test(plain) && /Where are we in the decision\?/.test(plain));
   ok('why now is a checkbox group named triggers[] with Extra notes', count(html, /type="checkbox" name="triggers"/g) === 7 && /name="note_why"/.test(html) && /Extra notes/.test(plain));
   ok('hesitations: nine boxes, "something else" among them, no "too much, or too little"', count(html, /type="checkbox" name="uncertainties"/g) === 10 && /name="uncertainties" value="other" checked/.test(html) && !/Too much, or too little/.test(plain));
@@ -103,7 +107,7 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
   ok('the budget is a number input with the figure; the open tick sits beside it, once; the floor line beneath', /name="budget_usd"[^>]*value="18000"/.test(html) && count(html, /name="budget_open"/g) === 1 && /design-budget-row">[\s\S]*?name="budget_open"[\s\S]*?<\/div>\s*<span class="design-field-hint"/.test(html) && /data-fragment-slot="floor"/.test(html));
   ok('the open tick carries the advisor\'s question', /If the right week cost more than that, would you want to see it\?/.test(plain));
   ok('the month cannot be in the past', /name="travel_from" min="\d{4}-\d{2}"/.test(html));
-  ok('the read-back slot and the answered count; the send button has left for the Send stage', /data-fragment-slot="consult"/.test(html) && /7 of 7 answered/.test(html) && !/heard_send/.test(html) && !/Send what I heard/.test(plain));
+  ok('the read-back slot and the answered count; the send button has left for the Send stage', /data-fragment-slot="consult"/.test(html) && /8 of 8 answered/.test(html) && !/heard_send/.test(html) && !/Send what I heard/.test(plain));
   ok('the gold Save', /btn btn--gold btn--sm" type="submit"[^>]*>Save what we know/.test(html));
   ok('the crown jewel: an ink card with the closing prompt and the one CTA carrying the interstitial', /class="design-heard-card"/.test(html) && /Anything you feel is missing before we lay this out\?/.test(plain) && /<a class="btn btn--gold" href="\/hub\/journeys\/j-test\/design\?step=compare" data-prepare="Janice">Let’s compare the places →<\/a>/.test(html));
 

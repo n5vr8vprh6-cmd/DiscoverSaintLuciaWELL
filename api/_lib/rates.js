@@ -92,4 +92,22 @@ async function span() {
   return weeks.length ? { first: weeks[0], last: weeks[weeks.length - 1] } : null;
 }
 
-module.exports = { nightly, transfers, experiences, regionOf, version, span, QUOTE, SPAN_DAYS };
+/* A per-room nightly cell as a per-person figure. The table is priced for two
+   adults a room; with the party's rooms and people we can say what that is a
+   head: rooms × the per-room rate ÷ everyone travelling. Null when the party
+   is unknown, when there is nothing to price, or when the arithmetic would
+   have to guess (no rooms → we do not assume two to a room). */
+function perPerson(cell, party) {
+  const p = party || {};
+  const people = (Number(p.adults) || 0) + (Number(p.children) || 0);
+  const rooms = Number(p.rooms) || 0;
+  if (!cell || !Number.isFinite(cell.from) || people <= 0 || rooms <= 0) return null;
+  const hi = Number.isFinite(cell.toNext) ? cell.toNext : cell.to;
+  return {
+    from: Math.round(cell.from * rooms / people),
+    to: Number.isFinite(hi) ? Math.round(hi * rooms / people) : null,
+    people, rooms
+  };
+}
+
+module.exports = { nightly, transfers, experiences, regionOf, version, span, perPerson, QUOTE, SPAN_DAYS };

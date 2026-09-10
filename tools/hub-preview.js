@@ -316,6 +316,7 @@ async function designWorkspace(step) {
   const IT = require('../api/_lib/design-itinerary.js');
 
   const D = require('../api/_lib/design-data.js');
+  const CMP = require('../api/_lib/hub-screens/design-compare.js');
   const j = JOURNEYS[0];
   const seeded = await N.seedFrom(j.answers || {});
   /* A stored consultation, the way saveConsultation would have written it
@@ -324,7 +325,7 @@ async function designWorkspace(step) {
      preview exercises the read-back, the override note and the budget word. */
   const storedRow = {
     current_states: seeded.current, desired_states: seeded.desired, village_weights: seeded.villages,
-    compass_weights: seeded.compass, pillar_weights: seeded.pillars,
+    compass_weights: seeded.compass, pillar_weights: { nature: 1, food: 1, mind: 1 },
     trigger: 'life-transition', uncertainty: 'value', triggers: ['life-transition', 'accumulated-fatigue'],
     uncertainties: ['value', 'food'], readiness: 'comparing', party: seeded.party, orientation: seeded.orientation,
     budget: 'premium', budget_usd: 18000, mobility: null,
@@ -336,7 +337,7 @@ async function designWorkspace(step) {
     heard_sent_at: null, eclipse_interest: null,
     continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
     rhythm: seeded.rhythm, activity: 0.2, social: seeded.social, experience: 0.3,
-    adults: null, children: null, nights: 7, constraints: ['dietary', 'dates'],
+    adults: 2, children: 1, rooms: 1, nights: 7, constraints: ['dietary', 'dates'],
     travel_from: '2027-02-01', seeded_from: seeded, advisor_overrode: ['budgetUsd', 'constraints', 'nights', 'triggers', 'uncertainties']
   };
   const need = D.toNeedState(storedRow);
@@ -374,6 +375,9 @@ async function designWorkspace(step) {
     id: j.id, name: fullName(j), need: needWithNights, seeded, stored: storedRow, clientEmail: 'm•••@example.invalid',
     suggestedMonth: N.travelFromWindow(j.travel_window),
     notes: D.notesOf(storedRow), answers: j.answers || {}, firstName: j.consumer_first,
+    added: await CMP.addedCards({ shortlist: { chosen: [], added: ['ti-kaye-resort-spa'] } }, need, shortlist),
+    rateCells: await CMP.ratesFor(shortlist, '2027-02-01'),
+    directory: await CMP.directory(shortlist.map((c) => c.slug)),
     placeNotes: { [shortlist.length ? shortlist[0].slug : 'x']: 'Stayed here in 2024. Ask for the room over the bay; the sunset massage is the thing.' },
     floor: await require('../api/_lib/hub-screens/design-understand.js').floor({ shortlist, travelFrom: '2027-02-01', nights: 7 }),
     vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
@@ -393,7 +397,7 @@ async function designWorkspace(step) {
         share_expires_at: null, revoked_at: new Date(Date.now() - 3 * 86400000).toISOString(),
         view_count: 1, last_viewed_at: new Date(Date.now() - 8 * 86400000).toISOString() }
     ],
-    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true, conversation: true, notes: true, placeNotes: true, eclipse: true },
+    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true, conversation: true, notes: true, placeNotes: true, eclipse: true, rooms: true },
     bank
   });
 }
