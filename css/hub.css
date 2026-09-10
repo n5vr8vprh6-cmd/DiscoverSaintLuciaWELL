@@ -3012,7 +3012,14 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 .design .design-heard-ctahint { color: var(--mist); font-size: .84rem; max-width: 34ch; }
 
 /* Understand's footer nav: the two ways out, centred between the rules. */
-.design .design-stagenav--center { justify-content: center; gap: 1.25rem; padding: 2rem 0; border-bottom: 1px solid var(--hairline-l); margin-bottom: 1.5rem; }
+.design .design-stagenav--center { padding: 2rem 0; border-bottom: 1px solid var(--hairline-l); margin-bottom: 1.5rem; }
+
+/* The first note opens taller; the island sits centred in its band with a
+   clear gap before its card. */
+.design .design-words--tall textarea { min-height: 11rem; }
+.design .design-band--island .island { grid-template-columns: minmax(18rem, 30rem) minmax(16rem, 22rem); gap: 4rem; justify-content: center; max-width: 60rem; margin-inline: auto; }
+.design .design-band--island .design-island-sentence { margin-left: auto; margin-right: auto; text-align: center; max-width: 52ch; }
+.design .design-band--island > [data-fragment-slot="island"] > h2 { text-align: center; }
 
 @media (max-width: 52rem) {
   .design .design-quote-card { padding: 1.6rem 1.4rem 1.6rem 3.6rem; }

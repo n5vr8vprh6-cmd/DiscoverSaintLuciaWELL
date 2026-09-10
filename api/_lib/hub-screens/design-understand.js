@@ -150,9 +150,11 @@ function told(v) {
    inside the conversation form (band 3) — same markup, same live save. */
 function noteField(key, notes, heading, hint, id, standalone) {
   const text = (notes && notes[key]) || '';
-  const field = `<div class="design-words">
+  /* The first note is where the advisor writes most, so it opens taller. */
+  const rows = key === 'told' ? 5 : 2;
+  const field = `<div class="design-words${key === 'told' ? ' design-words--tall' : ''}">
         <label class="design-field-label" for="note_${key}">${esc(heading)}</label>
-        <textarea id="note_${key}" name="note_${key}" rows="2" maxlength="${WORDS_MAX}" placeholder="${esc(hint)}" aria-describedby="note_${key}-hint">${esc(text)}</textarea>
+        <textarea id="note_${key}" name="note_${key}" rows="${rows}" maxlength="${WORDS_MAX}" placeholder="${esc(hint)}" aria-describedby="note_${key}-hint">${esc(text)}</textarea>
         <span class="design-field-hint" id="note_${key}-hint">Stays with the consultation. Never sent to the model, never on the client document. <span data-words-count>${text.length ? text.length + ' of ' + WORDS_MAX : ''}</span></span>
       </div>`;
   if (!standalone && key !== 'told') return field;
@@ -241,8 +243,11 @@ function details(v) {
       kind === 'radio' ? on(dim, o.key) : has(values, o.key)}>
       <span>${esc(o.label)}</span></label>`).join('')}</div>`;
 
+  /* Nothing recorded yet → the line opens on Planning, the middle of the
+     road. It becomes a fact only when the form saves. */
+  const readinessShown = need.readiness || 'planning';
   const steps = `<div class="design-steps" style="--steps: ${opts('readiness').length}">${opts('readiness').map((o) => `
-    <label class="design-step"><input type="radio" name="readiness" value="${esc(o.key)}"${on('readiness', o.key)}>
+    <label class="design-step"><input type="radio" name="readiness" value="${esc(o.key)}"${readinessShown === o.key ? ' checked' : ''}>
       <span class="design-step-dot" aria-hidden="true"></span><span class="design-step-word">${esc(o.label)}</span></label>`).join('')}</div>`;
 
   const scale = (k) => {
@@ -260,7 +265,9 @@ function details(v) {
   const storedMonth = stored && stored.travel_from ? String(stored.travel_from).slice(0, 7) : '';
   const month = storedMonth || (suggestedMonth ? String(suggestedMonth).slice(0, 7) : '');
   const monthSuggested = !storedMonth && Boolean(month);
-  const budget = need.budgetUsd;
+  /* No figure yet → the field opens at $7,500 as a starting point to talk
+     from; it becomes a fact only when the form saves. */
+  const budget = need.budgetUsd == null ? 7500 : need.budgetUsd;
   const open = need.budget === 'open';
 
   const ask = (n, key, heading, cue, body) => `<fieldset class="design-ask" id="ask-${key}" data-ask="${key}">
