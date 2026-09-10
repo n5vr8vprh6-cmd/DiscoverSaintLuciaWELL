@@ -194,6 +194,7 @@ function accessExport(found) {
           why_now: (c.triggers && c.triggers.length) ? c.triggers : (c.trigger ? [c.trigger] : []),
           what_was_uncertain: (c.uncertainties && c.uncertainties.length) ? c.uncertainties : (c.uncertainty ? [c.uncertainty] : []),
           in_their_words: c.in_their_words || null,
+          notes_your_advisor_took: c.notes && Object.keys(c.notes).length ? c.notes : null,
           how_ready: c.readiness,
           travelling_as: c.party,
           how_they_relate_to_wellness: c.orientation,

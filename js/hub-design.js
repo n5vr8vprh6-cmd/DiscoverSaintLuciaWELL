@@ -612,3 +612,59 @@
     });
   });
 })();
+
+/* ============================================================================
+   PREPARING OPTIONS — a few seconds between Understand and Compare
+   ----------------------------------------------------------------------------
+   The recommendations are computed on the server the moment Compare loads;
+   nothing here decides anything. What this adds is the cognitive signal Duncan
+   asked for: the ring, three lines that arrive in turn, then the page. The
+   overlay is server-rendered and hidden; this reveals it, waits, and follows
+   the link. Without JavaScript the link is a link. With reduced motion, one
+   still line and under a second.
+   ========================================================================== */
+(function () {
+  'use strict';
+  var link = document.querySelector('a[data-prepare]');
+  var overlay = document.querySelector('[data-prepare-overlay]');
+  if (!link || !overlay) return;
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  link.addEventListener('click', function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    overlay.hidden = false;
+    document.body.classList.add('is-preparing');
+    /* Force a frame so the transition runs from the hidden state. */
+    void overlay.offsetWidth;
+    overlay.classList.add('is-on');
+    setTimeout(function () { location.href = link.href; }, reduced ? 800 : 2400);
+  });
+})();
+
+/* ============================================================================
+   SEND WHAT I HEARD — posts as JSON so the page keeps its place
+   ----------------------------------------------------------------------------
+   The button is a real form (303 without JavaScript). Here it posts as JSON
+   and writes the server's sentence into the status line.
+   ========================================================================== */
+(function () {
+  'use strict';
+  var form = document.querySelector('form[data-heard-send]');
+  if (!form) return;
+  var status = form.querySelector('[data-heard-status]');
+  var btn = form.querySelector('button');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (btn) btn.disabled = true;
+    if (status) status.textContent = 'Sending…';
+    fetch(form.getAttribute('action'), { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'heard_send' }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (status) status.textContent = j && j.ok ? 'Sent just now to ' + (j.to || 'them') + '. Copied to you; replies come to you.'
+          : (j && j.message) || 'That could not be sent. Read it aloud, or try again in a moment.';
+      })
+      .catch(function () { if (status) status.textContent = 'That could not be sent. Read it aloud, or try again in a moment.'; })
+      .then(function () { if (btn) btn.disabled = false; });
+  });
+})();

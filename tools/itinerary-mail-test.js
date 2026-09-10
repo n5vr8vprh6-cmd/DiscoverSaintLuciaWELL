@@ -41,6 +41,18 @@ ok('nothing the traveller wrote', mail.html.indexOf('ZZSENTINEL') === -1 && mail
 ok('no advisor id', mail.html.indexOf('uuid-not-for-mail') === -1);
 ok('no attachment of any kind', !('attachments' in mail));
 
+console.log('\n  What I heard, sent back');
+const heard = IM.composeHeard({ journey, advisor, heard: 'A life transition. 7 nights in February 2027, with friends. Around $18,000 all in.',
+  notes: [{ label: 'On running hot', text: 'ZZNOTE the year has emptied her out' }, { label: 'Things to plan around', text: '' }] });
+ok('same envelope: from journeys@, to the traveller, cc and reply-to the advisor',
+  heard.from === process.env.NOTIFY_FROM && heard.to === 'janice@example.invalid' && heard.cc === 'm@example.invalid' && heard.replyTo === 'm@example.invalid');
+ok('the paragraph is in it, and the note with its label', /A life transition\./.test(heard.text) && /On running hot/.test(heard.text) && /ZZNOTE/.test(heard.text));
+ok('an empty note is dropped', !/Things to plan around/.test(heard.html));
+ok('first name only, and the advisor signs it', /Janice/.test(heard.text) && !/Seinfield/.test(heard.text) && /Okonkwo Travel/.test(heard.text));
+ok('no link, no attachment, no property name', !/https?:\/\//.test(heard.html) && !('attachments' in heard) && !/Anse Chastanet|Jade Mountain/.test(heard.html));
+ok('the only figure is the one the client gave', (heard.text.match(/\$[\d,]+/g) || []).join() === '$18,000');
+ok('the advisor id is not in it', heard.html.indexOf('uuid-not-for-mail') === -1);
+
 console.log('\n  Sending without configuration refuses, never throws');
 (async () => {
   const saved = process.env.RESEND_API_KEY; delete process.env.RESEND_API_KEY;
@@ -49,6 +61,8 @@ console.log('\n  Sending without configuration refuses, never throws');
   process.env.RESEND_API_KEY = 're_test_not_real';
   const r2 = await IM.send({ journey: {}, advisor, url: '/j/x' });
   ok('no recipient → no_recipient', r2.ok === false && r2.error === 'no_recipient');
+  const r3 = await IM.sendHeard({ journey, advisor, heard: '   ' });
+  ok('nothing heard → nothing_heard, never an empty mail', r3.ok === false && r3.error === 'nothing_heard');
   if (saved) process.env.RESEND_API_KEY = saved; else delete process.env.RESEND_API_KEY;
   console.log('\n  ' + ran + ' checks, ' + failed + ' failed\n');
   process.exit(failed ? 1 : 0);

@@ -831,35 +831,53 @@ and tells you to ask the advisor — which the Undertaking obliges them to do.
 
 ### The Understand stage · `api/_lib/hub-screens/design-understand.js`
 
-The first stage is a conversation, not a form. Duncan's review of the deployed
-designer (2026-09-09) asked for it: *"this step is about having the prospect
-feel seen and heard."* Three movements, all server-rendered, all working with
-JavaScript off:
+The first stage is a conversation, not a form. Duncan's reviews of the deployed
+designer (2026-09-09 and -10) asked for it: *"this step is about having the
+prospect feel seen and heard … AI and tech enable advisors to be more human,
+not just taking orders."* Three bands — paper · white · paper — all
+server-rendered, all working with JavaScript off, nothing in the third person,
+every heading a question you could say aloud:
 
-1. **What you told us.** The Finder's six answers read back as a reflection —
-   away → toward, direction and depth, company, relationship to wellness —
-   beside **the island**: Saint Lucia's real coastline with the shortlisted
-   places pinned by the village they answer for this traveller, lead villages
-   full-weight and labelled, a card beside the map (photograph, village, name,
-   town, one line) for the pin under the pointer or the one with focus, and
-   every pin a link to its card on Compare. The outline is `content/island.js`,
-   generated once by `tools/build-island-map.js` from geoBoundaries (CC BY 4.0
-   — the attribution renders in the SVG `<desc>` and the caption). Pin
-   positions are `geo` on each deep property in the Field Guide, each with its
-   source; six are placed from an address and say so.
-2. **The conversation.** Seven questions, single column, ordered simple → open
-   → sensitive after the Interaction Design Foundation's form guidance: the
-   frame (month · nights · who), what brought this on (multi-select, plus
-   *in their words*), what could get in the way (multi-select), how they like a
-   trip to feel (four named scales), things to plan around, where they are,
-   about how much (a dollar figure; the band is derived and shown beside it).
-   Every control ≥ 44px, a visible label and hint, a focus ring, a quiet
-   *n of 7 answered*. The month is pre-filled from the Journey's window
-   (`need-state.js travelFromWindow()`) and marked *suggested* until touched.
-3. **What I heard.** One paragraph built from the codes — no model, labels only
-   — that the advisor reads back across the table, re-rendered by the server on
-   every save. It is the summary reflection the discovery-call literature and
-   Motivational Interviewing both ask for.
+1. **What you told us.** The client's own Finder answers quoted first, in the
+   Finder's phrasing (*"You said you need 'space to think clearly', and 'the
+   rainforest' called you first"*), then away → toward in **spoken words**
+   (`say` on each state in the playbook: *running hot*, not *Overstimulated*),
+   a cue per leading away-from state for the advisor to dig in, and the first
+   note — *What they said about it*. Under the headline: *With Marguerite
+   Okonkwo · Okonkwo Travel*, the same name the document carries.
+2. **Where the island answers it.** One server-built sentence — *"Five places
+   on the island answer moving from running hot toward here, fully — most of
+   them in Nature & Renewal"* — then **the island**: Saint Lucia's real
+   coastline with the places we're considering pinned by the village they
+   answer for this traveller, lead villages full-weight and labelled, a card
+   beside the map (photograph, village, name, town, one line, and **the
+   advisor's own story about the place**) for the pin under the pointer or the
+   one with focus, every pin a link to its card on Compare. The outline is
+   `content/island.js`, generated once by `tools/build-island-map.js` from
+   geoBoundaries (CC BY 4.0 — credited in the SVG `<desc>` and the stage
+   footer). Pin positions are `geo` on each deep property in the Field Guide,
+   each with its source; six are placed from an address and say so.
+3. **Let's get into the details.** Seven questions, single column, simple →
+   open → sensitive after the Interaction Design Foundation's form guidance —
+   when · how long · who; why are you travelling, and why now (multi-select,
+   *Extra notes*); what would make you hesitate (multi-select with *Something
+   else*, notes); how do you like a trip to feel (four named scales; **Energy
+   whispers** which places its position points to, from each place's inferred
+   typical intensity — the other three have no data to point with and say
+   nothing); anything we should plan around (*Something else*, *Details*);
+   where are we in the decision; roughly what feels right, all in (a dollar
+   figure, the derived band beside it, and **the floor** — *"the places we're
+   considering start from about $X for 7 nights in February … before flights"*
+   from `rates.js`, with a figure under it called out). Every control ≥ 44px,
+   a visible label and hint, a focus ring, *n of 7 answered*. Then **What I
+   heard** — one paragraph from the codes and every note quoted with its label,
+   re-rendered by the server on each save — and **Send what I heard**, which
+   emails it to the client, copied to the advisor, on the itinerary's envelope
+   (`itinerary-mail.js composeHeard()`); `heard_sent_at` records when.
+   **Compare →** plays a short *Preparing Janice's options…* interstitial
+   (server-rendered, hidden; the script reveals it, waits ~2.4 s, and follows
+   the link; under a second with reduced motion; a plain link without
+   JavaScript). The options were computed before the ring turned.
 
 There is **no Present mode**. It hid the advisor's working notes behind a
 toggle; Duncan removed it on 2026-09-10 — *"might as well make the experience
@@ -868,11 +886,17 @@ Compare sit behind a `<details>` the advisor opens.
 
 Migration `024-understand-conversation.sql` adds `triggers` and
 `uncertainties` (`text[]`, like `constraints`), `budget_usd` and
-`in_their_words`. `capabilities()` probes them as one (`caps.conversation`);
-a deployment ahead of the migration shows one radio per question, no figure and
-no words, and says which migration it needs. `node tools/island-map-test.js`
-checks the coastline, the fifteen pins and the markup contract;
-`node tools/need-state-test.js` the lists, the band and the suggested month.
+`in_their_words`; `025-understand-notes.sql` adds `notes` (jsonb — `told ·
+why · hesitate · around`, the prose on the row, never in a need-state),
+`heard_sent_at`, and the advisor-scoped `advisor_place_notes` table (RLS
+own-rows, about a place not a person, never in a prompt or a document or the
+subject-rights export). `capabilities()` probes them (`caps.conversation`,
+`caps.notes`, `caps.placeNotes`); a deployment ahead of a migration shows the
+older controls and says which migration it needs. `node
+tools/design-understand-test.js` renders the stage against a stored row and
+reads it back; `node tools/island-map-test.js` checks the coastline, the
+fifteen pins and the markup contract; `node tools/need-state-test.js` the
+lists, the spoken forms, the band and the suggested month.
 
 ### The Shape stage · `api/_lib/design-shape.js`
 

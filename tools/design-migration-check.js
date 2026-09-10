@@ -120,6 +120,11 @@ async function selects(table, cols) {
   if (m24.ok) console.log('    ✓ triggers, uncertainties, budget_usd and in_their_words present');
   else { bad++; console.log('    ✗ 024 not applied: ' + (m24.body || m24.status)); }
 
+  console.log('\n  025 — the human layer: notes, the recap, the advisor\'s stories');
+  const m25 = [await selects('journey_consultations', 'notes,heard_sent_at'), await selects('advisor_place_notes', 'id,slug,body')];
+  if (m25.every((r) => r.ok)) console.log('    ✓ notes, heard_sent_at and advisor_place_notes present');
+  else { bad++; console.log('    ✗ 025 not applied: ' + m25.filter((r) => !r.ok).map((r) => r.body || r.status).join(' · ')); }
+
   console.log('\n  ' + '─'.repeat(64));
   if (bad) {
     console.log('  ✗ 022 is not fully applied. Run db/migrations/022-journey-design.sql');

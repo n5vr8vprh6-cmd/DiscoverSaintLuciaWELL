@@ -137,6 +137,12 @@ console.log('\n  DESIGN DATA — DEGRADATION\n  ' + '─'.repeat(60) + '\n');
   ok('IN THEIR WORDS NEVER BECOMES PART OF A NEED-STATE',
     JSON.stringify(back).indexOf('ZZSENTINEL') === -1 && !('in_their_words' in back) && !('inTheirWords' in back),
     'the one prose column stays on the row; a need-state carrying it would reach a prompt');
+  const withNotes = D.toNeedState(Object.assign({}, row, { notes: { told: 'ZZNOTE mornings', why: 'ZZNOTE march', hesitate: 'ZZNOTE husband', around: 'ZZNOTE knee' } }));
+  ok('nor do the four notes (025)', JSON.stringify(withNotes).indexOf('ZZNOTE') === -1 && !('notes' in withNotes));
+  const notes = D.notesOf(Object.assign({}, row, { notes: { told: 'mornings', why: '', extra: 'ignored' } }));
+  ok('notesOf() reads the four keys, drops empties and strangers, and falls back to in_their_words for why',
+    notes.told === 'mornings' && notes.why === row.in_their_words && !('extra' in notes) && Object.keys(notes).length === 2);
+  ok('notesOf() of nothing is an empty object', Object.keys(D.notesOf(null)).length === 0);
   ok('and the result is a valid need-state', (await N.validate(back)).length === 0,
     JSON.stringify(await N.validate(back)));
   const pre024 = D.toNeedState(Object.assign({}, row, { triggers: [], uncertainties: [], budget_usd: null }));

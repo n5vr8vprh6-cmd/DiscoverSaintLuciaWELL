@@ -78,4 +78,62 @@ async function send(input) {
   }
 }
 
-module.exports = { compose, send };
+/* ── "What I heard", sent back ─────────────────────────────────────────────
+   The read-back paragraph from Understand, and the notes the advisor took,
+   emailed to the client from inside the call — the recap the discovery-call
+   literature says to send within a day, sent within a minute. Same envelope
+   as the itinerary. Her own answers returned to her; nothing about cost
+   beyond the figure she gave, no property names, no link. */
+function composeHeard(input) {
+  const i = input || {};
+  const journey = i.journey || {};
+  const advisor = i.advisor || {};
+  const first = String(journey.consumer_first || '').trim() || 'Hello';
+  const who = [advisor.first_name, advisor.last_name].filter(Boolean).join(' ').trim() || 'Your advisor';
+  const heard = String(i.heard || '').trim();
+  const notes = Array.isArray(i.notes) ? i.notes.filter((n) => n && n.text) : [];
+
+  const html =
+    `<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.6;color:#133239">` +
+    `<p style="margin:0 0 1.2em">${esc(first)},</p>` +
+    `<p style="margin:0 0 1.2em">Thank you for the conversation. Here is what I heard — tell me where I have it wrong.</p>` +
+    `<p style="margin:0 0 1.4em;font-family:Georgia,serif;font-size:17px;line-height:1.5">${esc(heard)}</p>` +
+    (notes.length ? `<ul style="margin:0 0 1.4em;padding-left:1.2em">${notes.map((n) =>
+      `<li style="margin:0 0 .5em"><b>${esc(n.label)}:</b> ${esc(n.text)}</li>`).join('')}</ul>` : '') +
+    `<p style="margin:0 0 1.2em">Nothing here is booked or quoted; it is the start of the plan. Reply to this email to reach ${esc(advisor.first_name || who)} directly.</p>` +
+    `<p style="margin:0 0 1.2em">With warm regards,<br>${esc(who)}${advisor.business ? '<br>' + esc(advisor.business) : ''}</p>` +
+    `<hr style="border:0;border-top:1px solid #E5E0D6;margin:1.6em 0">` +
+    `<p style="margin:0;color:#5c6b68;font-size:13px">${esc(who)} is an independent travel professional. ` +
+    `Discover Saint Lucia WELL is not a travel agency and does not take bookings.</p></div>`;
+
+  return {
+    from: process.env.NOTIFY_FROM,
+    to: journey.consumer_email,
+    cc: advisor.email,
+    replyTo: advisor.email,
+    subject: `What I heard — your Saint Lucia WELL conversation with ${advisor.first_name || who}`,
+    html,
+    text: toText(html)
+  };
+}
+
+async function sendHeard(input) {
+  const mail = composeHeard(input);
+  if (!mail.from || !process.env.RESEND_API_KEY) return { ok: false, error: 'mail_not_configured' };
+  if (!mail.to) return { ok: false, error: 'no_recipient' };
+  if (!String(input && input.heard || '').trim()) return { ok: false, error: 'nothing_heard' };
+  try {
+    const { Resend } = require('resend');
+    const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
+      from: mail.from, to: mail.to, cc: mail.cc, replyTo: mail.replyTo,
+      subject: mail.subject, html: mail.html, text: mail.text
+    });
+    if (error) throw error;
+    return { ok: true, to: mail.to };
+  } catch (e) {
+    console.error('heard email failed', e && e.message ? e.message : e);
+    return { ok: false, error: 'email_failed' };
+  }
+}
+
+module.exports = { compose, send, composeHeard, sendHeard };

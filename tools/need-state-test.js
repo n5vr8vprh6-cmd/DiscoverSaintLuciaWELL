@@ -49,6 +49,13 @@ console.log('\n  NEED STATE — ONE VOCABULARY\n  ' + '─'.repeat(60) + '\n');
   ok('the planning vectors come from the destination bank, not a second copy',
     v.compass.length === 8 && v.continuum.length === 6 && v.pillars.length === 8 && v.villages.length === 6);
   ok('villages are keyed to this site', v.villages.some((x) => x.key === 'rainforest'));
+  ok('"too much, or too little" is gone from the hesitations (the scales ask it)', !v.uncertainty.some((o) => o.key === 'intensity'));
+  ok('the partner line speaks of other people', v.uncertainty.some((o) => o.key === 'partner-buy-in' && /other people/.test(o.label)));
+  ok('hesitations and constraints both offer "something else"',
+    v.uncertainty.some((o) => o.key === 'other') && v.constraints.some((o) => o.key === 'other'));
+  ok('every away-from and toward state has a spoken form',
+    v.current.every((o) => o.say && o.say.length > 3) && v.desired.every((o) => o.say && o.say.length > 3),
+    'the Understand stage reads `say`; the Playbook keeps `label`');
   ok('every option is a key and a label, never prose',
     Object.keys(v).every((d) => v[d].every((o) => o.key !== undefined || o.low !== undefined)));
 

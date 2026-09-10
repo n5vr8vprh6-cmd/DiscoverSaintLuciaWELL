@@ -2825,3 +2825,95 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 .design .design-issue-email { display: flex; gap: .7rem; align-items: flex-start; font-size: .92rem; line-height: 1.5; max-width: 60ch; margin-top: .4rem; }
 .design .design-issue-email input { width: 1.15rem; height: 1.15rem; margin-top: .2rem; accent-color: var(--ink); flex: none; }
 .design .design-issued-sent { margin: .8rem 0 0; font-weight: 600; }
+
+/* ── Understand · bands ─────────────────────────────────────────────────────
+   Three movements, paper · white · paper. A band bleeds to the viewport edge
+   from inside .wrap (the negative-margin trick), so the colour change divides
+   the page and the text keeps its measure. */
+.design .design-band { padding: 2.75rem 0 3rem; }
+.design .design-band > h2 { margin-bottom: .9em; }
+.design .design-band--white {
+  background: #FFFFFF; color: var(--ink);
+  margin-inline: calc(50% - 50vw); padding-inline: calc(50vw - 50%);
+  border-top: 1px solid var(--hairline-l); border-bottom: 1px solid var(--hairline-l);
+}
+.design .design-band--told { padding-top: .5rem; }
+.design .design-with { font-family: var(--serif); font-style: italic; color: var(--muted); margin: -.2em 0 0; font-size: 1.02rem; }
+
+/* The client's own words back to them. */
+.design .design-quote { font-family: var(--serif-display); font-size: clamp(1.25rem, 1.9vw, 1.6rem); line-height: 1.35; color: var(--ink); max-width: 34ch; margin: 0 0 1.6em; }
+.design .design-quote q { quotes: "“" "”"; font-style: italic; }
+.design .design-cue { font-family: var(--serif); font-style: italic; color: var(--muted); font-size: 1.05rem; max-width: 56ch; margin: 1.4em 0 .4em; }
+.design .design-cue b { color: var(--ink); font-style: normal; font-weight: 600; }
+.design .design-told-form { max-width: 46rem; margin-top: 1rem; }
+.design .design-told-form .design-actions { margin-top: .6rem; }
+
+/* The island band's sentence. */
+.design .design-island-sentence { font-family: var(--serif-display); font-size: clamp(1.15rem, 1.6vw, 1.45rem); line-height: 1.4; color: var(--ink); max-width: 44ch; margin: 0 0 1.6em; }
+.design .design-island-sentence b { font-weight: 600; }
+.design .design-band--island .island-readout { min-height: 18rem; }
+/* In its own band the island is capped: a 30rem drawing is a 45rem-tall
+   island, which is as much scrolling as a map should ask for. */
+.design .design-band--island .island { grid-template-columns: minmax(18rem, 30rem) minmax(16rem, 24rem); gap: 2.5rem; }
+
+/* The advisor's story: on the island card and the Compare card. */
+.design .island-card-story { font-family: var(--serif); font-style: italic; font-size: .92rem; line-height: 1.45; color: var(--ink); margin: .4rem 0 0; border-top: 1px dashed var(--hairline-l); padding-top: .5rem; }
+.design .island-card-storywho, .design .design-story .design-field-label { font-family: var(--sans); font-style: normal; font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: .2em; }
+.design .design-story { display: flex; flex-direction: column; gap: .4rem; margin-top: .8rem; }
+.design .design-story textarea {
+  font: inherit; font-family: var(--serif); font-size: .95rem; line-height: 1.45; padding: .55rem .7rem;
+  border: 1px solid var(--hairline-l); border-radius: 3px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 3.6rem;
+}
+.design .design-story textarea:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.design .design-story .design-actions { gap: .6rem; }
+.design .design-story-wrap { border-top: 1px dashed var(--hairline-l); margin-top: .8rem; padding-top: .6rem; font-size: .9rem; }
+.design .design-story-wrap summary { cursor: pointer; color: var(--muted); font-family: var(--sans); font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; list-style: none; }
+.design .design-story-wrap summary::-webkit-details-marker { display: none; }
+.design .design-story-wrap summary::before { content: "+ "; }
+.design .design-story-wrap[open] summary::before { content: "\2212 "; }
+
+/* Whisper, floor, under-floor. */
+.design .design-whisper { margin: -.3rem 0 .4rem 8.5rem; font-size: .88rem; color: var(--muted); min-height: 1.2em; }
+.design .design-whisper:empty { display: none; }
+.design .design-whisper b { color: var(--ink); font-weight: 600; }
+.design .design-inferred { color: var(--mist); font-size: .8rem; }
+.design .design-floor { font-family: var(--serif); font-size: 1rem; line-height: 1.5; color: var(--muted); max-width: 60ch; margin: .4rem 0 .2rem; }
+.design .design-floor b { color: var(--ink); font-weight: 600; }
+.design .design-floor-seen { font-family: var(--sans); font-size: .78rem; color: var(--mist); }
+.design .design-under { color: var(--gold-deep); }
+
+/* Send what I heard. */
+.design .design-heard-send { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem 1rem; margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px dashed var(--hairline-l); max-width: 62ch; }
+.design .design-heard-words { margin: 0 0 .4em; }
+
+/* Preparing options — the interstitial. Paper over everything, the ring
+   drawing itself, three lines arriving in turn. */
+.design-prepare {
+  position: fixed; inset: 0; z-index: 60; background: var(--paper);
+  display: grid; place-items: center; opacity: 0; transition: opacity .35s ease-out;
+}
+.design-prepare.is-on { opacity: 1; }
+.design-prepare-inner { text-align: center; max-width: 30rem; padding: 2rem; }
+.design-prepare .ring-mark { display: block; margin: 0 auto 1.6rem; }
+.design-prepare .ring-mark circle { transform-origin: 13px 13px; }
+.design-prepare.is-on .ring-mark circle:nth-child(1) { animation: prepare-ring 2.2s ease-in-out infinite; }
+.design-prepare.is-on .ring-mark circle:nth-child(2) { animation: prepare-ring 2.2s ease-in-out .3s infinite reverse; }
+.design-prepare.is-on .ring-mark circle:nth-child(3) { animation: prepare-dot 1.1s ease-in-out infinite alternate; }
+@keyframes prepare-ring { 0% { stroke-dasharray: 0 80; transform: rotate(0deg); } 50% { stroke-dasharray: 60 80; } 100% { stroke-dasharray: 0 80; transform: rotate(360deg); } }
+@keyframes prepare-dot { from { opacity: .4; } to { opacity: 1; } }
+.design-prepare-h { font-family: var(--serif-display); font-size: clamp(1.4rem, 2.4vw, 1.9rem); color: var(--ink); margin: 0 0 1.2em; }
+.design-prepare-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.design-prepare-steps li { font-family: var(--sans); font-size: .82rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); opacity: 0; transform: translateY(4px); }
+.design-prepare.is-on .design-prepare-steps li { animation: prepare-line .5s ease-out forwards; }
+.design-prepare.is-on .design-prepare-steps li:nth-child(1) { animation-delay: .3s; }
+.design-prepare.is-on .design-prepare-steps li:nth-child(2) { animation-delay: 1s; }
+.design-prepare.is-on .design-prepare-steps li:nth-child(3) { animation-delay: 1.7s; }
+@keyframes prepare-line { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .design-prepare { transition: none; }
+  .design-prepare.is-on .ring-mark circle { animation: none; }
+  .design-prepare.is-on .design-prepare-steps li { animation: none; opacity: 1; transform: none; }
+}
+@media (max-width: 52rem) {
+  .design .design-whisper { margin-left: 0; }
+}

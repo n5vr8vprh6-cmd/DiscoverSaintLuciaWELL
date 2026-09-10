@@ -84,6 +84,12 @@ const SENTINELS = {
      neither may become part of a need-state or a prompt. */
   in_their_words: 'ZZSENTINEL the year emptied her out',
   budget_usd: '987654',
+  /* 025's four notes and the advisor's story about a place. */
+  note_told: 'ZZSENTINEL she said the mornings are the worst',
+  note_why: 'ZZSENTINEL her father died in March',
+  note_hesitate: 'ZZSENTINEL her husband thinks it is indulgent',
+  note_around: 'ZZSENTINEL coeliac, and a bad knee',
+  place_note: 'ZZSENTINEL I stayed here in 2024 and the massage was the thing',
   declined_reason: 'ZZSENTINEL too expensive for them',
   share_token_hash: 'ZZSENTINEL-token-hash',
   /* The advisor's own private fields. Their name and business are theirs to
@@ -180,6 +186,7 @@ function expect(label, payload) {
     compass_weights: need.compass, pillar_weights: {}, triggers: ['milestone'], uncertainties: ['value'],
     readiness: 'comparing', party: need.party, orientation: need.orientation, budget: 'premium',
     budget_usd: Number(SENTINELS.budget_usd), in_their_words: SENTINELS.in_their_words,
+    notes: { told: SENTINELS.note_told, why: SENTINELS.note_why, hesitate: SENTINELS.note_hesitate, around: SENTINELS.note_around },
     continuum_floor: need.continuumFloor, continuum_ceiling: need.continuumCeiling,
     rhythm: need.rhythm, activity: need.activity, social: need.social, experience: null,
     adults: null, children: null, nights: 7, constraints: [], travel_from: '2027-02-01'
@@ -188,8 +195,9 @@ function expect(label, payload) {
   /* The need-state may carry the FIGURE (the band is derived from it on the
      way in) but never the WORDS; the projection then drops the figure too. */
   checks++;
-  if (JSON.stringify(fromRow).indexOf(SENTINELS.in_their_words) !== -1) {
-    failures++; console.log('    x toNeedState() copied in_their_words into the need-state');
+  const prose = ['in_their_words', 'note_told', 'note_why', 'note_hesitate', 'note_around'].filter((k) => JSON.stringify(fromRow).indexOf(SENTINELS[k]) !== -1);
+  if (prose.length) {
+    failures++; console.log('    x toNeedState() copied prose into the need-state: ' + prose.join(', '));
   } else if (fromRow.budgetUsd !== Number(SENTINELS.budget_usd)) {
     failures++; console.log('    x toNeedState() lost the budget figure the band is derived from');
   } else {

@@ -3,9 +3,10 @@
    design-understand-test — the conversation renders what the row says
    ----------------------------------------------------------------------------
    The Understand stage is pure: everything it needs arrives in v. So it can be
-   rendered here with a stored row and read back — field names hub-design.js
-   posts, the fallback when 024 has not landed, the read-back sentence, the
-   budget word, the answered count, and the absence of anything Present-mode.
+   rendered here with a stored row and read back — the three bands, the client's
+   own words quoted first, the field names hub-design.js posts, the notes, the
+   floor, the whisper, the read-back, the fallbacks before 024 and 025, and the
+   absence of anything Present-mode or third-person.
 
    Run: node tools/design-understand-test.js
    ========================================================================== */
@@ -21,71 +22,101 @@ const K = require(path.join(ROOT, 'api', '_lib', 'well-knowledge.js'));
 let fails = 0, n = 0;
 const ok = (label, cond, detail) => { n++; if (cond) console.log('  ok    ' + label); else { fails++; console.log('  FAIL  ' + label + (detail ? '\n        ' + String(detail).slice(0, 300) : '')); } };
 const count = (s, re) => (s.match(re) || []).length;
+const text = (s) => s.replace(/<[^>]+>/g, '');
 
 (async () => {
   console.log('\n  UNDERSTAND — the conversation');
   console.log('  ' + '-'.repeat(62));
-  const seeded = await N.seedFrom({ intention: 'reflect', companions: 'family', pace: 'gentle', recognition: 'yes' });
+  const answers = { intention: 'reflect', place: 'rainforest', companions: 'family', orientation: 'balance', pace: 'gentle', recognition: 'yes' };
+  const seeded = await N.seedFrom(answers);
   const vocab = await N.vocabulary();
   const row = {
     current_states: seeded.current, desired_states: seeded.desired, village_weights: seeded.villages, compass_weights: seeded.compass, pillar_weights: {},
-    trigger: 'life-transition', uncertainty: 'value', triggers: ['life-transition', 'accumulated-fatigue'], uncertainties: ['value', 'food'],
+    trigger: 'life-transition', uncertainty: 'value', triggers: ['life-transition', 'accumulated-fatigue'], uncertainties: ['value', 'food', 'other'],
     readiness: 'comparing', party: 'family', orientation: seeded.orientation, budget: 'premium', budget_usd: 18000, mobility: null,
-    in_their_words: 'ZZWORDS the year has emptied me out', continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
-    rhythm: seeded.rhythm, activity: seeded.activity, social: seeded.social, experience: 0.3, adults: null, children: null, nights: 7,
-    constraints: ['dietary', 'dates'], travel_from: '2027-02-01', advisor_overrode: ['budgetUsd', 'triggers']
+    in_their_words: 'ZZLEGACY', notes: { told: 'ZZTOLD mornings are the worst', why: 'ZZWHY the year has emptied me out', hesitate: 'ZZHES her husband', around: 'ZZAROUND coeliac' },
+    continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
+    rhythm: seeded.rhythm, activity: 0.2, social: seeded.social, experience: 0.3, adults: null, children: null, nights: 7,
+    constraints: ['dietary', 'dates', 'other'], travel_from: '2027-02-01', advisor_overrode: ['budgetUsd', 'triggers'], heard_sent_at: null
   };
   const need = D.toNeedState(row);
-  const shortlist = (await K.version()).ready ? await M.shortlistFor(need) : [];
-  const caps = { database: true, consultation: true, travel_from: true, conversation: true };
-  const v = { id: 'j-test', need, seeded, stored: row, vocab, caps, shortlist, suggestedMonth: '2027-02-01' };
+  const notes = D.notesOf(row);
+  const ready = (await K.version()).ready;
+  const shortlist = ready ? await M.shortlistFor(need) : [];
+  const floor = await U.floor({ shortlist, travelFrom: '2027-02-01', nights: 7 });
+  const caps = { database: true, consultation: true, travel_from: true, conversation: true, notes: true, placeNotes: true };
+  const v = { id: 'j-test', need, seeded, stored: row, vocab, caps, shortlist, suggestedMonth: '2027-02-01', notes, answers,
+    floor, placeNotes: shortlist.length ? { [shortlist[0].slug]: 'ZZSTORY stayed here in 2024' } : {}, clientEmail: 'j•••@example.invalid', firstName: 'Janice', brand: {} };
   const html = U.understandStage(v);
+  const plain = text(html);
 
-  console.log('\n  What the form posts');
-  ok('the section carries the #consult anchor the redirects land on', /id="consult"/.test(html));
-  ok('seven numbered questions', count(html, /class="design-ask"/g) === 7);
-  ok('why now is a checkbox group named triggers[]', count(html, /type="checkbox" name="triggers"/g) === 7);
-  ok('two triggers come back ticked', count(html, /name="triggers" value="(life-transition|accumulated-fatigue)" checked/g) === 2);
-  ok('what could get in the way is a checkbox group named uncertainties[]', count(html, /type="checkbox" name="uncertainties"/g) === 10);
-  ok('who is coming is a radio group with the stored party ticked', /name="party" value="family" checked/.test(html));
-  ok('budget and nights constraint chips are not offered twice', !/name="constraints" value="(budget|nights)"/.test(html) && count(html, /name="constraints"/g) === 7);
-  ok('the budget is a number input with the figure, and the open tick', /name="budget_usd"[^>]*value="18000"/.test(html) && /name="budget_open"/.test(html));
-  ok('in their words is a textarea with the row\'s text and a 400 cap', /<textarea[^>]*name="in_their_words"[^>]*maxlength="400"[^>]*>ZZWORDS the year has emptied me out<\/textarea>/.test(html));
-  ok('the privacy line sits under it, in plain words', /Never sent to the model, never on the client document/.test(html));
-  ok('the month is filled from the row, not marked suggested', /name="travel_from" value="2027-02"(?![^>]*data-suggested)/.test(html));
-  ok('the scales have names, not keys', /Structure/.test(html) && /Familiarity/.test(html) && !/design-scale-name[^>]*>rhythm</.test(html));
-  ok('nothing on the stage is hidden for a mode that no longer exists', !/hide-in-present|data-present|Present mode/.test(html));
-  ok('the read-back slot and the answered count are there', /data-fragment-slot="consult"/.test(html) && /7 of 7 answered/.test(html));
-  ok('the words never appear outside their textarea and the read-back', count(html, /ZZWORDS/g) === 2);
+  console.log('\n  Three bands, the client first');
+  ok('three bands: told · island (white) · details', count(html, /class="design-band /g) === 3 && /design-band--white design-band--island/.test(html));
+  ok('the stage opens with her own Finder words, quoted', /<p class="design-quote">You said you need <q>space to think clearly<\/q>, and <q>the rainforest<\/q> called you first\. With family, at a gentle pace, <q>a balance of exploring and restoring<\/q>\.<\/p>/.test(html), html.match(/<p class="design-quote">.*?<\/p>/) && html.match(/<p class="design-quote">.*?<\/p>/)[0]);
+  ok('away → toward speaks the spoken form, not the label', /running hot/.test(plain) && !/>Overstimulated</.test(html));
+  ok('a cue per leading away-from state', /Ask what <b>running hot<\/b> looks like for them right now\./.test(html));
+  ok('a note under the first band, in its own small form', /name="note_told"/.test(html) && /class="design-told-form"[^>]*data-live/.test(html) && /name="partial" value="1"/.test(html));
+  ok('no third person on the page: no "they are", no "their words"', !/\bWhere they are\b|\bIn their words\b|\bWhat brought this on\b|\bThe frame\b/.test(plain));
+  ok('warm words: no "shortlist", "Finder" or "properties" in the page text', !/shortlist|Finder|propert(y|ies)/.test(plain), plain.match(/.{30}(shortlist|Finder|propert(y|ies)).{30}/g));
+  ok('nothing hidden for a mode that no longer exists', !/hide-in-present|data-present|Present mode/.test(html));
+
+  console.log('\n  The island band');
+  ok('the sentence counts the places and names the move', /place[s]? on the island answer/.test(plain) && /moving from <b>running hot<\/b>/.test(html));
+  ok('no caption under the map; the credit lives in the stage footer', !/class="island-caption"/.test(html));
+  if (shortlist.length) {
+    ok('the advisor\'s story shows on its card and has an edit form', /ZZSTORY/.test(html) && count(html, /name="action" value="place_note"/g) >= 1);
+    ok('every pin links to its card on Compare', count(html, /href="\/hub\/journeys\/j-test\/design\?step=compare#prop-/g) >= 1);
+  } else ok('bank not generated — island skipped', true);
+
+  console.log('\n  The details');
+  ok('#consult anchor on the details band', /id="consult"/.test(html));
+  ok('seven questions, every heading a question you could say aloud', count(html, /class="design-ask"/g) === 7 && count(html, /class="design-ask-h">[^<]*\?<\/span>/g) === 7);
+  ok('the headings Duncan asked for', /When are you thinking, for how long, and who’s coming\?/.test(plain) && /Why are you travelling — and why now\?/.test(plain) && /What would make you hesitate\?/.test(plain) && /Where are we in the decision\?/.test(plain));
+  ok('why now is a checkbox group named triggers[] with Extra notes', count(html, /type="checkbox" name="triggers"/g) === 7 && /name="note_why"/.test(html) && /Extra notes/.test(plain));
+  ok('hesitations: nine boxes, "something else" among them, no "too much, or too little"', count(html, /type="checkbox" name="uncertainties"/g) === 10 && /name="uncertainties" value="other" checked/.test(html) && !/Too much, or too little/.test(plain));
+  ok('plan-around: "something else" and a Details note', /name="constraints" value="other" checked/.test(html) && /name="note_around"/.test(html));
+  ok('the four notes carry their text, and each says where it stays', count(html, /Never sent to the model, never on the client document/g) === 4 && /ZZTOLD/.test(html) && /ZZWHY/.test(html) && /ZZHES/.test(html) && /ZZAROUND/.test(html));
+  ok('the legacy in_their_words is not shown when notes.why exists', !/ZZLEGACY/.test(html));
+  ok('the scales have names, and Energy carries a whisper slot', /Structure/.test(plain) && /data-fragment-slot="whisper-energy"/.test(html));
+  ok('the budget is a number input with the figure, the open tick, and a floor line', /name="budget_usd"[^>]*value="18000"/.test(html) && /name="budget_open"/.test(html) && /data-fragment-slot="floor"/.test(html));
+  ok('the read-back slot, the answered count and the send button', /data-fragment-slot="consult"/.test(html) && /7 of 7 answered/.test(html) && /name="action" value="heard_send"/.test(html) && /Send what I heard to j•••@example\.invalid/.test(plain));
+  ok('the interstitial is not this module\'s business (design.js renders it)', !/data-prepare/.test(html));
+
+  console.log('\n  The floor');
+  if (floor) {
+    ok('a floor from the cheapest place, before flights', floor.from > 0 && floor.to >= floor.from && floor.nights === 7 && floor.month === 'February 2027' && floor.cheapestName);
+    ok('the line says start from, the place, and before flights', /start from about <b>\$[\d,]+<\/b> for 7 nights in February 2027/.test(U.floorLine(floor)) && /before flights/.test(U.floorLine(floor)));
+    ok('a figure under the floor is called out beside the band word', /below where these places start/.test(U.budgetWord(Object.assign({}, need, { budgetUsd: Math.max(1, floor.from - 1000) }), floor)));
+    ok('a figure above it is not', !/below where/.test(U.budgetWord(Object.assign({}, need, { budgetUsd: floor.from + 5000 }), floor)));
+  } else ok('no floor without priced places (bank not generated)', true);
+  ok('no month → no floor; no nights → no floor', (await U.floor({ shortlist, travelFrom: null, nights: 7 })) === null && (await U.floor({ shortlist, travelFrom: '2027-02-01', nights: null })) === null);
+  ok('the empty floor line asks for a month and nights', /once there is a month and a night count/.test(U.floorLine(null)));
+
+  console.log('\n  The whisper');
+  const wr = U.whisper(Object.assign({}, need, { activity: 0.2 }), shortlist);
+  const wa = U.whisper(Object.assign({}, need, { activity: 0.9 }), shortlist);
+  ok('the middle third whispers nothing', U.whisper(Object.assign({}, need, { activity: 0.5 }), shortlist) === '');
+  ok('restorative and active each name places or stay silent, and say inferred when they speak',
+    (wr === '' || (/Restorative points to/.test(wr) && /inferred/.test(wr))) && (wa === '' || (/Active points to/.test(wa) && /inferred/.test(wa))));
+  ok('a scale with no data behind it has no whisper function at all', typeof U.whisper === 'function' && !/social|rhythm|experience/.test(U.whisper.toString().split('const x')[1] || ''));
 
   console.log('\n  The read-back');
-  const heard = U.heard({ need, vocab, words: row.in_their_words, travelFrom: '2027-02-01' });
-  ok('names the triggers first, as a sentence', /^<h3[^>]*>What I heard<\/h3>\s*<p class="design-heard-p">A life transition and accumulated fatigue\./.test(heard), heard);
+  const heard = U.heard({ need, vocab, notes, travelFrom: '2027-02-01', floor });
+  ok('names the triggers first, as a sentence', /<p class="design-heard-p">A life transition and accumulated fatigue\./.test(heard), heard);
   ok('then the frame in one breath', /7 nights in February 2027, with family\./.test(heard));
-  ok('then the figure and its band', /Around \$18,000 all in — premium for the week\./.test(heard));
-  ok('the hesitations and the things to plan around', /Hesitant about whether it is worth it and food\./.test(heard) && /Planning around dietary needs and fixed dates\./.test(heard));
-  ok('and their words, marked as theirs', /“ZZWORDS the year has emptied me out”/.test(heard) && /in their words/.test(heard));
-  const empty = U.heard({ need: await N.seedFrom({}), vocab, words: '', travelFrom: null });
+  ok('then the move, in spoken words', /Moving from running hot, toward/.test(heard));
+  ok('then the figure and its band', /Around \$18,000 all in — premium for the week/.test(heard));
+  ok('hesitations skip "something else"; constraints too', /Hesitant about whether it is worth it and food\./.test(heard) && /Planning around dietary needs and fixed dates\./.test(heard));
+  ok('every note is quoted with its label', count(heard, /design-heard-words/g) === 4 && /On how they feel:<\/span> “ZZTOLD/.test(heard) && /Things to plan around:<\/span> “ZZAROUND/.test(heard));
+  ok('heardText() is the paragraph alone; heardNotes() the four notes', !/</.test(U.heardText({ need, vocab, notes, travelFrom: '2027-02-01' })) && U.heardNotes({ need, vocab, notes }).length === 4);
+  const empty = U.heard({ need: await N.seedFrom({}), vocab, notes: {}, travelFrom: null });
   ok('nothing marked reads as nothing marked, not as a blank', /Nothing marked yet/.test(empty));
 
-  console.log('\n  The budget word');
-  ok('a figure and nights → the band and the arithmetic', /reads as <b>Premium<\/b> · about \$2,571 a night/.test(U.budgetWord(need)));
-  ok('a figure without nights asks for the nights', /set the nights/.test(U.budgetWord(Object.assign({}, need, { nights: null, budget: null }))));
-  ok('open is its own sentence', /Open, if it is right\./.test(U.budgetWord(Object.assign({}, need, { budget: 'open' }))));
-
-  console.log('\n  Before migration 024');
-  const old = U.understandStage(Object.assign({}, v, { caps: { database: true, consultation: true, travel_from: true, conversation: false } }));
-  ok('why now falls back to one radio, named trigger', count(old, /type="radio" name="trigger"/g) === 7 && !/name="triggers"/.test(old));
-  ok('no words field, no figure, and it says which migration', !/name="in_their_words"/.test(old) && !/name="budget_usd"/.test(old) && /migration 024/.test(old));
-  ok('the band radio returns', count(old, /type="radio" name="budget"/g) === 4);
-
-  console.log('\n  The island on the stage');
-  if (shortlist.length) {
-    ok('one pin per shortlisted place with a position', count(html, /class="island-pin/g) === shortlist.filter((c) => c.property && c.property.geo).length);
-    ok('every pin links to its card on Compare', count(html, /href="\/hub\/journeys\/j-test\/design\?step=compare#prop-/g) >= shortlist.length);
-  } else {
-    ok('bank not generated — island skipped', true);
-  }
+  console.log('\n  Before the migrations');
+  const old24 = U.understandStage(Object.assign({}, v, { caps: { database: true, consultation: true, travel_from: true, conversation: true, notes: false, placeNotes: false } }));
+  ok('024 only: the why note still has a home, the other three do not appear, no story forms', /name="note_why"/.test(old24) && !/name="note_told"|name="note_hesitate"|name="note_around"/.test(old24) && !/place_note/.test(old24));
+  const old23 = U.understandStage(Object.assign({}, v, { caps: { database: true, consultation: true, travel_from: true, conversation: false, notes: false, placeNotes: false } }));
+  ok('023 only: one radio per question, the band radio, and it says which migration', count(old23, /type="radio" name="trigger"/g) === 7 && count(old23, /type="radio" name="budget"/g) === 4 && /migration 024/.test(old23));
 
   console.log('\n  ' + n + ' checks, ' + fails + ' failed\n');
   process.exit(fails ? 1 : 0);

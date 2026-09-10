@@ -5,7 +5,7 @@
 
    Source   : marketing field guide — AI Marketing Strategist Bible · Canonical v1.0 · extracted 2026-08-16
    Seeded   : 4 of 11 channels still on the seed
-   Generated: 2026-08-29
+   Generated: 2026-09-10
 
    `source` on every channel says whether the advice is researched or seeded.
    The critique pass scores generated copy against `converts` and `kills`;
@@ -19,7 +19,7 @@ module.exports = {
     "seededChannels": 4,
     "patternCount": 48,
     "profileCount": 6,
-    "generated": "2026-08-29"
+    "generated": "2026-09-10"
   },
   "icp": {
     "source": "field-guide",
@@ -604,77 +604,95 @@ module.exports = {
     "current": [
       {
         "key": "overloaded",
-        "label": "Overloaded"
+        "label": "Overloaded",
+        "say": "carrying too much"
       },
       {
         "key": "overstimulated",
-        "label": "Overstimulated"
+        "label": "Overstimulated",
+        "say": "running hot"
       },
       {
         "key": "role-fatigued",
-        "label": "Role-fatigued"
+        "label": "Role-fatigued",
+        "say": "tired of being needed"
       },
       {
         "key": "disconnected",
-        "label": "Disconnected"
+        "label": "Disconnected",
+        "say": "far from the people who matter"
       },
       {
         "key": "under-rested",
-        "label": "Under-rested"
+        "label": "Under-rested",
+        "say": "running on empty"
       },
       {
         "key": "bored",
-        "label": "Bored"
+        "label": "Bored",
+        "say": "under-stretched"
       },
       {
         "key": "decision-fatigued",
-        "label": "Decision-fatigued"
+        "label": "Decision-fatigued",
+        "say": "tired of deciding"
       },
       {
         "key": "craving-care",
-        "label": "Craving care"
+        "label": "Craving care",
+        "say": "wanting to be looked after"
       }
     ],
     "desired": [
       {
         "key": "rested",
-        "label": "Rested"
+        "label": "Rested",
+        "say": "properly rested"
       },
       {
         "key": "spacious",
-        "label": "Spacious"
+        "label": "Spacious",
+        "say": "room to breathe"
       },
       {
         "key": "connected",
-        "label": "Connected"
+        "label": "Connected",
+        "say": "close to people again"
       },
       {
         "key": "energized",
-        "label": "Energized"
+        "label": "Energized",
+        "say": "energy back"
       },
       {
         "key": "playful",
-        "label": "Playful"
+        "label": "Playful",
+        "say": "lightness"
       },
       {
         "key": "cared-for",
-        "label": "Cared for"
+        "label": "Cared for",
+        "say": "looked after"
       },
       {
         "key": "curious",
-        "label": "Curious"
+        "label": "Curious",
+        "say": "curious again"
       },
       {
         "key": "grounded",
-        "label": "Grounded"
+        "label": "Grounded",
+        "say": "steady"
       },
       {
         "key": "inspired",
-        "label": "Inspired"
+        "label": "Inspired",
+        "say": "inspired"
       },
       {
         "key": "present",
-        "label": "Present"
+        "label": "Present",
+        "say": "fully here"
       }
     ],
     "trigger": [
@@ -725,12 +743,8 @@ module.exports = {
         "label": "Getting there and around"
       },
       {
-        "key": "intensity",
-        "label": "Too much, or too little"
-      },
-      {
         "key": "partner-buy-in",
-        "label": "Whether the other person is in"
+        "label": "Whether other people are in it"
       },
       {
         "key": "food",
@@ -747,6 +761,10 @@ module.exports = {
       {
         "key": "privacy",
         "label": "Privacy"
+      },
+      {
+        "key": "other",
+        "label": "Something else"
       }
     ],
     "readiness": [
@@ -837,6 +855,10 @@ module.exports = {
       {
         "key": "transfers",
         "label": "Transfer tolerance"
+      },
+      {
+        "key": "other",
+        "label": "Something else"
       }
     ],
     "budget": [

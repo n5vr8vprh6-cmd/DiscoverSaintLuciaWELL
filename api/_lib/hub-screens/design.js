@@ -70,6 +70,7 @@ const { mediaPicture, mediaGallery } = require('../../../lib/components.js');
    seven-question conversation and the read-back. Pure — everything it needs
    arrives in v — so hub-preview.js renders it exactly as the Hub does. */
 const U = require('./design-understand.js');
+const { ringMark } = require('../../../lib/brand.js');
 
 /* ── The four stages ──────────────────────────────────────────────────────
    One screen, ?step=, one stage visible at a time. The pattern is
@@ -211,12 +212,21 @@ module.exports = async function handler(req, res) {
 
   const want = str(url.searchParams.get('step'), 12);
   const step = STAGES.indexOf(want) !== -1 ? want : resumeStage(stored, session);
+
+  /* Understand's extras: the floor from the places we're considering (rates,
+     the same lookup the estimate uses), the advisor's own stories about
+     places, and the four notes read off the row. */
+  const floor = step === 'understand' ? await U.floor({ shortlist, travelFrom, nights: need.nights }) : null;
+  const placeNotes = caps.placeNotes ? await D.placeNotesFor(advisor.id) : {};
+  const notes = D.notesOf(stored);
   const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
                             topVillage, caps, bank, frameworks, issued, ranked, session, step,
                             chosenSlugs, chosenProps, recipe, plan, estimate, previewDoc, travelFrom,
                             /* The month the Journey's window points at — a suggestion the
                                screen marks as such until the advisor touches it. */
                             suggestedMonth: N.travelFromWindow(raw.travel_window),
+                            floor, placeNotes, notes, answers: raw.answers || {},
+                            firstName: j.consumer_first || null,
                             brand: IT.brandOf(advisor),
                             clientEmail: raw.consumer_email ? maskEmail(raw.consumer_email) : null,
                             done: str(url.searchParams.get('done'), 20) });
@@ -259,14 +269,15 @@ const ACTIONS = {
   day_note: actionDayNote, narrative: actionNarrative,
   issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name',
   consult: 'dispatched-by-name', choose: 'dispatched-by-name', decline: 'dispatched-by-name',
-  day: 'dispatched-by-name', estimate: 'dispatched-by-name'
+  day: 'dispatched-by-name', estimate: 'dispatched-by-name',
+  place_note: 'dispatched-by-name', heard_send: 'dispatched-by-name'
 };
 
 /* Actions posted by a plain <form> rather than by fetch. They redirect; the
    others answer in JSON. Kept as a list rather than inferred from a header,
    because "what does a failure look like to this caller" is a property of the
    action, not of the request that happened to arrive. */
-const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day', 'estimate'];
+const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day', 'estimate', 'place_note', 'heard_send'];
 
 const backTo = (id, done) =>
   '/hub/journeys/' + encodeURIComponent(id) + '/design' + (done ? '?done=' + done : '');
@@ -314,12 +325,14 @@ async function generate(req, res, v) {
   /* The three stage actions. Form posts above the OpenAI and ledger gates,
      because none of them calls a model. Each re-reads the consultation itself
      rather than trusting a value computed for a different action. */
-  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day' || name === 'estimate') {
+  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day' || name === 'estimate' || name === 'place_note' || name === 'heard_send') {
     const seededNow = await N.seedFrom(raw.answers || {});
     const storedNow = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
     const ctx = { advisor, id, raw, caps, stored: storedNow, seeded: seededNow,
       need: (storedNow && D.toNeedState(storedNow)) || seededNow, json: isJson(req) };
     if (name === 'consult') return await actionConsult(res, form, ctx);
+    if (name === 'place_note') return await actionPlaceNote(res, form, ctx);
+    if (name === 'heard_send') return await actionHeardSend(res, form, ctx);
     if (name === 'choose') return await actionChoose(res, form, ctx);
     if (name === 'day') return await actionDay(res, form, ctx);
     if (name === 'estimate') return await actionEstimate(res, form, ctx);
@@ -542,7 +555,8 @@ async function actionConsult(res, form, v) {
   const nights = form.nights === '' || form.nights == null ? null
     : Math.min(Math.max(parseInt(form.nights, 10) || 0, 1), 21) || null;
 
-  const edited = Object.assign({}, need, {
+  const partial = form.partial === '1' || form.partial === 1 || form.partial === true;
+  const edited = partial ? Object.assign({}, need) : Object.assign({}, need, {
     readiness: pick('readiness'), party: pick('party'), nights,
     constraints: list('constraints', 'constraints', 9),
     /* 024: lists. Before it, the single radio — as a one-item list, so the
@@ -553,7 +567,7 @@ async function actionConsult(res, form, v) {
 
   /* The budget: a figure, and a band DERIVED from it (need-state.js bandFor).
      "Open, if it is right" is the advisor's tick. Before 024, the band radio. */
-  if (caps.conversation) {
+  if (partial) { /* codes untouched */ } else if (caps.conversation) {
     const digits = String(form.budget_usd == null ? '' : form.budget_usd).replace(/[^\d]/g, '');
     edited.budgetUsd = digits === '' ? null : Math.min(parseInt(digits, 10), 9999999);
     const open = form.budget_open === '1' || form.budget_open === 'on' || form.budget_open === true;
@@ -563,7 +577,7 @@ async function actionConsult(res, form, v) {
   }
 
   ['rhythm', 'activity', 'social', 'experience'].forEach((k) => {
-    if (form[k] == null || form[k] === '') return;
+    if (partial || form[k] == null || form[k] === '') return;
     const n = Number(form[k]);
     if (Number.isFinite(n)) edited[k] = Math.min(Math.max(Math.round(n * 100) / 100, 0), 1);
   });
@@ -576,14 +590,22 @@ async function actionConsult(res, form, v) {
   /* Outside the need-state, written only when the columns have been probed:
      023's month, and 024's one prose field. */
   const extra = {};
-  if (caps.travel_from) {
+  if (caps.travel_from && !partial) {
     const m = str(form.travel_from, 10);
     extra.travel_from = /^\d{4}-\d{2}$/.test(m) ? m + '-01' : (/^\d{4}-\d{2}-\d{2}$/.test(m) ? m : null);
   }
+  /* 025: four notes into one jsonb. Before 025 (024 only) the "why" note
+     still has a home in in_their_words. A field the form did not post is left
+     as it was — band 1's note posts alone, and must not blank the others. */
+  const prior = D.notesOf(v.stored);
+  const noteKeys = ['told', 'why', 'hesitate', 'around'];
+  const notesNow = Object.assign({}, prior);
+  noteKeys.forEach((k) => { if (form['note_' + k] !== undefined) notesNow[k] = str(form['note_' + k], D.NOTE_MAX); });
   if (caps.conversation) {
     extra.conversation = true;
-    extra.in_their_words = str(form.in_their_words, U.WORDS_MAX) || null;
+    extra.in_their_words = notesNow.why || null;
   }
+  if (caps.notes) extra.notes = notesNow;
   const saved = await D.saveConsultation(id, advisor.id, edited, {
     state: seeded, overrode: N.overridden(seeded, edited)
   }, extra);
@@ -594,14 +616,64 @@ async function actionConsult(res, form, v) {
 
   /* The read-back, re-rendered by the server for the browser to swap in — the
      same function that drew it on the page. */
-  const words = extra.conversation ? (extra.in_their_words || '') : ((v.stored && v.stored.in_their_words) || '');
   const travelFrom = extra.travel_from !== undefined ? extra.travel_from : ((v.stored && v.stored.travel_from) || null);
-  const heardHtml = U.heard({ need: edited, vocab, words, travelFrom });
+  const shortlistNow = await M.shortlistFor(edited);
+  const floorNow = await U.floor({ shortlist: shortlistNow, travelFrom, nights: edited.nights });
+  const heardHtml = U.heard({ need: edited, vocab, notes: notesNow, travelFrom, floor: floorNow });
   return back('saved', {
     fragment: heardHtml,
-    fragments: { consult: heardHtml, 'budget-word': U.budgetWord(edited) },
-    answered: U.answeredCount(edited, travelFrom, words)
+    fragments: { consult: heardHtml, 'budget-word': U.budgetWord(edited, floorNow), floor: U.floorLine(floorNow), 'whisper-energy': U.whisper(edited, shortlistNow) },
+    answered: U.answeredCount(edited, travelFrom, notesNow)
   });
+}
+
+
+/* ── The advisor's own story about a place ─────────────────────────────────
+   advisor_place_notes: theirs alone, about a place, shown on the island card
+   and the Compare card. Form or JSON; view-as refused above. */
+async function actionPlaceNote(res, form, v) {
+  const { advisor, id, caps, json } = v;
+  const slug = str(form.slug, 80);
+  const stepBack = STAGES.indexOf(str(form.step, 12)) !== -1 ? str(form.step, 12) : 'compare';
+  const back = (done, more) => {
+    if (json) return jsonOut(res, done === 'story_saved', Object.assign({ done }, more || {}));
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=' + stepBack + '#prop-' + encodeURIComponent(slug));
+    return res.end();
+  };
+  if (!caps.placeNotes) return back('story_not_migrated');
+  if (!slug || !(await K.property(slug))) return back('story_failed');
+  const saved = await D.savePlaceNote(advisor.id, slug, str(form.body, D.PLACE_NOTE_MAX));
+  if (!saved.ok) return back(saved.reason === 'not_migrated' ? 'story_not_migrated' : 'story_failed');
+  const frag = saved.body ? `<span class="island-card-storywho">Your note</span> ${esc(saved.body)}` : '';
+  return back('story_saved', { fragments: { ['story-' + slug]: frag }, body: saved.body });
+}
+
+/* ── Send what I heard ─────────────────────────────────────────────────────
+   The read-back and the notes, emailed to the client from inside the call,
+   copied to the advisor. Needs an address; refuses when nothing is marked. */
+async function actionHeardSend(res, form, v) {
+  const { advisor, id, raw, need, caps, json } = v;
+  const back = (done, more) => {
+    if (json) return jsonOut(res, done === 'heard_sent', Object.assign({ done }, more || {}));
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=understand#consult');
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated');
+  if (!raw.consumer_email) return back('heard_no_email');
+  const vocab = await N.vocabulary();
+  const notes = D.notesOf(v.stored);
+  const travelFrom = (v.stored && v.stored.travel_from) || null;
+  const shortlistNow = await M.shortlistFor(need);
+  const floorNow = await U.floor({ shortlist: shortlistNow, travelFrom, nights: need.nights });
+  const hv = { need, vocab, notes, travelFrom, floor: floorNow };
+  const text = U.heardText(hv);
+  if (!text) return back('heard_nothing');
+  const sent = await IM.sendHeard({ journey: raw, advisor, heard: text, notes: U.heardNotes(hv) });
+  if (!sent.ok) return back(sent.error === 'mail_not_configured' ? 'heard_not_configured' : 'heard_failed');
+  await D.markHeardSent(id, advisor.id);
+  return back('heard_sent', { sentAt: new Date().toISOString(), to: maskEmail(raw.consumer_email) });
 }
 
 /* ── One day of the shape ─────────────────────────────────────────────────
@@ -983,17 +1055,18 @@ function buildBody(v) {
       <p class="eyebrow"><a href="/hub/journeys/${esc(id)}">${esc(name)}</a></p>
       ${rail(id, step)}
       <h1>${esc(STAGE_HEAD[step])}</h1>
+      ${v.brand && (v.brand.first_name || v.brand.business) ? `<p class="design-with">With ${esc([v.brand.first_name, v.brand.last_name].filter(Boolean).join(' '))}${v.brand.business ? ' · ' + esc(v.brand.business) : ''}</p>` : ''}
     </header>
 
     ${STAGE_RENDER[step](v)}
 
-    ${stageNav(id, step)}
+    ${stageNav(id, step, v)}
 
     <footer class="design-foot">
       <p>Property intelligence verified ${esc(bank.verified.core || '—')}
          (wider scan ${esc(bank.verified.expanded || '—')}).
          Availability, inclusions and pricing are confirmed with the property before sale.</p>
-      <p class="design-prov">${esc(bank.bank || 'bank not generated')} · read from ${esc(bank.source)}</p>
+      <p class="design-prov">${esc(bank.bank || 'bank not generated')} · read from ${esc(bank.source)}${step === 'understand' ? ' · map outline: geoBoundaries, CC BY 4.0' : ''}</p>
     </footer>
 
   </div>
@@ -1014,14 +1087,31 @@ function rail(id, step) {
 }
 
 /* Forward and back, at the foot of every stage. Plain links. */
-function stageNav(id, step) {
+function stageNav(id, step, v) {
   const i = STAGES.indexOf(step);
   const prev = i > 0 ? STAGES[i - 1] : null;
   const next = i < STAGES.length - 1 ? STAGES[i + 1] : null;
+  /* Understand → Compare carries a short "preparing options" interstitial:
+     the markup is rendered here, hidden; hub-design.js only reveals it, waits,
+     and follows the link. Without JavaScript the link is a link. */
+  const first = v && v.firstName ? String(v.firstName) : '';
+  const prepare = step === 'understand' && next ? ` data-prepare="${esc(first)}"` : '';
+  const overlay = step === 'understand' && next ? `
+  <div class="design-prepare" data-prepare-overlay hidden role="status" aria-live="polite">
+    <div class="design-prepare-inner">
+      ${ringMark(72, 1.4)}
+      <p class="design-prepare-h">Preparing ${first ? esc(first) + '’s' : 'your'} options…</p>
+      <ol class="design-prepare-steps">
+        <li>Reading what you told us</li>
+        <li>Matching the island’s villages</li>
+        <li>Checking what each place offers</li>
+      </ol>
+    </div>
+  </div>` : '';
   return `<nav class="design-stagenav">
     ${prev ? `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}/design?step=${prev}">← ${esc(STAGE_LABEL[prev])}</a>` : '<span></span>'}
-    ${next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}">${esc(STAGE_LABEL[next])} →</a>` : ''}
-  </nav>`;
+    ${next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}"${prepare}>${esc(STAGE_LABEL[next])} →</a>` : ''}
+  </nav>${overlay}`;
 }
 
 /* ── Stage 2 · Compare ────────────────────────────────────────────────────
@@ -1045,7 +1135,7 @@ function compareStage(v) {
   const tied = shortlist.length && shortlist[0].tiedGroup;
   const fw = frameworks || {};
 
-  const cards = shortlist.map((c) => propertyCard(id, c, need, chosen, fw)).join('');
+  const cards = shortlist.map((c) => propertyCard(id, c, need, chosen, fw, v)).join('');
   const declines = shortlist.map((c) => `<form method="POST" id="decline-${esc(c.slug)}"
     action="/hub/journeys/${esc(id)}/design?step=compare">
     <input type="hidden" name="action" value="decline"><input type="hidden" name="slug" value="${esc(c.slug)}"></form>`).join('');
@@ -1065,6 +1155,22 @@ function compareStage(v) {
   </form>${declines}` : emptyState('The knowledge bank is not on this deployment yet.',
         'Run node tools/build-well-knowledge.js and redeploy.')}
 </section>` + alsoIn(topVillage, also, vocab);
+}
+
+/* The advisor's own note about the place, with its edit form. Theirs alone;
+   never a prompt, never the document. A <details> so the card stays a
+   brochure until the advisor reaches for the story. */
+function storyBlock(id, slug, body, caps) {
+  if (!caps || !caps.placeNotes) return '';
+  return `<details class="design-story-wrap"${body ? ' open' : ''}>
+      <summary>${body ? 'Your note about this place' : 'Add your own note about this place'}</summary>
+      <form method="POST" action="/hub/journeys/${esc(id)}/design?step=compare" class="design-story" data-live data-fragment="story-${esc(slug)}">
+        <input type="hidden" name="action" value="place_note"><input type="hidden" name="slug" value="${esc(slug)}"><input type="hidden" name="step" value="compare">
+        <textarea name="body" rows="2" maxlength="400" aria-label="Your note about this place" placeholder="A stay, a moment, the thing to say when it comes up.">${esc(body)}</textarea>
+        <span class="design-field-hint">Yours alone — shown to you here and on Understand, never to the client.</span>
+        <div class="design-actions"><button class="btn btn--ghost btn--sm" type="submit">Save</button><span class="design-hint" data-live-status role="status"></span></div>
+      </form>
+    </details>`;
 }
 
 /* Which village colours a property for THIS traveller: the one of its villages
@@ -1093,7 +1199,8 @@ const DECLINE_REASONS = [
   ['price', 'Price'], ['availability', 'Availability'], ['other', 'Something else']
 ];
 
-function propertyCard(id, c, need, chosen, fw) {
+function propertyCard(id, c, need, chosen, fw, v_) {
+  v_ = v_ || {};
   const p = c.property || {};
   const vk = villageFor(p, need);
   const accent = vk ? ` style="--v: var(--v-${esc(vk)}); --v-ink: var(--v-${esc(vk)}-ink)"` : '';
@@ -1114,6 +1221,7 @@ function propertyCard(id, c, need, chosen, fw) {
       ${continuumStrip(p, fw)}
     </div>
     ${c.verified_at ? `<p class="design-verified">Last verified ${esc(c.verified_at)}</p>` : ''}
+    ${storyBlock(id, c.slug, (v_.placeNotes || {})[c.slug] || '', v_.caps)}
 
     <details class="design-why">
       <summary>Why this fits · what to watch</summary>
@@ -1534,7 +1642,15 @@ const DONE = {
   shape_cleared: ['good', 'Cleared. The days will just be numbered.'],
   shape_failed: ['bad', 'That shape could not be saved, so nothing changed.'],
   bad_recipe: ['bad', 'That is not one of the shapes in the guide. Nothing changed.'],
-  readonly: ['bad', 'Nothing was changed — you are viewing this Hub, not signed in as its owner.']
+  readonly: ['bad', 'Nothing was changed — you are viewing this Hub, not signed in as its owner.'],
+  story_saved: ['good', 'Your note about the place is saved. It is yours alone.'],
+  story_failed: ['bad', 'That note could not be saved. Nothing changed.'],
+  story_not_migrated: ['bad', 'Notes about places need migration 025 on this deployment.'],
+  heard_sent: ['good', 'Sent. What you heard is in their inbox, copied to you.'],
+  heard_failed: ['bad', 'That could not be sent. Read it aloud, or try again in a moment.'],
+  heard_nothing: ['bad', 'Nothing is marked yet, so there is nothing to send.'],
+  heard_no_email: ['bad', 'This Journey has no email address, so what you heard can only be read aloud.'],
+  heard_not_configured: ['bad', 'Email is not configured on this deployment.']
 };
 
 /* ── The shape of the journey ─────────────────────────────────────────────

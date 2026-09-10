@@ -329,8 +329,13 @@ async function designWorkspace(step) {
     uncertainties: ['value', 'food'], readiness: 'comparing', party: seeded.party, orientation: seeded.orientation,
     budget: 'premium', budget_usd: 18000, mobility: null,
     in_their_words: 'The year has emptied me out. I want to come back feeling like myself again.',
+    notes: { told: 'Mornings are the worst — she is awake at five with the day already running.',
+      why: 'The year has emptied me out. I want to come back feeling like myself again.',
+      hesitate: 'Her husband thinks a wellness trip is indulgent; she wants him to see it differently.',
+      around: 'Coeliac. Fixed to the February half-term.' },
+    heard_sent_at: null,
     continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
-    rhythm: seeded.rhythm, activity: seeded.activity, social: seeded.social, experience: 0.3,
+    rhythm: seeded.rhythm, activity: 0.2, social: seeded.social, experience: 0.3,
     adults: null, children: null, nights: 7, constraints: ['dietary', 'dates'],
     travel_from: '2027-02-01', seeded_from: seeded, advisor_overrode: ['budgetUsd', 'constraints', 'nights', 'triggers', 'uncertainties']
   };
@@ -368,6 +373,9 @@ async function designWorkspace(step) {
   return buildBody({
     id: j.id, name: fullName(j), need: needWithNights, seeded, stored: storedRow, clientEmail: 'm•••@example.invalid',
     suggestedMonth: N.travelFromWindow(j.travel_window),
+    notes: D.notesOf(storedRow), answers: j.answers || {}, firstName: j.consumer_first,
+    placeNotes: { [shortlist.length ? shortlist[0].slug : 'x']: 'Stayed here in 2024. Ask for the room over the bay; the sunset massage is the thing.' },
+    floor: await require('../api/_lib/hub-screens/design-understand.js').floor({ shortlist, travelFrom: '2027-02-01', nights: 7 }),
     vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
     /* Ranked for real against this fixture's own need-state, and a session that
        has already chosen one — so the preview shows both halves of the shape
@@ -385,7 +393,7 @@ async function designWorkspace(step) {
         share_expires_at: null, revoked_at: new Date(Date.now() - 3 * 86400000).toISOString(),
         view_count: 1, last_viewed_at: new Date(Date.now() - 8 * 86400000).toISOString() }
     ],
-    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true, conversation: true },
+    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true, conversation: true, notes: true, placeNotes: true },
     bank
   });
 }

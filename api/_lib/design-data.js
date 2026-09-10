@@ -74,7 +74,7 @@ const UNAVAILABLE = {
 async function capabilities() {
   const supabase = db();
   const out = { database: Boolean(supabase), consultation: false, itinerary: false, ledger: false,
-    travel_from: false, estimate: false, sent_at: false, stage: false, conversation: false };
+    travel_from: false, estimate: false, sent_at: false, stage: false, conversation: false, notes: false, placeNotes: false };
   if (!supabase) return out;
 
   const probe = async (table) => {
@@ -111,10 +111,26 @@ async function capabilities() {
   /* 024: multi-select, the budget figure and the one prose column land
      together, so one probe stands for the four. */
   out.conversation = out.consultation && await column('journey_consultations', 'triggers');
+  /* 025: the four-key notes column and the advisor's place notes. */
+  out.notes = out.consultation && await column('journey_consultations', 'notes');
+  out.placeNotes = await probe('advisor_place_notes');
   return out;
 }
 
 /* ── Consultation ─────────────────────────────────────────────────────────── */
+
+/* The four notes Understand keeps, and their cap. Read by notesOf() so a row
+   written before 025 (in_their_words only) reads the same as one after. */
+const NOTE_KEYS = ['told', 'why', 'hesitate', 'around'];
+const NOTE_MAX = 400;
+function notesOf(row) {
+  const out = {};
+  if (!row) return out;
+  const n = row.notes && typeof row.notes === 'object' ? row.notes : {};
+  NOTE_KEYS.forEach((k) => { if (n[k]) out[k] = String(n[k]).slice(0, NOTE_MAX); });
+  if (!out.why && row.in_their_words) out.why = String(row.in_their_words).slice(0, NOTE_MAX);
+  return out;
+}
 
 async function consultationFor(shareId, advisorId) {
   const supabase = db();
@@ -179,6 +195,14 @@ async function saveConsultation(shareId, advisorId, state, seeded, extra) {
     row.budget_usd = state.budgetUsd == null ? null : state.budgetUsd;
     row.in_their_words = extra.in_their_words ? String(extra.in_their_words).slice(0, 400) : null;
   }
+  /* 025: four notes, one jsonb. Prose, on the row, never in the need-state.
+     Keys are fixed and each value is capped here as well as in the handler. */
+  if (extra && extra.notes !== undefined) {
+    const src = extra.notes || {};
+    const out = {};
+    NOTE_KEYS.forEach((k) => { const s = src[k] == null ? '' : String(src[k]).trim().slice(0, NOTE_MAX); if (s) out[k] = s; });
+    row.notes = out;
+  }
 
   const { data, error } = await supabase
     .from('journey_consultations').upsert(row, { onConflict: 'share_id' })
@@ -218,6 +242,50 @@ function toNeedState(row) {
     /* in_their_words is deliberately NOT here. It lives on the row, is shown
        from the row, and is never part of a need-state. */
   };
+}
+
+/* When "What I heard" was last emailed. Best-effort: a missing column (before
+   025) is not an error worth surfacing. */
+async function markHeardSent(shareId, advisorId) {
+  const supabase = db();
+  if (!supabase) return false;
+  const { error } = await supabase.from('journey_consultations')
+    .update({ heard_sent_at: new Date().toISOString() })
+    .eq('share_id', shareId).eq('advisor_id', advisorId);
+  if (error && !isMissing(error)) console.error('markHeardSent', error.code);
+  return !error;
+}
+
+/* ── The advisor's own stories about places ────────────────────────────────
+   One note per advisor per property, read as a map slug → body. Never in a
+   prompt, never in a document; the screen shows them to their author. */
+const PLACE_NOTE_MAX = 400;
+async function placeNotesFor(advisorId) {
+  const supabase = db();
+  if (!supabase) return {};
+  const { data, error } = await supabase.from('advisor_place_notes')
+    .select('slug, body, updated_at').eq('advisor_id', advisorId);
+  if (error) { if (!isMissing(error)) console.error('placeNotesFor', error.code); return {}; }
+  const out = {};
+  (data || []).forEach((r) => { out[r.slug] = String(r.body || '').slice(0, PLACE_NOTE_MAX); });
+  return out;
+}
+
+/* An empty body deletes; anything else upserts on (advisor_id, slug). */
+async function savePlaceNote(advisorId, slug, body) {
+  const supabase = db();
+  if (!supabase) return { ok: false, reason: 'not_configured' };
+  const text = String(body || '').trim().slice(0, PLACE_NOTE_MAX);
+  const q = text
+    ? supabase.from('advisor_place_notes').upsert({ advisor_id: advisorId, slug, body: text, updated_at: new Date().toISOString() }, { onConflict: 'advisor_id,slug' })
+    : supabase.from('advisor_place_notes').delete().eq('advisor_id', advisorId).eq('slug', slug);
+  const { error } = await q;
+  if (error) {
+    if (isMissing(error)) return { ok: false, reason: 'not_migrated' };
+    console.error('savePlaceNote', error.code, error.message);
+    return { ok: false, reason: 'write_failed' };
+  }
+  return { ok: true, body: text };
 }
 
 /* ── Sessions ─────────────────────────────────────────────────────────────── */
@@ -412,7 +480,8 @@ async function recordGeneration(advisorId, sessionId, entry) {
 
 module.exports = {
   capabilities, isMissing, UNAVAILABLE, LIMITS, SESSION_WRITABLE, MISSING,
-  consultationFor, saveConsultation, toNeedState,
+  consultationFor, saveConsultation, toNeedState, notesOf, NOTE_KEYS, NOTE_MAX,
+  markHeardSent, placeNotesFor, savePlaceNote, PLACE_NOTE_MAX,
   currentSession, openSession, updateSession,
   saveCandidates, chooseCandidates, declineCandidate,
   countSince, mayGenerate, recordGeneration
