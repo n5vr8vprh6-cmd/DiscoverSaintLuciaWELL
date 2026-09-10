@@ -104,6 +104,22 @@ async function selects(table, cols) {
   if (icp.ok) console.log('    ✓ all 8 Day 2 columns on gtm_profile');
   else { bad++; console.log('    ✗ ' + (icp.body || icp.status)); }
 
+  /* 023 and 024 are additive columns; a deployment ahead of them degrades in
+     words rather than failing, so this reports them separately from 022. */
+  console.log('\n  023 — a dated trip, an estimate, a send');
+  const m23 = [
+    await selects('journey_consultations', 'travel_from'),
+    await selects('design_sessions', 'estimate'),
+    await selects('journey_itineraries', 'sent_at')
+  ];
+  if (m23.every((r) => r.ok)) console.log('    ✓ travel_from, estimate and sent_at present');
+  else { bad++; console.log('    ✗ 023 not fully applied: ' + m23.filter((r) => !r.ok).map((r) => r.body || r.status).join(' · ')); }
+
+  console.log('\n  024 — the conversation: multi-select, a budget figure, their words');
+  const m24 = await selects('journey_consultations', 'triggers,uncertainties,budget_usd,in_their_words');
+  if (m24.ok) console.log('    ✓ triggers, uncertainties, budget_usd and in_their_words present');
+  else { bad++; console.log('    ✗ 024 not applied: ' + (m24.body || m24.status)); }
+
   console.log('\n  ' + '─'.repeat(64));
   if (bad) {
     console.log('  ✗ 022 is not fully applied. Run db/migrations/022-journey-design.sql');

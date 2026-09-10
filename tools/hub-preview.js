@@ -315,8 +315,26 @@ async function designWorkspace(step) {
   const E = require('../api/_lib/design-estimate.js');
   const IT = require('../api/_lib/design-itinerary.js');
 
+  const D = require('../api/_lib/design-data.js');
   const j = JOURNEYS[0];
-  const need = await N.seedFrom(j.answers || {});
+  const seeded = await N.seedFrom(j.answers || {});
+  /* A stored consultation, the way saveConsultation would have written it
+     after a call: the seed's weights, plus what the advisor marked — two
+     triggers, two hesitations, a figure, their words, a February month. So the
+     preview exercises the read-back, the override note and the budget word. */
+  const storedRow = {
+    current_states: seeded.current, desired_states: seeded.desired, village_weights: seeded.villages,
+    compass_weights: seeded.compass, pillar_weights: seeded.pillars,
+    trigger: 'life-transition', uncertainty: 'value', triggers: ['life-transition', 'accumulated-fatigue'],
+    uncertainties: ['value', 'food'], readiness: 'comparing', party: seeded.party, orientation: seeded.orientation,
+    budget: 'premium', budget_usd: 18000, mobility: null,
+    in_their_words: 'The year has emptied me out. I want to come back feeling like myself again.',
+    continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
+    rhythm: seeded.rhythm, activity: seeded.activity, social: seeded.social, experience: 0.3,
+    adults: null, children: null, nights: 7, constraints: ['dietary', 'dates'],
+    travel_from: '2027-02-01', seeded_from: seeded, advisor_overrode: ['budgetUsd', 'constraints', 'nights', 'triggers', 'uncertainties']
+  };
+  const need = D.toNeedState(storedRow);
   const bank = await K.version();
   const shortlist = bank.ready ? await M.shortlistFor(need) : [];
   const vocab = await N.vocabulary();
@@ -348,7 +366,8 @@ async function designWorkspace(step) {
   FIXTURE_DOC = previewDoc;
 
   return buildBody({
-    id: j.id, name: fullName(j), need: needWithNights, seeded: need, stored: null, clientEmail: 'm•••@example.invalid',
+    id: j.id, name: fullName(j), need: needWithNights, seeded, stored: storedRow, clientEmail: 'm•••@example.invalid',
+    suggestedMonth: N.travelFromWindow(j.travel_window),
     vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
     /* Ranked for real against this fixture's own need-state, and a session that
        has already chosen one — so the preview shows both halves of the shape
@@ -366,7 +385,7 @@ async function designWorkspace(step) {
         share_expires_at: null, revoked_at: new Date(Date.now() - 3 * 86400000).toISOString(),
         view_count: 1, last_viewed_at: new Date(Date.now() - 8 * 86400000).toISOString() }
     ],
-    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true },
+    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true, conversation: true },
     bank
   });
 }

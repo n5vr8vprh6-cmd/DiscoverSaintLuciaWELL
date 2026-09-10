@@ -80,6 +80,10 @@ const SENTINELS = {
   travel_window: 'ZZSENTINEL-window',
   stage: 'ZZSENTINEL-stage',
   advisor_notes: 'ZZSENTINEL she cried on the first call',
+  /* 024's one prose column and its dollar figure. Both live on the row and
+     neither may become part of a need-state or a prompt. */
+  in_their_words: 'ZZSENTINEL the year emptied her out',
+  budget_usd: '987654',
   declined_reason: 'ZZSENTINEL too expensive for them',
   share_token_hash: 'ZZSENTINEL-token-hash',
   /* The advisor's own private fields. Their name and business are theirs to
@@ -165,6 +169,33 @@ function expect(label, payload) {
   console.log('  The projection');
   sweep('project() over a poisoned share', await P.project(base));
   expect('project() still carries what it should', await P.project(base));
+
+  /* A consultation ROW, as 024 stores it, with the prose column and the
+     dollar figure poisoned — read back through the same function the screen
+     uses, then projected. The words must never leave the row; the figure must
+     never leave the need-state. */
+  const D = require('../api/_lib/design-data.js');
+  const row = {
+    current_states: need.current, desired_states: need.desired, village_weights: need.villages,
+    compass_weights: need.compass, pillar_weights: {}, triggers: ['milestone'], uncertainties: ['value'],
+    readiness: 'comparing', party: need.party, orientation: need.orientation, budget: 'premium',
+    budget_usd: Number(SENTINELS.budget_usd), in_their_words: SENTINELS.in_their_words,
+    continuum_floor: need.continuumFloor, continuum_ceiling: need.continuumCeiling,
+    rhythm: need.rhythm, activity: need.activity, social: need.social, experience: null,
+    adults: null, children: null, nights: 7, constraints: [], travel_from: '2027-02-01'
+  };
+  const fromRow = D.toNeedState(row);
+  /* The need-state may carry the FIGURE (the band is derived from it on the
+     way in) but never the WORDS; the projection then drops the figure too. */
+  checks++;
+  if (JSON.stringify(fromRow).indexOf(SENTINELS.in_their_words) !== -1) {
+    failures++; console.log('    x toNeedState() copied in_their_words into the need-state');
+  } else if (fromRow.budgetUsd !== Number(SENTINELS.budget_usd)) {
+    failures++; console.log('    x toNeedState() lost the budget figure the band is derived from');
+  } else {
+    console.log('    ok toNeedState() over a poisoned row — the words stay on the row');
+  }
+  sweep('project() over a need-state read from that row', await P.project(Object.assign({}, base, { need: fromRow })));
 
   /* ── 2. Both prompts, composed ────────────────────────────────────────── */
   console.log('\n  The composed payloads');

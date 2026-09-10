@@ -19,7 +19,7 @@
 
    Field Guide edition : Founding Edition · 2026
    Verified            : core 10 Aug 2026 · expanded 11 Aug 2026
-   Generated           : 2026-09-08
+   Generated           : 2026-09-10
    ======================================================================== */
 'use strict';
 
@@ -30,7 +30,7 @@ module.exports = {
       "core": "10 Aug 2026",
       "expanded": "11 Aug 2026"
     },
-    "generated": "2026-09-08"
+    "generated": "2026-09-10"
   },
   "frameworks": {
     "compass": [
@@ -610,6 +610,12 @@ module.exports = {
         ],
         "rights_status": "Permission required / not verified"
       },
+      "geo": {
+        "lat": 13.8283,
+        "lng": -61.0617,
+        "town": "Val des Pitons, Soufrière",
+        "approx": false
+      },
       "provenance": {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
@@ -904,6 +910,12 @@ module.exports = {
         ],
         "rights_status": "Permission required / not verified"
       },
+      "geo": {
+        "lat": 13.8645,
+        "lng": -61.0756,
+        "town": "Anse Chastanet, Soufrière",
+        "approx": false
+      },
       "provenance": {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
@@ -1186,6 +1198,12 @@ module.exports = {
         ],
         "rights_status": "Permission required / not verified"
       },
+      "geo": {
+        "lat": 13.8647,
+        "lng": -61.0763,
+        "town": "Anse Chastanet, Soufrière",
+        "approx": false
+      },
       "provenance": {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
@@ -1455,6 +1473,12 @@ module.exports = {
           }
         ],
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 14.0892,
+        "lng": -60.9554,
+        "town": "Pigeon Island causeway, Rodney Bay",
+        "approx": false
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -1732,6 +1756,12 @@ module.exports = {
           }
         ],
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 14.0908,
+        "lng": -60.9581,
+        "town": "Pigeon Island causeway, Gros Islet",
+        "approx": false
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -2026,6 +2056,12 @@ module.exports = {
         ],
         "rights_status": "Permission required / not verified"
       },
+      "geo": {
+        "lat": 14.104,
+        "lng": -60.946,
+        "town": "Cariblue Beach, Cap Estate",
+        "approx": true
+      },
       "provenance": {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
@@ -2202,6 +2238,12 @@ module.exports = {
         ],
         "renderingWarning": "Library assets 01/03/04/06/07 are CGI renderings of in-development phases. Only built-and-open photography may be shown without an explicit artist's-impression label.",
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 14.0693,
+        "lng": -60.9629,
+        "town": "Mount Pimard, Rodney Bay",
+        "approx": true
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -2459,6 +2501,12 @@ module.exports = {
           }
         ],
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 14.0241,
+        "lng": -60.9843,
+        "town": "Malabar Beach, Castries",
+        "approx": false
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -2738,6 +2786,12 @@ module.exports = {
           }
         ],
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 13.8326,
+        "lng": -61.0504,
+        "town": "Rabot Estate, Soufrière",
+        "approx": true
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -3022,6 +3076,12 @@ module.exports = {
         ],
         "rights_status": "Permission required / not verified"
       },
+      "geo": {
+        "lat": 13.8331,
+        "lng": -61.0517,
+        "town": "Between the Pitons, Soufrière",
+        "approx": false
+      },
       "provenance": {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
@@ -3291,6 +3351,12 @@ module.exports = {
           }
         ],
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 14.0996,
+        "lng": -60.9507,
+        "town": "Smugglers Cove, Cap Estate",
+        "approx": false
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -3562,6 +3628,12 @@ module.exports = {
           }
         ],
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 14.0693,
+        "lng": -60.9629,
+        "town": "At A’ILA, Mount Pimard, Rodney Bay",
+        "approx": true
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -3839,6 +3911,12 @@ module.exports = {
         ],
         "rights_status": "Permission required / not verified"
       },
+      "geo": {
+        "lat": 13.8476,
+        "lng": -61.0566,
+        "town": "Above Malgretoute, Soufrière",
+        "approx": true
+      },
       "provenance": {
         "source": "field-guide-deep",
         "verified_at": "10 Aug 2026",
@@ -4020,6 +4098,12 @@ module.exports = {
           }
         ],
         "provenanceNote": "Supplied outside the catalogued asset library — no source page or retrieval date recorded."
+      },
+      "geo": {
+        "lat": 13.9675,
+        "lng": -61.025,
+        "town": "Marigot Bay",
+        "approx": true
       },
       "provenance": {
         "source": "field-guide-deep",
@@ -4297,6 +4381,12 @@ module.exports = {
         ],
         "provenanceNote": "Supplied outside the catalogued asset library — no source page or retrieval date recorded.",
         "rights_status": "Permission required / not verified"
+      },
+      "geo": {
+        "lat": 14.0516,
+        "lng": -60.9705,
+        "town": "Bonaire Bay, Gros Islet",
+        "approx": false
       },
       "provenance": {
         "source": "field-guide-deep",

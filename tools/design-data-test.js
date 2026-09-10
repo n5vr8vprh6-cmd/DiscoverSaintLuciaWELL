@@ -122,7 +122,9 @@ console.log('\n  DESIGN DATA — DEGRADATION\n  ' + '─'.repeat(60) + '\n');
     current_states: seeded.current, desired_states: seeded.desired,
     village_weights: seeded.villages, compass_weights: seeded.compass, pillar_weights: seeded.pillars,
     trigger: 'work-cycle', uncertainty: 'fit', readiness: 'comparing', party: seeded.party,
-    orientation: seeded.orientation, budget: 'premium', mobility: null,
+    triggers: ['work-cycle', 'accumulated-fatigue'], uncertainties: ['fit', 'time'],
+    orientation: seeded.orientation, budget: 'premium', budget_usd: 21000, mobility: null,
+    in_their_words: 'ZZSENTINEL she said the year had emptied her out',
     continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
     rhythm: seeded.rhythm, activity: seeded.activity, social: seeded.social, experience: null,
     adults: 2, children: 0, nights: 5, constraints: ['dates']
@@ -130,8 +132,16 @@ console.log('\n  DESIGN DATA — DEGRADATION\n  ' + '─'.repeat(60) + '\n');
   const back = D.toNeedState(row);
   ok('the column names map back to the names the modules reason about',
     back.villages === row.village_weights && back.continuumFloor === row.continuum_floor);
+  ok('the arrays come back as arrays, and the figure as a number',
+    back.triggers.length === 2 && back.uncertainties[1] === 'time' && back.budgetUsd === 21000);
+  ok('IN THEIR WORDS NEVER BECOMES PART OF A NEED-STATE',
+    JSON.stringify(back).indexOf('ZZSENTINEL') === -1 && !('in_their_words' in back) && !('inTheirWords' in back),
+    'the one prose column stays on the row; a need-state carrying it would reach a prompt');
   ok('and the result is a valid need-state', (await N.validate(back)).length === 0,
     JSON.stringify(await N.validate(back)));
+  const pre024 = D.toNeedState(Object.assign({}, row, { triggers: [], uncertainties: [], budget_usd: null }));
+  ok('a row written before 024 reads its single columns as one-item lists',
+    pre024.triggers.join() === 'work-cycle' && pre024.uncertainties.join() === 'fit' && pre024.budgetUsd === null);
   ok('a null row maps to null, not an empty shell', D.toNeedState(null) === null);
 
   /* ══ Limits ══════════════════════════════════════════════════════════════ */

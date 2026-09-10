@@ -123,7 +123,7 @@ async function findSubject(email) {
   if (rows.length) {
     const ids = rows.map((r) => r.id);
     const c = await supabase.from('journey_consultations')
-      .select('id, share_id, advisor_id, created_at, updated_at, trigger, uncertainty, readiness, party, orientation, budget, nights, constraints, current_states, desired_states, village_weights, compass_weights, continuum_floor, continuum_ceiling')
+      .select('*')
       .in('share_id', ids);
     consultations = c.data || [];
 
@@ -188,13 +188,19 @@ function accessExport(found) {
           recorded_at: c.updated_at || c.created_at,
           moving_away_from: c.current_states,
           moving_toward: c.desired_states,
-          why_now: c.trigger,
-          what_was_uncertain: c.uncertainty,
+          /* 024 made these lists and added a figure and one line of prose.
+             Rows written before it carry the single columns; both are read so
+             the export says everything that was recorded about the person. */
+          why_now: (c.triggers && c.triggers.length) ? c.triggers : (c.trigger ? [c.trigger] : []),
+          what_was_uncertain: (c.uncertainties && c.uncertainties.length) ? c.uncertainties : (c.uncertainty ? [c.uncertainty] : []),
+          in_their_words: c.in_their_words || null,
           how_ready: c.readiness,
           travelling_as: c.party,
           how_they_relate_to_wellness: c.orientation,
           budget_band: c.budget,
+          budget_usd: c.budget_usd == null ? null : c.budget_usd,
           nights: c.nights,
+          travel_from: c.travel_from || null,
           constraints: c.constraints,
           places_it_pointed_to: c.village_weights,
           directions_it_pointed_to: c.compass_weights,

@@ -578,9 +578,21 @@ arithmetic as the upside, or not at all.
 
 `design-need.js` builds its return value by **copying named fields** — no
 denylist, no spread, no `Object.assign`. A filter can be written wrong; an
-absent parameter cannot. It helps that `journey_consultations` has **no
-free-text column at all**, so "does prose reach the model?" is a column list
-rather than an audit.
+absent parameter cannot. It helps that the **need-state carries no prose**:
+every value is a code from the bank or a number, and `need-state.js validate()`
+rejects a string in any other field. Since migration 024 the consultation
+*row* has one prose column, `in_their_words` — something the client said about
+why now — and it takes the path `travel_from` took: written through `extra`,
+read from the row, shown on the screen, **never copied into a need-state**
+(`design-data.js toNeedState()` leaves it out) and never named in the
+projection. So "does prose reach the model?" is still a column list, and the
+list has one column on it that the list deliberately excludes.
+
+The budget is the other 024 addition: a US-dollar figure for the party
+(`budget_usd`) from which the band (`entry · mid · premium`) is **derived** by
+`need-state.js bandFor()`. The band reaches the prompt as it always did; the
+figure never does — a model that has seen a number will print one. The two
+per-night thresholds are marked *inferred* in code until Duncan confirms them.
 
 `tools/design-privacy-test.js` does not assert on field names. Every fixture
 field carries a distinctive sentinel **value** and the whole composed payload is
@@ -660,7 +672,10 @@ system after.
 | `node tools/design-coverage.js` | nothing | All 270 need-states. **Fails** if a scorable property never surfaces |
 | `node tools/design-privacy-test.js` | nothing | The sentinel sweep — no consumer value reaches any prompt |
 | `node tools/design-itinerary-test.js` | nothing | The day layout, what the document may carry, the four dead-link states |
-| `node tools/design-migration-check.js` | `.env` | That `022` landed where the deployment can see it |
+| `node tools/design-migration-check.js` | `.env` | That `022`, `023` and `024` landed where the deployment can see them |
+| `node tools/need-state-test.js` | nothing | The vocabulary, seeding, validation, the derived band, the suggested month |
+| `node tools/design-data-test.js` | nothing | The session allow-list; a stored row round-trips and never carries the prose column |
+| `node tools/island-map-test.js` | nothing | The coastline, fifteen sourced pins inside it, and what `islandMap()` emits |
 | `node tools/playbook-test.js` | nothing | The doctrine bank and the seed merge |
 | `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
 
@@ -814,6 +829,51 @@ what it destroyed.
 person's name, email and phone. No delete here touches it. The screen says so,
 and tells you to ask the advisor — which the Undertaking obliges them to do.
 
+### The Understand stage · `api/_lib/hub-screens/design-understand.js`
+
+The first stage is a conversation, not a form. Duncan's review of the deployed
+designer (2026-09-09) asked for it: *"this step is about having the prospect
+feel seen and heard."* Three movements, all server-rendered, all working with
+JavaScript off:
+
+1. **What you told us.** The Finder's six answers read back as a reflection —
+   away → toward, direction and depth, company, relationship to wellness —
+   beside **the island**: Saint Lucia's real coastline with the shortlisted
+   places pinned by the village they answer for this traveller, lead villages
+   full-weight and labelled, a card beside the map (photograph, village, name,
+   town, one line) for the pin under the pointer or the one with focus, and
+   every pin a link to its card on Compare. The outline is `content/island.js`,
+   generated once by `tools/build-island-map.js` from geoBoundaries (CC BY 4.0
+   — the attribution renders in the SVG `<desc>` and the caption). Pin
+   positions are `geo` on each deep property in the Field Guide, each with its
+   source; six are placed from an address and say so.
+2. **The conversation.** Seven questions, single column, ordered simple → open
+   → sensitive after the Interaction Design Foundation's form guidance: the
+   frame (month · nights · who), what brought this on (multi-select, plus
+   *in their words*), what could get in the way (multi-select), how they like a
+   trip to feel (four named scales), things to plan around, where they are,
+   about how much (a dollar figure; the band is derived and shown beside it).
+   Every control ≥ 44px, a visible label and hint, a focus ring, a quiet
+   *n of 7 answered*. The month is pre-filled from the Journey's window
+   (`need-state.js travelFromWindow()`) and marked *suggested* until touched.
+3. **What I heard.** One paragraph built from the codes — no model, labels only
+   — that the advisor reads back across the table, re-rendered by the server on
+   every save. It is the summary reflection the discovery-call literature and
+   Motivational Interviewing both ask for.
+
+There is **no Present mode**. It hid the advisor's working notes behind a
+toggle; Duncan removed it on 2026-09-10 — *"might as well make the experience
+transparent."* Everything it hid is on the page; the two heavier blocks on
+Compare sit behind a `<details>` the advisor opens.
+
+Migration `024-understand-conversation.sql` adds `triggers` and
+`uncertainties` (`text[]`, like `constraints`), `budget_usd` and
+`in_their_words`. `capabilities()` probes them as one (`caps.conversation`);
+a deployment ahead of the migration shows one radio per question, no figure and
+no words, and says which migration it needs. `node tools/island-map-test.js`
+checks the coastline, the fifteen pins and the markup contract;
+`node tools/need-state-test.js` the lists, the band and the suggested month.
+
 ### The Shape stage · `api/_lib/design-shape.js`
 
 A shape is a recipe laid across N nights, a property on each day, an
@@ -925,8 +985,9 @@ consultation prompts carry is codes and weights — `rainforest 1, ocean 0.75`,
 business, and the names of properties we publish. Not the free-text `context`
 box, not `timing` as they typed it, not any advisor note, not any uuid.
 
-Two things make that structural rather than careful. `journey_consultations`
-has **no free-text column at all**, so there is no prose to send. And
+Two things make that structural rather than careful. The need-state a prompt is
+built from **carries no prose** — the one prose column the consultation row
+has since 024, `in_their_words`, is never read into it. And
 `api/_lib/design-need.js` builds every prompt's input by copying named fields,
 so adding one is a deliberate act with a diff — there is no denylist to fall out
 of date.

@@ -302,6 +302,12 @@ const deep = (guideProps.DEEP || []).map((p) => {
     watchLevel: p.watchLevel || null,
 
     image: image(folder),
+    /* Where it is, for the advisor's island map. Authored in the guide with a
+       source line; `approx` marks a pin placed from an address rather than a
+       surveyed point. Never reaches a prompt (design-need.js names no `geo`). */
+    geo: p.geo && Number.isFinite(p.geo.lat) && Number.isFinite(p.geo.lng)
+      ? { lat: p.geo.lat, lng: p.geo.lng, town: trim(p.geo.town) || null, approx: Boolean(p.geo.approx) }
+      : null,
     provenance: { source: 'field-guide-deep', verified_at: CORE_VERIFIED, confidence: 'VERIFIED OFFER', tier: null }
   };
 });

@@ -62,6 +62,7 @@ const constraintOf = (e) => (e && CONSTRAINT[String(e.code)]) || null;
    two screens cannot describe the same missing table differently. */
 const UNAVAILABLE = {
   consultation: 'Saving is not available on this deployment yet — migration 022 has not been applied. You can still work through the shortlist; nothing will be kept.',
+  conversation: 'Multi-select, the budget figure and “in their words” need migration 024 on this deployment. One answer each still saves.',
   itinerary: 'Issuing is not available on this deployment yet — migration 022 has not been applied.',
   ledger: 'Generation is switched off on this deployment: the usage ledger is missing, and generating without it would be unmetered.'
 };
@@ -73,7 +74,7 @@ const UNAVAILABLE = {
 async function capabilities() {
   const supabase = db();
   const out = { database: Boolean(supabase), consultation: false, itinerary: false, ledger: false,
-    travel_from: false, estimate: false, sent_at: false, stage: false };
+    travel_from: false, estimate: false, sent_at: false, stage: false, conversation: false };
   if (!supabase) return out;
 
   const probe = async (table) => {
@@ -107,6 +108,9 @@ async function capabilities() {
   out.estimate = out.consultation && await column('design_sessions', 'estimate');
   out.sent_at = out.itinerary && await column('journey_itineraries', 'sent_at');
   out.stage = out.estimate;   /* 023 lands the rename and the column together */
+  /* 024: multi-select, the budget figure and the one prose column land
+     together, so one probe stands for the four. */
+  out.conversation = out.consultation && await column('journey_consultations', 'triggers');
   return out;
 }
 
@@ -136,8 +140,11 @@ async function saveConsultation(shareId, advisorId, state, seeded, extra) {
     village_weights: state.villages || {},
     compass_weights: state.compass || {},
     pillar_weights: state.pillars || {},
-    trigger: state.trigger || null,
-    uncertainty: state.uncertainty || null,
+    /* The singular columns carry the first code, for rows read by code that
+       predates 024 and for the subject-rights export. The arrays are the
+       record; see `extra.conversation` below. */
+    trigger: (state.triggers && state.triggers[0]) || null,
+    uncertainty: (state.uncertainties && state.uncertainties[0]) || null,
     readiness: state.readiness || null,
     party: state.party || null,
     orientation: state.orientation || null,
@@ -162,6 +169,16 @@ async function saveConsultation(shareId, advisorId, state, seeded, extra) {
   /* 023: a date, never text. Only written when the caller has probed the
      column — an upsert naming a column that is not there fails whole. */
   if (extra && extra.travel_from !== undefined) row.travel_from = extra.travel_from || null;
+  /* 024: the arrays, the figure and the one prose column. Same rule — only
+     when the caller has probed the columns present. in_their_words is read
+     from `extra`, never from the need-state, and toNeedState() below never
+     puts it back into one. */
+  if (extra && extra.conversation) {
+    row.triggers = state.triggers || [];
+    row.uncertainties = state.uncertainties || [];
+    row.budget_usd = state.budgetUsd == null ? null : state.budgetUsd;
+    row.in_their_words = extra.in_their_words ? String(extra.in_their_words).slice(0, 400) : null;
+  }
 
   const { data, error } = await supabase
     .from('journey_consultations').upsert(row, { onConflict: 'share_id' })
@@ -187,12 +204,19 @@ function toNeedState(row) {
     villages: row.village_weights || {},
     compass: row.compass_weights || {},
     pillars: row.pillar_weights || {},
-    trigger: row.trigger, uncertainty: row.uncertainty, readiness: row.readiness,
+    /* The array when 024 has landed and it has content; else the single
+       column as a one-item list, so a row written before 024 reads the same. */
+    triggers: (row.triggers && row.triggers.length) ? row.triggers : (row.trigger ? [row.trigger] : []),
+    uncertainties: (row.uncertainties && row.uncertainties.length) ? row.uncertainties : (row.uncertainty ? [row.uncertainty] : []),
+    readiness: row.readiness,
     party: row.party, orientation: row.orientation, budget: row.budget, mobility: row.mobility,
+    budgetUsd: row.budget_usd == null ? null : row.budget_usd,
     continuumFloor: row.continuum_floor, continuumCeiling: row.continuum_ceiling,
     rhythm: row.rhythm, activity: row.activity, social: row.social, experience: row.experience,
     adults: row.adults, children: row.children, nights: row.nights,
     constraints: row.constraints || []
+    /* in_their_words is deliberately NOT here. It lives on the row, is shown
+       from the row, and is never part of a need-state. */
   };
 }
 

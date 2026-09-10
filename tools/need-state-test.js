@@ -79,10 +79,10 @@ console.log('\n  NEED STATE — ONE VOCABULARY\n  ' + '─'.repeat(60) + '\n');
   ok('companions set the party and the social scale', s.party === 'partner' && s.social < 0.5);
   ok('orientation is stored on the advisor scale', s.orientation === 'secondary-intentional');
 
-  ok('TRIGGER COMES BACK NULL', s.trigger === null,
+  ok('TRIGGERS COME BACK EMPTY', Array.isArray(s.triggers) && s.triggers.length === 0,
     'six answers cannot know why somebody is travelling now');
-  ok('so do uncertainty and readiness', s.uncertainty === null && s.readiness === null);
-  ok('and every hard constraint', s.constraints.length === 0 && s.nights === null && s.budget === null);
+  ok('so do uncertainties and readiness', Array.isArray(s.uncertainties) && s.uncertainties.length === 0 && s.readiness === null);
+  ok('and every hard constraint', s.constraints.length === 0 && s.nights === null && s.budget === null && s.budgetUsd === null);
 
   const empty = await N.seedFrom({});
   ok('no answers seeds an empty state rather than a default person',
@@ -116,8 +116,13 @@ console.log('\n  NEED STATE — ONE VOCABULARY\n  ' + '─'.repeat(60) + '\n');
   ok('an unknown compass key is rejected',
     (await bad({ compass: { teleport: 1 } })).some((p) => /unknown key "teleport"/.test(p)));
   ok('a weight above 1 is rejected', (await bad({ compass: { restore: 4 } })).some((p) => /between 0 and 1/.test(p)));
-  ok('an unknown trigger is rejected', (await bad({ trigger: 'vibes' })).some((p) => /unknown value "vibes"/.test(p)));
+  ok('an unknown trigger is rejected', (await bad({ triggers: ['vibes'] })).some((p) => /unknown value "vibes"/.test(p)));
+  ok('two known triggers are accepted', (await bad({ triggers: ['milestone', 'accumulated-fatigue'] })).length === 0);
+  ok('a single trigger written as a string is rejected — it is a list now',
+    (await bad({ triggers: 'milestone' })).some((p) => /must be a list/.test(p)));
+  ok('an unknown uncertainty is rejected', (await bad({ uncertainties: ['weather'] })).some((p) => /unknown value "weather"/.test(p)));
   ok('an unknown constraint is rejected', (await bad({ constraints: ['weather'] })).some((p) => /unknown value "weather"/.test(p)));
+  ok('a fractional budget is rejected', (await bad({ budgetUsd: 1800.5 })).some((p) => /whole number of dollars/.test(p)));
   ok('a floor deeper than its ceiling is rejected',
     (await bad({ continuumFloor: 'transform', continuumCeiling: 'relax' })).some((p) => /deeper than/.test(p)));
   ok('a fractional number of nights is rejected', (await bad({ nights: 3.5 })).some((p) => /whole number/.test(p)));
@@ -127,17 +132,35 @@ console.log('\n  NEED STATE — ONE VOCABULARY\n  ' + '─'.repeat(60) + '\n');
     'the one field that would turn a column list back into a filter');
 
   ok('validation reports every problem, not the first',
-    (await bad({ villages: { atlantis: 1 }, trigger: 'vibes' })).length >= 2,
+    (await bad({ villages: { atlantis: 1 }, triggers: ['vibes'] })).length >= 2,
     'a screen should be able to render them all at once');
 
   /* ══ Overrides ═══════════════════════════════════════════════════════════ */
   console.log('\n  What the advisor changed');
-  const edited = Object.assign({}, s, { trigger: 'work-cycle', nights: 5 });
+  const edited = Object.assign({}, s, { triggers: ['work-cycle'], nights: 5 });
   const diff = N.overridden(s, edited);
-  ok('a completed field counts as an override', diff.indexOf('trigger') !== -1 && diff.indexOf('nights') !== -1);
+  ok('a completed field counts as an override', diff.indexOf('triggers') !== -1 && diff.indexOf('nights') !== -1);
   ok('an untouched field does not', diff.indexOf('party') === -1);
   ok('an unedited state reports no overrides', N.overridden(s, s).length === 0,
     'otherwise every advisor looks corrected and the signal is worthless');
+
+  /* ══ The band, from the number ═══════════════════════════════════════════ */
+  console.log('\n  The band is derived from the figure and the nights');
+  ok('$9,800 over 7 nights ($1,400 a night) reads as mid', N.bandFor(9800, 7) === 'mid');
+  ok('$18,000 over 7 nights ($2,571 a night) reads as premium', N.bandFor(18000, 7) === 'premium');
+  ok('$3,500 over 7 nights ($500 a night) reads as entry', N.bandFor(3500, 7) === 'entry');
+  ok('no figure → no band', N.bandFor(null, 7) === null && N.bandFor(0, 7) === null);
+  ok('no nights → no band, whatever the figure', N.bandFor(18000, null) === null,
+    'a total with nothing to divide it by is not a rate');
+  ok('"open if it is right" is the advisor\'s tick, never derived', N.bandFor(18000, 7, true) === 'open');
+  ok('the thresholds are marked inferred', N.BAND_INFERRED === true && N.BAND_PER_NIGHT.mid < N.BAND_PER_NIGHT.premium);
+
+  /* ══ The month, from the window ══════════════════════════════════════════ */
+  console.log('\n  A travel month is suggested from the Journey\'s window');
+  ok('3–6 months from 2026-09-09 suggests February 2027', N.travelFromWindow('3-6mo', '2026-09-09') === '2027-02-01');
+  ok('within 30 days suggests next month', N.travelFromWindow('30d', '2026-09-09') === '2026-10-01');
+  ok('and it rolls the year', N.travelFromWindow('6-12mo', '2026-09-09') === '2027-06-01');
+  ok('exploring suggests nothing', N.travelFromWindow('exploring', '2026-09-09') === null && N.travelFromWindow(null) === null);
 
   console.log('\n  ' + '─'.repeat(60));
   console.log(`  ${pass} passed, ${fail} failed\n`);

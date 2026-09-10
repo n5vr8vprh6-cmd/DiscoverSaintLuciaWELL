@@ -21,15 +21,32 @@
    village one.
 
    ── CODES AND NUMBERS. NO PROSE. EVER. ───────────────────────────────────
-   Every value here is a key from the bank or a number between 0 and 1. There
-   is no free-text field, and that is not a style preference — it is the
-   privacy boundary made structural. Because there is nothing to redact, the
-   projection that reaches a model is a column list rather than a filter, and
-   `a filter can be written wrong; an absent parameter cannot`.
+   Every value in a NEED-STATE is a key from the bank or a number. There is no
+   free-text field in the object, and that is not a style preference — it is
+   the privacy boundary made structural. Because there is nothing to redact,
+   the projection that reaches a model is a column list rather than a filter,
+   and `a filter can be written wrong; an absent parameter cannot`.
 
-   Where an advisor needs to write about a person in their own words, that goes
-   in advisor_notes, which already exists, already cascades on share delete and
-   is already in the subject-rights export.
+   Since 024 the consultation ROW carries one prose column, in_their_words —
+   something the client said about why now. It is not part of this object:
+   design-data.js never copies it into a need-state, design-need.js never
+   names it, and tools/design-privacy-test.js puts a sentinel in it and sweeps
+   both prompts. It takes the path travel_from took in 023 — written through
+   `extra`, read from the stored row, shown on the screen. Where an advisor
+   needs to write about a person at length, advisor_notes still exists.
+
+   ── MULTI-SELECT SINCE 024 ───────────────────────────────────────────────
+   `triggers` and `uncertainties` are arrays of codes, like `constraints`. A
+   person can be travelling for a milestone AND accumulated fatigue, and the
+   advisor should not have to choose which one to record. Every ticked code
+   counts equally downstream.
+
+   ── THE BUDGET IS A NUMBER; THE BAND IS DERIVED ──────────────────────────
+   `budgetUsd` is what the advisor heard: a US-dollar figure for the whole
+   trip and the whole party. The band (entry · mid · premium · open) is
+   computed from it and the nights by bandFor(), so the matcher and the
+   prompt keep the vocabulary they already speak. The figure itself is never
+   projected to a prompt.
 
    ── WEIGHTS ORDER A SHORTLIST. THEY DO NOT MEASURE ANYONE. ───────────────
    The brief is explicit: weights `may support ranking and reasoning, but must
@@ -186,13 +203,13 @@ async function seedFrom(answers) {
     current, desired, villages, compass,
     pillars: {},
     /* The advisor's job, not the quiz's. Six answers cannot know why now. */
-    trigger: null,
-    uncertainty: null,
+    triggers: [],
+    uncertainties: [],
     readiness: null,
     orientation: orientationKey(a.orientation),
     party: comp ? comp.party : null,
     adults: null, children: null, mobility: null,
-    nights: null, budget: null,
+    nights: null, budget: null, budgetUsd: null,
     constraints: [],
     rhythm: pace ? pace.rhythm : null,
     activity: pace ? pace.activity : null,
@@ -210,8 +227,9 @@ async function seedFrom(answers) {
    dropping it would make a need-state that scores differently from the one the
    advisor thought they saved. */
 const WEIGHTED = ['current', 'desired', 'villages', 'compass', 'pillars'];
-const SINGLE = { trigger: 'trigger', uncertainty: 'uncertainty', readiness: 'readiness',
-                 party: 'party', budget: 'budget' };
+const SINGLE = { readiness: 'readiness', party: 'party', budget: 'budget' };
+/* Arrays of codes: the field name → the vocabulary dimension it draws from. */
+const MULTI = { triggers: 'trigger', uncertainties: 'uncertainty', constraints: 'constraints' };
 const SCALES = ['rhythm', 'activity', 'social', 'experience'];
 
 async function validate(state) {
@@ -249,9 +267,17 @@ async function validate(state) {
     problems.push('orientation: unknown value "' + s.orientation + '"');
   }
 
-  [].concat(s.constraints || []).forEach((c) => {
-    if (keysOf('constraints').indexOf(c) === -1) problems.push('constraints: unknown value "' + c + '"');
+  Object.keys(MULTI).forEach((field) => {
+    if (s[field] == null) return;
+    if (!Array.isArray(s[field])) { problems.push(field + ': must be a list of codes'); return; }
+    s[field].forEach((c) => {
+      if (keysOf(MULTI[field]).indexOf(c) === -1) problems.push(field + ': unknown value "' + c + '"');
+    });
   });
+
+  if (s.budgetUsd != null && (!Number.isInteger(s.budgetUsd) || s.budgetUsd < 0)) {
+    problems.push('budgetUsd: must be a whole number of dollars');
+  }
 
   SCALES.forEach((k) => {
     const v = s[k];
@@ -295,4 +321,49 @@ function overridden(seeded, edited) {
   return Object.keys(b).filter((k) => !same(a[k], b[k])).sort();
 }
 
-module.exports = { vocabulary, seedFrom, validate, orientationKey, overridden, FINDER_ORIENTATION };
+/* ── The band, from the number ───────────────────────────────────────────
+   A US-dollar total for the party, spread across the nights, against two
+   per-night thresholds. INFERRED, not authored: the thresholds sit against
+   the public rates observed in content/rates.js on 2026-09-09 — standard
+   rooms open near $325–$650 a night at the value end and the Soufrière icons
+   run $1,200–$2,000 for a standard room — with room in each band for the
+   transfers and experiences a party total carries. They stay here until
+   Duncan confirms or moves them. The band is a word the matcher and the
+   prompt already speak; the figure it came from reaches neither. The screen
+   shows the arithmetic ("about $2,600 a night across the stay") beside the
+   word, so the advisor can see why it landed where it did.
+
+   No nights → no band: a total with nothing to divide it by is not a rate.
+   `open` is the advisor's own tick, never derived. */
+const BAND_PER_NIGHT = { mid: 700, premium: 1800 };
+const BAND_INFERRED = true;
+function bandFor(budgetUsd, nights, open) {
+  if (open) return 'open';
+  const b = Number(budgetUsd), n = Number(nights);
+  if (!Number.isFinite(b) || b <= 0 || !Number.isFinite(n) || n <= 0) return null;
+  const night = b / n;
+  if (night >= BAND_PER_NIGHT.premium) return 'premium';
+  if (night >= BAND_PER_NIGHT.mid) return 'mid';
+  return 'entry';
+}
+
+/* ── The month, from the Journey's window ────────────────────────────────
+   journey_shares.travel_window is one of six coarse answers. Each maps to the
+   first of the month at the window's midpoint from today — a SUGGESTION the
+   advisor sharpens or replaces, and one the screen marks as suggested until
+   they touch it. 023's comment promised this and nobody had built it.
+   `exploring` and unknown windows suggest nothing. */
+const WINDOW_MONTHS = { '30d': 1, '31-90d': 2, '3-6mo': 5, '6-12mo': 9, '12mo+': 12 };
+function travelFromWindow(window, todayISO) {
+  const add = WINDOW_MONTHS[String(window || '')];
+  if (!add) return null;
+  const t = Date.parse((todayISO || new Date().toISOString().slice(0, 10)) + 'T00:00:00Z');
+  if (!Number.isFinite(t)) return null;
+  const d = new Date(t);
+  const y = d.getUTCFullYear(), m = d.getUTCMonth() + add;
+  const out = new Date(Date.UTC(y, m, 1));
+  return out.toISOString().slice(0, 10);
+}
+
+module.exports = { vocabulary, seedFrom, validate, orientationKey, overridden, bandFor, travelFromWindow,
+  FINDER_ORIENTATION, BAND_PER_NIGHT, BAND_INFERRED, WINDOW_MONTHS };

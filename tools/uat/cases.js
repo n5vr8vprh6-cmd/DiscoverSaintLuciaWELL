@@ -1229,9 +1229,13 @@ const CASES = [
 
    MOST OF THIS GROUP IS NEGATIVE. The valuable half of ASK WELL is behaviour
    that is invisible when it works — the projection that drops consumer values,
-   the view-as refusal, the token that resolves once, present mode hiding the
-   working notes. All of them look fine when broken, and a shared screen with a
-   prospect on it is the worst possible place to find that out.
+   the view-as refusal, the token that resolves once, the one prose field that
+   never leaves its row. All of them look fine when broken, and a shared screen
+   with a prospect on it is the worst possible place to find that out.
+
+   THERE IS NO PRESENT MODE. It existed until 2026-09-10 and hid the advisor's
+   working notes; Duncan removed it so the screen is transparent. Anything a
+   case used to check "in Present mode" is now simply on the page.
    ══════════════════════════════════════════════════════════════════════════ */
 
 { id: 'S-10', pass: 'ASK WELL', role: 'setup', priority: 1, area: 'Before you start',
@@ -1246,20 +1250,19 @@ const CASES = [
 { id: 'A-61', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
   title: 'Design a journey end to end',
   steps: ['Open a Journey you own and press "Design this journey" — you land on Understand',
-          'Tap why now, how ready and a budget band; set nights; press Save what we know, then reload',
+          'Set the month and nights, tick two things under "What brought this on", type a sentence in "In their words", set "Where they are" and type a budget figure; watch "What I heard" change; press Save what we know, then reload',
           'Move to Compare: read a card, open "Why this fits · what to watch", tick two to carry, press Carry these into the shape',
           'On Shape, choose a shape under "The shape of it" and press Use this shape; press "Draft a paragraph"',
           'On Send, set nights, add a note, press "Issue this plan" and confirm'],
   expect: 'Four stages on the rail, one at a time. Your taps on Understand survive a reload. Compare shows photographs and the reasoning is folded. The shortlist and its reasons are on screen the moment each stage loads, with no spinner; only the paragraph and the issue take time. At the end you get a link, shown once, with a copy button.',
   why: 'This is the whole product in one pass. The shortlist arriving instantly is the difference between a tool an advisor opens in front of a prospect and one they prepare in private beforehand.' },
 
-{ id: 'A-62', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
-  title: 'Present mode, with the P key',
-  steps: ['On the design screen, press P',
-          'Look for "What is wrong with it", "Ask about", "Last verified" and the Issue block',
-          'Click into the paragraph box and press P again'],
-  expect: 'All of those disappear and the type steps up. With the cursor in a text box, P types a letter rather than toggling.',
-  why: 'This screen is read over a shoulder by the person the trip is for. The working notes are written for the advisor and read cold they are an argument against the trip. A shortcut that fires while you are typing is a shortcut nobody uses.' },
+{ id: 'A-62', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'ASK WELL',
+  title: 'There is no Present mode — the screen is transparent',
+  steps: ['On any design stage, look for a "Present mode" button; press P with nothing focused',
+          'Open Compare and Shape: the reasoning disclosure, the pacing flags, the not-yet-cleared count and the advisor cues are all on the page'],
+  expect: 'No toggle anywhere, and P does nothing. The advisor\'s working — cues, flags, counts, the "you changed n fields" note — is visible; the two heavier blocks (Why this fits · Planning price signal) are behind a closed disclosure the advisor can open.',
+  why: 'Duncan removed the toggle on 2026-09-10: it added a mode to remember and hid nothing the client should not see. Transparency is the rule now; a case that expected things to vanish would pass against the wrong product.' },
 
 { id: 'A-63', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'ASK WELL',
   title: 'Open the issued link as the client would',
@@ -1280,23 +1283,23 @@ const CASES = [
   title: 'Property gallery on Compare — thumbs, swap, credit, cleared',
   steps: ['Open a Journey → Design → Compare with a shortlist that includes Anse Chastanet or Rabot',
           'Look under the property photograph for a strip of labelled thumbnails (Overview · Rooms · Spa · …)',
-          'Tap a thumb; then press P; then disable JavaScript, reload and tap a thumb again'],
-  expect: 'The large photograph swaps in place with no scroll and no reload; the tapped thumb is outlined and its word is bold. Under the strip: "Photographs: <property>" and an amber "N not yet cleared" count. P keeps the whole gallery and removes only the not-yet-cleared count. With JavaScript off the same thumb opens the image itself. A property with a single photograph shows no strip at all.',
-  why: 'The gallery is the brochure moment on a shared screen, so it stays in Present mode; the clearance count is our paperwork, so it does not. Every frame is the property’s own photograph and nothing is cleared until Duncan says so — the count is the reminder that this is a sourced-and-credited draft, not a licence.' },
+          'Tap a thumb; then disable JavaScript, reload and tap a thumb again'],
+  expect: 'The large photograph swaps in place with no scroll and no reload; the tapped thumb is outlined and its word is bold. Under the strip: "Photographs: <property>" and an amber "N not yet cleared" count. With JavaScript off the same thumb opens the image itself. A property with a single photograph shows no strip at all.',
+  why: 'The gallery is the brochure moment on a shared screen. Every frame is the property’s own photograph and nothing is cleared until Duncan says so — the count is the reminder, in the open, that this is a sourced-and-credited draft, not a licence.' },
 { id: 'A-68', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
   title: 'Shape — the arc, a day edited, the pacing rule',
   steps: ['On Understand set 7 nights; on Compare carry two places; open Shape',
           'Read the arc: one column per day, phase names above, the intensity WORD in each bar, the place under it',
-          'Open Day 3, set it to High, then Day 4 to High; then set Day 5 to Rest; press P; disable JavaScript and save a day'],
-  expect: 'The arc redraws without a reload after each change (with JS) and after a 303 without. Columns take the village colour of their place; Rest is a dashed outline. Two adjacent High days raise a flag beside the arc naming the days; Rest clears the seven-night no-rest flag. P keeps the arc, phases, places and notes and removes the day editors, the flags and the inferred marker.',
-  why: 'This is the most important screen in the intelligence layer: it is where the advisor shows the week rather than takes an order. The arc has to be legible across a table with the word doing the work, and the pacing rules are the guide’s own sentences turned into checks — advisor-only, because a flag read cold by a client is an argument against the trip.' },
+          'Open Day 3, set it to High, then Day 4 to High; then set Day 5 to Rest; disable JavaScript and save a day'],
+  expect: 'The arc redraws without a reload after each change (with JS) and after a 303 without. Columns take the village colour of their place; Rest is a dashed outline. Two adjacent High days raise a flag beside the arc naming the days; Rest clears the seven-night no-rest flag. The flags and the inferred marker are on the page, in the open.',
+  why: 'This is the most important screen in the intelligence layer: it is where the advisor shows the week rather than takes an order. The arc has to be legible across a table with the word doing the work, and the pacing rules are the guide’s own sentences turned into checks the advisor talks through rather than hides.' },
 
 { id: 'A-69', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
   title: 'Send — the estimate resolves to the travel month, edits are marked, the preview is the document',
   steps: ['On Understand set the travel month to February 2027 and 7 nights; carry two places; lay the arc; open Send',
           'Read "What it might cost": one line per run of nights at a place, transfers by region, a total range',
-          'Type a figure into a "to be confirmed" line; clear an observed line back to blank; add a custom line; press P; open the preview; then issue and open /j/:token'],
-  expect: 'Stay lines show nights × the February nightly range and the cheapest room seen on 2026-09-09; a line with no observed week shows a dash and the total says how many lines are still to confirm. A typed figure is marked "yours" and joins the total; clearing returns the line to the public rate. P turns the inputs into plain text and hides sources and the add-a-line control. The preview is the client document with the estimate; the issued /j/:token carries the same lines, "seen" dates, "Planning estimate, not a quote", a Version n · issued date header, a Save as PDF button — and no token anywhere on the page.',
+          'Type a figure into a "to be confirmed" line; clear an observed line back to blank; add a custom line; open the preview; then issue and open /j/:token'],
+  expect: 'Stay lines show nights × the February nightly range and the cheapest room seen on 2026-09-09; a line with no observed week shows a dash and the total says how many lines are still to confirm. A typed figure is marked "yours" and joins the total; clearing returns the line to the public rate. The preview is the client document with the estimate; the issued /j/:token carries the same lines, "seen" dates, "Planning estimate, not a quote", a Version n · issued date header, a Save as PDF button — and no token anywhere on the page.',
   why: 'This is the paper-or-plastic moment. The client sees a dated range, never a figure, never a quote; the advisor edits in the open and every edit says so. Nothing here is a booking action, and the one call to action on the document is still a person.' },
 
 { id: 'A-70', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
@@ -1306,6 +1309,30 @@ const CASES = [
           'Read "Already sent"; then disable JavaScript, untick nothing, and issue again; then untick the box and issue with JavaScript off'],
   expect: 'The page shows the link once and "Emailed to j•••@…, copied to you." The mail is from journeys@, to the traveller, cc the advisor, reply-to the advisor; two sentences and the link; no dollar figure, no attachment, first name only. "Already sent" says "Emailed to the client just now". With JavaScript off and the box ticked the page reloads with "Issued and emailed"; with the box unticked it refuses: "With JavaScript off the link can only be emailed."',
   why: 'The token exists in the clear for one request, so the mail must go inside it or never. A PDF would be a copy nobody can withdraw; a link can be. A failed mail must not fail the issue — the document is live and the advisor can still copy the link.' },
+
+{ id: 'A-71', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
+  title: 'Understand — the island: pins by village, a card on hover and on focus, a link with JavaScript off',
+  steps: ['Open a Journey → Design → Understand and look right of "What you told us"',
+          'Read the island: town labels, a pin per shortlisted place in its village colour, the lead village\'s pins larger and named, the legend under the card',
+          'Move the mouse across the pins; then press Tab until a pin has focus; then disable JavaScript, reload and click a pin'],
+  expect: 'The card beside the map changes to the nearest pin — photograph, village word, name, town, one line — with no reload; the lit pin gains a dark ring and the rest recede. Tab reaches every pin and shows the same card. A pin whose position was placed from an address says "placed from its address". With JavaScript off, clicking a pin opens that property\'s card on Compare. The caption carries 13°54′N 60°58′W and "Outline: geoBoundaries, CC BY 4.0".',
+  why: 'The map is the "woo" moment Duncan asked for, and it must be honest to earn it: real coastline, real positions, a source line, and an approximate pin that says so. Hover is a convenience; the pin is a link, so nothing depends on the pointer.' },
+
+{ id: 'A-72', pass: 'ASK WELL', role: 'advisor', priority: 1, area: 'ASK WELL',
+  title: 'Understand — multi-select, their words and a budget figure survive a reload and never leave the row',
+  steps: ['On Understand tick two things under "What brought this on" and two under "What could get in the way"',
+          'Type a sentence into "In their words"; type 18000 into "About how much" with 7 nights set; tick nothing under "Open, if it is right"',
+          'Press Save what we know; reload; then open Shape and press "Draft a line" on a day; then issue and open /j/:token'],
+  expect: 'After the reload all four ticks, the sentence and the figure are still there; the budget line reads "reads as Premium · about $2,571 a night across the stay" and "What I heard" says it back. The drafted line and the client document contain neither the sentence nor the figure. With migration 024 not applied, the stage shows one radio per question, no figure and no words, and says which migration it needs.',
+  why: 'Duncan asked for multi-select and a real number; the privacy rule asked that prose never reach a prompt. Both hold at once because the sentence lives on the row and is never copied into the need-state, and the figure is projected as a band, never as a number. tools/design-privacy-test.js pins it; this checks it on a live deployment.' },
+
+{ id: 'A-73', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'ASK WELL',
+  title: 'Understand — the form pass: single column, breathing room, big targets, feedback',
+  steps: ['Open Understand at full width, then narrow the window below about 830px',
+          'Tab through every control from "When" to "Open, if it is right"',
+          'Change the nights, then a chip, then type in the budget; read the line under "Save what we know"'],
+  expect: 'Seven numbered sections, each with a heading, an italic cue and its controls beneath — one column, a hairline between, nothing side by side except the When · How long · Who row, which stacks when narrow. Every chip, dot, stepper button and input is at least 44px tall and shows a teal ring on focus; the section with focus shows a teal rule at its left edge. "n of 7 answered" counts up as sections are filled; "Saved." appears after each change; the suggested month is dashed until touched.',
+  why: 'Duncan: "definitely not UX friendly, needs way more space to breathe", and the IxDF form guidance he pointed at: single column, grouped by theme, simple first, visible labels, big targets, inline feedback, a progress count. Each of those is a thing you can see or measure.' },
 
 { id: 'A-65', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'Playbook',
   title: 'Read the Playbook and fill in the priority traveller',

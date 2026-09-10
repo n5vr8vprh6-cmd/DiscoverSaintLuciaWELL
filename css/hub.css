@@ -1637,12 +1637,11 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
    /hub/journeys/:id/design. Read on a shared screen with the person the trip
    is for, which drives two decisions the rest of the Hub does not have to make.
 
-   PRESENT MODE. `.is-present` on <body> hides everything marked
-   [data-hide-in-present] — the mismatches, the watch-outs, the verification
-   dates, the gaps — and steps the type up. Those are working notes; read cold
-   by a prospect mid-sentence they become an argument against the trip. The
-   markup is always sent and only ever hidden, so a template can never drift
-   out of step with itself.
+   EVERYTHING IS IN THE OPEN. There was a Present mode that hid the advisor's
+   working notes; Duncan removed it on 2026-09-10 — "might as well make the
+   experience transparent." The mismatches, the flags and the cues are on the
+   page; the two blocks that were only comfortable behind a toggle sit behind
+   a <details> the advisor opens.
 
    NO COLOUR CARRIES MEANING ALONE. The bands are words first. Colour is a
    second signal on top of a word that already says it, because a shared screen
@@ -1704,14 +1703,6 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 }
 .design .design-facts dd { margin: 0; }
 
-.design .design-gaps {
-  margin-top: 1.75rem; padding: 1rem 1.2rem;
-  border: 1px dashed var(--hairline-l); border-radius: 3px;
-}
-.design .design-gaps h3 { margin: 0 0 .4em; font-size: .95rem; }
-.design .design-gaps p { color: var(--muted); font-size: .86rem; margin: 0 0 .6em; }
-.design .design-gaps ul { margin: 0; padding-left: 1.1em; }
-.design .design-gaps li { margin-bottom: .2em; }
 
 /* ── Candidates ────────────────────────────────────────────────────────── */
 .design .design-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.25rem; }
@@ -1791,14 +1782,6 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 .design .design-foot p { color: var(--muted); font-size: .84rem; margin: 0 0 .3em; max-width: 70ch; }
 .design .design-prov { font-size: .76rem !important; }
 
-/* ── Present mode ──────────────────────────────────────────────────────── */
-.is-present .design [data-hide-in-present] { display: none !important; }
-.is-present .design .design-card { padding: 1.5rem 1.75rem; }
-.is-present .design .design-card-head h3 { font-size: 1.35rem; }
-.is-present .design .band-word { font-size: 1.05rem; }
-.is-present .design .chip { font-size: .95rem; padding: .34em .85em; }
-.is-present .design .design-facts { grid-template-columns: 14rem 1fr; }
-.is-present .design .design-sub { display: none; }
 
 @media (max-width: 44rem) {
   .design .design-states { grid-template-columns: 1fr; }
@@ -1809,7 +1792,7 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 }
 
 /* ── The one piece of writing ──────────────────────────────────────────────
-   Present mode does NOT hide the paragraph — it is the thing being read aloud.
+   The paragraph is the thing being read aloud.
    It hides the button, the note and the flags around it, which are the
    advisor's working apparatus. */
 .design .design-narr { max-width: 68ch; }
@@ -1835,10 +1818,8 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 .design .design-flag.is-high { color: var(--ink); }
 .design .design-flag.is-high::before { background: var(--coral); }
 
-.is-present .design .design-narr-body {
   border-color: transparent; padding-left: 0; font-size: 1.15rem;
 }
-.is-present .design .design-narr-flags { display: none !important; }
 
 /* ══════════════════════════════════════════════════════════════════════════
    /j/:token — the document a client keeps
@@ -2313,94 +2294,218 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
   margin: 2.5rem 0 0; padding-top: 1.4rem; border-top: 1px solid var(--hairline-l);
 }
 
-/* ── Understand · the live controls ───────────────────────────────────────
-   Big targets, words first. Radios and checkboxes stay in the DOM (visually
+/* ── Understand · the conversation ─────────────────────────────────────────
+   Single column, one question per fieldset, simple → open → sensitive. Big
+   targets, words first. Radios and checkboxes stay in the DOM (visually
    hidden, still focusable) so keyboard and JS-off paths are the native ones;
-   the label is the thing you tap. */
-.design .design-consult-form { margin-top: 1rem; }
-.design .design-q { border: 0; padding: 0; margin: 0 0 1.8rem; }
-.design .design-q legend {
-  font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase;
-  color: var(--muted); padding: 0; margin: 0 0 .7em;
+   the label is the thing you tap. Every interactive box measures ≥ 44px tall. */
+.design .design-consult-form { margin-top: .5rem; }
+.design .design-ask {
+  border: 0; border-top: 1px solid var(--hairline-l); padding: 2.25rem 0 2.5rem; margin: 0; min-width: 0;
+  position: relative;
 }
-.design .design-q--row { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: start; }
+.design .design-ask:first-of-type { border-top: 0; padding-top: 1rem; }
+.design .design-ask legend { padding: 0; margin: 0 0 .35em; display: flex; align-items: baseline; gap: .8rem; }
+.design .design-ask-n {
+  font-family: var(--sans); font-size: var(--fs-label); letter-spacing: var(--track-label);
+  color: var(--muted); border: 1px solid var(--hairline-l); border-radius: 50%;
+  width: 1.6rem; height: 1.6rem; display: inline-flex; align-items: center; justify-content: center; flex: none;
+}
+.design .design-ask-h { font-family: var(--serif-display); font-size: 1.45rem; line-height: 1.2; color: var(--ink); }
+.design .design-ask-cue { font-family: var(--serif); font-style: italic; color: var(--muted); margin: 0 0 1.3em; max-width: 56ch; font-size: 1.02rem; }
+.design .design-ask-body { max-width: 62rem; }
+.design .design-ask:focus-within::before {
+  content: ""; position: absolute; left: -1.25rem; top: 2.25rem; bottom: 2.5rem; width: 2px; background: var(--teal); border-radius: 1px;
+}
 
-.design .design-picks { display: flex; flex-wrap: wrap; gap: .5rem; }
+/* Fields with a visible label and a one-line hint. */
+.design .design-field { display: flex; flex-direction: column; gap: .45rem; min-width: 0; }
+.design .design-field-label {
+  font-family: var(--sans); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted);
+}
+.design .design-field-hint { color: var(--muted); font-size: .82rem; line-height: 1.4; max-width: 48ch; }
+.design .design-frame { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 1.5rem 2.5rem; align-items: start; }
+.design .design-field--wide { grid-column: 1 / -1; }
+.design .design-month {
+  font: inherit; font-size: 1.05rem; min-height: 2.75rem; padding: .45rem .7rem;
+  border: 1px solid var(--hairline-l); border-radius: 3px; background: var(--paper); color: var(--ink);
+}
+.design .design-month[data-suggested="true"] { border-style: dashed; color: var(--muted); }
+.design .design-month:focus-visible, .design .design-words textarea:focus-visible,
+.design .design-stepper:focus-within { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+/* Chips. A checkbox chip carries a tick so a multi-select reads as one. */
+.design .design-picks { display: flex; flex-wrap: wrap; gap: .6rem; }
 .design .design-pick { position: relative; display: inline-flex; cursor: pointer; }
 .design .design-pick input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .design .design-pick span {
-  display: inline-block; padding: .55em 1em; border-radius: 999px;
-  border: 1px solid var(--hairline-l); font-size: .95rem; line-height: 1.3;
+  display: inline-flex; align-items: center; min-height: 2.75rem; padding: .55em 1.1em; border-radius: 999px;
+  border: 1px solid var(--hairline-l); font-size: .98rem; line-height: 1.3; color: var(--ink);
   transition: border-color .12s, background .12s;
 }
 .design .design-pick:hover span { border-color: var(--gold-deep); }
 .design .design-pick input:checked + span {
   border-color: var(--ink); background: var(--ink); color: var(--paper); font-weight: 600;
 }
+.design .design-pick--multi span::before {
+  content: ""; width: .9em; height: .9em; margin-right: .55em; border-radius: 3px; flex: none;
+  border: 1.5px solid var(--hairline-l); background: var(--paper);
+}
+.design .design-pick--multi input:checked + span::before {
+  border-color: var(--paper); background: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.5l2.5 2.5 4.5-5' fill='none' stroke='%23133239' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-size: 80%; background-position: center; background-repeat: no-repeat;
+}
 .design .design-pick input:focus-visible + span { outline: 2px solid var(--teal); outline-offset: 2px; }
-.design .design-picks--wide .design-pick span { padding: .8em 1.2em; font-size: 1.02rem; }
+.design .design-picks--wide .design-pick span { padding: .7em 1.25em; font-size: 1.02rem; }
 .design .design-picks--seg { gap: 0; }
 .design .design-picks--seg .design-pick span { border-radius: 0; margin-left: -1px; }
 .design .design-picks--seg .design-pick:first-child span { border-radius: 999px 0 0 999px; margin-left: 0; }
 .design .design-picks--seg .design-pick:last-child span { border-radius: 0 999px 999px 0; }
 
-/* Readiness: seven points on a line, in order. The line is the visual; the
-   words are the meaning. */
+/* In their words: the one prose field, with its privacy line under it. */
+.design .design-words { margin-top: 1.4rem; display: flex; flex-direction: column; gap: .45rem; max-width: 46rem; }
+.design .design-words textarea {
+  font: inherit; font-family: var(--serif); font-size: 1.05rem; line-height: 1.5; padding: .7rem .9rem;
+  border: 1px solid var(--hairline-l); border-radius: 3px; background: var(--paper); color: var(--ink); resize: vertical; min-height: 4.6rem;
+}
+.design [data-words-count]:not(:empty)::before { content: "· "; }
+
+/* Readiness: points on a line, in order. The line is the visual; the words
+   are the meaning. Column count follows the vocabulary. */
 .design .design-steps {
-  display: grid; grid-template-columns: repeat(7, 1fr); position: relative; padding-top: .4rem;
+  --steps: 7;
+  display: grid; grid-template-columns: repeat(var(--steps), 1fr); position: relative; padding-top: .4rem;
 }
 .design .design-steps::before {
-  content: ""; position: absolute; left: 7%; right: 7%; top: 1.05rem;
+  content: ""; position: absolute; left: 7%; right: 7%; top: 1.5rem;
   border-top: 2px solid var(--hairline-l);
 }
 .design .design-step {
-  position: relative; display: flex; flex-direction: column; align-items: center; gap: .5rem;
-  cursor: pointer; text-align: center;
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: .55rem;
+  cursor: pointer; text-align: center; min-height: 2.75rem; padding: .25rem 0;
 }
 .design .design-step input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .design .design-step-dot {
-  width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--paper);
-  border: 2px solid var(--hairline-l); position: relative; z-index: 1; transition: all .12s;
+  width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--paper);
+  border: 2px solid var(--hairline-l); position: relative; z-index: 1; transition: all .12s; margin-top: .3rem;
 }
 .design .design-step:hover .design-step-dot { border-color: var(--gold-deep); }
 .design .design-step input:checked ~ .design-step-dot {
   background: var(--ink); border-color: var(--ink); transform: scale(1.25);
 }
 .design .design-step input:focus-visible ~ .design-step-dot { outline: 2px solid var(--teal); outline-offset: 2px; }
-.design .design-step-word { font-size: .82rem; color: var(--muted); line-height: 1.25; }
+.design .design-step-word { font-size: .84rem; color: var(--muted); line-height: 1.25; }
 .design .design-step input:checked ~ .design-step-word { color: var(--ink); font-weight: 600; }
 
 /* Nights: a stepper around a real number input. */
 .design .design-stepper {
   display: inline-flex; align-items: stretch; border: 1px solid var(--hairline-l);
-  border-radius: 999px; overflow: hidden;
+  border-radius: 999px; overflow: hidden; min-height: 2.75rem;
 }
 .design .design-stepper button {
-  font: inherit; font-size: 1.1rem; width: 2.6rem; border: 0; background: transparent;
+  font: inherit; font-size: 1.15rem; width: 2.75rem; border: 0; background: transparent;
   cursor: pointer; color: var(--ink);
 }
 .design .design-stepper button:hover { background: var(--paper-2); }
 .design .design-stepper input {
-  font: inherit; font-size: 1.1rem; width: 3.4rem; text-align: center; border: 0;
+  font: inherit; font-size: 1.1rem; width: 3.6rem; text-align: center; border: 0;
   border-left: 1px solid var(--hairline-l); border-right: 1px solid var(--hairline-l);
-  background: transparent; -moz-appearance: textfield;
+  background: transparent; color: var(--ink); -moz-appearance: textfield;
 }
 .design .design-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.design .design-stepper input:focus-visible { outline: none; }
 
-/* The four scales: a native range with its poles named. */
-.design .design-q--scales { display: grid; gap: .9rem; }
-.design .design-scale { display: grid; grid-template-columns: 7rem 8rem 1fr 8rem; gap: 1rem; align-items: center; }
+/* The four scales: a native range with its poles named. The pole the thumb
+   leans toward is set in ink. */
+.design .design-scales { display: grid; gap: 1.1rem; max-width: 46rem; }
+.design .design-scale { display: grid; grid-template-columns: 7.5rem 8rem minmax(0, 1fr) 8rem; gap: 1rem; align-items: center; }
 .design .design-scale-name {
-  font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted);
+  font-family: var(--sans); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--ink);
 }
-.design .design-scale-lo { text-align: right; font-size: .86rem; color: var(--muted); }
-.design .design-scale-hi { font-size: .86rem; color: var(--muted); }
-.design .design-scale input[type="range"] { width: 100%; accent-color: var(--ink); }
+.design .design-scale-lo { text-align: right; font-size: .88rem; color: var(--muted); }
+.design .design-scale-hi { font-size: .88rem; color: var(--muted); }
+.design .design-scale-lo.is-on, .design .design-scale-hi.is-on { color: var(--ink); font-weight: 600; }
+.design .design-scale input[type="range"] { width: 100%; min-height: 2.75rem; accent-color: var(--ink); cursor: pointer; }
+.design .design-scale input[type="range"]:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; border-radius: 999px; }
+
+/* The budget: a dollar figure, and the band it reads as beside it. */
+.design .design-budget { display: flex; flex-direction: column; gap: .5rem; }
+.design .design-budget-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; }
+.design .design-money { display: inline-flex; align-items: center; border: 1px solid var(--hairline-l); border-radius: 3px; background: var(--paper); min-height: 2.75rem; }
+.design .design-money-sign { padding: 0 .2rem 0 .8rem; color: var(--muted); font-size: 1.1rem; }
+.design .design-money input {
+  font: inherit; font-size: 1.2rem; width: 9rem; padding: .4rem .8rem .4rem .3rem; border: 0; background: transparent; color: var(--ink);
+  -moz-appearance: textfield;
+}
+.design .design-money input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.design .design-money input:focus-visible { outline: none; }
+.design .design-money:focus-within { outline: 2px solid var(--teal); outline-offset: 2px; }
+.design .design-budget-word { font-family: var(--serif); font-size: 1.02rem; color: var(--muted); }
+.design .design-budget-word b { color: var(--ink); }
+.design .design-pick--open { margin-top: .6rem; align-self: flex-start; }
+
+/* What I heard: the read-back, large, in the display serif. */
+.design .design-heard {
+  border-top: 1px solid var(--hairline-l); padding: 2.25rem 0 1.5rem; max-width: 62ch;
+}
+.design .design-heard-h {
+  font-family: var(--sans); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); margin: 0 0 .9em;
+}
+.design .design-heard-p { font-family: var(--serif-display); font-size: 1.5rem; line-height: 1.4; color: var(--ink); margin: 0 0 .6em; }
+.design .design-heard-words { font-family: var(--serif); font-style: italic; font-size: 1.1rem; line-height: 1.5; color: var(--ink); margin: 0; }
+.design .design-heard-who { color: var(--muted); font-style: normal; font-size: .9rem; }
+.design .design-consult-actions { padding-top: .5rem; }
+
+/* ── Understand · the reflection and the island ──────────────────────────── */
+.design .design-reflect-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(30rem, 46rem); gap: 2rem 3.5rem; align-items: start; }
+.design .design-reflect-copy > h2 { margin-bottom: 1em; }
+.design .design-reflect-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; max-width: 46ch; }
+.design .design-reflect-lines li { font-family: var(--serif); font-size: 1.12rem; line-height: 1.45; color: var(--muted); }
+.design .design-reflect-lines li b { color: var(--ink); font-weight: 600; }
+.design .design-reflect-maphead {
+  font-family: var(--sans); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--muted); margin: 0 0 .9em;
+}
+
+.design .island { display: grid; grid-template-columns: minmax(0, 1fr) minmax(13rem, 16rem); gap: 1.25rem; align-items: start; }
+.design .island-figure { min-width: 0; }
+.design .island-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.design .island-land { fill: var(--paper-2); stroke: var(--hairline-l); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+/* SVG user units: the drawing is 600 wide and renders at roughly 440px, so
+   16 units ≈ 12px and 21 units ≈ 15px. */
+.design .island-town { font-family: var(--sans); font-size: 16px; letter-spacing: .06em; text-transform: uppercase; fill: var(--muted); }
+.design .island-pin { cursor: pointer; text-decoration: none; }
+.design .island-hit { fill: transparent; stroke: none; }
+.design .island-dot { fill: var(--v, var(--teal)); stroke: var(--paper); stroke-width: 2; transition: fill-opacity .2s; }
+.design .island-pin:not(.is-lead) .island-dot { fill-opacity: .55; }
+.design .island-name { font-family: var(--serif); font-size: 21px; fill: var(--ink); paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round; }
+.design .island-leader { fill: none; stroke: var(--muted); stroke-width: 1; stroke-opacity: .7; }
+.design .island.is-probed .island-pin:not(.is-active) .island-dot { fill-opacity: .35; }
+.design .island.is-probed .island-pin:not(.is-active) .island-name { fill: var(--muted); }
+.design .island-pin.is-active .island-dot, .design .island-pin:focus-visible .island-dot { fill-opacity: 1; stroke: var(--v-ink, var(--ink)); stroke-width: 3; }
+.design .island-pin:focus-visible { outline: none; }
+.design .island-pin:focus-visible .island-hit { fill: var(--v, var(--teal)); fill-opacity: .12; }
+.design .island-caption { margin: .4rem 0 0; display: flex; justify-content: space-between; gap: 1rem; font-size: .72rem; color: var(--muted); }
+.design .island-caption .coords { margin: 0; font-size: .72rem; letter-spacing: .12em; color: var(--muted); }
+.design .island-side { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.design .island-readout { min-height: 16rem; }
+.design .island-card { border-top: 2px solid var(--v, var(--teal)); padding-top: .7rem; }
+.design .island-card-media picture, .design .island-card-media img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 3px; }
+.design .island-card-copy { display: grid; gap: .3rem; margin-top: .7rem; }
+.design .island-card-village { font-family: var(--sans); font-size: .66rem; letter-spacing: .18em; text-transform: uppercase; color: var(--v-ink, var(--muted)); margin: 0; }
+.design .island-card-name { font-family: var(--serif-display); font-size: 1.15rem; line-height: 1.2; margin: 0; }
+.design .island-card-name a { color: var(--ink); text-decoration: none; }
+.design .island-card-name a:hover, .design .island-card-name a:focus-visible { text-decoration: underline; }
+.design .island-card-town { font-size: .82rem; color: var(--muted); margin: 0; }
+.design .island-approx { color: var(--mist); }
+.design .island-card-hook { font-family: var(--serif); font-size: .92rem; line-height: 1.45; color: var(--muted); margin: .2rem 0 0; }
+.design .island-legend { margin: 0; padding: 0; list-style: none; }
+@media (prefers-reduced-motion: reduce) { .design .island-dot { transition: none; } }
 
 /* ── Compare · the brochure cards ─────────────────────────────────────────
    Photograph first. Village accent arrives as --v / --v-ink on the card so the
    whole card can borrow it without a class per village. The reasoning is in a
-   details block the advisor opens; Present mode removes it. */
+   details block the advisor opens. */
 .design .design-props { list-style: none; margin: 0; padding: 0; display: grid; gap: 2rem; }
 .design .design-prop {
   display: grid; grid-template-columns: minmax(0, 44%) 1fr;
@@ -2468,7 +2573,14 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 
 @media (max-width: 52rem) {
   .design .design-rail { grid-template-columns: repeat(2, 1fr); }
-  .design .design-q--row { grid-template-columns: 1fr; gap: 1.2rem; }
+  .design .design-reflect-grid { grid-template-columns: 1fr; }
+  .design .design-reflect-map { order: -1; }
+  .design .island { grid-template-columns: 1fr; }
+  .design .island-readout { min-height: 0; }
+  .design .design-frame { grid-template-columns: 1fr; gap: 1.25rem; }
+  .design .design-ask { padding: 1.75rem 0 2rem; }
+  .design .design-ask:focus-within::before { display: none; }
+  .design .design-ask-h { font-size: 1.25rem; }
   .design .design-steps { grid-template-columns: repeat(4, 1fr); row-gap: 1rem; }
   .design .design-steps::before { display: none; }
   .design .design-scale { grid-template-columns: 1fr; gap: .3rem; }
@@ -2618,10 +2730,6 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 
 .design .design-month { font: inherit; font-size: .95rem; padding: .45rem .6rem; border: 1px solid var(--hairline-l); border-radius: 3px; background: var(--paper); }
 
-.is-present .design .design-arcwrap { grid-template-columns: 1fr; }
-.is-present .design .design-arc-day { grid-template-rows: 12rem auto auto auto; }
-.is-present .design .design-arc-word { font-size: .8rem; }
-.is-present .design .design-arc-prop { font-size: 1rem; }
 
 @media (max-width: 60rem) {
   .design .design-arcwrap { grid-template-columns: 1fr; }
@@ -2647,7 +2755,7 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
    ASK WELL — SEND · the estimate, the preview
    --------------------------------------------------------------------------
    A table, because it is arithmetic and the client is meant to read it across
-   a table. Figures are inputs the advisor types into; in Present mode they
+   a table. Figures are inputs the advisor types into, in the open; they
    become plain text (border and background gone, no pointer), so the client
    sees a range and not a form. Every row says what its figure is: public
    rate, published, yours, to confirm — words, then colour.
@@ -2686,9 +2794,6 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 .design .design-issue-fields--one { grid-template-columns: 1fr; }
 .design .design-issue-fields--one .hub-field--wide { grid-column: 1; }
 
-/* Present mode: figures as text */
-.is-present .design .design-est-figs input { border-color: transparent; background: transparent; pointer-events: none; padding-left: 0; padding-right: 0; width: 5.2rem; }
-.is-present .design .design-est thead { display: none; }
 
 /* The preview — the client document inside the workspace, framed */
 .design .design-preview-frame { border: 1px solid var(--hairline-l); border-radius: 4px; padding: 0 1.5rem; margin-top: 1rem; background: var(--paper); max-height: 70vh; overflow: auto; }

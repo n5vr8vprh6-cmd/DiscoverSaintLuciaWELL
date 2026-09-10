@@ -66,6 +66,10 @@ const { rung } = require('../gtm.js');
    way. The same picture helper the consumer directory uses, so a srcset fix
    lands on both surfaces. */
 const { mediaPicture, mediaGallery } = require('../../../lib/components.js');
+/* The Understand stage lives in its own file: the reflection, the island, the
+   seven-question conversation and the read-back. Pure — everything it needs
+   arrives in v — so hub-preview.js renders it exactly as the Hub does. */
+const U = require('./design-understand.js');
 
 /* ── The four stages ──────────────────────────────────────────────────────
    One screen, ?step=, one stage visible at a time. The pattern is
@@ -210,6 +214,9 @@ module.exports = async function handler(req, res) {
   const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
                             topVillage, caps, bank, frameworks, issued, ranked, session, step,
                             chosenSlugs, chosenProps, recipe, plan, estimate, previewDoc, travelFrom,
+                            /* The month the Journey's window points at — a suggestion the
+                               screen marks as such until the advisor touches it. */
+                            suggestedMonth: N.travelFromWindow(raw.travel_window),
                             brand: IT.brandOf(advisor),
                             clientEmail: raw.consumer_email ? maskEmail(raw.consumer_email) : null,
                             done: str(url.searchParams.get('done'), 20) });
@@ -509,8 +516,8 @@ async function actionDecline(res, form, v) {
    CHECK is only as clean as the code writing to it. */
 async function actionConsult(res, form, v) {
   const { advisor, id, need, seeded, caps, json } = v;
-  const back = (done) => {
-    if (json) return jsonOut(res, done === 'saved', { done });
+  const back = (done, more) => {
+    if (json) return jsonOut(res, done === 'saved', Object.assign({ done }, more || {}));
     res.statusCode = 303;
     res.setHeader('Location', backTo(id, done) + '&step=understand#consult');
     return res.end();
@@ -524,30 +531,58 @@ async function actionConsult(res, form, v) {
     if (val === '') return null;
     return allowed(dim)[val] ? val : need[dim];
   };
+  /* A list of codes from a checkbox group. An absent group is an EMPTY list,
+     not "unchanged": with JavaScript off a form posts nothing for a group with
+     no box ticked, and nothing ticked is exactly what the advisor said. */
+  const list = (field, dim, max) => {
+    const raw = form[field] == null ? [] : (Array.isArray(form[field]) ? form[field] : [form[field]]);
+    const ok = allowed(dim);
+    return raw.map((c) => str(c, 40)).filter((c) => ok[c]).filter((c, i, a) => a.indexOf(c) === i).slice(0, max);
+  };
+  const nights = form.nights === '' || form.nights == null ? null
+    : Math.min(Math.max(parseInt(form.nights, 10) || 0, 1), 21) || null;
+
   const edited = Object.assign({}, need, {
-    trigger: pick('trigger'), uncertainty: pick('uncertainty'), readiness: pick('readiness'),
-    budget: pick('budget'), party: pick('party'),
-    nights: form.nights === '' || form.nights == null ? null : Math.min(Math.max(parseInt(form.nights, 10) || 0, 1), 21) || null
+    readiness: pick('readiness'), party: pick('party'), nights,
+    constraints: list('constraints', 'constraints', 9),
+    /* 024: lists. Before it, the single radio — as a one-item list, so the
+       need-state has one shape whichever migration the deployment is on. */
+    triggers: caps.conversation ? list('triggers', 'trigger', 7) : (pick('trigger') ? [pick('trigger')] : []),
+    uncertainties: caps.conversation ? list('uncertainties', 'uncertainty', 10) : (pick('uncertainty') ? [pick('uncertainty')] : [])
   });
-  const okC = allowed('constraints');
-  const rawC = form.constraints == null ? [] : (Array.isArray(form.constraints) ? form.constraints : [form.constraints]);
-  edited.constraints = rawC.map((c) => str(c, 40)).filter((c) => okC[c]).slice(0, 9);
+
+  /* The budget: a figure, and a band DERIVED from it (need-state.js bandFor).
+     "Open, if it is right" is the advisor's tick. Before 024, the band radio. */
+  if (caps.conversation) {
+    const digits = String(form.budget_usd == null ? '' : form.budget_usd).replace(/[^\d]/g, '');
+    edited.budgetUsd = digits === '' ? null : Math.min(parseInt(digits, 10), 9999999);
+    const open = form.budget_open === '1' || form.budget_open === 'on' || form.budget_open === true;
+    edited.budget = N.bandFor(edited.budgetUsd, edited.nights, open);
+  } else {
+    edited.budget = pick('budget');
+  }
+
   ['rhythm', 'activity', 'social', 'experience'].forEach((k) => {
     if (form[k] == null || form[k] === '') return;
     const n = Number(form[k]);
     if (Number.isFinite(n)) edited[k] = Math.min(Math.max(Math.round(n * 100) / 100, 0), 1);
   });
 
-  const problems = N.validate(edited);
+  /* validate() is async. Un-awaited, `problems` was a Promise whose .length is
+     undefined, and this guard never fired once. */
+  const problems = await N.validate(edited);
   if (problems.length) { console.warn('consult refused', problems); return back('bad_consult'); }
 
-  /* 023: the month they travel, as the first of that month. Written only
-     when the column has been probed present; a form field the database
-     cannot hold is dropped, not fatal. */
+  /* Outside the need-state, written only when the columns have been probed:
+     023's month, and 024's one prose field. */
   const extra = {};
   if (caps.travel_from) {
     const m = str(form.travel_from, 10);
     extra.travel_from = /^\d{4}-\d{2}$/.test(m) ? m + '-01' : (/^\d{4}-\d{2}-\d{2}$/.test(m) ? m : null);
+  }
+  if (caps.conversation) {
+    extra.conversation = true;
+    extra.in_their_words = str(form.in_their_words, U.WORDS_MAX) || null;
   }
   const saved = await D.saveConsultation(id, advisor.id, edited, {
     state: seeded, overrode: N.overridden(seeded, edited)
@@ -556,7 +591,17 @@ async function actionConsult(res, form, v) {
 
   const session = await D.currentSession(id, advisor.id);
   await setStage(session, advisor, 'understand');
-  return back('saved');
+
+  /* The read-back, re-rendered by the server for the browser to swap in — the
+     same function that drew it on the page. */
+  const words = extra.conversation ? (extra.in_their_words || '') : ((v.stored && v.stored.in_their_words) || '');
+  const travelFrom = extra.travel_from !== undefined ? extra.travel_from : ((v.stored && v.stored.travel_from) || null);
+  const heardHtml = U.heard({ need: edited, vocab, words, travelFrom });
+  return back('saved', {
+    fragment: heardHtml,
+    fragments: { consult: heardHtml, 'budget-word': U.budgetWord(edited) },
+    answered: U.answeredCount(edited, travelFrom, words)
+  });
 }
 
 /* ── One day of the shape ─────────────────────────────────────────────────
@@ -938,17 +983,13 @@ function buildBody(v) {
       <p class="eyebrow"><a href="/hub/journeys/${esc(id)}">${esc(name)}</a></p>
       ${rail(id, step)}
       <h1>${esc(STAGE_HEAD[step])}</h1>
-      <div class="design-actions">
-        <button type="button" class="btn" data-present>Present mode</button>
-        <span class="design-hint" data-hide-in-present>Hides your working notes. Press P.</span>
-      </div>
     </header>
 
     ${STAGE_RENDER[step](v)}
 
     ${stageNav(id, step)}
 
-    <footer class="design-foot" data-hide-in-present>
+    <footer class="design-foot">
       <p>Property intelligence verified ${esc(bank.verified.core || '—')}
          (wider scan ${esc(bank.verified.expanded || '—')}).
          Availability, inclusions and pricing are confirmed with the property before sale.</p>
@@ -977,7 +1018,7 @@ function stageNav(id, step) {
   const i = STAGES.indexOf(step);
   const prev = i > 0 ? STAGES[i - 1] : null;
   const next = i < STAGES.length - 1 ? STAGES[i + 1] : null;
-  return `<nav class="design-stagenav" data-hide-in-present>
+  return `<nav class="design-stagenav">
     ${prev ? `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}/design?step=${prev}">← ${esc(STAGE_LABEL[prev])}</a>` : '<span></span>'}
     ${next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}">${esc(STAGE_LABEL[next])} →</a>` : ''}
   </nav>`;
@@ -988,7 +1029,7 @@ function stageNav(id, step) {
    included, the village in its own colour — the page a client would want to
    be turned. The four bands and the mismatch sentences are still here and
    still the honesty mechanism, but behind a disclosure the advisor opens and
-   Present mode closes: they stop being the first thing on the screen.
+   a disclosure closes: they stop being the first thing on the screen.
 
    CHOOSING WRITES THE LEDGER. design_candidates was built by 022 as the only
    table that will ever say whether the mapping is wrong, and nothing wrote it
@@ -1010,13 +1051,13 @@ function compareStage(v) {
     <input type="hidden" name="action" value="decline"><input type="hidden" name="slug" value="${esc(c.slug)}"></form>`).join('');
 
   return `<section class="design-block design-compare">
-  ${tied ? `<p class="design-note" data-hide-in-present>These ${shortlist.length} tie on every axis
+  ${tied ? `<p class="design-note">These ${shortlist.length} tie on every axis
     on what has been said so far. That is the moment to ask another question rather than pick one.</p>` : ''}
   ${shortlist.length ? `
   <form method="POST" action="/hub/journeys/${esc(id)}/design?step=compare" class="design-choose">
     <input type="hidden" name="action" value="choose">
     <ol class="design-props">${cards}</ol>
-    <div class="design-actions design-choose-actions" data-hide-in-present>
+    <div class="design-actions design-choose-actions">
       <button class="btn btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Carry these into the shape</button>
       <span class="design-hint">Up to three. ${chosen.length ? chosen.length + ' carried so far.' : ''}
         ${caps.consultation ? '' : esc(D.UNAVAILABLE.consultation)}</span>
@@ -1074,7 +1115,7 @@ function propertyCard(id, c, need, chosen, fw) {
     </div>
     ${c.verified_at ? `<p class="design-verified">Last verified ${esc(c.verified_at)}</p>` : ''}
 
-    <details class="design-why" data-hide-in-present>
+    <details class="design-why">
       <summary>Why this fits · what to watch</summary>
       <div class="design-bands">${AXIS.map(([k, label]) => `<div class="band band-${esc(c.bands[k])}">
         <span class="band-axis">${label}</span><span class="band-word">${esc(BAND_WORD[c.bands[k]] || c.bands[k])}</span></div>`).join('')}</div>
@@ -1084,7 +1125,7 @@ function propertyCard(id, c, need, chosen, fw) {
         <p>${esc(price)}</p><p class="design-hint">Planning guidance only. Never quote from this — every figure is reconfirmed before it is quoted to a client.</p></div>` : ''}
     </details>
 
-    <div class="design-prop-actions" data-hide-in-present>
+    <div class="design-prop-actions">
       <label class="design-carry"><input type="checkbox" name="carry" value="${esc(c.slug)}"${carried ? ' checked' : ''}>
         <span>${carried ? 'Carried into the shape' : 'Carry into the shape'}</span></label>
       <span class="design-aside">
@@ -1115,7 +1156,7 @@ function villageName(key) {
    THE CUES ARE FOR THE ADVISOR. The recipe's ask, its pacing rule with the
    plan checked against it, the continuum's own sentence about this depth,
    and each property's bestFor — prompts to their experience, hidden in
-   Present mode. The client sees the arc; the advisor tells the story. */
+   the open. The client sees the arc; the advisor tells the story. */
 function shapeStage(v) {
   const { id, ranked, session, caps, shortlist, need, frameworks, chosenProps, recipe, plan } = v;
   const recipeKey = session && session.recipe_key;
@@ -1144,7 +1185,7 @@ function arcBlock(id, plan, props, need, recipe, fw, caps) {
   <h2>${esc(String(plan.days.length))} nights, day by day</h2>
   <div class="design-arcwrap">
     <div data-fragment-slot="arc">${arc(plan, props, need, recipe)}</div>
-    <aside class="design-cues" data-hide-in-present>
+    <aside class="design-cues">
       ${recipe && recipe.ask ? `<p class="design-cue-ask">${esc(recipe.ask)}</p>` : ''}
       ${recipe && recipe.pacing ? `<p class="design-cue-rule"><b>The rule</b> ${esc(recipe.pacing)}</p>` : ''}
       ${rung && rung.plan ? `<p class="design-cue-depth"><b>${esc(rung.name)} in a day</b> ${esc(rung.plan)}</p>` : ''}
@@ -1154,7 +1195,7 @@ function arcBlock(id, plan, props, need, recipe, fw, caps) {
     </aside>
   </div>
 
-  <div class="design-days" data-hide-in-present>
+  <div class="design-days">
     ${plan.days.map((d) => dayEditor(id, d, props, chosen, caps)).join('')}
   </div>
 </section>`;
@@ -1226,7 +1267,7 @@ function dayEditor(id, d, props, chosen, caps) {
    Review the week, put figures beside it, read the document as it will
    issue, then issue. The estimate is arithmetic over a dated lookup plus
    the advisor's own hand — never a model's — and the client sees it as a
-   range labelled not a quote. Present mode keeps the review and the
+   range labelled not a quote. The client may see the review and the
    estimate (the client is meant to see both) and hides the edit affordances,
    the provenance and the issue apparatus. */
 function sendStage(v) {
@@ -1253,11 +1294,11 @@ function estimateBlock(id, est, caps, travelFrom) {
   if (!est) return '';
   const lines = est.lines.concat(est.custom || []);
   const cell = (l) => `<tr class="design-est-row kind-${esc(l.kind)}${l.edited ? ' is-edited' : ''}${l.confidence === E.QUOTE ? ' is-quote' : ''}">
-      <th scope="row"><span class="design-est-label">${esc(l.label)}</span>${l.unit ? `<span class="design-est-unit">${esc(l.unit)}</span>` : ''}${l.why ? `<span class="design-est-why" data-hide-in-present>${esc(l.why)}</span>` : ''}</th>
+      <th scope="row"><span class="design-est-label">${esc(l.label)}</span>${l.unit ? `<span class="design-est-unit">${esc(l.unit)}</span>` : ''}${l.why ? `<span class="design-est-why">${esc(l.why)}</span>` : ''}</th>
       <td class="design-est-figs"><label><span class="design-sr">from</span><input type="text" inputmode="numeric" name="from:${esc(l.key)}" value="${l.from == null ? '' : esc(String(l.from))}" placeholder="—"${l.kind === 'custom' ? ' readonly' : ''}></label>
         <span class="design-est-dash">–</span>
         <label><span class="design-sr">to</span><input type="text" inputmode="numeric" name="to:${esc(l.key)}" value="${l.to == null ? '' : esc(String(l.to))}" placeholder="—"${l.kind === 'custom' ? ' readonly' : ''}></label></td>
-      <td class="design-est-conf"><span class="design-est-word">${esc(CONF_WORD[l.confidence] || l.confidence)}</span>${l.observed ? `<span data-hide-in-present>seen ${esc(l.observed)}</span>` : ''}${l.source ? `<a data-hide-in-present href="${esc(l.source)}" target="_blank" rel="noopener">source</a>` : ''}</td>
+      <td class="design-est-conf"><span class="design-est-word">${esc(CONF_WORD[l.confidence] || l.confidence)}</span>${l.observed ? `<span>seen ${esc(l.observed)}</span>` : ''}${l.source ? `<a href="${esc(l.source)}" target="_blank" rel="noopener">source</a>` : ''}</td>
     </tr>`;
   return `<section class="design-block design-estimate" id="estimate">
   <h2>What it might cost</h2>
@@ -1265,18 +1306,18 @@ function estimateBlock(id, est, caps, travelFrom) {
   <form method="POST" action="/hub/journeys/${esc(id)}/design?step=send" class="design-est-form" data-live data-fragment="est-total">
     <input type="hidden" name="action" value="estimate">
     <table class="design-est">
-      <thead data-hide-in-present><tr><th scope="col">Line</th><th scope="col">From – to (USD)</th><th scope="col">Basis</th></tr></thead>
+      <thead><tr><th scope="col">Line</th><th scope="col">From – to (USD)</th><th scope="col">Basis</th></tr></thead>
       <tbody>${lines.map(cell).join('')}</tbody>
       <tfoot><tr><th scope="row">Estimated total</th><td colspan="2" data-fragment-slot="est-total">${estimateTotal(est)}</td></tr></tfoot>
     </table>
-    <details class="design-est-add" data-hide-in-present>
+    <details class="design-est-add">
       <summary>Add a line</summary>
       ${[0, 1, 2].map((n) => `<div class="design-est-addrow"><input type="text" name="custom_label" placeholder="What it is" maxlength="80" value="${esc(((est.custom || [])[n] || {}).label || '')}">
         <input type="text" inputmode="numeric" name="custom_from" placeholder="from" value="${((est.custom || [])[n] || {}).from == null ? '' : esc(String(est.custom[n].from))}">
         <input type="text" inputmode="numeric" name="custom_to" placeholder="to" value="${((est.custom || [])[n] || {}).to == null ? '' : esc(String(est.custom[n].to))}"></div>`).join('')}
       <p class="design-hint">Clear a line’s figures to go back to the public rate. Anything you type is marked as yours.</p>
     </details>
-    <div class="design-actions" data-hide-in-present>
+    <div class="design-actions">
       <button class="btn btn--sm" type="submit"${caps.estimate ? '' : ' disabled'}>Save figures</button>
       <span class="design-hint" data-live-status role="status">${caps.estimate ? '' : 'Estimates need migration 023.'}</span>
     </div>
@@ -1293,7 +1334,7 @@ function estimateTotal(est) {
 /* The document as it would issue, through the one renderer. */
 function previewBlock(doc, brand) {
   if (!doc) return '';
-  return `<section class="design-block design-preview" data-hide-in-present>
+  return `<section class="design-block design-preview">
   <details class="design-why"><summary>Preview the document as it will issue</summary>
     <div class="design-preview-frame">${renderDocument(doc, brand, { preview: true })}</div>
   </details>
@@ -1301,83 +1342,11 @@ function previewBlock(doc, brand) {
 }
 
 /* ── Stage 1 · Understand ─────────────────────────────────────────────────
-   What the Finder recorded, redesigned to be read across a table — and the
-   five things six answers cannot know, as controls the advisor taps while
-   asking. This is the consultation editor, and so the first writer of
+   design-understand.js. What the Finder recorded, read back beside the island,
+   then seven questions as a conversation and one paragraph that says what was
+   heard. It is the consultation editor, and so the first writer of
    seeded_from and advisor_overrode with real content. */
-function understandStage(v) {
-  const { id, need, seeded, stored, vocab, caps } = v;
-  return readTheTraveller(need, seeded, stored, vocab) + consultEditor(id, need, vocab, caps, stored);
-}
-
-/* The editor. Every control is a native input inside one form, so it works
-   with JavaScript off; hub-design.js makes it save on change. Options come
-   from the vocabulary — nothing here is a free-text field, because the
-   consultation table has no free-text column and the prompt boundary depends
-   on that. */
-function consultEditor(id, need, vocab, caps, stored) {
-  const opts = (dim) => vocab[dim] || [];
-  const on = (dim, key) => (need[dim] === key ? ' checked' : '');
-  const has = (arr, key) => ((arr || []).indexOf(key) !== -1 ? ' checked' : '');
-
-  const picks = (dim, name, cls) => `<div class="design-picks ${cls || ''}">${opts(dim).map((o) => `
-    <label class="design-pick"><input type="radio" name="${name}" value="${esc(o.key)}"${on(dim, o.key)}>
-      <span>${esc(o.label)}</span></label>`).join('')}</div>`;
-
-  /* Readiness is ordinal — dreaming → returning — so it is drawn as points on
-     a line rather than as a pile of chips. Still seven radios underneath. */
-  const steps = `<div class="design-steps">${opts('readiness').map((o, i) => `
-    <label class="design-step"><input type="radio" name="readiness" value="${esc(o.key)}"${on('readiness', o.key)}>
-      <span class="design-step-dot" aria-hidden="true"></span><span class="design-step-word">${esc(o.label)}</span></label>`).join('')}</div>`;
-
-  const scale = (k) => {
-    const s = opts('scales').filter((x) => x.key === k)[0];
-    if (!s) return '';
-    const val = need[k] == null ? 0.5 : Number(need[k]);
-    return `<label class="design-scale"><span class="design-scale-name">${esc(k)}</span>
-      <span class="design-scale-lo">${esc(s.low)}</span>
-      <input type="range" name="${esc(k)}" min="0" max="1" step="0.05" value="${val}">
-      <span class="design-scale-hi">${esc(s.high)}</span></label>`;
-  };
-
-  return `<section class="design-block design-consult">
-  <h2>What six answers cannot know</h2>
-  <p class="design-note" data-hide-in-present>Ask, and mark it as you go. Each one sharpens the shortlist
-    and the shape; none of them is guessed.</p>
-
-  <form method="POST" action="/hub/journeys/${esc(id)}/design?step=understand" class="design-consult-form" data-live data-fragment="consult">
-    <input type="hidden" name="action" value="consult">
-
-    <fieldset class="design-q"><legend>Why now</legend>${picks('trigger', 'trigger', 'design-picks--wide')}</fieldset>
-    <fieldset class="design-q"><legend>What could stop them</legend>${picks('uncertainty', 'uncertainty')}</fieldset>
-    <fieldset class="design-q"><legend>How ready</legend>${steps}</fieldset>
-    <fieldset class="design-q design-q--row">
-      <div><legend>Budget band</legend>${picks('budget', 'budget', 'design-picks--seg')}</div>
-      <div><legend>Nights</legend>
-        <div class="design-stepper"><button type="button" data-step="-1" aria-label="Fewer nights">−</button>
-          <input type="number" name="nights" min="1" max="21" value="${need.nights == null ? '' : esc(String(need.nights))}" placeholder="7">
-          <button type="button" data-step="1" aria-label="More nights">+</button></div></div>
-    </fieldset>
-    <fieldset class="design-q design-q--row">
-      <div><legend>Travelling as</legend>${picks('party', 'party', 'design-picks--seg')}</div>
-      <div><legend>When</legend>
-        ${caps.travel_from
-          ? `<input class="design-month" type="month" name="travel_from" value="${esc(String((stored && stored.travel_from) || '').slice(0, 7))}" aria-label="Month of travel">`
-          : '<span class="design-hint">Dates need migration 023.</span>'}</div>
-    </fieldset>
-    <fieldset class="design-q"><legend>Worth knowing</legend><div class="design-picks">${opts('constraints').map((o) => `
-      <label class="design-pick"><input type="checkbox" name="constraints" value="${esc(o.key)}"${has(need.constraints, o.key)}>
-        <span>${esc(o.label)}</span></label>`).join('')}</div></fieldset>
-    <fieldset class="design-q design-q--scales"><legend>How they like a trip to feel</legend>
-      ${['rhythm', 'activity', 'social', 'experience'].map(scale).join('')}</fieldset>
-
-    <div class="design-actions">
-      <button class="btn btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Save what we know</button>
-      <span class="design-hint" data-live-status role="status">${caps.consultation ? '' : esc(D.UNAVAILABLE.consultation)}</span>
-    </div>
-  </form>
-</section>`;
-}
+function understandStage(v) { return U.understandStage(v); }
 
 /* ── Banner ───────────────────────────────────────────────────────────────
    Said once, at the top, in words that name the fix. A page that silently drops
@@ -1391,58 +1360,6 @@ function banner(caps, bank) {
   return `<div class="design-banner" role="status">${lines.map((l) => `<p>${esc(l)}</p>`).join('')}</div>`;
 }
 
-/* ── What they said, and what we heard ───────────────────────────────────── */
-function readTheTraveller(need, seeded, stored, vocab) {
-  const label = (dim, key) => {
-    const hit = (vocab[dim] || []).filter((o) => o.key === key)[0];
-    return hit ? hit.label : key;
-  };
-  const weighted = (dim, bag) => {
-    const keys = Object.keys(bag || {}).sort((a, b) => bag[b] - bag[a]);
-    if (!keys.length) return '<span class="design-empty">not yet</span>';
-    /* Sorted by weight, but six identically-styled chips read as "everywhere",
-       which is the one thing this row must never say. Whatever ties for the top
-       weight leads and the rest recede — order and type weight carry it, so it
-       still reads with colour stripped. */
-    const top = bag[keys[0]];
-    const accent = (k) => (dim === 'villages'
-      ? ` style="--v: var(--v-${esc(k)}); --v-ink: var(--v-${esc(k)}-ink)"` : '');
-    return keys.map((k) => `<span class="chip${bag[k] === top ? ' chip--lead' : ''}${
-      dim === 'villages' ? ' chip--v' : ''}"${accent(k)}>${esc(label(dim, k))}</span>`).join('');
-  };
-
-
-
-  const overrode = stored && stored.advisor_overrode && stored.advisor_overrode.length
-    ? stored.advisor_overrode : null;
-
-  return `<section class="design-block">
-  <h2>What they are moving between</h2>
-  <div class="design-states">
-    <div><h3>Away from</h3><div class="chips">${weighted('current', need.current)}</div></div>
-    <div class="design-arrow" aria-hidden="true">→</div>
-    <div><h3>Toward</h3><div class="chips">${weighted('desired', need.desired)}</div></div>
-  </div>
-
-  <dl class="design-facts">
-    <dt>Places</dt><dd class="chips">${weighted('villages', need.villages)}</dd>
-    <dt>Directions</dt><dd class="chips">${weighted('compass', need.compass)}</dd>
-    <dt>Depth discussed</dt><dd>${
-      need.continuumFloor
-        ? esc(label('continuum', need.continuumFloor)) + ' to ' + esc(label('continuum', need.continuumCeiling))
-        : '<span class="design-empty">not yet</span>'}</dd>
-    <dt>Travelling as</dt><dd>${need.party ? esc(label('party', need.party)) : '<span class="design-empty">not yet</span>'}</dd>
-    <dt>Relationship to wellness</dt><dd>${
-      need.orientation ? esc(label('orientation', need.orientation)) : '<span class="design-empty">not yet</span>'}</dd>
-  </dl>
-
-
-
-  ${overrode ? `<p class="design-note" data-hide-in-present>
-    You changed ${overrode.length} field${overrode.length === 1 ? '' : 's'} from what the Finder proposed:
-    ${esc(overrode.join(', '))}.</p>` : ''}
-</section>`;
-}
 
 /* ── One candidate ────────────────────────────────────────────────────────
    Bands as words with their matched terms underneath. There is no number here
@@ -1474,13 +1391,13 @@ function candidate(c) {
 
   ${matched.length ? `<p class="design-why"><b>Answers</b> ${esc(matched.join(' · '))}</p>` : ''}
 
-  <div class="design-mismatch" data-hide-in-present>
+  <div class="design-mismatch">
     <h4>What is wrong with it</h4>
     <ul>${worst.map((m) => `<li class="sev-${esc(m.severity)}">${esc(m.sentence)}${
       m.evidence ? `<span class="design-ev">${esc(m.evidence)}</span>` : ''}</li>`).join('')}</ul>
   </div>
 
-  <p class="design-verified" data-hide-in-present>Last verified ${esc(c.verified_at || '—')}</p>
+  <p class="design-verified">Last verified ${esc(c.verified_at || '—')}</p>
 </li>`;
 }
 
@@ -1511,7 +1428,7 @@ function narrative(id, shortlist, caps, chosen) {
   return `<section class="design-block" data-narrative data-share="${esc(id)}" data-slugs="${esc(slugs)}"
     data-recipe="${esc(chosen || '')}">
   <h2>A paragraph to read aloud</h2>
-  <p class="design-note" data-hide-in-present>Written from the codes
+  <p class="design-note">Written from the codes
     above and the places you have shortlisted — never from anything ${esc("they")} typed. Yours to
     change; it is a draft, not an answer.</p>
 
@@ -1519,13 +1436,13 @@ function narrative(id, shortlist, caps, chosen) {
     <textarea class="design-narr-body" rows="7" data-narr-text
       placeholder="Write it yourself, or ask for a draft to react to."></textarea>
     <div class="design-narr-flags" data-narr-flags hidden></div>
-    <div class="design-actions" data-hide-in-present>
+    <div class="design-actions">
       <button type="button" class="btn btn--ghost btn--sm" data-narr-go>Draft a paragraph</button>
       <span class="design-hint" data-narr-status role="status"></span>
     </div>
   </div>
 
-  ${caps.consultation ? '' : `<p class="design-hint" data-hide-in-present>This will not be saved
+  ${caps.consultation ? '' : `<p class="design-hint">This will not be saved
     yet — migration 022 is not on this deployment.</p>`}
 </section>`;
 }
@@ -1544,11 +1461,11 @@ function narrative(id, shortlist, caps, chosen) {
    — the document freezes and the link is live — so it should not be reachable
    before the advisor has scrolled past the thing they are freezing.
 
-   HIDDEN IN PRESENT MODE. The client is watching this screen; "Issue" and a
+   IN THE OPEN. The client is watching this screen; "Issue" and a
    raw share link are the advisor's apparatus, not part of the conversation. */
 function issue(id, shortlist, caps, chosen, clientEmail) {
   const slugs = shortlist.slice(0, 3).map((c) => c.slug).join(',');
-  return `<section class="design-block design-issue" data-hide-in-present
+  return `<section class="design-block design-issue"
     data-issue data-share="${esc(id)}" data-slugs="${esc(slugs)}"
     data-recipe="${esc(chosen || '')}">
   <h2>Send it</h2>
@@ -1635,7 +1552,7 @@ const DONE = {
    "Number the days" is a real option, not an absence. Some journeys genuinely
    have no shape yet, and design-itinerary.js accepts that deliberately.
 
-   PRESENT MODE KEEPS THE CHOSEN SHAPE AND HIDES THE COMPARISON. The week is
+   THE CHOSEN SHAPE LEADS AND THE COMPARISON FOLLOWS. The week is
    what the advisor talks through with the prospect; the six-way ranking and
    the Partial/Thin bands are apparatus.
 
@@ -1650,10 +1567,10 @@ function shape(id, ranked, chosen, caps) {
   ${picked ? `<div class="design-shape-picked">
     <p class="design-shape-name">${esc(picked.name)}</p>
     ${picked.sub ? `<p class="design-note">${esc(picked.sub)}</p>` : ''}
-  </div>` : `<p class="design-empty" data-hide-in-present>No shape chosen — the days will be
+  </div>` : `<p class="design-empty">No shape chosen — the days will be
     numbered and empty. Pick one below, or leave it if this journey does not have a shape yet.</p>`}
 
-  <form method="POST" action="/hub/journeys/${esc(id)}/design" data-hide-in-present>
+  <form method="POST" action="/hub/journeys/${esc(id)}/design">
     <input type="hidden" name="action" value="recipe">
     <p class="design-note">Ranked against what they told the Finder. Nothing is chosen for you.</p>
     <ul class="design-recipes">
@@ -1700,18 +1617,18 @@ function flash(done) {
    "Opened three times, last Tuesday" is the sentence 022 writes as the reason
    the counter exists at all: useful to an advisor, and it identifies nobody.
 
-   HIDDEN IN PRESENT MODE. A live share link and a Withdraw button are the
+   IN THE OPEN. A live share link and a Withdraw button are the
    last things that should be on screen with the client watching. */
 function issuedVersions(id, issued, caps) {
   if (!caps.itinerary) {
-    return `<section class="design-block design-issued-list" data-hide-in-present>
+    return `<section class="design-block design-issued-list">
   <h2>Already sent</h2>
   <p class="design-note">${esc(D.UNAVAILABLE.itinerary)}</p>
 </section>`;
   }
   if (!issued.length) return '';
 
-  return `<section class="design-block design-issued-list" data-hide-in-present>
+  return `<section class="design-block design-issued-list">
   <h2>Already sent</h2>
   <p class="design-note">The link itself cannot be shown again — nothing here holds a readable
     copy of it. If it has been lost, issue a new version.</p>
@@ -1751,7 +1668,7 @@ function alsoIn(villageKey, also, vocab) {
   const rows = (also.supporting || []).concat(also.basecamps || []);
   if (!villageKey || !rows.length) return '';
   const label = (vocab.villages || []).filter((v) => v.key === villageKey)[0];
-  return `<section class="design-block" data-hide-in-present>
+  return `<section class="design-block">
   <h2>Also in ${esc(label ? label.label : villageKey)}</h2>
   <p class="design-note">Carried, never ranked. These have a village and a line of signal, which is
     not enough to score against a brief — but they are real inventory, and sometimes one of them is

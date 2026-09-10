@@ -151,10 +151,13 @@ function travellerFor(need, vocab) {
     depthFloor: code(n.continuumFloor, ok('continuum')),
     depthCeiling: code(n.continuumCeiling, ok('continuum')),
 
-    trigger: code(n.trigger, ok('trigger')),
-    uncertainty: code(n.uncertainty, ok('uncertainty')),
+    triggers: codes(n.triggers, ok('trigger')),
+    uncertainties: codes(n.uncertainties, ok('uncertainty')),
     readiness: code(n.readiness, ok('readiness')),
     orientation: code(n.orientation, ok('orientation')),
+    /* The BAND only. `budgetUsd` — the dollar figure it was derived from — is
+       deliberately absent: a model that has seen a number will print one, and
+       rule 6 in every prompt forbids exactly that. */
     budget: code(n.budget, ok('budget')),
 
     party: code(n.party, ok('party')),

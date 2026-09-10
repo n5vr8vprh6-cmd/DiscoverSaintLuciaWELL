@@ -106,8 +106,8 @@ function travellerBlock(t) {
   if (t.mobility) lines.push(`  mobility: ${t.mobility}`);
   if (t.nights != null) lines.push(`  nights: ${t.nights}`);
   if (t.orientation) lines.push(`  relationship to wellness: ${t.orientation}`);
-  if (t.trigger) lines.push(`  why now: ${t.trigger}`);
-  if (t.uncertainty) lines.push(`  main uncertainty: ${t.uncertainty}`);
+  if ((t.triggers || []).length) lines.push(`  why now: ${t.triggers.join(', ')}`);
+  if ((t.uncertainties || []).length) lines.push(`  uncertain about: ${t.uncertainties.join(', ')}`);
   if (t.readiness) lines.push(`  readiness: ${t.readiness}`);
   if ((t.constraints || []).length) lines.push(`  constraints: ${t.constraints.join(', ')}`);
   const scales = scaleLines(t);
