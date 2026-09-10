@@ -1108,8 +1108,8 @@ function stageNav(id, step, v) {
   /* On Understand the forward link is the gold CTA inside the What-I-heard
      card (design-understand.js heard()), so the nav here carries only the way
      back to the Journey. */
-  const forward = step === 'understand' ? '' : (next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}"${prepare}>${esc(STAGE_LABEL[next])} →</a>` : '');
-  return `<nav class="design-stagenav">
+  const forward = next ? `<a class="btn btn--sm" href="/hub/journeys/${esc(id)}/design?step=${next}"${prepare}>${esc(STAGE_LABEL[next])} →</a>` : '';
+  return `<nav class="design-stagenav${step === 'understand' ? ' design-stagenav--center' : ''}">
     ${prev ? `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}/design?step=${prev}">← ${esc(STAGE_LABEL[prev])}</a>` : `<a class="btn btn--ghost btn--sm" href="/hub/journeys/${esc(id)}">← Back to the Journey</a>`}
     ${forward}
   </nav>${overlay}`;
