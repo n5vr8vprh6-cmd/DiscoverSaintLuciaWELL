@@ -333,7 +333,7 @@ async function designWorkspace(step) {
       why: 'The year has emptied me out. I want to come back feeling like myself again.',
       hesitate: 'Her husband thinks a wellness trip is indulgent; she wants him to see it differently.',
       around: 'Coeliac. Fixed to the February half-term.' },
-    heard_sent_at: null,
+    heard_sent_at: null, eclipse_interest: null,
     continuum_floor: seeded.continuumFloor, continuum_ceiling: seeded.continuumCeiling,
     rhythm: seeded.rhythm, activity: 0.2, social: seeded.social, experience: 0.3,
     adults: null, children: null, nights: 7, constraints: ['dietary', 'dates'],
@@ -393,7 +393,7 @@ async function designWorkspace(step) {
         share_expires_at: null, revoked_at: new Date(Date.now() - 3 * 86400000).toISOString(),
         view_count: 1, last_viewed_at: new Date(Date.now() - 8 * 86400000).toISOString() }
     ],
-    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true, conversation: true, notes: true, placeNotes: true },
+    caps: { database: true, consultation: true, itinerary: true, ledger: true, travel_from: true, estimate: true, sent_at: true, stage: true, conversation: true, notes: true, placeNotes: true, eclipse: true },
     bank
   });
 }

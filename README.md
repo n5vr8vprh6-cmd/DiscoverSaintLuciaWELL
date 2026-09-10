@@ -863,6 +863,20 @@ every heading a question you could say aloud:
    geoBoundaries (CC BY 4.0 — credited in the SVG `<desc>` and the stage
    footer). Pin positions are `geo` on each deep property in the Field Guide,
    each with its source; six are placed from an address and say so.
+   **Eclipse**, between the island and the details, only when the client
+   answered *"Yes, some of it"* to the Finder's recognition question — the same
+   gate the site uses. A midnight-and-copper block (Eclipse's own palette) that
+   speaks in the second person about a state they saw themselves in, never a
+   diagnosis; says what Eclipse is — a practitioner-led, curated journey, five
+   days, one sequence across several places; shows the programme facts from
+   one place (`content/eclipse.js programme`: *from $7,500 a person, programme
+   and stays, before flights*, authored by Duncan 2026-09-10) with a
+   confirmation line; and lets the advisor record whether they want to hear
+   how Eclipse would shape the week (`journey_consultations.eclipse_interest`,
+   migration 026 — a code, so it reaches the prompt as *interested*). A
+   *Signature Wellness Programs* dropdown is a placeholder shelf: Eclipse, and
+   *Coming soon*. The Eclipse-centred shape is the Shape pass's work; Shape
+   shows one advisor-side line when interest is recorded.
 3. **Let's get into the details.** Seven questions, each a white card, single
    column, simple → open → sensitive after the Interaction Design Foundation's
    form guidance —

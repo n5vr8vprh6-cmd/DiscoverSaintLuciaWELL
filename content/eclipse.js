@@ -36,6 +36,24 @@ module.exports = {
   path: '/eclipse',
   layout: 'destination',
   surface: 'consumer',
+
+  /* ── The programme in numbers ───────────────────────────────────────────
+     One home for the two facts the advisor's Understand stage states about
+     Eclipse, so the site and the Hub cannot disagree. Five days is the day
+     plan below; the price is Duncan's, authored 2026-09-10: from $7,500 a
+     person, the practitioner-led programme and the stays across the
+     properties, before flights. "From" — every figure is confirmed before
+     anything is booked, and the programme page says so too. */
+  programme: {
+    name: 'Eclipse',
+    days: 5,
+    fromUsd: 7500,
+    per: 'person',
+    basis: 'programme and stays, before flights',
+    source: 'Duncan So, founder — programme pricing as set for the Founding Edition',
+    authored: '2026-09-10',
+    confirmed: true
+  },
   title: 'Eclipse — a curated recovery journey through Saint Lucia',
   description: 'Not another retreat. A return to rhythm. Eclipse is a sequenced recovery journey through Saint Lucia, designed by practitioners and health professionals.',
   ogTitle: 'Eclipse — a return to rhythm',

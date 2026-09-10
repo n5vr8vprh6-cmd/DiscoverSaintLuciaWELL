@@ -74,7 +74,7 @@ const UNAVAILABLE = {
 async function capabilities() {
   const supabase = db();
   const out = { database: Boolean(supabase), consultation: false, itinerary: false, ledger: false,
-    travel_from: false, estimate: false, sent_at: false, stage: false, conversation: false, notes: false, placeNotes: false };
+    travel_from: false, estimate: false, sent_at: false, stage: false, conversation: false, notes: false, placeNotes: false, eclipse: false };
   if (!supabase) return out;
 
   const probe = async (table) => {
@@ -114,6 +114,8 @@ async function capabilities() {
   /* 025: the four-key notes column and the advisor's place notes. */
   out.notes = out.consultation && await column('journey_consultations', 'notes');
   out.placeNotes = await probe('advisor_place_notes');
+  /* 026: whether they want to hear how Eclipse would shape it. */
+  out.eclipse = out.consultation && await column('journey_consultations', 'eclipse_interest');
   return out;
 }
 
@@ -203,6 +205,10 @@ async function saveConsultation(shareId, advisorId, state, seeded, extra) {
     NOTE_KEYS.forEach((k) => { const s = src[k] == null ? '' : String(src[k]).trim().slice(0, NOTE_MAX); if (s) out[k] = s; });
     row.notes = out;
   }
+  /* 026: Eclipse interest, only when the column has been probed present. */
+  if (extra && extra.eclipse) {
+    row.eclipse_interest = typeof state.eclipseInterest === 'boolean' ? state.eclipseInterest : null;
+  }
 
   const { data, error } = await supabase
     .from('journey_consultations').upsert(row, { onConflict: 'share_id' })
@@ -235,6 +241,7 @@ function toNeedState(row) {
     readiness: row.readiness,
     party: row.party, orientation: row.orientation, budget: row.budget, mobility: row.mobility,
     budgetUsd: row.budget_usd == null ? null : row.budget_usd,
+    eclipseInterest: typeof row.eclipse_interest === 'boolean' ? row.eclipse_interest : null,
     continuumFloor: row.continuum_floor, continuumCeiling: row.continuum_ceiling,
     rhythm: row.rhythm, activity: row.activity, social: row.social, experience: row.experience,
     adults: row.adults, children: row.children, nights: row.nights,

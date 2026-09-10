@@ -44,14 +44,14 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
   const ready = (await K.version()).ready;
   const shortlist = ready ? await M.shortlistFor(need) : [];
   const floor = await U.floor({ shortlist, travelFrom: '2027-02-01', nights: 7 });
-  const caps = { database: true, consultation: true, travel_from: true, conversation: true, notes: true, placeNotes: true };
+  const caps = { database: true, consultation: true, travel_from: true, conversation: true, notes: true, placeNotes: true, eclipse: true };
   const v = { id: 'j-test', need, seeded, stored: row, vocab, caps, shortlist, suggestedMonth: '2027-02-01', notes, answers,
     floor, placeNotes: shortlist.length ? { [shortlist[0].slug]: 'ZZSTORY stayed here in 2024' } : {}, clientEmail: 'j•••@example.invalid', firstName: 'Janice', brand: {} };
   const html = U.understandStage(v);
   const plain = text(html);
 
   console.log('\n  Three bands, the client first');
-  ok('three bands: told · island (white) · details', count(html, /class="design-band /g) === 3 && /design-band--white design-band--island/.test(html));
+  ok('four bands for a client who recognised the description: told · island (white) · Eclipse · details', count(html, /class="design-band /g) === 4 && /design-band--white design-band--island/.test(html));
   ok('the stage opens with her own Finder words, quoted, in a card behind a quotation mark', /<div class="design-quote-card">\s*<span class="design-quote-mark"[^>]*>“<\/span>\s*<p class="design-quote">You said you need <q>space to think clearly<\/q>, and <q>the rainforest<\/q> called you first\. With family, at a gentle pace, <q>a balance of exploring and restoring<\/q>\.<\/p>/.test(html), html.match(/<p class="design-quote">.*?<\/p>/) && html.match(/<p class="design-quote">.*?<\/p>/)[0]);
   ok('away → toward speaks the spoken form, not the label, and toward is the coloured column', /running hot/.test(plain) && !/>Overstimulated</.test(html) && /chips chips--toward/.test(html));
   ok('the cue is the question itself, in the second person, behind "Ask:"', /<span class="design-cue-ask">Ask:<\/span> “What does <b>running hot<\/b> look like for you right now\?”/.test(html));
@@ -70,6 +70,25 @@ const text = (s) => s.replace(/<[^>]+>/g, '');
   if (shortlist.length) {
     ok('every pin links to its card on Compare', count(html, /href="\/hub\/journeys\/j-test\/design\?step=compare#prop-/g) >= 1);
   } else ok('bank not generated — island skipped', true);
+
+  console.log('\n  Eclipse — only when they recognised the description');
+  ok('the band sits between the island and the details, in Eclipse\'s own palette', /design-band--island[\s\S]*?design-band--eclipse[\s\S]*?design-band--details/.test(html) && /class="design-eclipse"/.test(html));
+  ok('it speaks of a state they saw themselves in, not a diagnosis', /You recognised something\./.test(plain) && /not a diagnosis/.test(plain) && !/burn/i.test(plain));
+  ok('the programme facts come from content/eclipse.js: from $7,500 a person, five days, programme and stays, before flights',
+    /From \$7,500/.test(plain) && /five days/.test(plain) && /programme and stays, before flights/.test(plain) && /confirmed before anything is booked/.test(plain));
+  const eclipseText = text((html.match(/<div class="design-eclipse">[\s\S]*?<\/select>/) || [''])[0]);
+  ok('the advisor records yes or no, nothing sells', /name="interest" value="yes"/.test(html) && /name="interest" value="no"/.test(html) && !/\bBook\b|Upgrade|Choose Eclipse|Buy/.test(eclipseText));
+  ok('the cues are listening questions', /Does that description still feel true today\?/.test(plain) && /how Eclipse would shape this\?/.test(plain));
+  ok('Signature Wellness Programs is a placeholder shelf: Eclipse selected, "Coming soon" disabled, posts nothing',
+    /<select id="signature-programs"(?![^>]*name=)/.test(html) && /<option selected>Eclipse — five days<\/option>/.test(html) && /<option disabled>Coming soon<\/option>/.test(html));
+  ok('the band is a fragment slot so the recorded state swaps in', /data-fragment-slot="eclipse"/.test(html));
+  const no = U.understandStage(Object.assign({}, v, { answers: Object.assign({}, answers, { recognition: 'no' }) }));
+  ok('a client who did not recognise the description is shown no Eclipse band', !/design-eclipse/.test(no) && !/Eclipse/.test(text(no)));
+  const yes = U.understandStage(Object.assign({}, v, { need: Object.assign({}, need, { eclipseInterest: true }) }));
+  ok('recorded interest ticks yes, says Shape will start from Eclipse, and reaches the read-back',
+    /value="yes" checked/.test(yes) && /Shape will start from Eclipse/.test(yes) && /Curious how Eclipse would shape it\./.test(text(yes)));
+  const pre = U.understandStage(Object.assign({}, v, { caps: Object.assign({}, caps, { eclipse: false }) }));
+  ok('before 026 the band shows without the ticks and says which migration', /design-eclipse/.test(pre) && !/name="interest"/.test(pre) && /migration 026/.test(pre));
 
   console.log('\n  The details');
   ok('#consult anchor on the details band', /id="consult"/.test(html));

@@ -159,6 +159,9 @@ function travellerFor(need, vocab) {
        deliberately absent: a model that has seen a number will print one, and
        rule 6 in every prompt forbids exactly that. */
     budget: code(n.budget, ok('budget')),
+    /* Eclipse as a word: a narrative that knows Eclipse is on the table is a
+       better narrative, and the word identifies nobody. */
+    eclipse: n.eclipseInterest === true ? 'interested' : (n.eclipseInterest === false ? 'declined' : null),
 
     party: code(n.party, ok('party')),
     adults: count(n.adults),

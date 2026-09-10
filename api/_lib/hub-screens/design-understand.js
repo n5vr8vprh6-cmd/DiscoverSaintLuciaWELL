@@ -44,6 +44,8 @@ const { esc } = require('../hub-render.js');
 const { islandMap } = require('../../../lib/components.js');
 const ISLAND = require('../../../content/island.js');
 const FINDER = require('../../../content/journey.js').finderData;
+const ECLIPSE = require('../../../content/eclipse.js');
+const { eclipseMark } = require('../../../lib/brand.js');
 const N = require('../need-state.js');
 const R = require('../rates.js');
 
@@ -85,7 +87,67 @@ const D_UNAVAILABLE = () => require('../design-data.js').UNAVAILABLE;
 
 /* ── The stage ─────────────────────────────────────────────────────────── */
 function understandStage(v) {
-  return told(v) + islandBand(v) + details(v);
+  return told(v) + islandBand(v) + eclipseBand(v) + details(v);
+}
+
+/* ── Eclipse · only when they recognised the description ──────────────────
+   The Finder's recognition question gates this, as it gates Eclipse on the
+   site: a client who did not see themselves in the description is not shown
+   a journey built for it. The band speaks in the second person about what
+   THEY recognised — a state, never a diagnosis — and the advisor's one
+   control is to record whether they want to hear how Eclipse would shape
+   the week. Shape reads that later. Midnight and copper: Eclipse's own
+   palette, so it reads as a different thing from the ink read-back below. */
+function eclipseBand(v) {
+  const a = v.answers || {};
+  if (a.recognition !== 'yes') return '';
+  return `<section class="design-band design-band--eclipse">
+  <div data-fragment-slot="eclipse">${eclipseInner(v)}</div>
+</section>`;
+}
+
+function eclipseInner(v) {
+  const { id, need, caps } = v;
+  const p = ECLIPSE.programme || {};
+  const interest = need.eclipseInterest;
+  const recorded = interest === true ? 'Recorded — Shape will start from Eclipse.'
+    : interest === false ? 'Recorded — not for this trip.' : '';
+  return `<div class="design-eclipse">
+    ${eclipseMark({ variant: 'hub', widths: [220] })}
+    <p class="design-eclipse-eyebrow">${esc(p.name || 'Eclipse')}</p>
+    <h3>You recognised something.</h3>
+    <p>You said some of the description sounded familiar — still functioning, still meeting expectations,
+      while sleep no longer fully restores. That is a state you saw yourself in, not a diagnosis, and it is
+      why Eclipse appeared in your results.</p>
+    <p>Eclipse is a curated recovery journey designed by practitioners and health professionals —
+      ${esc(numberWord(p.days || 5))} days, one sequence across several places on the island, built around
+      restoration rather than a hotel. If you want to hear how it would shape your week, we can lay the days
+      out that way instead.</p>
+    <div class="design-eclipse-figure">
+      <b>From ${money(p.fromUsd || 7500)}</b><span>a ${esc(p.per || 'person')}</span><span>${esc(numberWord(p.days || 5))} days</span>
+      <span>${esc(p.basis || 'programme and stays, before flights')}</span>
+    </div>
+    <p class="design-hint">Every figure is confirmed before anything is booked.</p>
+    <p class="design-cue"><span class="design-cue-ask">Ask:</span> “Does that description still feel true today?”</p>
+    ${caps.eclipse ? `<form method="POST" action="/hub/journeys/${esc(id)}/design?step=understand" class="design-eclipse-form" data-live data-fragment="eclipse">
+      <input type="hidden" name="action" value="eclipse">
+      <p class="design-cue"><span class="design-cue-ask">Ask:</span> “Would you like to hear how Eclipse would shape this?”</p>
+      <div class="design-eclipse-picks" role="group" aria-label="Eclipse">
+        <label class="design-pick"><input type="radio" name="interest" value="yes"${interest === true ? ' checked' : ''}><span>Yes — tell me how Eclipse would shape it</span></label>
+        <label class="design-pick"><input type="radio" name="interest" value="no"${interest === false ? ' checked' : ''}><span>Not for this trip</span></label>
+      </div>
+      <div class="design-actions"><button class="btn btn--ghost btn--sm" type="submit">Save</button>
+        <span class="design-eclipse-recorded" data-live-status role="status">${esc(recorded)}</span></div>
+    </form>` : `<p class="design-hint">Recording their answer needs migration 026 on this deployment.</p>`}
+    <div class="design-eclipse-programs">
+      <label for="signature-programs">Signature Wellness Programs</label>
+      <select id="signature-programs" aria-describedby="signature-programs-hint">
+        <option selected>${esc(p.name || 'Eclipse')} — ${esc(numberWord(p.days || 5))} days</option>
+        <option disabled>Coming soon</option>
+      </select>
+      <span class="design-hint" id="signature-programs-hint">Eclipse is the first. More programmes, designed with partner places and practitioners, will appear here.</span>
+    </div>
+  </div>`;
 }
 
 /* ── Band 1 · What you told us ───────────────────────────────────────────── */
@@ -493,6 +555,8 @@ function heardParts(hv) {
   const cons = (need.constraints || []).filter((k) => HIDE_CONSTRAINTS.indexOf(k) === -1 && k !== 'other').map((k) => lower1(label(vocab, 'constraints', k)));
   if (cons.length) parts.push('Planning around ' + joinAnd(cons) + '.');
 
+  if (need.eclipseInterest === true) parts.push('Curious how Eclipse would shape it.');
+
   if (need.readiness) {
     const RD = { dreaming: 'Still dreaming.', comparing: 'Comparing, not choosing yet.', planning: 'Planning in earnest.',
       selecting: 'Choosing between a few.', booking: 'Ready to book.', 'pre-departure': 'Booked; the trip is ahead.', returning: 'Just back.' };
@@ -529,5 +593,5 @@ const RING = `<svg width="28" height="28" viewBox="0 0 26 26" aria-hidden="true"
 function heardText(hv) { return heardParts(hv).parts.join(' '); }
 function heardNotes(hv) { return heardParts(hv).said.map((s) => ({ label: s.label, text: s.text })); }
 
-module.exports = { understandStage, islandInner, heard, heardText, heardNotes, budgetWord, floor, floorLine, whisper, answeredCount, quote,
+module.exports = { understandStage, islandInner, eclipseBand, eclipseInner, heard, heardText, heardNotes, budgetWord, floor, floorLine, whisper, answeredCount, quote,
   SCALE_NAME, HIDE_CONSTRAINTS, WORDS_MAX, NOTE_LABEL };

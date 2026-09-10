@@ -265,14 +265,14 @@ const ACTIONS = {
   issue: 'dispatched-by-name', revoke: 'dispatched-by-name', recipe: 'dispatched-by-name',
   consult: 'dispatched-by-name', choose: 'dispatched-by-name', decline: 'dispatched-by-name',
   day: 'dispatched-by-name', estimate: 'dispatched-by-name',
-  place_note: 'dispatched-by-name', heard_send: 'dispatched-by-name'
+  place_note: 'dispatched-by-name', heard_send: 'dispatched-by-name', eclipse: 'dispatched-by-name'
 };
 
 /* Actions posted by a plain <form> rather than by fetch. They redirect; the
    others answer in JSON. Kept as a list rather than inferred from a header,
    because "what does a failure look like to this caller" is a property of the
    action, not of the request that happened to arrive. */
-const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day', 'estimate', 'place_note', 'heard_send'];
+const FORM_ACTIONS = ['revoke', 'recipe', 'consult', 'choose', 'decline', 'day', 'estimate', 'place_note', 'heard_send', 'eclipse'];
 
 const backTo = (id, done) =>
   '/hub/journeys/' + encodeURIComponent(id) + '/design' + (done ? '?done=' + done : '');
@@ -320,7 +320,7 @@ async function generate(req, res, v) {
   /* The three stage actions. Form posts above the OpenAI and ledger gates,
      because none of them calls a model. Each re-reads the consultation itself
      rather than trusting a value computed for a different action. */
-  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day' || name === 'estimate' || name === 'place_note' || name === 'heard_send') {
+  if (name === 'consult' || name === 'choose' || name === 'decline' || name === 'day' || name === 'estimate' || name === 'place_note' || name === 'heard_send' || name === 'eclipse') {
     const seededNow = await N.seedFrom(raw.answers || {});
     const storedNow = caps.consultation ? await D.consultationFor(id, advisor.id) : null;
     const ctx = { advisor, id, raw, caps, stored: storedNow, seeded: seededNow,
@@ -328,6 +328,7 @@ async function generate(req, res, v) {
     if (name === 'consult') return await actionConsult(res, form, ctx);
     if (name === 'place_note') return await actionPlaceNote(res, form, ctx);
     if (name === 'heard_send') return await actionHeardSend(res, form, ctx);
+    if (name === 'eclipse') return await actionEclipse(res, form, ctx);
     if (name === 'choose') return await actionChoose(res, form, ctx);
     if (name === 'day') return await actionDay(res, form, ctx);
     if (name === 'estimate') return await actionEstimate(res, form, ctx);
@@ -671,6 +672,42 @@ async function actionHeardSend(res, form, v) {
   if (!sent.ok) return back(sent.error === 'mail_not_configured' ? 'heard_not_configured' : 'heard_failed');
   await D.markHeardSent(id, advisor.id);
   return back('heard_sent', { sentAt: new Date().toISOString(), to: maskEmail(raw.consumer_email) });
+}
+
+
+/* ── Eclipse: do they want to hear how it would shape the week? ────────────
+   A code on the consultation (026): true, false, or null. Written through
+   the same saveConsultation() as everything else, with only the Eclipse
+   column named, so nothing else on the row moves. */
+async function actionEclipse(res, form, v) {
+  const { advisor, id, need, seeded, caps, json } = v;
+  const back = (done, more) => {
+    if (json) return jsonOut(res, done === 'eclipse_saved', Object.assign({ done }, more || {}));
+    res.statusCode = 303;
+    res.setHeader('Location', backTo(id, done) + '&step=understand#eclipse');
+    return res.end();
+  };
+  if (!caps.consultation) return back('not_migrated');
+  if (!caps.eclipse) return back('eclipse_not_migrated');
+  const raw = str(form.interest, 3);
+  const edited = Object.assign({}, need, { eclipseInterest: raw === 'yes' ? true : (raw === 'no' ? false : null) });
+  const problems = await N.validate(edited);
+  if (problems.length) { console.warn('eclipse refused', problems); return back('eclipse_failed'); }
+  const saved = await D.saveConsultation(id, advisor.id, edited, { state: seeded, overrode: N.overridden(seeded, edited) }, { eclipse: true });
+  if (!saved.ok) return back(saved.reason === 'not_migrated' ? 'eclipse_not_migrated' : 'eclipse_failed');
+
+  const vocab = await N.vocabulary();
+  const notes = D.notesOf(v.stored);
+  const travelFrom = (v.stored && v.stored.travel_from) || null;
+  const shortlistNow = await M.shortlistFor(edited);
+  const floorNow = await U.floor({ shortlist: shortlistNow, travelFrom, nights: edited.nights });
+  const answers = (v.raw && v.raw.answers) || {};
+  return back('eclipse_saved', {
+    fragments: {
+      eclipse: U.eclipseInner({ id, need: edited, caps, answers }),
+      consult: U.heard({ need: edited, vocab, notes, travelFrom, floor: floorNow, id, firstName: (v.raw && v.raw.consumer_first) || null })
+    }
+  });
 }
 
 /* ── One day of the shape ─────────────────────────────────────────────────
@@ -1298,7 +1335,7 @@ function arcBlock(id, plan, props, need, recipe, fw, caps) {
       ${recipe && recipe.pacing ? `<p class="design-cue-rule"><b>The rule</b> ${esc(recipe.pacing)}</p>` : ''}
       ${rung && rung.plan ? `<p class="design-cue-depth"><b>${esc(rung.name)} in a day</b> ${esc(rung.plan)}</p>` : ''}
       ${flags.length ? `<ul class="design-cue-flags">${flags.map((f) => `<li>${esc(f.text)}</li>`).join('')}</ul>`
-        : `<p class="design-cue-ok">Paced within the guide’s rules.</p>`}
+        : `<p class="design-cue-ok">Paced within the guide’s rules.</p>`}${need && need.eclipseInterest === true ? '<p class="design-cue-ok">Eclipse interest recorded on Understand.</p>' : ''}
       <p class="design-cue-inferred">Intensity bands are inferred from each property’s verified offer until confirmed.</p>
     </aside>
   </div>
@@ -1650,7 +1687,10 @@ const DONE = {
   heard_failed: ['bad', 'That could not be sent. Read it aloud, or try again in a moment.'],
   heard_nothing: ['bad', 'Nothing is marked yet, so there is nothing to send.'],
   heard_no_email: ['bad', 'This Journey has no email address, so what you heard can only be read aloud.'],
-  heard_not_configured: ['bad', 'Email is not configured on this deployment.']
+  heard_not_configured: ['bad', 'Email is not configured on this deployment.'],
+  eclipse_saved: ['good', 'Recorded.'],
+  eclipse_failed: ['bad', 'That could not be recorded. Nothing changed.'],
+  eclipse_not_migrated: ['bad', 'Recording Eclipse interest needs migration 026 on this deployment.']
 };
 
 /* ── The shape of the journey ─────────────────────────────────────────────

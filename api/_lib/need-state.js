@@ -210,6 +210,9 @@ async function seedFrom(answers) {
     party: comp ? comp.party : null,
     adults: null, children: null, mobility: null,
     nights: null, budget: null, budgetUsd: null,
+    /* Eclipse: null until the advisor asks; true / false once they have. The
+       Finder's recognition answer gates whether the question is put at all. */
+    eclipseInterest: null,
     constraints: [],
     rhythm: pace ? pace.rhythm : null,
     activity: pace ? pace.activity : null,
@@ -277,6 +280,9 @@ async function validate(state) {
 
   if (s.budgetUsd != null && (!Number.isInteger(s.budgetUsd) || s.budgetUsd < 0)) {
     problems.push('budgetUsd: must be a whole number of dollars');
+  }
+  if (s.eclipseInterest != null && typeof s.eclipseInterest !== 'boolean') {
+    problems.push('eclipseInterest: must be true, false or unknown');
   }
 
   SCALES.forEach((k) => {

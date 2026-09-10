@@ -1342,6 +1342,14 @@ const CASES = [
   expect: 'Seven numbered sections, each with a heading, an italic cue and its controls beneath — one column, a hairline between, nothing side by side except the When · How long · Who row, which stacks when narrow. Every chip, dot, stepper button and input is at least 44px tall and shows a teal ring on focus; the section with focus shows a teal rule at its left edge. "n of 7 answered" counts up as sections are filled; "Saved." appears after each change; the suggested month is dashed until touched.',
   why: 'Duncan: "definitely not UX friendly, needs way more space to breathe", and the IxDF form guidance he pointed at: single column, grouped by theme, simple first, visible labels, big targets, inline feedback, a progress count. Each of those is a thing you can see or measure.' },
 
+{ id: 'A-75', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'ASK WELL',
+  title: 'Understand — Eclipse appears only for a client who recognised the description, and their answer is recorded',
+  steps: ['Open Understand on a Journey whose Finder answer to "Does any of this sound familiar?" was "Yes, some of it"; read the midnight block between the island and the details',
+          'Tick "Yes — tell me how Eclipse would shape it"; watch the status line and "What I heard"; reload; open Shape',
+          'Open Understand on a Journey that answered "Not really"'],
+  expect: 'A midnight-and-copper block headed "You recognised something." It describes a state, never names a condition, says Eclipse is a practitioner-led curated journey — five days, one sequence across several places — and shows "From $7,500 · a person · five days · programme and stays, before flights" with "Every figure is confirmed before anything is booked." Two ticks only, no Book or Choose. "Signature Wellness Programs" is a dropdown with Eclipse selected and "Coming soon" greyed. After the tick: "Recorded — Shape will start from Eclipse.", the read-back gains "Curious how Eclipse would shape it.", it survives a reload, and Shape shows "Eclipse interest recorded on Understand." The "Not really" Journey shows no Eclipse block at all. Before migration 026 the block shows without the ticks and names the migration.',
+  why: 'Eclipse is the deepest thing on the island and the easiest to mis-sell. The Finder\'s own gate decides who is shown it; the copy describes rather than diagnoses; the price is a "from", in one place, with a confirmation line; and the only control records interest the advisor asked about. The Eclipse-centred shape itself is the Shape pass\'s work.' },
+
 { id: 'A-65', pass: 'ASK WELL', role: 'advisor', priority: 2, area: 'Playbook',
   title: 'Read the Playbook and fill in the priority traveller',
   steps: ['Open /hub/campaign and follow the link to Your Playbook',

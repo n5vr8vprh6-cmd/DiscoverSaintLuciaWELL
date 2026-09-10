@@ -200,6 +200,7 @@ function accessExport(found) {
           how_they_relate_to_wellness: c.orientation,
           budget_band: c.budget,
           budget_usd: c.budget_usd == null ? null : c.budget_usd,
+          asked_about_eclipse: typeof c.eclipse_interest === 'boolean' ? (c.eclipse_interest ? 'wanted to hear more' : 'not for this trip') : null,
           nights: c.nights,
           travel_from: c.travel_from || null,
           constraints: c.constraints,

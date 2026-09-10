@@ -134,6 +134,9 @@ console.log('\n  DESIGN DATA — DEGRADATION\n  ' + '─'.repeat(60) + '\n');
     back.villages === row.village_weights && back.continuumFloor === row.continuum_floor);
   ok('the arrays come back as arrays, and the figure as a number',
     back.triggers.length === 2 && back.uncertainties[1] === 'time' && back.budgetUsd === 21000);
+  ok('Eclipse interest round-trips as a boolean and reads unknown when the column is empty',
+    D.toNeedState(Object.assign({}, row, { eclipse_interest: true })).eclipseInterest === true &&
+    D.toNeedState(Object.assign({}, row, { eclipse_interest: false })).eclipseInterest === false && back.eclipseInterest === null);
   ok('IN THEIR WORDS NEVER BECOMES PART OF A NEED-STATE',
     JSON.stringify(back).indexOf('ZZSENTINEL') === -1 && !('in_their_words' in back) && !('inTheirWords' in back),
     'the one prose column stays on the row; a need-state carrying it would reach a prompt');

@@ -107,6 +107,7 @@ function travellerBlock(t) {
   if (t.nights != null) lines.push(`  nights: ${t.nights}`);
   if (t.orientation) lines.push(`  relationship to wellness: ${t.orientation}`);
   if ((t.triggers || []).length) lines.push(`  why now: ${t.triggers.join(', ')}`);
+  if (t.eclipse) lines.push(`  Eclipse (the practitioner-led five-day journey): ${t.eclipse}`);
   if ((t.uncertainties || []).length) lines.push(`  uncertain about: ${t.uncertainties.join(', ')}`);
   if (t.readiness) lines.push(`  readiness: ${t.readiness}`);
   if ((t.constraints || []).length) lines.push(`  constraints: ${t.constraints.join(', ')}`);

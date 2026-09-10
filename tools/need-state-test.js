@@ -90,6 +90,7 @@ console.log('\n  NEED STATE — ONE VOCABULARY\n  ' + '─'.repeat(60) + '\n');
     'six answers cannot know why somebody is travelling now');
   ok('so do uncertainties and readiness', Array.isArray(s.uncertainties) && s.uncertainties.length === 0 && s.readiness === null);
   ok('and every hard constraint', s.constraints.length === 0 && s.nights === null && s.budget === null && s.budgetUsd === null);
+  ok('Eclipse interest is unknown until the advisor asks', s.eclipseInterest === null);
 
   const empty = await N.seedFrom({});
   ok('no answers seeds an empty state rather than a default person',
@@ -130,6 +131,7 @@ console.log('\n  NEED STATE — ONE VOCABULARY\n  ' + '─'.repeat(60) + '\n');
   ok('an unknown uncertainty is rejected', (await bad({ uncertainties: ['weather'] })).some((p) => /unknown value "weather"/.test(p)));
   ok('an unknown constraint is rejected', (await bad({ constraints: ['weather'] })).some((p) => /unknown value "weather"/.test(p)));
   ok('a fractional budget is rejected', (await bad({ budgetUsd: 1800.5 })).some((p) => /whole number of dollars/.test(p)));
+  ok('Eclipse interest is true, false or unknown — never a word', (await bad({ eclipseInterest: 'yes' })).length > 0 && (await bad({ eclipseInterest: true })).length === 0);
   ok('a floor deeper than its ceiling is rejected',
     (await bad({ continuumFloor: 'transform', continuumCeiling: 'relax' })).some((p) => /deeper than/.test(p)));
   ok('a fractional number of nights is rejected', (await bad({ nights: 3.5 })).some((p) => /whole number/.test(p)));

@@ -3028,3 +3028,44 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
   .design .design-heard-card { padding: 1.8rem 1.4rem; }
   .design .design-states { gap: 1rem 1.25rem; }
 }
+
+/* ── Understand · Eclipse ───────────────────────────────────────────────────
+   Shown only when the client recognised the description. Eclipse keeps its
+   own midnight/copper world (css/tokens.css), so this dark block reads as a
+   different thing from the ink What-I-heard card further down. */
+.design .design-band--eclipse { padding-block: 3.5rem 0; }
+.design .design-eclipse {
+  background: var(--eclipse-midnight); color: var(--eclipse-sand); border-radius: 6px;
+  padding: 2.5rem 2.75rem 2.25rem; max-width: 62rem; position: relative; overflow: hidden;
+}
+.design .design-eclipse .eclipse-mark { position: absolute; right: 1.75rem; top: 1.5rem; width: 3.25rem; opacity: .85; }
+.design .design-eclipse .eclipse-mark img { width: 100%; height: auto; display: block; }
+.design .design-eclipse-eyebrow { font-family: var(--sans); font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--eclipse-copper-l); margin: 0 0 .9em; }
+.design .design-eclipse h3 { font-family: var(--serif-display); font-size: clamp(1.4rem, 2vw, 1.85rem); line-height: 1.25; color: var(--eclipse-sand); margin: 0 0 .8em; max-width: 30ch; }
+.design .design-eclipse p { font-family: var(--serif); font-size: 1.08rem; line-height: 1.55; color: rgba(232,223,210,.9); max-width: 60ch; margin: 0 0 1em; }
+.design .design-eclipse-figure { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem 1rem; margin: 1.4rem 0 1.2rem; padding-top: 1.2rem; border-top: 1px solid rgba(232,223,210,.16); }
+.design .design-eclipse-figure b { font-family: var(--serif-display); font-size: 1.6rem; color: var(--eclipse-copper-l); font-weight: 400; }
+.design .design-eclipse-figure span { font-family: var(--sans); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(232,223,210,.7); }
+.design .design-eclipse .design-cue { color: rgba(232,223,210,.8); margin: .6em 0 1.2em; }
+.design .design-eclipse .design-cue-ask { color: var(--eclipse-copper-l); }
+.design .design-eclipse .design-cue b { color: var(--eclipse-sand); }
+.design .design-eclipse-form { display: grid; gap: 1rem; }
+.design .design-eclipse-picks { display: flex; flex-wrap: wrap; gap: .6rem; }
+.design .design-eclipse .design-pick span { border-color: rgba(232,223,210,.35); color: var(--eclipse-sand); }
+.design .design-eclipse .design-pick:hover span { border-color: var(--eclipse-copper-l); }
+.design .design-eclipse .design-pick input:checked + span { background: var(--eclipse-copper); border-color: var(--eclipse-copper); color: var(--eclipse-on-copper); }
+.design .design-eclipse .design-pick input:focus-visible + span { outline-color: var(--eclipse-copper-l); }
+.design .design-eclipse-recorded { font-family: var(--sans); font-size: .84rem; color: var(--eclipse-copper-l); min-height: 1.2em; }
+.design .design-eclipse-programs { display: grid; gap: .45rem; max-width: 26rem; margin-top: .4rem; }
+.design .design-eclipse-programs label { font-family: var(--sans); font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(232,223,210,.7); }
+.design .design-eclipse-programs select {
+  font: inherit; font-size: .95rem; padding: .55rem .8rem; min-height: 2.75rem; border-radius: 3px;
+  background: var(--eclipse-deep); color: var(--eclipse-sand); border: 1px solid rgba(232,223,210,.35);
+}
+.design .design-eclipse-programs select:focus-visible { outline: 2px solid var(--eclipse-copper-l); outline-offset: 2px; }
+.design .design-eclipse-programs .design-hint { color: rgba(232,223,210,.6); }
+.design .design-eclipse .btn { background: transparent; color: var(--eclipse-sand); border-color: rgba(232,223,210,.5); }
+@media (max-width: 52rem) {
+  .design .design-eclipse { padding: 1.8rem 1.4rem; }
+  .design .design-eclipse .eclipse-mark { width: 2.5rem; right: 1.2rem; top: 1.2rem; }
+}
