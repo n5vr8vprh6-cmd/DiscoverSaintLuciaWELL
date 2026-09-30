@@ -32,8 +32,8 @@ module.exports = {
     title: 'The Saint Lucia WELL Immersion',
     anchors: [
       { label: 'What it is',   href: '#what' },
-      { label: 'You will',     href: '#outcomes' },
-      { label: 'Prerequisite', href: '#fit' },
+      { label: 'What it covers', href: '#outcomes' },
+      { label: 'Foundations first', href: '#fit' },
       { label: 'Apply',        href: '#apply' }
     ],
     cta: { label: 'Apply', href: '#apply' },
@@ -42,8 +42,8 @@ module.exports = {
         title: 'The Immersion',
         links: [
           { label: 'What it is',   href: '#what' },
-          { label: 'You will',     href: '#outcomes' },
-          { label: 'Prerequisite', href: '#fit' }
+          { label: 'What it covers', href: '#outcomes' },
+          { label: 'Foundations first', href: '#fit' }
         ]
       },
       {
@@ -145,7 +145,7 @@ module.exports = {
              route the only one on the page that did nothing. The dates are
              still genuinely unset, so this does not invent them; it offers the
              one action that IS available when the answer is "not yet". */
-          label: 'Join the waiting list →',
+          label: 'Join the waiting list',
           href: '/advisors/immersion/waitlist'
         }
       ]

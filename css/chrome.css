@@ -143,6 +143,9 @@
   margin: clamp(2rem, 4vw, 3rem) 0 0;
   text-wrap: balance;
 }
+/* A one-line closing statement should not be squeezed to the quote column's 26rem:
+   "Marketing and sales assets / are provided at the end." broke for no reason. */
+.section-closing { max-width: min(44rem, 100%); }
 .section--ink .pullquote,
 .section.dark .pullquote { color: var(--paper); }
 .pullquote--center {

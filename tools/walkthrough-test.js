@@ -109,6 +109,25 @@ ok('the consent still sits behind the button: the panel\'s own submit says "Shar
 ok('the privacy notice names the new button and the consenting step',
    /<em>Help me plan this<\/em> and then <em>Share my Journey<\/em>/.test(read('content/privacy.js')));
 
+/* ── Foundations and Immersion fixes ─────────────────────────────────── */
+console.log('\n  Foundations and Immersion');
+const fnd = page('/advisors/foundations');
+const imm = page('/advisors/immersion');
+ok('Foundations Saint Lucia is $500 to reserve and about $5,000 all in — everywhere it appears',
+   /<p class="price">\$500 <small>USD to reserve<\/small><\/p>/.test(fnd) && /Budget around <b>\$5,000 all in<\/b>/.test(fnd)
+   && /Saint(?:&nbsp;| | )Lucia from \$500 to reserve/.test(fnd) && /Foundations Saint(?:&nbsp;| | )Lucia is \$500 to reserve, with around \$5,000/.test(fnd)
+   && (fnd.match(/Reserve · Saint(?:&nbsp;| |\u00a0)Lucia · \$500/g) || []).length === 2);
+ok('no stale $300 or $3,000 is left on the Foundations page', !/\$300\b|\$3,000/.test(fnd));
+ok('Day two carries a Group travel topic with an icon',
+   /<li class="has-icon"><svg[^>]*aria-hidden="true"[\s\S]*?<\/svg>Group travel<\/li>/.test(fnd));
+ok('the Immersion waiting-list link has one arrow (the CSS adds it; the copy must not)',
+   /<a class="contact-link" href="\/advisors\/immersion\/waitlist">Join the waiting list<\/a>/.test(imm) && !/waiting list →/.test(imm));
+ok('the Immersion sub-navigation and footer say what each section is',
+   /<li><a href="#outcomes">What it covers<\/a><\/li>/.test(imm) && /<li><a href="#fit">Foundations first<\/a><\/li>/.test(imm)
+   && !/>You will<\/a>|>Prerequisite<\/a>/.test(imm));
+ok('a one-line closing statement is not squeezed to the quote column',
+   /\.section-closing \{ max-width: min\(44rem, 100%\); \}/.test(read('css/chrome.css')));
+
 console.log('\n  ' + '─'.repeat(62));
 console.log('  ' + pass + ' passed, ' + fail + ' failed\n');
 process.exit(fail ? 1 : 0);

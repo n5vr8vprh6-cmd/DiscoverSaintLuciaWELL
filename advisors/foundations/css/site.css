@@ -1019,6 +1019,9 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
   color: #2F5257; border: 1px solid var(--hairline-l); border-radius: 999px;
   padding: 0.38rem 0.85rem; background: var(--paper);
 }
+/* A topic that carries an icon (Day two: group travel). */
+.day-topics li.has-icon { display: inline-flex; align-items: center; gap: 0.45rem; }
+.day-topics li.has-icon svg { flex: none; color: var(--teal, #00868A); }
 @media (max-width: 700px) {
   .day { grid-template-columns: 1fr; }
   .day-label { border-right: 0; border-bottom: 1px solid var(--hairline-l); padding: 0 0 1.2rem; }
