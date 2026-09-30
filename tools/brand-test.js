@@ -83,8 +83,11 @@ ok('the hero mark performs once per session: seen flag in sessionStorage, finish
    && !/hero-mark[^>]*>[\s\S]{0,40}piton-mark--seen/.test(by('/')));
 
 ok('the consumer footer carries the four channel links, exact URLs, new tab, rel=noopener me, accessible names',
-   ['https://www.linkedin.com/showcase/discoversaintluciawell', 'https://www.instagram.com/discoversaintluciawell/', 'https://www.facebook.com/discoversaintluciawell', 'https://wa.me/16478745565']
+   ['https://www.instagram.com/discoversaintluciawell/', 'https://www.facebook.com/discoversaintluciawell', 'https://www.linkedin.com/showcase/discoversaintluciawell', 'https://wa.me/16478745565']
      .every((u) => by('/').includes('href="' + u + '" target="_blank" rel="noopener me" aria-label="')));
+ok('the channels appear in order: Instagram, Facebook, LinkedIn, WhatsApp',
+   (by('/').match(/class="footer-social"[\s\S]*?<\/ul>/)[0].match(/href="https:\/\/(?:www\.)?(instagram|facebook|linkedin|wa)\./g) || [])
+     .map((m) => m.replace(/^href="https:\/\/(?:www\.)?/, '').replace('.', '')).join() === 'instagram,facebook,linkedin,wa');
 ok('the restrained conversion footers do not carry the channel row', !/footer-social/.test(by('/advisors/foundations')));
 
 const withMark = pages.filter((p) => /class="piton-mark/.test(p.html) && !/\/404$/.test(p.url));
