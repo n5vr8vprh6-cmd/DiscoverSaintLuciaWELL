@@ -82,7 +82,7 @@ ok('every content page carries the Pitons mark', withMark.length >= pages.length
 const header = (h) => h.slice(h.indexOf('<header'), h.indexOf('</header>'));
 const footer = (h) => h.slice(h.indexOf('<footer'), h.indexOf('</footer>'));
 ok('the header lockup has the mark, static (a mark that performs on every page is noise)',
-   /class="piton-mark"[^>]*height="24"/.test(header(home)) && !/piton-mark--animate/.test(header(home)));
+   /class="piton-mark"[^>]*height="28"/.test(header(home)) && !/piton-mark--animate/.test(header(home)));
 ok('the footer has the mark, static', /class="piton-mark"/.test(footer(home)) && !/piton-mark--animate/.test(footer(home)));
 ok('the home hero signature is animated and breathes', /piton-mark piton-mark--animate piton-mark--breathe/.test(home));
 ok('the closing invitation on /practitioners is animated (and does not breathe)',
@@ -215,7 +215,7 @@ ok('the ring\'s sonar-ping animation is gone', !/sig-ping/.test(css) && !/cta-pi
 ok('the Foundations page drops every animation under reduced motion (mark stays drawn)',
    /prefers-reduced-motion: reduce\)[\s\S]{0,400}animation: none !important/.test(read('advisors/foundations/css/site.css')));
 ok('the narrow-phone header steps the mark down so the row still fits',
-   /max-width: 420px[\s\S]{0,700}\.piton-mark \{ height: 20px/.test(read('css/chrome.css')) && /max-width: 360px[\s\S]{0,200}\.piton-mark \{ height: 18px/.test(read('css/chrome.css')));
+   /max-width: 420px[\s\S]{0,700}\.piton-mark \{ height: 22px/.test(read('css/chrome.css')) && /max-width: 360px[\s\S]{0,200}\.piton-mark \{ height: 20px/.test(read('css/chrome.css')));
 
 console.log('\n  ' + '─'.repeat(62));
 console.log(`  ${pass} passed, ${fail} failed\n`);
