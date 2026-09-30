@@ -23,8 +23,8 @@ METHOD
   3. Smoothed with a Gaussian (sigma 30px). That is what rounds the tips — the
      softening the brand wants is applied to the REAL profile, not drawn on top.
   4. Simplified to a handful of anchor points and joined with a Catmull-Rom spline
-     converted to cubic Beziers, then mapped into the mark's 96 x 36 box (the
-     uniform scale on y, a 6% horizontal squeeze so the mark is a little less wide).
+     converted to cubic Beziers, then mapped into the mark's 96 x 46 box, with the
+     heights exaggerated 1.4x (see VERTICAL_EXAGGERATION) and a 6% horizontal squeeze.
 """
 import sys, json
 import numpy as np
@@ -79,9 +79,13 @@ Ys = BASE - (BASE - Ys) * ((BASE - top_true) / (BASE - top_sm))
 
 # --- 4 · into the mark's box --------------------------------------------------------
 X0, Y0 = X.min(), Y.min()
-SX, SY = 0.0725, 0.0774
+# VERTICAL_EXAGGERATION: the faithful profile is low and wide (peaks about a third as
+# tall as the mark is wide) and read as flat next to how the Pitons FEEL. Stretching
+# height by 1.4x (0.0774 -> 0.108) gives them the spire-like presence of the hero
+# photograph while keeping every proportion between the features.
+SX, SY = 0.0725, 0.108
 def mx(v): return 9 + (v - X0) * SX
-def my(v): return 6 + (v - Y0) * SY
+def my(v): return 5 + (v - Y0) * SY
 P = np.stack([mx(X), my(Ys)], 1)
 
 def sample(P, step=4.4):

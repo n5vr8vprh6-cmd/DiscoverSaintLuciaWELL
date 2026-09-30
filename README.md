@@ -185,7 +185,12 @@ two-thirds the height** with a short steep left side and a long gentle slope to 
 sea on its right. `tools/brand-test.js` pins those properties on the path. (The
 photograph is not committed; the script and its numbers are.) Two earlier cuts — a
 symmetric "M" with a coral dot, then the same "M" softened — read masculine and
-then generic; asymmetry and a real profile are what fixed that.
+then generic; asymmetry and a real profile are what fixed that. A third round
+found the faithful profile still read as *flat* — about a third as tall as it is wide,
+nothing like how the Pitons feel — so **heights are exaggerated 1.4x**
+(`VERTICAL_EXAGGERATION` in the derive script; viewBox 96 x 46). Same proportions
+between the features, more spire. `brand-test` pins the result: height at least 45%
+of width, and a steep Gros flank.
 
 **The light is golden hour, not a dot.** A warm radial glow (gold core, amber,
 coral falloff) and a soft-edged sun disc sit in the saddle, clipped to the sky
@@ -196,14 +201,20 @@ this mark.
 
 The line is `currentColor` (ink on the cream header, paper on dark), so there is no
 per-placement colour logic; the light is fixed warm colour. `pitonsMark({ height,
-animate, breathe, sun })` is the entry point (viewBox 96 x 36); `pitonsMarkInner` is
+animate, breathe, sun })` is the entry point (viewBox 96 x 46); `pitonsMarkInner` is
 the same drawing without the wrapper, used by the favicons and the share image.
 Every mark needs its own gradient/clip ids (ids are document-wide), hence the counter
 and the explicit `-f1..` suffixes on the Foundations page's pasted copies.
 
 - **Static** in the header and footers (seen on every page).
 - **Animated** (`animate: true`): the hero signature and the closing invitation. The
-  peaks draw left to right (`pathLength=1` dash) with a blurred gold trail, then the
+  line is **written like a signature** (`pathLength=1` dash, 3.8s, blurred gold trail
+  behind the pen): two brisk strokes for Gros and the saddle, a shorter climb to Petit,
+  the pen lifting a beat at Petit's tip, then Petit's long right slope as a slow
+  flourish that decelerates to a stop — the second Piton is the tail of the signature.
+  The pace lives in the `@keyframes piton-write` percentages, which are timed against
+  `PITON_WRITE` (the path-length fractions at each feature); `brand-test` recomputes
+  those from the path and fails if the keyframes drift. Then the
   light **rises out of the saddle** (translate + opacity on `.piton-sun`; because it
   is clipped to the sky, lifting it from below reads as sunrise behind the
   mountains). The hero's light keeps a slow breath, paused off-screen. See

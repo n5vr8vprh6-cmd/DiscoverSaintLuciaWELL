@@ -82,7 +82,7 @@ ok('every content page carries the Pitons mark', withMark.length >= pages.length
 const header = (h) => h.slice(h.indexOf('<header'), h.indexOf('</header>'));
 const footer = (h) => h.slice(h.indexOf('<footer'), h.indexOf('</footer>'));
 ok('the header lockup has the mark, static (a mark that performs on every page is noise)',
-   /class="piton-mark"[^>]*height="22"/.test(header(home)) && !/piton-mark--animate/.test(header(home)));
+   /class="piton-mark"[^>]*height="24"/.test(header(home)) && !/piton-mark--animate/.test(header(home)));
 ok('the footer has the mark, static', /class="piton-mark"/.test(footer(home)) && !/piton-mark--animate/.test(footer(home)));
 ok('the home hero signature is animated and breathes', /piton-mark piton-mark--animate piton-mark--breathe/.test(home));
 ok('the closing invitation on /practitioners is animated (and does not breathe)',
@@ -99,7 +99,7 @@ ok('the light is golden-hour glow (gold core, amber, coral falloff), not a dot',
      && /<radialGradient[\s\S]{0,500}#FFD08A[\s\S]{0,300}#EF6A4A/.test(home)
      && !/<circle class="piton-[^"]*"[^>]*fill="#EF6A4A"/.test(home));   // (the WELL Compass legitimately has a coral circle)
 ok('the light is clipped to the sky above the skyline, so it reads as behind the mountains',
-   /<g clip-path="url\(#pc-[\w-]+\)"><g class="piton-sun">/.test(home) && /<clipPath id="pc-[\w-]+"><path d="M9\.0 32\.0[^"]* Z"\/>/.test(home));
+   /<g clip-path="url\(#pc-[\w-]+\)"><g class="piton-sun">/.test(home) && /<clipPath id="pc-[\w-]+"><path d="M9\.0 41\.3[^"]* Z"\/>/.test(home));
 ok('there is no halo ring any more (the sunrise replaced the circle motif)', !pages.some((pg) => /piton-halo/.test(pg.html)));
 ok('gradient and clip ids are unique within every page (ids are document-wide; a clash would blank a mark)',
    pages.every((pg) => { const ids = (pg.html.match(/id="p[asc]-[\w-]+"/g) || []); return new Set(ids).size === ids.length; }));
@@ -108,11 +108,11 @@ ok('marks are decorative to assistive tech (the wordmark text names the brand)',
 /* ── 2 · one geometry ─────────────────────────────────────────────────── */
 console.log('\n  One geometry');
 const brand = require('../lib/brand.js');
-const svg = brand.pitonsMark({ height: 22 });
+const svg = brand.pitonsMark({ height: 24 });
 const D = brand.PITON_PATH;
 const svgFull = brand.pitonsMark({ height: 36, animate: true });
 ok('lib/brand.js exports pitonsMark and no longer exports ringMark', typeof brand.pitonsMark === 'function' && brand.ringMark === undefined);
-ok('the mark is 2.67:1 (width follows height)', /width="58\.7" height="22" viewBox="0 0 96 36"/.test(svg), svg.slice(0, 120));
+ok('the mark is 2.09:1 (width follows height)', /width="50\.1" height="24" viewBox="0 0 96 46"/.test(svg), svg.slice(0, 120));
 ok('a mark with no animation has no glow-trail layer; an animated one has', !/piton-glow/.test(svg) && /piton-glow/.test(brand.pitonsMark({ animate: true })));
 ok('the light can be dropped for the tiniest renderings', !/piton-sun/.test(brand.pitonsMark({ sun: false })));
 ok('the icon generator gets the mark from lib/brand.js and holds no copy of the drawing',
@@ -142,6 +142,46 @@ ok('Petit\'s right slope is gentler than Gros\'s right flank (the long slope to 
   return slope(pr) < 0.6 * slope(gr);
 })());
 ok('the light sits in the saddle, half set into the valley', (() => { const m = /class="piton-disc" cx="([\d.]+)" cy="([\d.]+)"/.exec(svgFull); return m && Math.abs(+m[1] - vx) < 0.5 && Math.abs(+m[2] - vy) < 1.5; })());
+
+/* MAJESTY. The faithful profile measured about a third as tall as it is wide and
+   read as flat; heights were stretched 1.4x. Pin that so nobody "corrects" it back. */
+const markW = Math.max(...pts.map((q) => q[0])) - Math.min(...pts.map((q) => q[0]));
+const markH = foot - gros[1];
+ok('the mark is tall enough to feel like spires, not hills (height at least 45% of its width)', markH / markW > 0.45, `height ${markH.toFixed(1)} / width ${markW.toFixed(1)} = ${(markH / markW).toFixed(2)}`);
+ok('Gros\'s right flank is steep (a spire, not a slope): steeper than 1.3', (() => {
+  const a = pts.filter((q) => q[0] > gros[0] + 1 && q[0] < vx - 2); const dy = a[a.length - 1][1] - a[0][1], dx = a[a.length - 1][0] - a[0][0]; return dy / dx > 1.3;
+})());
+
+/* THE SIGNATURE. The line is written, not faded in: brisk strokes for the peaks, a
+   lift at Petit's tip, then Petit's long right slope as a slow flourish. */
+const segs = [...D.matchAll(/([MC])([^MC]+)/g)].map((m) => m[2].trim().split(/\s+/).map(Number));
+const cub = (a, b, c, d, t) => [0, 1].map((i) => (1 - t) ** 3 * a[i] + 3 * (1 - t) ** 2 * t * b[i] + 3 * (1 - t) * t * t * c[i] + t ** 3 * d[i]);
+const dense = [segs[0]]; let from = segs[0];
+segs.slice(1).forEach((sg) => { for (let k = 1; k <= 50; k++) dense.push(cub(from, [sg[0], sg[1]], [sg[2], sg[3]], [sg[4], sg[5]], k / 50)); from = [sg[4], sg[5]]; });
+const cum = [0]; for (let i = 1; i < dense.length; i++) cum.push(cum[i - 1] + Math.hypot(dense[i][0] - dense[i - 1][0], dense[i][1] - dense[i - 1][1]));
+const fracAt = (pt) => { let bi = 0, bd = 1e9; dense.forEach((q, i) => { const d = Math.hypot(q[0] - pt[0], q[1] - pt[1]); if (d < bd) { bd = d; bi = i; } }); return cum[bi] / cum[cum.length - 1]; };
+const W = brand.PITON_WRITE;
+ok('PITON_WRITE matches the path: fractions at Gros, the saddle and Petit are within 0.01 of the drawing',
+   Math.abs(fracAt(gros) - W.gros) < 0.01 && Math.abs(fracAt([vx, vy]) - W.valley) < 0.01 && Math.abs(fracAt(petit) - W.petit) < 0.01,
+   `computed ${fracAt(gros).toFixed(3)} ${fracAt([vx, vy]).toFixed(3)} ${fracAt(petit).toFixed(3)} vs ${JSON.stringify(W)}`);
+const kf = (file) => {
+  const css = read(file).replace(/\r\n/g, '\n'); const i = css.indexOf('@keyframes piton-write'); if (i < 0) return null;
+  const body = css.slice(i, css.indexOf('\n}', i));
+  return [...body.matchAll(/(\d+)%\s*\{\s*stroke-dashoffset:\s*([\d.]+)/g)].map((m) => [+m[1] / 100, +m[2]]);
+};
+const frames = kf('css/site.css');
+ok('the writing keyframes exist and land on the measured features (1 − fraction)', !!frames && [[W.gros], [W.valley], [W.petit]].every(([f]) => frames.some(([, o]) => Math.abs(o - (1 - f)) < 0.01)), JSON.stringify(frames));
+ok('the Foundations page uses the same keyframes', JSON.stringify(kf('advisors/foundations/css/site.css')) === JSON.stringify(frames));
+ok('the pen lifts a beat at Petit\'s tip (a hold between two keyframes at the same offset)', !!frames && frames.some((f, i) => i > 0 && f[1] === frames[i - 1][1] && f[1] > 0.1 && f[1] < 0.6));
+ok('Petit\'s long slope is written SLOWER than the peaks (a flourish, not a rush)', (() => {
+  if (!frames) return false;
+  const hold = frames.findIndex((f, i) => i > 0 && f[1] === frames[i - 1][1] && f[1] > 0.1 && f[1] < 0.6);
+  const speed = (a, b) => Math.abs(frames[b][1] - frames[a][1]) / (frames[b][0] - frames[a][0]);
+  return speed(hold, frames.length - 1) < 0.65 * speed(0, hold - 1);
+})());
+ok('the animation is slow enough to read as handwriting (a few seconds, not a flick)', /piton-write 3\.8s linear/.test(read('css/site.css')));
+ok('the light still rises as before (same translate + opacity), just timed to the slower pen',
+   /is-drawn \.piton-sun \{\s*opacity: 1; translate: 0 0;\s*transition: opacity 1\.8s var\(--ease-out-quint\) 1\.7s, translate 2\.8s var\(--ease-out-expo\) 1\.7s/.test(read('css/site.css')));
 
 /* ── 3 · assets and the head ──────────────────────────────────────────── */
 console.log('\n  Assets and <head>');
@@ -173,7 +213,7 @@ ok('the ring\'s sonar-ping animation is gone', !/sig-ping/.test(css) && !/cta-pi
 ok('the Foundations page drops every animation under reduced motion (mark stays drawn)',
    /prefers-reduced-motion: reduce\)[\s\S]{0,400}animation: none !important/.test(read('advisors/foundations/css/site.css')));
 ok('the narrow-phone header steps the mark down so the row still fits',
-   /max-width: 420px[\s\S]{0,700}\.piton-mark \{ height: 18px/.test(read('css/chrome.css')) && /max-width: 360px[\s\S]{0,200}\.piton-mark \{ height: 16px/.test(read('css/chrome.css')));
+   /max-width: 420px[\s\S]{0,700}\.piton-mark \{ height: 20px/.test(read('css/chrome.css')) && /max-width: 360px[\s\S]{0,200}\.piton-mark \{ height: 18px/.test(read('css/chrome.css')));
 
 console.log('\n  ' + '─'.repeat(62));
 console.log(`  ${pass} passed, ${fail} failed\n`);

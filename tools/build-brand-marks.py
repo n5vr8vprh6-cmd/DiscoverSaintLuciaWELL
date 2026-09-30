@@ -37,11 +37,11 @@ def mark_inner(uid, stroke, color):
     return subprocess.run(['node', '-e', js], cwd=ROOT, check=True, capture_output=True, text=True).stdout
 
 
-def tile_svg(rounded=True, scale=0.35):
+def tile_svg(rounded=True, scale=0.37):
     """A square tile with the mark centred a touch below middle (the light rises
-    above it). The mark occupies x 9-87, y 6-32 of its own 96 x 36 box."""
+    above it). The mark occupies x 9-87, y 5-42 of its own 96 x 46 box."""
     tx = 16 - 48 * scale
-    ty = 17 - 19.2 * scale
+    ty = 17 - 24 * scale
     rx = ' rx="7"' if rounded else ''
     inner = mark_inner('-t', round(2.3 / scale, 2), PAPER)
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
@@ -94,7 +94,7 @@ def render_og():
     built = os.path.join(ROOT, 'tools', 'brand', 'og.build.html')
     out = os.path.join(ROOT, 'assets', 'og-default.jpg')
     tmp = out + '.png'
-    mark = ('<svg width="117" height="44" viewBox="0 0 96 36" aria-hidden="true">'
+    mark = ('<svg width="118" height="56" viewBox="0 0 96 46" aria-hidden="true">'
             + mark_inner('-og', 2.2, PAPER) + '</svg>')
     with open(src, encoding='utf8') as f:
         html = f.read().replace('{{MARK}}', mark)
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     write('advisors/foundations/assets/favicon.svg', svg)
     render_icon(svg, 32, 'assets/favicon-32.png', transparent=True)
     render_icon(svg, 192, 'assets/icon-192.png', transparent=True)
-    render_icon(tile_svg(rounded=False, scale=0.32), 180, 'assets/apple-touch-icon.png', transparent=False)
+    render_icon(tile_svg(rounded=False, scale=0.34), 180, 'assets/apple-touch-icon.png', transparent=False)
     if os.path.exists(os.path.join(ROOT, 'tools', 'brand', 'og.html')):
         render_og()
     else:

@@ -262,12 +262,21 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
    reduced motion the rule at the top of this block drops every animation, which
    leaves the mark drawn and complete. */
 .hero-journeyline .piton-line,
-.hero-journeyline .piton-glow { stroke-dasharray: 1; animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
-.hero-journeyline .piton-line { animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both, piton-show 0.01s 0.4s both; }
-.hero-journeyline .piton-glow { filter: blur(1.6px); animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both, piton-glow 2.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both; }
-.hero-journeyline .piton-sun { animation: piton-rise 2.8s cubic-bezier(0.16, 1, 0.3, 1) 1.4s both; }
-@keyframes piton-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes piton-glow { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0.28; } }
+.hero-journeyline .piton-glow { stroke-dasharray: 1; }
+.hero-journeyline .piton-line { animation: piton-write 3.8s linear 0.4s both, piton-show 0.01s 0.4s both; }
+.hero-journeyline .piton-glow { filter: blur(1.6px); animation: piton-write 3.8s linear 0.4s both, piton-glow 4.4s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both; }
+.hero-journeyline .piton-sun { animation: piton-rise 2.8s cubic-bezier(0.16, 1, 0.3, 1) 2.1s both; }
+/* Written like a signature: brisk strokes for the peaks, a lift at Petit's tip, then
+   Petit's long slope as a slow flourish (same keyframes as css/site.css). */
+@keyframes piton-write {
+  0%   { stroke-dashoffset: 1;        animation-timing-function: cubic-bezier(0.3, 0.05, 0.25, 1); }
+  25%  { stroke-dashoffset: 0.649; animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+  36%  { stroke-dashoffset: 0.42; animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+  48%  { stroke-dashoffset: 0.28; }
+  53%  { stroke-dashoffset: 0.28; animation-timing-function: cubic-bezier(0.2, 0.55, 0.2, 1); }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes piton-glow { 0% { opacity: 0; } 20% { opacity: 0.85; } 100% { opacity: 0.22; } }
 @keyframes piton-show { from { opacity: 0; } to { opacity: 1; } }
 @keyframes piton-rise { from { opacity: 0; translate: 0 7px; } to { opacity: 1; translate: 0 0; } }
 .hero-journeyline .thread { animation: thread-breathe 4.5s ease-in-out infinite; }

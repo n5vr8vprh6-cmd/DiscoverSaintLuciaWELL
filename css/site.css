@@ -2590,24 +2590,36 @@ body[data-motion="ready"] .piton-mark--animate .piton-glow { stroke-dasharray: 1
 body[data-motion="ready"] .piton-mark--animate .piton-line { opacity: 0; }
 body[data-motion="ready"] .piton-mark--animate .piton-glow { filter: blur(1.6px); }
 body[data-motion="ready"] .piton-mark--animate .piton-sun { opacity: 0; translate: 0 7px; }
+/* WRITTEN LIKE A SIGNATURE. Linear duration; the pace lives in the keyframes below:
+   two brisk strokes for Gros and the saddle, a shorter climb to Petit, the pen
+   lifting a beat at Petit's tip, then Petit's long right slope as a slow flourish
+   that decelerates to a stop — the second Piton is the tail of the signature. */
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line,
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
   stroke-dashoffset: 0;
-  transition: stroke-dashoffset 1.5s var(--ease-out-expo);
+  animation: piton-write 3.8s linear both;
 }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line { opacity: 1; }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-sun {
   opacity: 1; translate: 0 0;
-  transition: opacity 1.8s var(--ease-out-quint) 1s, translate 2.8s var(--ease-out-expo) 1s;
+  transition: opacity 1.8s var(--ease-out-quint) 1.7s, translate 2.8s var(--ease-out-expo) 1.7s;
 }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
-  animation: piton-glow 2.8s var(--ease-out-quint) both;
+  animation: piton-write 3.8s linear both, piton-glow 4.4s var(--ease-out-quint) both;
 }
 body[data-motion="ready"] .piton-mark--breathe.is-drawn .piton-aura {
-  animation: piton-breathe 6s ease-in-out 3.8s infinite alternate;
+  animation: piton-breathe 6s ease-in-out 4.6s infinite alternate;
 }
 body[data-motion="ready"] .piton-mark--breathe:not(.is-live) .piton-aura { animation-play-state: paused; }
-@keyframes piton-glow    { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0.22; } }
+@keyframes piton-write {
+  0%   { stroke-dashoffset: 1;        animation-timing-function: cubic-bezier(0.3, 0.05, 0.25, 1); }
+  25%  { stroke-dashoffset: 0.649; animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+  36%  { stroke-dashoffset: 0.42; animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+  48%  { stroke-dashoffset: 0.28; }
+  53%  { stroke-dashoffset: 0.28; animation-timing-function: cubic-bezier(0.2, 0.55, 0.2, 1); }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes piton-glow    { 0% { opacity: 0; } 20% { opacity: 0.85; } 100% { opacity: 0.22; } }
 @keyframes piton-breathe { from { opacity: 0.78; } to { opacity: 1; } }
 body[data-motion="ready"] .hero-signature .thread {
   background: linear-gradient(180deg, var(--gold), rgba(217,160,60,0));

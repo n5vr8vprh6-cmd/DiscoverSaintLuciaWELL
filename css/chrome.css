@@ -792,13 +792,13 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   /* The mark is 2.3x wider than tall (the ring was square): step its height down
      so the header row still fits, exactly as the type does below. Width follows
      from the viewBox. */
-  .brand-lockup .piton-mark { height: 18px; width: auto; }
+  .brand-lockup .piton-mark { height: 20px; width: auto; }
   .brand-words b { font-size: 0.74rem; letter-spacing: 0.08em; white-space: nowrap; }
   .brand-words i { font-size: 0.58rem; letter-spacing: 0.12em; white-space: nowrap; }
 }
 
 @media (max-width: 360px) {
-  .brand-lockup .piton-mark { height: 16px; }
+  .brand-lockup .piton-mark { height: 18px; }
   .brand-words b { font-size: 0.66rem; letter-spacing: 0.05em; }
   .brand-words i { font-size: 0.52rem; letter-spacing: 0.09em; }
 }
