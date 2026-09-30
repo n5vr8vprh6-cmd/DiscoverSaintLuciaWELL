@@ -2618,6 +2618,11 @@ body[data-motion="ready"] .piton-mark--breathe.is-drawn .piton-aura {
   animation: piton-breathe 6s ease-in-out 6.4s infinite alternate;
 }
 body[data-motion="ready"] .piton-mark--breathe:not(.is-live) .piton-aura { animation-play-state: paused; }
+/* Seen already this session (js/motion.js): finished at once, light in place. */
+body[data-motion="ready"] .piton-mark--seen.is-drawn .piton-line,
+body[data-motion="ready"] .piton-mark--seen.is-drawn .piton-glow { animation: none; }
+body[data-motion="ready"] .piton-mark--seen.is-drawn .piton-sun { transition: none; }
+body[data-motion="ready"] .piton-mark--breathe.piton-mark--seen.is-drawn .piton-aura { animation-delay: 0s; }
 @keyframes piton-write {
   0%   { stroke-dashoffset: 1;        animation-timing-function: cubic-bezier(0.3, 0.05, 0.25, 1); }
   25%  { stroke-dashoffset: 0.649; animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }

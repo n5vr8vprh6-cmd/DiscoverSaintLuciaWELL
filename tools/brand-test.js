@@ -77,6 +77,11 @@ ok('no page still carries the ring mark\'s three-circle markup (teal r=11.5, gol
 ok('the home hero keeps concentric rings as decoration beside the coordinates (not the logo)',
    /class="hero-signature"[^>]*>\s*<svg class="hero-rings"/.test(by('/')) && !/class="ring-mark"/.test(by('/')));
 
+ok('the hero mark performs once per session: seen flag in sessionStorage, finished state in CSS, closing invitation unaffected',
+   /closest\('\.hero-mark'\)/.test(read('js/motion.js')) && /sessionStorage\.setItem\(SEEN/.test(read('js/motion.js'))
+   && /piton-mark--seen\.is-drawn \.piton-sun \{ transition: none; \}/.test(read('css/site.css'))
+   && !/hero-mark[^>]*>[\s\S]{0,40}piton-mark--seen/.test(by('/')));
+
 const withMark = pages.filter((p) => /class="piton-mark/.test(p.html) && !/\/404$/.test(p.url));
 const home = by('/');
 ok('every content page carries the Pitons mark', withMark.length >= pages.length - 3,

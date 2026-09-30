@@ -218,13 +218,22 @@
      pause when it is not. Same failsafe as the reveals: if the observer never
      delivers, draw it anyway rather than leave the mark blank.
      ══════════════════════════════════════════════════════════════════════ */
+  /* The home hero's mark performs once per browser session. Coming back to the page
+     (logo, back button) shows it finished at once — the same four seconds every time
+     is a tax, not a welcome. Only the hero: the closing invitation is met once per
+     visit anyway. Private mode without storage simply animates every time. */
+  var SEEN = 'dsw-hero-mark-seen';
+  function heroSeen() { try { return sessionStorage.getItem(SEEN) === '1'; } catch (e) { return false; } }
+  function markHeroSeen() { try { sessionStorage.setItem(SEEN, '1'); } catch (e) { /* ignore */ } }
   document.querySelectorAll('.piton-mark--animate').forEach(function (mark) {
+    var isHero = !!mark.closest('.hero-mark');
+    if (isHero && heroSeen()) { mark.classList.add('piton-mark--seen', 'is-drawn', 'is-live'); }
     if (!('IntersectionObserver' in window)) { mark.classList.add('is-drawn', 'is-live'); return; }
     var drawn = false, delivered = false;
     new IntersectionObserver(function (entries) {
       delivered = true;
       entries.forEach(function (e) {
-        if (e.isIntersecting) { drawn = true; mark.classList.add('is-drawn', 'is-live'); }
+        if (e.isIntersecting) { drawn = true; mark.classList.add('is-drawn', 'is-live'); if (isHero) markHeroSeen(); }
         else mark.classList.remove('is-live');
       });
     }, { threshold: 0.6 }).observe(mark);
