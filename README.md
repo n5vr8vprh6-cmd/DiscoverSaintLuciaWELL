@@ -170,40 +170,59 @@ contrast:
 - `--eclipse-on-copper` `#0A0E16` added. Midnight on a copper fill lands at
   4.41:1 — just under AA — so the copper button uses this instead (4.62:1).
 
-Full-saturation deck colour (the coral sun, the gold glow) appears **only** in the
+Full-saturation deck colour (the golden-hour light) appears **only** in the
 Pitons mark, inline in `lib/brand.js`. Eclipse keeps its own midnight/copper world.
 
 ### The Pitons mark (replaced the concentric ring, 2026-09-30)
 
-Two peaks as one continuous line with a coral sun in the valley, rebuilt as a
-vector from the supplied artwork — the line is a five-point polyline, measured
-from the pixels (`PITON_POINTS` in `lib/brand.js`). The line is `currentColor`
-(ink on the cream header, paper on dark), so there is no per-placement colour
-logic; only the sun is fixed. `pitonsMark({ height, animate, breathe, sun })` is the
-one entry point. Sun off below ~20px.
+The outline is **the real Pitons skyline, measured from a photograph** — not an
+"M" drawn to look like mountains. `tools/derive-piton-path.py` takes a photo of the
+Pitons, separates sky from mountain by the green channel, reads the skyline,
+smooths it (which is what rounds the tips), and emits `PITON_PATH` in
+`lib/brand.js`. What makes it them: **Gros Piton tall** with a small shoulder on its
+left and a steep, near-straight right flank; a **deep saddle**; **Petit about
+two-thirds the height** with a short steep left side and a long gentle slope to the
+sea on its right. `tools/brand-test.js` pins those properties on the path. (The
+photograph is not committed; the script and its numbers are.) Two earlier cuts — a
+symmetric "M" with a coral dot, then the same "M" softened — read masculine and
+then generic; asymmetry and a real profile are what fixed that.
+
+**The light is golden hour, not a dot.** A warm radial glow (gold core, amber,
+coral falloff) and a soft-edged sun disc sit in the saddle, clipped to the sky
+*above the skyline* (`PITON_SKY`), so it reads as light coming from behind the
+mountains with the sun half set into the valley; it never shows through the peaks.
+Nothing has a hard edge. The brand rule stands: full-saturation colour belongs to
+this mark.
+
+The line is `currentColor` (ink on the cream header, paper on dark), so there is no
+per-placement colour logic; the light is fixed warm colour. `pitonsMark({ height,
+animate, breathe, sun })` is the entry point (viewBox 96 x 36); `pitonsMarkInner` is
+the same drawing without the wrapper, used by the favicons and the share image.
+Every mark needs its own gradient/clip ids (ids are document-wide), hence the counter
+and the explicit `-f1..` suffixes on the Foundations page's pasted copies.
 
 - **Static** in the header and footers (seen on every page).
-- **Animated** (`animate: true`): the hero signature and the closing invitation.
-  Drawn left to right (`pathLength=1` dash), the sun arrives, and a blurred gold
-  copy travels with the pen and settles into a halo (`css/site.css` §1, triggered
-  by `js/motion.js` §5a adding `.is-drawn`). The hero's halo keeps a slow breath,
-  paused off-screen. With no motion gate, no script or reduced motion the mark is
-  simply drawn. The Foundations page ships its own stack and does the draw in
-  CSS on load.
-- **Assets** come from one script: `py tools/build-brand-marks.py` writes
-  `assets/favicon.svg` (and the Foundations copy), `favicon-32.png`,
-  `apple-touch-icon.png`, `icon-192.png` and `assets/og-default.jpg` (rendered
-  from `tools/brand/og.html` and the original hero photograph — the old JPG had
-  the ring baked in). The PNGs are rendered by headless Chrome, not PIL, so peaks
-  stay mitred. `tools/brand-test.js` fails if the script's geometry and
-  `lib/brand.js` drift apart.
+- **Animated** (`animate: true`): the hero signature and the closing invitation. The
+  peaks draw left to right (`pathLength=1` dash) with a blurred gold trail, then the
+  light **rises out of the saddle** (translate + opacity on `.piton-sun`; because it
+  is clipped to the sky, lifting it from below reads as sunrise behind the
+  mountains). The hero's light keeps a slow breath, paused off-screen. See
+  `css/site.css` §1, triggered by `js/motion.js` §5a adding `.is-drawn`. With no
+  motion gate, no script or reduced motion the mark is simply drawn with its light in
+  place. The Foundations page ships its own stack and does the draw and rise in CSS
+  on load.
+- **Assets** come from one script, `py tools/build-brand-marks.py`, which asks Node
+  for the mark's markup (so nothing repeats the drawing): `assets/favicon.svg` (and
+  the Foundations copy), `favicon-32.png`, `apple-touch-icon.png`, `icon-192.png`
+  and `assets/og-default.jpg` (from `tools/brand/og.html` and the original hero
+  photograph — the old JPG had the ring baked in). PNGs are rendered by headless
+  Chrome.
 - **Deliberately still circles:** the WELL Compass centre, the Hub "thinking"
   loader (`.gtm-ring`) and the practitioners ecosystem pings. They do different
   jobs from the logo. The Eclipse mark is a separate identity.
 - **Not converted (other projects):** the printed brochure, the decks, the Field
   Guide, the Well Destination Foundations site and the root-level HTML/PPTX/PDF
   collateral still carry the ring.
-
 ### Widths that contain display type are set in rem, never `ch`
 
 `ch` resolves against the element's *own* font-size. On a wrapper inheriting

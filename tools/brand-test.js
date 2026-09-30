@@ -91,16 +91,18 @@ const adv = by('/advisors/intro');
 ok('a conversion-layout page has the mark in header and footer', /piton-mark/.test(header(adv)) && /piton-mark/.test(footer(adv)));
 ok('the Eclipse mark is untouched (a separate identity)', /eclipse-mark/.test(by('/eclipse')));
 ok('the Foundations hero mark is the Pitons mark, with its glow layer',
-   /hero-journeyline[\s\S]{0,1400}piton-glow/.test(by('/advisors/foundations')));
+   /hero-journeyline[\s\S]{0,4000}piton-glow/.test(by('/advisors/foundations')));
 ok('the line is currentColor (so it is right on any surface) with round joins and caps — softened, not mitred',
    /class="piton-line"[^>]*stroke="currentColor"[^>]*stroke-linejoin="round" stroke-linecap="round"/.test(home));
-ok('the sun is a soft glow (radial gradient, coral core), NOT a hard dot',
-   /class="piton-sun"[^>]*fill="url\(#piton-sun-\d+\)"/.test(home) && /<radialGradient[\s\S]{0,400}#EF6A4A/.test(home)
-     && !/<circle class="piton-sun"[^>]*fill="#EF6A4A"/.test(home));
-ok('gradient ids are unique within every page (ids are document-wide; a clash would blank a mark)',
-   pages.every((pg) => { const ids = (pg.html.match(/id="piton-sun-[\w-]+"/g) || []); return new Set(ids).size === ids.length; }));
-ok('the halo ring is on the large marks and not on the header (a hairline at 22px is noise)',
-   /class="piton-halo"/.test(home.slice(home.indexOf('hero-signature'))) && !/piton-halo/.test(header(home)));
+ok('the light is golden-hour glow (gold core, amber, coral falloff), not a dot',
+   /class="piton-aura"[^>]*fill="url\(#pa-[\w-]+\)"/.test(home) && /class="piton-disc"[^>]*fill="url\(#ps-[\w-]+\)"/.test(home)
+     && /<radialGradient[\s\S]{0,500}#FFD08A[\s\S]{0,300}#EF6A4A/.test(home)
+     && !/<circle class="piton-[^"]*"[^>]*fill="#EF6A4A"/.test(home));   // (the WELL Compass legitimately has a coral circle)
+ok('the light is clipped to the sky above the skyline, so it reads as behind the mountains',
+   /<g clip-path="url\(#pc-[\w-]+\)"><g class="piton-sun">/.test(home) && /<clipPath id="pc-[\w-]+"><path d="M9\.0 32\.0[^"]* Z"\/>/.test(home));
+ok('there is no halo ring any more (the sunrise replaced the circle motif)', !pages.some((pg) => /piton-halo/.test(pg.html)));
+ok('gradient and clip ids are unique within every page (ids are document-wide; a clash would blank a mark)',
+   pages.every((pg) => { const ids = (pg.html.match(/id="p[asc]-[\w-]+"/g) || []); return new Set(ids).size === ids.length; }));
 ok('marks are decorative to assistive tech (the wordmark text names the brand)', !/piton-mark[^>]*role="img"/.test(home) && /class="piton-mark[^>]*aria-hidden="true"/.test(home));
 
 /* ── 2 · one geometry ─────────────────────────────────────────────────── */
@@ -108,20 +110,38 @@ console.log('\n  One geometry');
 const brand = require('../lib/brand.js');
 const svg = brand.pitonsMark({ height: 22 });
 const D = brand.PITON_PATH;
+const svgFull = brand.pitonsMark({ height: 36, animate: true });
 ok('lib/brand.js exports pitonsMark and no longer exports ringMark', typeof brand.pitonsMark === 'function' && brand.ringMark === undefined);
-ok('the mark is 2.3:1 (width follows height)', /width="50\.6" height="22" viewBox="0 0 92 40"/.test(svg), svg.slice(0, 120));
-ok('a mark with no animation has no glow layer; an animated one has', !/piton-glow/.test(svg) && /piton-glow/.test(brand.pitonsMark({ animate: true })));
-ok('sun can be dropped for tiny sizes', !/piton-sun/.test(brand.pitonsMark({ sun: false })));
-ok('the icon generator uses the same path', read('tools/build-brand-marks.py').includes(`PATH = '${D}'`));
-ok('the share-image template uses the same path', read('tools/brand/og.html').includes(`d="${D}"`));
-ok('the favicon uses the same path', read('assets/favicon.svg').includes(`d="${D}"`));
+ok('the mark is 2.67:1 (width follows height)', /width="58\.7" height="22" viewBox="0 0 96 36"/.test(svg), svg.slice(0, 120));
+ok('a mark with no animation has no glow-trail layer; an animated one has', !/piton-glow/.test(svg) && /piton-glow/.test(brand.pitonsMark({ animate: true })));
+ok('the light can be dropped for the tiniest renderings', !/piton-sun/.test(brand.pitonsMark({ sun: false })));
+ok('the icon generator gets the mark from lib/brand.js and holds no copy of the drawing',
+   /pitonsMarkInner/.test(read('tools/build-brand-marks.py')) && !/PATH = '/.test(read('tools/build-brand-marks.py')));
+ok('the share-image template holds no copy either (a placeholder, filled at build)', /\{\{MARK\}\}/.test(read('tools/brand/og.html')) && !/<path/.test(read('tools/brand/og.html')));
+ok('the favicon is drawn from the same path', read('assets/favicon.svg').includes(`d="${D}"`));
 ok('the Foundations favicon is the same file', read('assets/favicon.svg') === read('advisors/foundations/assets/favicon.svg'));
 ok('the Foundations page\'s inline marks use the same path',
    (read('advisors/foundations/index.src.html').split(`class="piton-line" d="${D}"`).length - 1) === 3);
-ok('the path is soft: rounded tips and valley (three quadratic curves), no hard straight segments',
-   /^M3 37 /.test(D) && / 89 37$/.test(D) && (D.match(/Q/g) || []).length === 3 && !/[LHVZlhvz]/.test(D), D);
-ok('the peaks are where the supplied artwork puts them (tips near x 30 and 65, valley near x 46)',
-   (() => { const q = D.match(/Q(\S+) (\S+) (\S+) (\S+)/g).map((m) => m.slice(1).split(' ').map(Number)); return Math.abs(q[0][0] - 30) < 1.5 && Math.abs(q[1][0] - 46) < 1.5 && Math.abs(q[2][0] - 65) < 1.5; })(), D);
+
+/* THE SHAPE IS THE REAL PITONS. These are the properties that make it them — and
+   not a generic "M" — checked on the path itself. */
+const nums = D.match(/-?\d+(\.\d+)?/g).map(Number);
+const anchors = []; for (let i = 0; i < nums.length; i += 2) anchors.push([nums[i], nums[i + 1]]);
+const pts = [anchors[0]]; for (let i = 1; i + 2 < anchors.length; i += 3) pts.push(anchors[i + 2]);   // M, then each C's end point
+const [vx, vy] = brand.PITON_VALLEY;
+const left = pts.filter((q) => q[0] < vx), right = pts.filter((q) => q[0] > vx);
+const gros = left.reduce((m, q) => (q[1] < m[1] ? q : m)), petit = right.reduce((m, q) => (q[1] < m[1] ? q : m));
+const foot = Math.max(...pts.map((q) => q[1]));
+ok('the path is one smooth cubic curve: no straight segments, no hard corners', /^M[\d.]+ [\d.]+( C[\d. ]+)+$/.test(D) && !/[LHVZlhvzQ]/.test(D), D.slice(0, 60));
+ok('Gros Piton (left) is the taller: its tip sits well above Petit\'s', petit[1] - gros[1] > 0.2 * (foot - gros[1]), `gros ${gros}, petit ${petit}`);
+ok('Petit is roughly two-thirds the height of Gros (measured 0.67)', (() => { const r = (foot - petit[1]) / (foot - gros[1]); return r > 0.55 && r < 0.8; })());
+ok('there is a deep saddle between them, well below Petit\'s tip', vy - petit[1] > 6 && Math.abs(vx - (gros[0] + petit[0]) / 2) < 8, `valley ${vx},${vy}`);
+ok('Petit\'s right slope is gentler than Gros\'s right flank (the long slope to the sea)', (() => {
+  const gr = pts.filter((q) => q[0] > gros[0] && q[0] < vx), pr = pts.filter((q) => q[0] > petit[0]);
+  const slope = (a) => (a[a.length - 1][1] - a[0][1]) / (a[a.length - 1][0] - a[0][0]);
+  return slope(pr) < 0.6 * slope(gr);
+})());
+ok('the light sits in the saddle, half set into the valley', (() => { const m = /class="piton-disc" cx="([\d.]+)" cy="([\d.]+)"/.exec(svgFull); return m && Math.abs(+m[1] - vx) < 0.5 && Math.abs(+m[2] - vy) < 1.5; })());
 
 /* ── 3 · assets and the head ──────────────────────────────────────────── */
 console.log('\n  Assets and <head>');
@@ -145,7 +165,7 @@ ok('the hidden-until-drawn state exists only under body[data-motion="ready"]',
    hiders.length > 0 && hiders.every(([, i]) => /data-motion="ready"/.test(css.split('\n').slice(Math.max(0, i - 3), i + 1).join('\n'))),
    hiders.map(([l]) => l.trim()).join(' | '));
 ok('the sun\'s hidden state is gated the same way',
-   /body\[data-motion="ready"\] \.piton-mark--animate \.piton-sun \{\s*opacity: 0;/.test(css));
+   /body\[data-motion="ready"\] \.piton-mark--animate \.piton-sun \{ opacity: 0; translate: 0 7px; \}/.test(css));
 ok('the un-drawn line is also transparent (a round cap would otherwise draw a dot)',
    /body\[data-motion="ready"\] \.piton-mark--animate \.piton-line \{ opacity: 0; \}/.test(css));
 ok('the base rule leaves the glow invisible (a static mark has no halo)', /\.piton-mark \.piton-glow \{ opacity: 0; \}/.test(read('css/chrome.css')));

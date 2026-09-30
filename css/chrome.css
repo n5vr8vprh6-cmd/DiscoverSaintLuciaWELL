@@ -297,7 +297,6 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
    turns it on, so a mark with no motion is simply a drawn mark. */
 .piton-mark { display: block; flex: none; overflow: visible; }
 .piton-mark .piton-glow { opacity: 0; }
-.piton-mark .piton-halo { opacity: 0.34; }
 
 .brand-words {
   display: flex;

@@ -2568,51 +2568,47 @@ body[data-motion="ready"] .settled {
    the reduced-motion block at the end of this file.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── 1 · The Pitons mark draws, then glows ────────────────────────────────
-   Replaces the ring's sonar ping. The peaks are drawn left to right as one
-   line (stroke-dashoffset, pathLength=1, so it fits any size), the coral sun
-   arrives as the line finishes, and a blurred gold copy of the line travels with
-   the pen and then settles into a faint halo. On the hero the halo keeps a slow
-   breath, paused when the mark is off-screen (.is-live); on the closing
-   invitation it simply settles. Header and footer marks are static — they are
-   seen on every page, and a mark that performs every time is noise.
+/* ── 1 · The Pitons mark draws, then the light comes up ───────────────────
+   Replaces the ring's sonar ping. The peaks are drawn left to right as one line
+   (stroke-dashoffset, pathLength=1, so it fits any size) while a blurred gold copy
+   travels with the pen; then golden-hour light rises out of the saddle — the light
+   group is clipped to the sky above the skyline, so lifting it up from below reads
+   as the sun coming up behind the mountains, not as a glow sliding over them. The
+   hero keeps a slow breath in the light afterwards, paused when the mark is
+   off-screen (.is-live); on the closing invitation it simply settles. Header and
+   footer marks are static — they are on every page, and a mark that performs every
+   time is noise.
 
    Triggered by js/motion.js adding .is-drawn as the mark arrives. Everything is
    scoped to body[data-motion="ready"], so with no script, no motion gate or
-   reduced motion the mark is simply drawn and complete.
-   Only stroke-dashoffset, opacity, scale and a bounded blur on a ~80px SVG. */
+   reduced motion the mark is simply drawn with its light in place.
+   Only stroke-dashoffset, opacity, translate and a bounded blur on a ~90px SVG. */
 body[data-motion="ready"] .piton-mark--animate .piton-line,
 body[data-motion="ready"] .piton-mark--animate .piton-glow { stroke-dasharray: 1; stroke-dashoffset: 1; }
 /* Round caps draw a dot even on a zero-length dash, so the un-drawn line is also
    transparent (the draw itself switches it back on at once). */
 body[data-motion="ready"] .piton-mark--animate .piton-line { opacity: 0; }
 body[data-motion="ready"] .piton-mark--animate .piton-glow { filter: blur(1.6px); }
-body[data-motion="ready"] .piton-mark--animate .piton-sun {
-  opacity: 0; scale: 0.35;
-  transform-box: fill-box; transform-origin: center;
-}
-body[data-motion="ready"] .piton-mark--animate .piton-halo { opacity: 0; }
+body[data-motion="ready"] .piton-mark--animate .piton-sun { opacity: 0; translate: 0 7px; }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line,
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 1.5s var(--ease-out-expo);
 }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line { opacity: 1; }
-body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-halo { opacity: 0.34; transition: opacity 1.4s var(--ease-out-quint) 1.3s; }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-sun {
-  opacity: 1; scale: 1;
-  transition: opacity 0.5s var(--ease-out-quint) 1.1s, scale 0.9s var(--ease-out-expo) 1.1s;
+  opacity: 1; translate: 0 0;
+  transition: opacity 1.8s var(--ease-out-quint) 1s, translate 2.8s var(--ease-out-expo) 1s;
 }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
   animation: piton-glow 2.8s var(--ease-out-quint) both;
 }
-body[data-motion="ready"] .piton-mark--breathe.is-drawn .piton-glow {
-  animation: piton-glow 2.8s var(--ease-out-quint) both,
-             piton-breathe 5.5s ease-in-out 2.8s infinite alternate;
+body[data-motion="ready"] .piton-mark--breathe.is-drawn .piton-aura {
+  animation: piton-breathe 6s ease-in-out 3.8s infinite alternate;
 }
-body[data-motion="ready"] .piton-mark--breathe:not(.is-live) .piton-glow { animation-play-state: paused; }
-@keyframes piton-glow    { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0.28; } }
-@keyframes piton-breathe { from { opacity: 0.28; } to { opacity: 0.6; } }
+body[data-motion="ready"] .piton-mark--breathe:not(.is-live) .piton-aura { animation-play-state: paused; }
+@keyframes piton-glow    { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0.22; } }
+@keyframes piton-breathe { from { opacity: 0.78; } to { opacity: 1; } }
 body[data-motion="ready"] .hero-signature .thread {
   background: linear-gradient(180deg, var(--gold), rgba(217,160,60,0));
   transform-origin: top center;

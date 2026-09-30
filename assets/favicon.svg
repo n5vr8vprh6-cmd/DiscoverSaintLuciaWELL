@@ -1,8 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <defs><radialGradient id="g"><stop offset="0" stop-color="#FFE2C2"/><stop offset=".18" stop-color="#F58A66" stop-opacity=".95"/><stop offset=".5" stop-color="#EF6A4A" stop-opacity=".4"/><stop offset="1" stop-color="#D9A03C" stop-opacity="0"/></radialGradient></defs>
   <rect width="32" height="32" rx="7" fill="#12302F"/>
-  <g transform="translate(1.28 10.68) scale(0.32)">
-    <circle cx="46" cy="11.5" r="14" fill="url(#g)"/>
-    <path d="M3 37 C13 27.5 21.5 15.5 27.8 7.2 Q30 4.2 32.2 7.2 C36.8 13 41.2 18.2 44.7 20.6 Q46 21.7 47.3 20.6 C51.6 17.8 57.6 11.4 62.9 4.6 Q65 2 67.1 4.6 C74.6 14 82 27 89 37" fill="none" stroke="#FBF8F1" stroke-width="7.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <g transform="translate(-0.80 10.28) scale(0.35)">
+  <defs>
+    <radialGradient id="pa-t"><stop offset="0" stop-color="#FFD08A" stop-opacity=".95"/><stop offset=".35" stop-color="#F5A552" stop-opacity=".72"/><stop offset=".7" stop-color="#EF6A4A" stop-opacity=".3"/><stop offset="1" stop-color="#EF6A4A" stop-opacity="0"/></radialGradient>
+    <radialGradient id="ps-t"><stop offset="0" stop-color="#FFF3D6"/><stop offset=".55" stop-color="#FFD68F" stop-opacity=".95"/><stop offset="1" stop-color="#F5A552" stop-opacity="0"/></radialGradient>
+    <clipPath id="pc-t"><path d="M9.0 32.0 C9.7 31.4 11.9 29.5 13.4 28.1 C14.9 26.6 16.3 24.8 17.8 23.2 C19.3 21.5 20.7 19.8 22.2 18.3 C23.7 16.7 25.1 15.3 26.6 13.8 C28.1 12.3 29.6 10.6 31.0 9.3 C32.4 8.0 33.6 5.6 35.1 6.0 C36.6 6.4 38.3 9.5 39.8 12.0 C41.3 14.5 42.9 19.1 44.2 21.1 C45.5 23.2 46.3 24.5 47.8 24.4 C49.3 24.2 51.4 21.6 53.0 20.2 C54.6 18.8 56.3 16.8 57.4 16.0 C58.5 15.1 59.0 15.3 59.8 15.2 C60.5 15.2 60.7 15.2 61.8 15.9 C62.9 16.5 64.7 17.9 66.2 18.9 C67.7 20.0 69.1 21.1 70.6 22.1 C72.1 23.2 73.5 24.2 75.0 25.3 C76.5 26.3 77.9 27.4 79.4 28.4 C80.9 29.4 82.7 30.7 83.8 31.4 C84.9 32.1 85.8 32.3 86.2 32.5 L96 32.5 L96 0 L0 0 L0 32 Z"/></clipPath>
+  </defs>
+  <g clip-path="url(#pc-t)"><g class="piton-sun"><ellipse class="piton-aura" cx="47.8" cy="23.4" rx="30" ry="20" fill="url(#pa-t)"/><circle class="piton-disc" cx="47.8" cy="24" r="5.4" fill="url(#ps-t)"/></g></g>
+  <path class="piton-line" d="M9.0 32.0 C9.7 31.4 11.9 29.5 13.4 28.1 C14.9 26.6 16.3 24.8 17.8 23.2 C19.3 21.5 20.7 19.8 22.2 18.3 C23.7 16.7 25.1 15.3 26.6 13.8 C28.1 12.3 29.6 10.6 31.0 9.3 C32.4 8.0 33.6 5.6 35.1 6.0 C36.6 6.4 38.3 9.5 39.8 12.0 C41.3 14.5 42.9 19.1 44.2 21.1 C45.5 23.2 46.3 24.5 47.8 24.4 C49.3 24.2 51.4 21.6 53.0 20.2 C54.6 18.8 56.3 16.8 57.4 16.0 C58.5 15.1 59.0 15.3 59.8 15.2 C60.5 15.2 60.7 15.2 61.8 15.9 C62.9 16.5 64.7 17.9 66.2 18.9 C67.7 20.0 69.1 21.1 70.6 22.1 C72.1 23.2 73.5 24.2 75.0 25.3 C76.5 26.3 77.9 27.4 79.4 28.4 C80.9 29.4 82.7 30.7 83.8 31.4 C84.9 32.1 85.8 32.3 86.2 32.5" pathLength="1" fill="none" stroke="#FBF8F1" stroke-width="6.57" stroke-linejoin="round" stroke-linecap="round"/>
+
   </g>
 </svg>
