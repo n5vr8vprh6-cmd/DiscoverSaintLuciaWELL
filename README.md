@@ -28,10 +28,11 @@ hand; `vercel deploy --prod` exists as an escape hatch, not the normal path.
 Served at `discoversaintluciawell.com` (which 308s to the `www` host) as well as
 `discover-saint-lucia-well.vercel.app`.
 
-**TWELVE SERVERLESS FUNCTIONS, MAXIMUM.** The Hobby plan caps a deployment at
-twelve, and every non-underscored `.js` under `api/` is one. Going over is a
-nasty failure mode because it is not a build error: the build log is completely
-green, ends with `Build Completed`, and then `Deploying outputs…` fails with
+**THIRTEEN SERVERLESS FUNCTIONS TODAY; TWELVE WAS THE HOBBY CAP.** Every
+non-underscored `.js` under `api/` is one (`find api -name '*.js' -not -path
+'*/_lib/*'` counts them), and the Hobby plan capped a deployment at twelve. Going
+over that was a nasty failure mode because it is not a build error: the build
+log is completely green, ends with `Build Completed`, and then `Deploying outputs…` fails with
 
     No more than 12 Serverless Functions can be added to a Deployment
     on the Hobby plan.
