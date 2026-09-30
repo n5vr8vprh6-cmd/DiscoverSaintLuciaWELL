@@ -55,7 +55,7 @@ async function findSubject(email) {
   const norm = String(email || '').trim().toLowerCase();
   if (!supabase || !norm) return null;
 
-  const [shares, advisor, waiting] = await Promise.all([
+  const [shares, advisor, waiting, applied] = await Promise.all([
     supabase.from('journey_shares')
       .select('id, created_at, advisor_id, answers, villages, consumer_first, consumer_last, ' +
               'consumer_email, consumer_phone, timing, travel_window, context, stage, ' +
@@ -73,6 +73,13 @@ async function findSubject(email) {
        in the same change that creates it. */
     supabase.from('immersion_waitlist')
       .select('id, created_at, first_name, last_name, email, phone, company, host_agency, source')
+      .ilike('email', norm),
+    /* Added with migration 028. Same rule as the line above: every future store
+       of personal data lands here in the same change that creates it. */
+    supabase.from('practitioner_applications')
+      .select('id, created_at, pathway, first_name, last_name, email, phone, business, website, ' +
+              'social, country, years, modality, work, serves, community, led_before, ' +
+              'led_before_detail, audience_size, notes, retreat, visiting, source, status')
       .ilike('email', norm)
   ]);
 
@@ -85,6 +92,14 @@ async function findSubject(email) {
     console.error('findSubject: immersion_waitlist is missing — run db/migrations/018.');
   } else if (waiting.error) {
     console.error('findSubject waitlist', waiting.error);
+  }
+
+  /* Same loudness as the waiting list, for the same reason: a silent empty
+     result here reads exactly like "we hold nothing". */
+  if (applied.error && (applied.error.code === '42P01' || applied.error.code === 'PGRST205')) {
+    console.error('findSubject: practitioner_applications is missing — run db/migrations/028.');
+  } else if (applied.error) {
+    console.error('findSubject practitioner applications', applied.error);
   }
 
   const rows = shares.data || [];
@@ -145,6 +160,7 @@ async function findSubject(email) {
     })),
     advisorAccount: advisor.data || null,
     waitlist: (waiting.error ? [] : (waiting.data || [])),
+    practitionerApplications: (applied.error ? [] : (applied.data || [])),
     /* Held for rate limiting only, never the address itself, and not reversible
        — but it IS derived from them, so an honest access response says so
        rather than quietly omitting it. */
@@ -223,6 +239,21 @@ function accessExport(found) {
       status: found.advisorAccount.status
     } : null,
 
+    practitioner_applications: (found.practitionerApplications || []).map((a) => ({
+      submitted_at: a.created_at,
+      pathway: a.pathway,
+      you_told_us: {
+        first_name: a.first_name, last_name: a.last_name, email: a.email, phone: a.phone,
+        business: a.business, website: a.website, social: a.social, country: a.country,
+        years_in_practice: a.years, primary_modality: a.modality,
+        your_work: a.work, who_you_serve: a.serves, your_community: a.community,
+        audience_size: a.audience_size, led_groups_before: a.led_before,
+        led_groups_detail: a.led_before_detail, anything_else: a.notes,
+        retreat_answers: a.retreat || null, visiting_practitioner_answers: a.visiting || null
+      },
+      review_status: a.status
+    })),
+
     also_held: found.ipHashHeld
       ? ['A one-way salted hash of the IP address you submitted from, used only to rate-limit ' +
          'the public form. It cannot be turned back into an address.']
@@ -289,9 +320,23 @@ async function eraseSubject(email) {
     waitlistRemoved = waitRows.length;
   }
 
+  /* Practitioner applications (migration 028), for exactly the reason above: a
+     person who applied on /practitioners and never touched the Finder has no
+     journey_shares row, and would otherwise be told "nothing held" while their
+     name, phone and description of their work sat in another table. */
+  const { data: appRows } = await supabase
+    .from('practitioner_applications').select('id').ilike('email', norm);
+  let applicationsRemoved = 0;
+  if (appRows && appRows.length) {
+    const { error: aErr } = await supabase
+      .from('practitioner_applications').delete().in('id', appRows.map((a) => a.id));
+    if (aErr) { console.error('eraseSubject practitioner applications', aErr); return { ok: false, error: 'failed' }; }
+    applicationsRemoved = appRows.length;
+  }
+
   if (!rows || !rows.length) {
-    return waitlistRemoved
-      ? { ok: true, journeys: 0, notes: 0, orphans: 0, advisors: 0, waitlist: waitlistRemoved }
+    return (waitlistRemoved || applicationsRemoved)
+      ? { ok: true, journeys: 0, notes: 0, orphans: 0, advisors: 0, waitlist: waitlistRemoved, applications: applicationsRemoved }
       : { ok: false, error: 'nothing_held' };
   }
 
@@ -335,7 +380,8 @@ async function eraseSubject(email) {
     itineraries: (itins || []).length,
     orphans,
     advisors: [...new Set(rows.map((r) => r.advisor_id).filter(Boolean))].length,
-    waitlist: waitlistRemoved
+    waitlist: waitlistRemoved,
+    applications: applicationsRemoved
   };
 }
 

@@ -134,6 +134,7 @@ silently shipping the wrong one.
 | `content/explore.js` | Villages · Experiences · Places & Properties |
 | `content/eclipse.js` | The signature journey (own midnight/copper world) |
 | `content/about.js` | What a Well Destination is, why Saint Lucia, contact |
+| `content/practitioners.js` | `/practitioners` — Practitioners & Retreat Leaders (see its section below) |
 | `tools/build-property-images.py` | Turns the asset library into web derivatives |
 | `tools/media-test.js` | Every frame on disk, tagged, credited, sourced; the bank sees all of them |
 | `lib/layouts.js` | The three layouts and every chrome component |
@@ -383,6 +384,33 @@ Both are inherited lessons, and both are load-bearing:
    `scrollHeight` *grows* `scrollHeight`; a ResizeObserver then re-places it
    lower and the document inflates without bound. Measured here at 26,124px
    against 10,432px of real content before it was replaced with rAF sampling.
+
+## Typesetting: names that must not break, and one-word last lines
+
+Found by reading "A Saint / Lucia experience" on /practitioners, then confirmed
+site-wide with a scan that measured the last line of every heading, lead and
+paragraph on ten pages at five widths (2,300+ blocks). Three small mechanisms, all
+worth knowing before "tidying" any of them:
+
+1. **`glue()` in `lib/page.js`** makes the space inside brand nouns non-breaking
+   at build time — *Saint Lucia*, *Saint Lucia WELL* (whole), *WELL Compass*,
+   *Wellness Village(s)*, *Well Destination*. It walks the HTML as a tokeniser and
+   edits **text nodes only**, so `alt`, `aria-label`, hrefs, JSON-LD, the `<title>`
+   and the meta description keep ordinary spaces. The list is deliberately short:
+   brand nouns, not a typographic policy.
+2. **`js/motion.js` splits headlines on ordinary whitespace only.** JavaScript's
+   `s` matches U+00A0, so splitting on it silently undid (1) the moment the
+   word-by-word reveal ran.
+3. **The last two words of a split headline are wrapped in `.nb`
+   (`white-space: nowrap`).** `text-wrap: balance` is set on every heading, but
+   Chrome does not reliably balance lines made of inline-block words, and a
+   non-breaking *space* does not bind an inline-block to its neighbour either —
+   "…more than a break?" was ending as "break?" alone on a phone. Headlines of four
+   words or more only.
+
+Running copy gets `text-wrap: pretty` (`css/site.css`). Not covered, on purpose:
+`/advisors/foundations` carries its own stylesheet and headline treatment, and the
+Hub uses `hub.css`.
 
 ## Attribution
 
@@ -642,6 +670,99 @@ copy of it, and scores the shortlist for real against the bank — so what it
 renders is what an advisor sees, mismatch sentences included. **Never screenshot
 a real Hub.**
 
+## /practitioners — Practitioners & Retreat Leaders
+
+One professional page, two pathways, one qualification form. Source: the
+*Practitioners & Retreat Leaders — Implementation Brief* (V1.0, 2026-09-29).
+**Retreat Collaboration** is primary; the **Visiting Practitioner Network** is
+secondary. Both end the same way: DSW reads the application and, if there is a
+fit, writes back privately by email.
+
+**There is no calendar, booking link or "book a call" anywhere** — not on the
+page, not in the success state, not in the notification email. The only next step
+the page offers is the application. `tools/practitioner-test.js` greps the
+rendered HTML for it, because one well-meaning button breaks a rule the brief
+states six times.
+
+| Piece | Where |
+|---|---|
+| Page copy and structure | `content/practitioners.js` (layout `professional`, surface `practitioner`) |
+| The six section types it needs | `lib/practitioner-sections.js`, registered in `lib/components.js` |
+| Its styles | `css/practitioners.css`, loaded through `page.extraStyles` (additive — unlike `page.styles` it does **not** drop `site.css`) |
+| Behaviour | `js/practitioners.js` — anchor focus, pathway preselect, two-step form, JSON submit, analytics |
+| Where the form posts | `POST /practitioners/apply` → `api/_lib/hub-screens/practitioner.js`, through the Hub router (a `vercel.json` rewrite + a `SCREENS` entry — **no new serverless function**) |
+| Validation, rate limit, storage | `api/_lib/practitioner.js` → table `practitioner_applications` (`db/migrations/028`) |
+| The email | `api/_lib/practitioner-mail.js` → `concierge@discoversaintluciawell.com` (override with `PRACTITIONER_EMAIL`) |
+
+**Footer only, no header nav item.** The link sits in the fourth footer column,
+stacked above About (`groups` in `content/site.js`, rendered by
+`globalFooter()`), so the grid stays at brand + four columns.
+
+**The form is complete without JavaScript.** It is one real `<form>` with every
+field in the markup and a real `action`; JS then promotes it to two steps with a
+progress bar, hides the branch that does not apply, keeps Step 1 in
+`sessionStorage`, and posts JSON. Two consequences worth knowing:
+
+- Branch-only fields (`credentials`, `experience_type`, `concept`, `help_with`)
+  carry `data-req`, **not** `required`. Natively required, they would stop a
+  JavaScript-off visitor who chose one pathway from submitting at all, because the
+  other pathway's fields are in the markup too. The JS and the server both enforce
+  them for the pathway that was chosen.
+- The honeypot is named `company` and the real field is `business`. Do not
+  rename either (see `hub-screens/practitioner.js`, and the same trap in
+  `waitlist.js`).
+
+**Guards, in the order `api/capture.js` uses them:** honeypot (answered as
+success), rate limit (5 an hour per salted IP hash, counted in the table itself and
+**fail-closed** on an unknown count), length caps on every field, and no typed
+value accepted as a *choice* — pathway, yes/no and every "help with" option must
+be one of the fixed codes in `practitioner.js` or the whole submission is refused.
+A website **or** a social profile is required: the cheapest honest qualification
+signal there is.
+
+**No acknowledgement email goes to the applicant.** An unauthenticated form that
+mails an address a stranger typed is the relay abuse the rate limit exists to make
+expensive, and the brief promises only that DSW will write *if there appears to be
+a strong fit*. The page's success state is the acknowledgement.
+
+**Personal data:** the table is in `subject-data.js` (find, access export,
+erase — one person can apply without ever using the Finder), in
+`retention_months()` (24 months) and in `purge_expired()`, and the Privacy Policy
+§2 lists it. Migration 028 re-states both SQL functions **in full** from 022's
+text; if a later migration redefines either, start from that one.
+
+**Motion (design pass, 2026-09-30).** Built on the site's own system: everything is
+gated on `body[data-motion="ready"]` (set by `js/motion.js`, never for
+reduced-motion or automated visitors), so outside that gate the page is simply
+complete. One authored moment — the **ecosystem assembles** around "Your
+Practice" (rings open, the practice arrives, the four things around it arrive
+clockwise with their connector drawn toward the centre), after which it keeps breathing: soft rings ping outward from the practice (desktop only, paused whenever the diagram is off-screen, absent without the motion gate) — plus a **timeline**
+whose spine fills as "How it works" is read, **photographs that open** once
+(clip + settle), a **context band that marks the section you are in**, form
+**steps that travel the way you are going**, a **drawn success check**, and a
+**mobile sticky action** from the end of the hero until the form. Only transform,
+opacity, scale, translate and clip-path animate (the detector has no
+layout-transition findings); IntersectionObserver and rAF sampling, never
+`scroll` events. Two lessons worth keeping: the page script is one function scope,
+so a variable named `steps` or `bar` in one block is silently the *same*
+variable in another (the timeline once iterated the form's steps); and a
+side-stripe (`border-left` above 1px) was replaced everywhere on this page with a
+short drawn rule above, as were the 01–06 numbers on the capability cards, which
+are parallel, not a sequence.
+
+**Imagery:** the hero and the network band are AI-generated (Midjourney, via Duncan;
+approved for these slots 2026-09-29), built into `assets/practitioners/` by
+`py tools/build-practitioner-images.py <folder with hero.* and network.*>`. The
+hero is a full-bleed band *under* the headline, not a background behind it: the
+group sits centre-bottom and the copy sits left, so a scrim strong enough to hold
+the headline also dimmed the people the page exists to show. If a slot is ever
+missing its picture, `figure()` falls back to an honest art-direction panel.
+
+**Not built, on purpose (brief §12):** a public practitioner directory, an open
+marketplace, automated practitioner–property matching, a practitioner portal,
+self-service scheduling, a pay-to-access placement model. There is no admin view
+of applications yet either — they arrive by email and live in the table.
+
 ## Tests
 
 There is no framework. Each suite is a script that prints PASS/FAIL and exits
@@ -662,6 +783,7 @@ system after.
 | `node tools/design-itinerary-test.js` | nothing | The day layout, what the document may carry, the four dead-link states |
 | `node tools/design-migration-check.js` | `.env` | That `022` landed where the deployment can see it |
 | `node tools/playbook-test.js` | nothing | The doctrine bank and the seed merge |
+| `node tools/practitioner-test.js` | nothing (`.env` optional) | `/practitioners`: no calendar anywhere, the footer's shape, the form's markup, validation, the endpoint. The database half runs only once migration 028 is applied |
 | `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
 
 Three of those are **generators with a `--check` mode** rather than suites, and

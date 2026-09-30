@@ -68,12 +68,33 @@ const SITE = {
       ]
     },
     {
-      title: 'About',
-      links: [
-        { label: 'Why Saint Lucia WELL', href: '/about#why-saint-lucia' },
-        { label: 'Our Approach',         href: '/about#approach' },
-        { label: 'Partners',             href: '/about#partners' },
-        { label: 'Contact',              href: '/about#contact' }
+      /* TWO GROUPS, ONE COLUMN — decided 2026-09-29. Retreat Leaders
+         sits directly above About in the fourth column rather
+         than earning a fifth: the footer grid was drawn for the brand block plus
+         four, and a fifth narrows every column for a link pair. See `groups` in
+         lib/layouts.js globalFooter().
+
+         FOOTER ONLY. /practitioners is deliberately not in `nav` above: the
+         header a holidaymaker reads stays consumer, the same rule that keeps
+         "For Travel Advisors" the only professional item in it. Both links go to
+         the same page; the anchors are the two pathways. */
+      groups: [
+        {
+          title: 'Retreat Leaders',
+          links: [
+            { label: 'Build a Retreat',               href: '/practitioners#build' },
+            { label: 'Visiting Practitioners', href: '/practitioners#network' }
+          ]
+        },
+        {
+          title: 'About',
+          links: [
+            { label: 'Why Saint Lucia WELL', href: '/about#why-saint-lucia' },
+            { label: 'Our Approach',         href: '/about#approach' },
+            { label: 'Partners',             href: '/about#partners' },
+            { label: 'Contact',              href: '/about#contact' }
+          ]
+        }
       ]
     }
   ],

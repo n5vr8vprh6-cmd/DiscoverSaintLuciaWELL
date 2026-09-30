@@ -44,6 +44,11 @@ h1 em, h2 em, .lead em {
 }
 
 p { margin: 0 0 1.1em; }
+/* No one-word last lines in running copy. Headings already balance (above). */
+p, li, figcaption { text-wrap: pretty; }
+/* The last two words of a split headline travel together (js/motion.js). */
+.nb { white-space: nowrap; }
+.scroll-cue { text-wrap: balance; }
 p:last-child { margin-bottom: 0; }
 
 a { color: inherit; }
@@ -2300,6 +2305,11 @@ body[data-motion="ready"] .tile-grid--media li::before { z-index: 2; }
   max-width: min(40rem, 100%);
   margin-inline: auto;
 }
+/* The closing invitation is a centred column, so its buttons are centred too.
+   .hero-ctas is a left-aligned flex row (right for the hero), which is invisible
+   while both buttons fit on one line and obvious the moment a long label wraps
+   them onto two — the second button then sat flush left under a centred heading. */
+.final-cta-inner .hero-ctas { justify-content: center; }
 .final-cta-inner h2 { margin-top: 1.25rem; }
 .final-cta-inner .lead { margin-bottom: 0; }
 .final-cta-inner .coords { margin-top: 2rem; }

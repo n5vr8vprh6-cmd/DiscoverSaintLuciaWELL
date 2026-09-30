@@ -31,6 +31,7 @@ const PAGES = [
   require('./content/eclipse.js'),
   require('./content/about.js'),
   require('./content/advisors.js'),
+  require('./content/practitioners.js'),
   require('./content/advisor-hub.js'),
   require('./content/advisor-intro.js'),
   require('./content/advisor-immersion.js'),

@@ -191,6 +191,10 @@
       "destination": "/api/hub?screen=waitlist"
     },
     {
+      "source": "/practitioners/apply",
+      "destination": "/api/hub?screen=practitioner"
+    },
+    {
       "source": "/j/:token",
       "destination": "/api/hub?screen=itinerary&t=:token"
     },

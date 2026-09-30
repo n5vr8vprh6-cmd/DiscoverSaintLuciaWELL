@@ -51,6 +51,11 @@ const SCREENS = {
      queue. It writes to its own table and reads nothing. */
   waitlist: () => require('../_lib/hub-screens/waitlist.js'),
 
+  /* PUBLIC on purpose, for the same reason. It is what the /practitioners form
+     posts to; a practitioner asking DSW to consider their work has no account
+     and should not need one. Writes its own table and reads nothing. */
+  practitioner: () => require('../_lib/hub-screens/practitioner.js'),
+
   /* Admin. These are ordinary screens in every respect except that their guard
      is requireAdmin rather than requireAdvisor — there is no route-level auth
      here, so each screen's own guard is the only thing protecting it. */

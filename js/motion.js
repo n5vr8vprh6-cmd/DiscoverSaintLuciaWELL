@@ -59,9 +59,12 @@
       function splitNode(node) {
         if (node.nodeType === Node.TEXT_NODE) {
           var frag = document.createDocumentFragment();
-          node.textContent.split(/(\s+)/).forEach(function (part) {
+          /* Split on ordinary whitespace ONLY. \s also matches U+00A0, which
+             lib/page.js glue() puts inside "Saint Lucia" and friends so they
+             cannot break across lines — splitting on it would undo that. */
+          node.textContent.split(/([ \t\r\n\f]+)/).forEach(function (part) {
             if (!part) return;
-            if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
+            if (/^[ \t\r\n\f]+$/.test(part)) { frag.appendChild(document.createTextNode(' ')); return; }
             var w = document.createElement('span'); w.className = 'w';
             var wi = document.createElement('span'); wi.className = 'wi';
             wi.style.setProperty('--i', idx++);
@@ -75,6 +78,31 @@
         }
       }
       Array.prototype.slice.call(el.childNodes).forEach(splitNode);
+
+      /* NEVER LEAVE ONE WORD ALONE ON THE LAST LINE. text-wrap: balance is set on
+         every heading, but Chrome does not reliably balance lines made of
+         inline-block words (which is what the split produces), and "…more than a
+         break?" was ending up as "break?" by itself on a phone. A non-breaking
+         SPACE does not help either — Chrome still breaks between an inline-block
+         and the space that follows it — so the last two words are wrapped in a
+         white-space: nowrap span instead, which it does respect. Only for
+         headlines of four words or more (a shorter one has nothing to spare), only
+         when both words share a parent, and only the final pair, so every other
+         break is still free. */
+      if (idx >= 4) {
+        var ws = el.querySelectorAll('.w');
+        var w2 = ws[ws.length - 1], w1 = ws[ws.length - 2];
+        if (w1 && w2 && w1.parentNode === w2.parentNode) {
+          var nb = document.createElement('span');
+          nb.className = 'nb';
+          w1.parentNode.insertBefore(nb, w1);
+          while (nb.nextSibling !== w2.nextSibling && nb.nextSibling) {
+            var moving = nb.nextSibling;
+            nb.appendChild(moving);
+            if (moving === w2) break;
+          }
+        }
+      }
       el.setAttribute('data-splitted', '');
     });
 
@@ -85,7 +113,7 @@
      ══════════════════════════════════════════════════════════════════════ */
   var STAGGER = '.lens-grid, .village-grid, .finder-steps, .expertise-grid,' +
                 '.tile-grid, .prop-grid, .exp-list, .contact-grid, .path-list,' +
-                '.day-grid, .arc-track, .cred-list, .check-list, .cmp-col ul';
+                '.day-grid, .arc-track, .cred-list, .check-list, .cmp-col ul, .cap-grid';
   document.querySelectorAll(STAGGER).forEach(function (grid) {
     grid.setAttribute('data-stagger', '');
     Array.prototype.forEach.call(grid.children, function (child, i) {

@@ -105,10 +105,10 @@ module.exports = async function handler(req, res) {
 
     ${!q ? '' : !looksLikeEmail(q) ? `
     <section class="hub-card"><p class="hub-hint">That is not an email address.</p></section>`
-    : !found || (!found.journeys.length && !found.advisorAccount && !(found.waitlist || []).length) ? `
+    : !found || (!found.journeys.length && !found.advisorAccount && !(found.waitlist || []).length && !(found.practitionerApplications || []).length) ? `
     <section class="hub-card">
       <h2>Nothing held</h2>
-      <p class="hub-hint">No Journey, no advisor account and no waiting-list entry for
+      <p class="hub-hint">No Journey, no advisor account, no waiting-list entry and no practitioner application for
         <strong>${esc(q)}</strong>.
         That is itself a complete answer to an access request — tell them so plainly, and
         that nothing needed deleting.</p>
@@ -149,6 +149,19 @@ function renderFound(f) {
       </p>`).join('')}
       <p class="hub-hint">A request to be told when Immersion dates exist. Nobody on that list
         has been promised anything. Erasing below removes these rows too.</p>
+    </section>` : ''}
+
+    ${(f.practitionerApplications || []).length ? `
+    <section class="hub-card">
+      <h2>${f.practitionerApplications.length === 1 ? 'A practitioner application' : `${f.practitionerApplications.length} practitioner applications`}</h2>
+      ${f.practitionerApplications.map((a) => `<p class="hub-hint">
+        Submitted ${esc(String(a.created_at).slice(0, 10))} ·
+        ${esc(`${a.first_name || ''} ${a.last_name || ''}`.trim())} ·
+        ${esc(a.business || 'no business')} · ${esc(a.pathway)} · ${esc(a.status)}
+      </p>`).join('')}
+      <p class="hub-hint">Submitted on /practitioners. Nothing was promised to them. Erasing
+        below removes these rows too; the notification email that went to the practitioner
+        inbox is in that mailbox and nothing here touches it.</p>
     </section>` : ''}
 
     ${f.journeys.map(journeyCard).join('')}

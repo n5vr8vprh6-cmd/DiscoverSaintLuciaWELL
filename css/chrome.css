@@ -593,6 +593,9 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   margin-bottom: 1.2rem;
 }
 .footer-col ul { display: grid; gap: 0.65rem; }
+/* Two groups in one column (content/site.js `groups`): the second heading needs
+   the room a column top would have given it. */
+.footer-col--stack h2:not(:first-child) { margin-top: clamp(1.75rem, 3vw, 2.25rem); }
 .footer-col a,
 .footer-col .link-pending {
   font-family: var(--sans);

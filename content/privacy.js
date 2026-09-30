@@ -105,6 +105,7 @@ module.exports = {
             'Contact information, such as name, email address, telephone number, mailing address, or business contact information.',
             'Travel-related information, such as travel timing, party or companion information, preferences, interests, destination intentions, and information you choose to provide about the kind of trip you are seeking.',
             'Journey sharing information, including Journey Finder results and any additional context you voluntarily submit when asking an advisor to contact you.',
+            'Practitioner and retreat-leader applications, including contact details, business or practice name, website and social profiles, country, area of practice, credentials, a description of your work and audience, and — depending on the pathway you choose — your retreat idea, group size, timing and the help you would like, or the onsite experience and availability you could offer. We use it to review your application and to reply to you by email; we do not publish it.',
             'Advisor account information, including business name, host agency or consortium affiliation, market, website or social profiles, specialties, campaign preferences, and account credentials.',
             'Registration and communications information for briefings, webinars, Foundations, Immersion, newsletters, events, waitlists, or similar programs.',
             'Purchase and transaction information. Payment card details are generally handled by our payment providers rather than stored directly by us.',

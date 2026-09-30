@@ -1,0 +1,843 @@
+/* ============================================================================
+   /practitioners — page rules
+   ----------------------------------------------------------------------------
+   Loaded through `extraStyles` (lib/page.js), on top of tokens + chrome + site.
+   Everything here is composed from existing tokens: no new colour, no new type
+   role. The three-role type system, the ivory/sand/ink rhythm and the gold-deep
+   text token on light all come from tokens.css.
+
+   Scoped by class (.practitioner-*, .eco, .cap*, .dest-*, .proof, .network-*,
+   .apply-*, .pf-*) so nothing here can reach another page.
+   ========================================================================== */
+
+/* ── Anchors land clear of the sticky header ─────────────────────────────── */
+body[data-page="practitioners"] section[id] { scroll-margin-top: 4.5rem; }
+/* A section is focused programmatically after an anchor jump so keyboard and
+   screen-reader users arrive where sighted users do. It is not an interactive
+   control, so it carries no ring. */
+body[data-page="practitioners"] section[id]:focus { outline: none; }
+
+/* ── Context band: one row that scrolls sideways on a phone ───────────────
+   /advisors' band wraps onto several lines; that is fine for five short links
+   and wrong for this page, where the four anchors are the navigation
+   (brief §01). Off unless the page asks (`professionalContext.scroll`). */
+@media (max-width: 760px) {
+  .pro-context--scroll .pro-context-inner { gap: 0.4rem; padding-block: 0.7rem 0.3rem; }
+  .pro-context--scroll .pro-context-nav {
+    flex-wrap: nowrap;
+    width: 100%;
+    gap: 0.25rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    /* A soft edge says "there is more" without a scrollbar. */
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+            mask-image: linear-gradient(90deg, #000 88%, transparent);
+    padding-right: 2rem;
+  }
+  .pro-context--scroll .pro-context-nav::-webkit-scrollbar { display: none; }
+  .pro-context--scroll .pro-context-nav a {
+    flex: none;
+    scroll-snap-align: start;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: 0.75rem;
+    white-space: nowrap;
+  }
+}
+.pro-context--scroll .pro-context-nav a:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  color: var(--paper);
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.practitioner-hero { padding-bottom: clamp(3rem, 6vw, 4.5rem); }
+.practitioner-hero .lead { max-width: 46rem; }
+.practitioner-hero .lead + .lead { margin-top: 1em; }
+.practitioner-ctas { margin-top: clamp(1.75rem, 3vw, 2.5rem); }
+.practitioner-micro {
+  margin: 1.4rem 0 0;
+  font-family: var(--sans);
+  font-size: var(--fs-small);
+  letter-spacing: 0.04em;
+  color: var(--mist);
+}
+/* The photograph, full-bleed and undimmed. Capped in height so a very wide
+   screen does not turn it into a wall; the crop keeps the group, which sits in
+   the lower half of the frame. */
+.practitioner-photo { background: var(--ink); line-height: 0; }
+.practitioner-photo picture,
+.practitioner-photo figure { display: block; margin: 0; }
+.practitioner-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2000 / 853;
+  max-height: min(72vh, 720px);
+  object-fit: cover;
+  object-position: 50% 78%;
+}
+@media (max-width: 700px) {
+  /* A 21:9 frame is a sliver on a phone; give it height and let the crop find
+     the group. */
+  .practitioner-photo img { aspect-ratio: 4 / 3; object-position: 52% 80%; }
+}
+
+/* ── Shared reading column ───────────────────────────────────────────────── */
+.practitioner-prose { max-width: var(--measure); }
+.practitioner-prose p { margin: 0 0 1.1em; }
+.practitioner-question {
+  position: relative;
+  display: block;
+  margin: 1.4rem 0;
+  padding-top: 1.1rem;
+  font-family: var(--serif-display);
+  font-size: var(--fs-h3);
+  line-height: 1.3;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.practitioner-question::before,
+.network-qual::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 2.5rem; height: 1px;
+  background: var(--gold-deep);
+}
+
+/* ── Ecosystem diagram ─────────────────────────────────────────────────────
+   The practice at the centre, the four things that surround it drawn as
+   exactly that. The meaning is the list; the rings and connector hairlines are
+   decoration and carry no information the text does not. */
+.eco {
+  position: relative;
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding-block: clamp(1.75rem, 3.5vw, 2.75rem);
+  overflow: hidden;
+}
+.eco-label {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.25rem);
+  text-align: center;
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.eco-rings::before,
+.eco-rings::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 55%;
+  translate: -50% -50%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.eco-rings::before { width: min(52rem, 96%); border: 1px solid var(--hairline-l); }
+.eco-rings::after  { width: min(34rem, 64%); border: 1px solid rgba(138, 94, 21, 0.28); }
+
+.eco-list {
+  --gx: clamp(1.5rem, 4vw, 3rem);
+  --gy: clamp(1.4rem, 3vw, 2.2rem);
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    ".    top   ."
+    "left core  right"
+    ".    bottom .";
+  gap: var(--gy) var(--gx);
+  align-items: center;
+  max-width: 62rem;
+  margin-inline: auto;
+}
+.eco-node {
+  position: relative;
+  padding: 1.15rem 1.3rem;
+  background: var(--paper);
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+}
+.eco-node--core   { grid-area: core; }
+.eco-node--top    { grid-area: top; }
+.eco-node--left   { grid-area: left; }
+.eco-node--right  { grid-area: right; }
+.eco-node--bottom { grid-area: bottom; }
+
+.eco-k {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-family: var(--serif-display);
+  font-size: 1.2rem;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.eco-t {
+  display: block;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.eco-node--core {
+  padding: clamp(1.6rem, 3vw, 2.2rem) 1.3rem;
+  text-align: center;
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.eco-node--core .eco-k { font-size: 1.5rem; color: var(--gold); }
+.eco-node--core .eco-t { color: var(--mist); }
+
+/* Connector hairlines, drawn across the grid gap to the centre. */
+.eco-node:not(.eco-node--core)::after {
+  content: '';
+  position: absolute;
+  background: rgba(138, 94, 21, 0.55);
+}
+.eco-node--top::after    { left: 50%; top: 100%; width: 1px; height: var(--gy); }
+.eco-node--bottom::after { left: 50%; bottom: 100%; width: 1px; height: var(--gy); }
+.eco-node--left::after   { top: 50%; left: 100%; height: 1px; width: var(--gx); }
+.eco-node--right::after  { top: 50%; right: 100%; height: 1px; width: var(--gx); }
+
+@media (max-width: 860px) {
+  .eco-list {
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+    gap: 0.75rem;
+  }
+  .eco-node--core   { order: -1; grid-area: auto; text-align: left; }
+  .eco-node--top, .eco-node--left, .eco-node--right, .eco-node--bottom { grid-area: auto; }
+  .eco-node:not(.eco-node--core)::after {
+    top: auto; bottom: 100%; left: 1.5rem; right: auto;
+    width: 1px; height: 0.75rem;
+    transform-origin: bottom;
+  }
+  .eco-rings { display: none; }
+  .eco { overflow: visible; padding-top: 0; }
+  .eco-label { text-align: left; }
+}
+
+/* The closing line under the steps is two sentences, not a pull-quote: give it the
+   width to hold each on its own line (the shared .pullquote caps at 26rem). */
+.pathway .pullquote { max-width: min(46rem, 100%); margin-top: clamp(2.5rem, 5vw, 3.5rem); }
+
+/* ── Capability modules ──────────────────────────────────────────────────── */
+.cap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--hairline-l);
+  border: 1px solid var(--hairline-l);
+}
+.cap {
+  background: var(--paper);
+  padding: clamp(2rem, 3.4vw, 2.7rem) clamp(1.4rem, 2.6vw, 2.1rem) clamp(1.5rem, 2.8vw, 2.1rem);
+}
+.cap h3 {
+  margin: 0 0 0.45em;
+  font-size: clamp(1.15rem, 1.7vw, 1.4rem);
+  line-height: 1.25;
+}
+.cap p { margin: 0; font-size: 0.95rem; line-height: 1.55; color: var(--muted); }
+@media (max-width: 960px) { .cap-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .cap-grid { grid-template-columns: 1fr; } }
+
+/* ── Destination band ────────────────────────────────────────────────────── */
+.dest-figure { position: relative; margin-top: clamp(2rem, 4vw, 3rem); }
+.dest-photo { margin: 0; }
+.dest-photo .photo-frame-media { overflow: hidden; border-radius: 2px; }
+.dest-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1456 / 668;
+  max-height: 36rem;
+  object-fit: cover;
+}
+/* Labels, not links and not map pins: the villages are a way of understanding
+   the island, not six places. Quiet, on a scrim so the type is legible over the
+   rock whatever the crop. */
+.dest-labels {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 2.2vw, 1.5rem);
+  background: linear-gradient(180deg, transparent, rgba(10, 16, 26, 0.72));
+  border-radius: 0 0 2px 2px;
+}
+.dest-labels li {
+  padding: 0.4em 0.85em;
+  font-family: var(--sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: rgba(18, 48, 47, 0.55);
+  border: 1px solid rgba(251, 248, 241, 0.5);
+  border-radius: 2px;
+}
+@media (max-width: 700px) {
+  .dest-labels {
+    position: static;
+    padding: 0.9rem 0 0;
+    background: none;
+  }
+  .dest-labels li { color: var(--ivory-ink); background: transparent; border-color: var(--hairline-l); }
+}
+.practitioner-link { margin: clamp(1.5rem, 3vw, 2rem) 0 0; }
+
+/* Eclipse keeps its own midnight/copper world on purpose (CLAUDE.md), so the
+   proof-of-concept card wears it: it is visibly a different place, and it links
+   to one. */
+.proof {
+  margin-top: clamp(3rem, 6vw, 5rem);
+  padding: clamp(1.75rem, 4vw, 3rem);
+  max-width: 52rem;
+  background: var(--eclipse-midnight);
+  color: var(--eclipse-sand);
+  border-top: 1px solid var(--eclipse-copper);
+  border-radius: 2px;
+}
+.proof-kicker {
+  margin: 0 0 1rem;
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--eclipse-copper-l);
+}
+.proof h3 { margin: 0 0 0.6em; color: var(--eclipse-sand); font-size: var(--fs-h3); line-height: 1.25; }
+.proof p { color: rgba(232, 223, 210, 0.82); }
+.proof .proof-kicker { color: var(--eclipse-copper-l); }
+.proof-cta { margin: 1.6rem 0 0; }
+.proof .proof-note {
+  margin: 1.4rem 0 0;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: rgba(232, 223, 210, 0.72);
+}
+
+/* ── Visiting Practitioner Network ───────────────────────────────────────── */
+.network-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: center;
+}
+.network-copy h2 { margin-bottom: 0.5em; }
+.network-copy p { color: var(--mist); max-width: 52ch; }
+.network-copy .network-qual {
+  position: relative;
+  margin: 1.8rem 0 0;
+  padding-top: 1.2rem;
+  font-family: var(--serif-display);
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  line-height: 1.4;
+  color: var(--paper);
+}
+.network-media figcaption { color: var(--mist); }
+.network-qual::before { background: var(--gold); }
+@media (max-width: 860px) {
+  .network-grid { grid-template-columns: 1fr; }
+  .network-media { order: -1; max-width: 26rem; }
+}
+
+/* ── Application ─────────────────────────────────────────────────────────── */
+.apply-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+}
+.apply-intro { position: sticky; top: 6rem; }
+.apply-intro p { color: var(--muted); }
+.apply-intro .apply-privacy { margin-top: 1.5rem; font-size: var(--fs-small); }
+.apply-intro .apply-privacy a { color: var(--gold-deep); text-underline-offset: 3px; }
+@media (max-width: 960px) {
+  .apply-grid { grid-template-columns: 1fr; }
+  .apply-intro { position: static; }
+}
+
+.apply-card {
+  scroll-margin-top: 4.5rem;
+  padding: clamp(1.4rem, 3.5vw, 2.75rem);
+  background: var(--paper-2);
+  border: 1px solid var(--hairline-l);
+  border-radius: 2px;
+}
+
+.pf [hidden], .pf-done[hidden] { display: none !important; }
+/* The honeypot: off-screen rather than display:none, which some bots skip. */
+.pf-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+/* Progress — visible on mobile and desktop alike (brief §11). */
+.pf-progress { margin-bottom: 1.75rem; }
+.pf-progress-label {
+  margin: 0 0 0.6rem;
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.pf-bar { height: 3px; background: var(--hairline-l); }
+.pf-bar span { display: block; height: 100%; width: 100%; background: var(--gold-deep); transform: scaleX(0.5); transform-origin: left; transition: transform .4s var(--ease-out-quint); }
+
+.pf-step-title {
+  margin: 0 0 1.4rem;
+  font-family: var(--serif-display);
+  font-size: var(--fs-h3);
+  line-height: 1.25;
+  color: var(--ink);
+}
+/* No JavaScript: both steps are on the page, so separate them. */
+.pf-step + .pf-step { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--hairline-l); }
+
+.pf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem 1.25rem; }
+.pf-grid--one { grid-template-columns: 1fr; }
+.pf-grid + .pf-grid, .pf-grid + .pf-choice, .pf-choice + .pf-grid, .pf-choice + .pf-cond,
+.pf-cond + .pf-grid { margin-top: 1.4rem; }
+.pf-field--wide { grid-column: 1 / -1; }
+@media (max-width: 640px) { .pf-grid { grid-template-columns: 1fr; } }
+
+.pf-field label,
+.pf-choice legend {
+  display: block;
+  margin-bottom: 0.4rem;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ivory-ink);
+}
+.pf-opt { margin-left: 0.4em; font-weight: 400; font-size: 0.78rem; color: var(--muted); }
+.pf-hint { display: block; margin-top: 0.35rem; font-size: 0.82rem; line-height: 1.45; color: var(--muted); }
+
+.pf input:not([type="radio"]):not([type="checkbox"]),
+.pf textarea {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--ivory-ink);
+  background: #fff;
+  border: 1px solid #76827F;   /* 4:1 against white — a control's edge must be seen */
+  border-radius: 2px;
+}
+.pf textarea { resize: vertical; }
+/* Example prompts are visibly not answers: lighter than typed text, upright
+   (browsers default some to italic), and never mistaken for a value. Held at
+   4.6:1 on white — the lightest grey that is still legible, which is the floor for
+   text a person has to read. */
+.pf ::placeholder { color: #737D7B; opacity: 1; font-style: normal; }
+.pf input:focus::placeholder,
+.pf textarea:focus::placeholder { color: #9AA3A1; }
+.pf input:focus-visible,
+.pf textarea:focus-visible,
+.pf .pf-opt-card:has(input:focus-visible) {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 1px;
+  border-color: var(--gold-deep);
+}
+.pf [aria-invalid="true"] { border-color: #9A3B21; }
+
+/* "Where can we see your work?" — a group of two single-link boxes. */
+.pf-links { margin: 0; padding: 0; border: 0; min-width: 0; }
+.pf-links legend { display: block; margin: 0 0 0.25rem; padding: 0; font-family: var(--sans); font-size: 0.88rem; font-weight: 600; line-height: 1.4; color: var(--ivory-ink); }
+.pf-links-hint { margin: 0 0 0.9rem; }
+
+.pf-choice { margin: 0; padding: 0; border: 0; min-width: 0; }
+.pf-options { display: grid; gap: 0.55rem; }
+.pf-choice--two .pf-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pf-choice--inline .pf-options { grid-template-columns: repeat(2, max-content); gap: 0.55rem 0.75rem; }
+@media (max-width: 640px) {
+  .pf-choice--two .pf-options { grid-template-columns: 1fr; }
+  .pf-choice--inline .pf-options { grid-template-columns: 1fr 1fr; }
+}
+.pf-opt-card {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 44px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: var(--ivory-ink);
+  background: #fff;
+  border: 1px solid #76827F;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.pf-opt-card input { flex: none; width: 1.1rem; height: 1.1rem; margin: 0; accent-color: var(--teal); }
+.pf-opt-card:has(input:checked) { border-color: var(--teal); background: #F0F7F6; box-shadow: inset 0 0 0 1px var(--teal); }
+
+.pf-branch {
+  margin-top: 2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--hairline-l);
+}
+.pf-branch-title {
+  margin: 0 0 1.2rem;
+  font-family: var(--serif-display);
+  font-size: 1.25rem;
+  color: var(--ink);
+}
+.pf-step > .pf-grid--one:last-of-type { margin-top: 1.4rem; }
+
+.pf-error {
+  margin: 1.4rem 0 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #7A2E18;
+  background: #FBEDE7;
+  border: 1px solid #9A3B21;
+  border-radius: 2px;
+}
+.pf-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+.pf-status { margin: 0.9rem 0 0; min-height: 1.4em; font-size: var(--fs-small); color: var(--muted); }
+
+.pf-done { padding: clamp(0.5rem, 2vw, 1rem) 0; }
+.pf-done:focus { outline: none; }
+.pf-done h3 {
+  margin: 0 0 0.6em;
+  font-family: var(--serif-display);
+  font-size: var(--fs-h3);
+  color: var(--ink);
+}
+.pf-done p { margin: 0; max-width: 46ch; color: var(--ivory-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-bar span { transition: none; }
+}
+
+
+/* ============================================================================
+   MOTION — the design pass (2026-09-30)
+   ----------------------------------------------------------------------------
+   Reuses the site's own system: everything below is gated on
+   body[data-motion="ready"], which js/motion.js only sets when something will
+   definitely reveal the content (and never for reduced-motion or automated
+   visitors). Outside that gate every element is simply in its final state, so a
+   failed script, a reduced-motion visitor and a print stylesheet all get the
+   complete page.
+
+   One authored moment, four supporting ones, and feedback:
+
+     FOCAL      the ecosystem assembles around "Your Practice" — rings open,
+                the practice arrives, then the four things that surround it
+                arrive clockwise with their connector drawn toward the centre.
+                That is the page's whole argument, so it is the one thing that
+                performs.
+     CONTINUITY "How it works" is a timeline: the spine fills as it is read and
+                each step lights as it is passed.
+     ARRIVAL    the three photographs open (a clip and a slow settle) — once.
+     WAYFINDING the context band marks the section you are in.
+     FEEDBACK   step changes travel in the direction you are going, a branch
+                that appears eases in, the success check is drawn, and on a
+                phone the primary action stays one tap away.
+
+   Only transform, opacity, scale, translate and clip-path animate. Easing is
+   exponential ease-out (--ease-out-expo / -quint from tokens.css): decisive
+   arrival, no bounce. Nothing here runs on a keyboard action except the step
+   change, which is 320ms and interruptible.
+   ========================================================================== */
+
+/* ── FOCAL · the ecosystem assembles ─────────────────────────────────────── */
+body[data-motion="ready"] .eco .eco-rings::before,
+body[data-motion="ready"] .eco .eco-rings::after {
+  transition: opacity 1.1s var(--ease-out-expo), scale 1.5s var(--ease-out-expo);
+}
+body[data-motion="ready"] .eco:not(.is-in) .eco-rings::before { opacity: 0; scale: 0.72; }
+body[data-motion="ready"] .eco:not(.is-in) .eco-rings::after  { opacity: 0; scale: 0.55; }
+body[data-motion="ready"] .eco .eco-rings::after { transition-delay: 0.12s; }
+
+body[data-motion="ready"] .eco .eco-node--core {
+  transition: opacity 0.7s var(--ease-out-quint) 0.25s, scale 0.9s var(--ease-out-expo) 0.25s;
+}
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--core { opacity: 0; scale: 0.94; }
+
+/* The four arrive clockwise, each from the direction of the centre, and each
+   draws its own connector toward the practice a beat after it lands. */
+.eco-node--top    { --d: 0.6s;  }
+.eco-node--right  { --d: 0.78s; }
+.eco-node--bottom { --d: 0.96s; }
+.eco-node--left   { --d: 1.14s; }
+
+body[data-motion="ready"] .eco .eco-node:not(.eco-node--core) {
+  transition:
+    opacity 0.7s var(--ease-out-quint) var(--d, 0.6s),
+    translate 0.95s var(--ease-out-expo) var(--d, 0.6s);
+}
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--top    { opacity: 0; translate: 0 16px; }
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--right  { opacity: 0; translate: -16px 0; }
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--bottom { opacity: 0; translate: 0 -16px; }
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--left   { opacity: 0; translate: 16px 0; }
+
+.eco-node--top::after    { transform-origin: top; }
+.eco-node--bottom::after { transform-origin: bottom; }
+.eco-node--left::after   { transform-origin: left; }
+.eco-node--right::after  { transform-origin: right; }
+body[data-motion="ready"] .eco .eco-node:not(.eco-node--core)::after {
+  transition: transform 0.8s var(--ease-out-expo) calc(var(--d, 0.6s) + 0.3s);
+}
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--top::after,
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--bottom::after { transform: scaleY(0); }
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--left::after,
+body[data-motion="ready"] .eco:not(.is-in) .eco-node--right::after  { transform: scaleX(0); }
+
+/* ── The radar ────────────────────────────────────────────────────────────
+   Once the diagram has assembled it keeps breathing, so the eye has a reason to
+   stay: soft rings ping outward from "Your Practice" (three, staggered). It is
+   the practice sending signal out to the ecosystem — the same idea as the
+   diagram, in motion. (A rotating radar sweep was tried behind the boxes and
+   dropped: the pings carry the idea on their own.)
+
+   Quiet on purpose: hairline rings at low alpha, behind the boxes, slow (7s per
+   ping). transform/opacity only, paused when
+   off-screen (.is-live, from the script), absent entirely without the motion
+   gate and on phones (where .eco-rings is hidden). */
+.eco-pulse { display: none; }
+.eco-pulse {
+  position: absolute;
+  left: 50%; top: 55%;
+  width: min(52rem, 96%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+body[data-motion="ready"] .eco.is-in .eco-pulse { display: block; }
+
+.eco-pulse {
+  border: 1px solid rgba(138, 94, 21, 0.5);
+  opacity: 0;
+  scale: 0.28;
+  animation: eco-ping 7s var(--ease-out-quint) infinite paused;
+}
+.eco-pulse:nth-child(2) { animation-delay: 2.4s; }
+.eco-pulse:nth-child(3) { animation-delay: 4.8s; }
+@keyframes eco-ping {
+  0%   { opacity: 0;    scale: 0.28; }
+  6%   { opacity: 0.55; }
+  100% { opacity: 0;    scale: 1; }
+}
+
+.eco.is-live .eco-pulse { animation-play-state: running; }
+
+/* The closing headline is two thoughts, "Bring what you do best." and an italic
+   sentence, and at the shared 40rem column the italic one took three lines
+   (four in all). A wider column lets it sit on two; the paragraph under it keeps
+   the narrow measure so it does not stretch into one long line. */
+body[data-page="practitioners"] #begin .final-cta-inner { max-width: min(58rem, 100%); }
+body[data-page="practitioners"] #begin .final-cta-inner .lead { max-width: 40rem; }
+/* The italic sentence is its own block, capped so it breaks as
+   "We’ll explore what Saint Lucia / can add around it." instead of leaving
+   "add around it." stranded (text-wrap: balance does not act on the word-split
+   inline-blocks). On a phone 14.5em is wider than the screen, so it wraps freely. */
+body[data-page="practitioners"] #begin h2 em { display: block; max-width: 14.5em; margin-inline: auto; }
+
+/* ── LANDING · one ping on the closing invitation ─────────────────────────
+   The ring mark bumps and two hairline rings leave it, once, when the section is
+   half on screen. Exponential ease-out; nothing repeats. */
+.cta-mark { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.cta-ping {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  opacity: 0;
+  pointer-events: none;
+}
+body[data-motion="ready"] #begin.is-landed .cta-ping { animation: cta-ping 1.8s var(--ease-out-expo) 0.45s 1 both; }
+body[data-motion="ready"] #begin.is-landed .cta-ping:last-child { animation-delay: 0.85s; }
+body[data-motion="ready"] #begin.is-landed .ring-mark { animation: cta-bump 0.9s var(--ease-out-expo) 0.4s 1; }
+@keyframes cta-ping { 0% { opacity: 0.9; scale: 1; } 100% { opacity: 0; scale: 3.4; } }
+@keyframes cta-bump { 0% { scale: 1; } 35% { scale: 1.18; } 100% { scale: 1; } }
+
+/* ── CONTINUITY · the timeline ─────────────────────────────────────────────
+   The spine is the ol's own ::before (track) and ::after (fill). Without the
+   script — or with reduced motion — `data-tl` is never set and everything reads
+   as complete. With it, --p (0..1) is written from the list's position and
+   each step is marked .is-passed as its dot crosses the reading line. */
+.path-list--timeline {
+  --tl-pad: clamp(1.75rem, 3.2vw, 2.6rem);
+  position: relative;
+  padding-left: var(--tl-pad);
+}
+.path-list--timeline::before,
+.path-list--timeline::after {
+  content: '';
+  position: absolute;
+  left: 0.45rem;
+  top: 0; bottom: 0;
+  width: 1px;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
+          mask-image: linear-gradient(180deg, transparent, #000 7%, #000 93%, transparent);
+}
+.path-list--timeline::before { background: var(--hairline-l); }
+.path-list--timeline::after {
+  background: var(--gold-deep);
+  transform-origin: top;
+  transform: scaleY(var(--p, 1));
+}
+.path-list--timeline .path-step::before {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: calc(0.45rem - var(--tl-pad) - 4px);
+  top: calc(clamp(1.5rem, 3vw, 2.1rem) + 0.4rem);
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--gold-deep);
+  border: 1px solid var(--gold-deep);
+  transition: background-color 0.4s var(--ease-out-quint), border-color 0.4s var(--ease-out-quint), scale 0.5s var(--ease-out-expo);
+}
+.path-list--timeline[data-tl] .path-step::before {
+  background: var(--paper);
+  border-color: rgba(28, 43, 41, 0.4);
+}
+.path-list--timeline[data-tl] .path-step.is-passed::before {
+  background: var(--gold-deep);
+  border-color: var(--gold-deep);
+  scale: 1.25;
+}
+.path-list--timeline[data-tl] .path-body h3 { transition: color 0.4s var(--ease-out-quint); }
+.path-list--timeline[data-tl] .path-step:not(.is-passed) .path-body h3 { color: var(--muted); }
+
+/* ── ARRIVAL · the photographs open, once ──────────────────────────────────
+   A clip from the bottom edge and a slow settle, transform/clip only. The
+   default (no .is-in yet) is only ever applied under the motion gate, and a
+   failsafe in the script adds .is-in regardless. */
+.practitioner-photo,
+.network-media .photo-frame-media { overflow: hidden; }
+body[data-motion="ready"] .reveal-media img {
+  transition: clip-path 1.3s var(--ease-out-expo), scale 1.8s var(--ease-out-expo);
+}
+body[data-motion="ready"] .reveal-media:not(.is-in) img {
+  clip-path: inset(10% 0 0 0);
+  scale: 1.06;
+}
+body[data-motion="ready"] .dest-figure .dest-labels li {
+  transition: opacity 0.6s var(--ease-out-quint) calc(0.55s + var(--i, 0) * 70ms),
+              translate 0.7s var(--ease-out-expo) calc(0.55s + var(--i, 0) * 70ms);
+}
+body[data-motion="ready"] .dest-figure:not(.is-in) .dest-labels li { opacity: 0; translate: 0 8px; }
+
+/* ── The gold rules draw when their block arrives ──────────────────────── */
+body[data-motion="ready"] .practitioner-question::before,
+body[data-motion="ready"] .network-qual::before {
+  transform-origin: left;
+  transition: transform 0.9s var(--ease-out-expo) 0.2s;
+}
+body[data-motion="ready"] .practitioner-value:not(.is-in) .practitioner-question::before,
+body[data-motion="ready"] .practitioner-network:not(.is-in) .network-qual::before { transform: scaleX(0); }
+
+/* ── Capability modules: the rule lengthens on hover ─────────────────────── */
+.cap { position: relative; transition: background-color 0.25s var(--ease-out-quint); }
+/* The rule is the full inner width, clipped to a short stub, and the clip opens
+   on hover — clip-path, not width, so nothing reflows. */
+.cap::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: clamp(1.4rem, 2.6vw, 2.1rem);
+  right: clamp(1.4rem, 2.6vw, 2.1rem);
+  height: 1px;
+  background: var(--gold-deep);
+  clip-path: inset(0 calc(100% - 2rem) 0 0);
+  transition: clip-path 0.5s var(--ease-out-expo);
+}
+@media (hover: hover) and (pointer: fine) {
+  .cap:hover { background: #FFFDF8; }
+  .cap:hover::before { clip-path: inset(0 0 0 0); }
+}
+
+/* ── WAYFINDING · the section you are in ───────────────────────────────── */
+.pro-context--scroll .pro-context-nav a { position: relative; display: inline-block; padding-block: 0.4rem; transition: color 0.25s var(--ease-out-quint); }
+.pro-context--scroll .pro-context-nav a::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0.1rem;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s var(--ease-out-expo);
+}
+.pro-context--scroll .pro-context-nav a[aria-current="true"] { color: var(--paper); }
+.pro-context--scroll .pro-context-nav a[aria-current="true"]::after { transform: scaleX(1); }
+@media (max-width: 760px) {
+  .pro-context--scroll .pro-context-nav a::after { left: 0.75rem; right: 0.75rem; bottom: 0.45rem; }
+}
+
+/* ── FEEDBACK · the form ────────────────────────────────────────────────── */
+.pf-opt-card {
+  transition: border-color 0.18s var(--ease-out-quint), background-color 0.18s var(--ease-out-quint),
+              box-shadow 0.18s var(--ease-out-quint), scale 0.16s var(--ease-out-quint);
+}
+.pf-opt-card:active { scale: 0.985; }
+.pf input:not([type="radio"]):not([type="checkbox"]),
+.pf textarea { transition: border-color 0.18s var(--ease-out-quint), box-shadow 0.18s var(--ease-out-quint); }
+.pf-error { animation: pf-in 0.24s var(--ease-out-quint) both; }
+@keyframes pf-in { from { opacity: 0; translate: 0 -4px; } to { opacity: 1; translate: 0 0; } }
+
+/* A press-and-hold-free "sending" state: the button says so and stops being a
+   target, without collapsing to the disabled grey. */
+.pf [data-pf-submit][disabled] { opacity: 0.72; cursor: progress; }
+
+/* The success mark is drawn, once — the one moment on the page that is a
+   celebration, and it only ever happens after somebody has finished the form. */
+.pf-check { display: block; margin: 0 0 1.1rem; color: var(--gold-deep); }
+body[data-motion="ready"] .pf-done:not([hidden]) .pf-check circle {
+  stroke-dasharray: 152; stroke-dashoffset: 152;
+  animation: pf-draw 0.9s var(--ease-out-expo) 0.05s forwards;
+}
+body[data-motion="ready"] .pf-done:not([hidden]) .pf-check path {
+  stroke-dasharray: 40; stroke-dashoffset: 40;
+  animation: pf-draw 0.6s var(--ease-out-expo) 0.55s forwards;
+}
+@keyframes pf-draw { to { stroke-dashoffset: 0; } }
+
+/* ── The primary action stays one tap away on a phone ─────────────────────
+   Created by js/practitioners.js and shown only after the hero and until the
+   form. On desktop the context band and the sticky header already cover it. */
+.practitioner-sticky {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 40;
+  padding: 0.7rem var(--gutter) calc(0.7rem + env(safe-area-inset-bottom, 0px));
+  background: var(--ink);
+  border-top: 1px solid var(--hairline-d);
+  transform: translateY(100%);
+  visibility: hidden;
+  transition: transform 0.3s var(--ease-out-quint), visibility 0s linear 0.3s;
+}
+.practitioner-sticky .btn { width: 100%; }
+@media (max-width: 760px) { .practitioner-sticky { display: block; } }
+.practitioner-sticky.is-on {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.3s var(--ease-out-quint), visibility 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .practitioner-sticky { transition: none; }
+}
