@@ -253,6 +253,10 @@
    only once js/site.js confirms it is running. Getting this the other way round
    is how you end up shipping paper-coloured nav links on a paper background. */
 .site-header {
+  /* Pitons line colours, deepened for contrast on the cream bar. */
+  --piton-teal: #00868A;
+  --piton-gold: #B87A12;
+  --piton-coral: #D8512F;
   position: relative;
   z-index: 100;
   background: rgba(251, 248, 241, 0.92);
@@ -274,6 +278,13 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   backdrop-filter: none;
   border-bottom-color: transparent;
   color: var(--paper);
+  --piton-teal: #00A6A8;
+  --piton-gold: #D9A03C;
+  --piton-coral: #EF6A4A;
+}
+/* Over the hero photograph the coloured line needs a dark ground to hold against foliage. */
+body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] .piton-mark {
+  filter: drop-shadow(0 0 3px rgba(8, 28, 30, 0.7)) drop-shadow(0 0 1px rgba(8, 28, 30, 0.6));
 }
 
 .nav {

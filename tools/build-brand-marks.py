@@ -30,10 +30,10 @@ INK = '#12302F'       # --ink: the deep tile colour, matching the supplied artwo
 PAPER = '#FBF8F1'     # --paper
 
 
-def mark_inner(uid, stroke, color):
+def mark_inner(uid, stroke, color=None):
     """The mark's markup from lib/brand.js, so there is one drawing."""
     js = ("const b=require('./lib/brand.js');"
-          f"console.log(b.pitonsMarkInner('{uid}',{{stroke:{stroke},color:'{color}'}}))")
+          f"console.log(b.pitonsMarkInner('{uid}',{{stroke:{stroke}{(',color:' + repr(color)) if color else ''}}}))")
     return subprocess.run(['node', '-e', js], cwd=ROOT, check=True, capture_output=True, text=True).stdout
 
 
@@ -43,7 +43,7 @@ def tile_svg(rounded=True, scale=0.37):
     tx = 16 - 48 * scale
     ty = 17 - 24 * scale
     rx = ' rx="7"' if rounded else ''
-    inner = mark_inner('-t', round(2.3 / scale, 2), PAPER)
+    inner = mark_inner('-t', round(2.3 / scale, 2))
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect width="32" height="32"{rx} fill="{INK}"/>
   <g transform="translate({tx:.2f} {ty:.2f}) scale({scale})">
@@ -95,7 +95,7 @@ def render_og():
     out = os.path.join(ROOT, 'assets', 'og-default.jpg')
     tmp = out + '.png'
     mark = ('<svg width="118" height="56" viewBox="0 0 96 46" aria-hidden="true">'
-            + mark_inner('-og', 2.2, PAPER) + '</svg>')
+            + mark_inner('-og', 2.2) + '</svg>')
     with open(src, encoding='utf8') as f:
         html = f.read().replace('{{MARK}}', mark)
     with open(built, 'w', encoding='utf8') as f:

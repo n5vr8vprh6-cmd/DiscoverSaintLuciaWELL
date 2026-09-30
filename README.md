@@ -199,8 +199,10 @@ mountains with the sun half set into the valley; it never shows through the peak
 Nothing has a hard edge. The brand rule stands: full-saturation colour belongs to
 this mark.
 
-The line is `currentColor` (ink on the cream header, paper on dark), so there is no
-per-placement colour logic; the light is fixed warm colour. `pitonsMark({ height,
+The line carries the old ring's colours in the ring's order: teal along Gros, gold
+through the saddle and up Petit, coral at the tip of the long tail (a gradient reading
+`--piton-teal/-gold/-coral`; the cream header sets deeper values to keep 3:1). The
+light is fixed warm colour. `pitonsMark({ height,
 animate, breathe, sun })` is the entry point (viewBox 96 x 46); `pitonsMarkInner` is
 the same drawing without the wrapper, used by the favicons and the share image.
 Every mark needs its own gradient/clip ids (ids are document-wide), hence the counter

@@ -92,8 +92,9 @@ ok('a conversion-layout page has the mark in header and footer', /piton-mark/.te
 ok('the Eclipse mark is untouched (a separate identity)', /eclipse-mark/.test(by('/eclipse')));
 ok('the Foundations hero mark is the Pitons mark, with its glow layer',
    /hero-journeyline[\s\S]{0,4000}piton-glow/.test(by('/advisors/foundations')));
-ok('the line is currentColor (so it is right on any surface) with round joins and caps — softened, not mitred',
-   /class="piton-line"[^>]*stroke="currentColor"[^>]*stroke-linejoin="round" stroke-linecap="round"/.test(home));
+ok('the line carries the old ring colours (teal→gold→coral gradient) with round joins and caps — softened, not mitred',
+   /class="piton-line"[^>]*stroke="url\(#pl-[^"]*\)"[^>]*stroke-linejoin="round" stroke-linecap="round"/.test(home)
+   && /id="pl-[^"]*"[^>]*>[\s\S]{0,700}#00A6A8[\s\S]{0,300}#D9A03C[\s\S]{0,300}#EF6A4A/.test(home));
 ok('the light is golden-hour glow (gold core, amber, coral falloff), not a dot',
    /class="piton-aura"[^>]*fill="url\(#pa-[\w-]+\)"/.test(home) && /class="piton-disc"[^>]*fill="url\(#ps-[\w-]+\)"/.test(home)
      && /<radialGradient[\s\S]{0,500}#FFD08A[\s\S]{0,300}#EF6A4A/.test(home)
