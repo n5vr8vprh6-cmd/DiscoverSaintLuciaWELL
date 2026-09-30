@@ -181,7 +181,7 @@ module.exports = {
           id: 'sharing',
           body: [
             '<strong>Sharing a Journey is optional. Completing the Journey Finder does not automatically send your answers or contact information to a travel advisor.</strong>',
-            'If you select an option such as <em>Share My WELL Journey with [Advisor]</em>, you direct us to disclose the information identified at that point — which may include your name, contact information, Journey result, relevant Journey Finder responses, travel timing, and additional context you submit — to that independent advisor so they can contact you about travel planning.',
+            'If you choose to share your Journey with an advisor — by selecting <em>Help me plan this</em> and then <em>Share my Journey</em> — you direct us to disclose the information identified at that point — which may include your name, contact information, Journey result, relevant Journey Finder responses, travel timing, and additional context you submit — to that independent advisor so they can contact you about travel planning.',
             'A participating advisor may operate independently or through a host agency or other travel business. Once the advisor receives your information, their own privacy practices and legal responsibilities may apply. We encourage you to review the advisor’s privacy information when available.',
             /* Added 14 August 2026. The advisor is still independent — nothing
                above changes — but they are no longer bound by nothing, and a

@@ -26,6 +26,7 @@ module.exports = {
   title: 'Explore Saint Lucia WELL — villages, experiences and places',
   description: 'Six wellness villages, the island-wide experiences inside them, and the properties that anchor each one. Saint Lucia organized by what it does for you.',
   ogTitle: 'Explore Saint Lucia WELL',
+  js: ['/js/property-lightbox.js'],
 
   sections: [
     {

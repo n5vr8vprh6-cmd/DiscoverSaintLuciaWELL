@@ -474,7 +474,7 @@
          see `wireShare()`. It renders as the unattributed CTA first so the
          result is complete and actionable even if the lookup never answers. */
       '<div class="result-actions" data-share-actions>' +
-        '<a class="btn btn--gold" href="/about#contact" data-share-primary>Speak with a Saint Lucia WELL Advisor</a>' +
+        '<a class="btn btn--gold" href="/about#contact" data-share-primary>Help me plan this</a>' +
         '<a class="btn btn--ghost" href="/explore#villages" target="_blank" rel="noopener">Explore all six villages</a>' +
         '<button type="button" class="btn btn--ghost" data-finder-restart>Start again</button>' +
       '</div>' +
@@ -774,12 +774,12 @@
 
         if (d.advisor.firstName) {
           advisorName = d.advisor.firstName;
-          primary.textContent = 'Share my WELL Journey with ' + advisorName;
+          primary.textContent = 'Help me plan this with ' + advisorName;
         } else if (d.advisor.house) {
           /* advisorName stays null, which is what selects the team consent
              wording — see shareConsent(). Nobody has been matched to them yet
              and the copy must not imply otherwise. */
-          primary.textContent = 'Share my WELL Journey with the Saint Lucia WELL team';
+          primary.textContent = 'Help me plan this';
         } else {
           return;
         }

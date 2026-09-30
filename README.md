@@ -476,6 +476,22 @@ Running copy gets `text-wrap: pretty` (`css/site.css`). Not covered, on purpose:
 `/advisors/foundations` carries its own stylesheet and headline treatment, and the
 Hub uses `hub.css`.
 
+4. **One sentence to a line (`sentenceLines()` in `lib/page.js`).** `text-wrap:
+   balance` evens line lengths but does not know where a sentence ends, so a short
+   passage still broke as "…An experience may connect / several. Together…". At
+   build time, short plain-text paragraphs carrying `lead`, `section-footnote`,
+   `pullquote` or `cta-note` (and the one heading `#campus-title`) get each
+   sentence wrapped in `<span class="s">`, which `css/site.css` puts on its own
+   line (`.lines .s`). Limits, so this stays a typographic rule and not a layout
+   change: a lead only when *every* sentence is 66 characters or fewer (a long
+   sentence among short ones is a paragraph, and balance handles it); a footnote up
+   to 280 characters (its long sentence wraps balanced inside its own line); other
+   passages up to 160; two to four sentences. A one-sentence pull quote with a dash
+   breaks after the dash. Everything else, and every lead, footnote, quote and CTA
+   note, gets `text-wrap: balance`. Copy, copy-paste and screen readers are
+   unaffected (real spaces between the spans). The Foundations page loads none of
+   this CSS, so its spans stay inline.
+
 ## Attribution
 
 `js/attribution.js` separates two classes of parameter:
@@ -1313,6 +1329,20 @@ Three things learned the hard way, all encoded in the script's comments:
 
 Every image is cropped to 3:2 so grids align, and nothing is upscaled — the
 widest derivative is whatever the source could give.
+
+### Photo lightbox on /explore
+
+Each property card's photograph opens a modal gallery of that property
+(`js/property-lightbox.js`, loaded on /explore only), using the same `images[]` as
+above — nothing is authored separately. `propertyMedia()` in `lib/components.js`
+writes the trigger (a real link to the hero image, so it works with no script) and
+a `<script type="application/json" id="prop-gallery-data">` island holding every
+gallery, so the cards stay light. A property with one frame (Zoëtry) gets a plain
+picture. It is a native `<dialog>`: top-layer, inert page behind, focus contained,
+Esc built in; the script adds arrows/Home/End, swipe, thumbnails, backdrop-click
+and focus-return, and tells Lenis to leave it alone (`data-lenis-prevent`). The
+frames are the ones already on the page as heroes; `cleared` stays a flag for
+Duncan and is never shown to visitors. `tools/walkthrough-test.js` pins it.
 
 ### Galleries
 

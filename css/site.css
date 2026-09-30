@@ -46,6 +46,14 @@ h1 em, h2 em, .lead em {
 p { margin: 0 0 1.1em; }
 /* No one-word last lines in running copy. Headings already balance (above). */
 p, li, figcaption { text-wrap: pretty; }
+/* Short passages wrap to even lines rather than leaving a stub ("several." at the start
+   of a line, "personal." alone at the end). Where sentences are the natural unit, the
+   build (lib/page.js sentenceLines) puts each on its own line: .lines is the passage,
+   .s the sentence. Long passages keep text-wrap: pretty, below. */
+.lead, .section-footnote, .cta-note, .pullquote { text-wrap: balance; }
+.lines .s { display: block; text-wrap: balance; }
+.pullquote.lines { max-width: min(44rem, 100%); }
+.pullquote--center.lines { max-width: min(48rem, 100%); }
 /* The last two words of a split headline travel together (js/motion.js). */
 .nb { white-space: nowrap; }
 .scroll-cue { text-wrap: balance; }
@@ -644,7 +652,9 @@ body[data-motion="ready"] .lens-item {
    below its own heading with a large gap above it. */
 .village-block--wide {
   grid-template-columns: 1fr;
-  gap: clamp(1.75rem, 3vw, 2.5rem);
+  /* Photograph to copy: was 40px at desktop width, which read as cramped next to the
+     zigzag rows' 72px and the 112px between villages. */
+  gap: clamp(2.5rem, 4.5vw, 4.5rem);
 }
 .village-block--wide .village-block-media img { aspect-ratio: 21 / 9; }
 .village-block--wide .village-block-copy {
@@ -3307,4 +3317,95 @@ body[data-motion="ready"] .day-track.settled > li .day-body > * {
   margin-top: 0.9rem;
   padding-left: 0.85rem;
   border-left: 2px solid var(--gold);
+}
+
+/* ── Property photo lightbox (js/property-lightbox.js) ─────────────────────
+   The card's photograph is a link that opens a modal gallery of that property.
+   The count badge says so; without it the image gives no hint it does anything. */
+.prop-open { display: block; position: relative; overflow: hidden; cursor: zoom-in; }
+.prop-open img { transition: transform .5s var(--ease-out-quint); }
+.prop-count {
+  position: absolute; right: .65rem; bottom: .65rem;
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding: .32rem .6rem;
+  font-family: var(--sans); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--paper); background: rgba(18, 48, 47, .78);
+  backdrop-filter: blur(4px); border-radius: 2px;
+}
+.prop-open:focus-visible { outline: 2px solid var(--gold-deep); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) {
+  .prop-open:hover img { transform: scale(1.03); }
+}
+
+html.lb-open { overflow: hidden; }
+.lb {
+  width: 100vw; height: 100dvh; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0;
+  background: rgba(9, 26, 26, .985);
+  color: var(--paper);
+  overscroll-behavior: contain;
+  overflow: hidden;
+}
+.lb::backdrop { background: transparent; }
+.lb[open] { display: grid; animation: lb-in .22s var(--ease-out-quint); }
+@keyframes lb-in { from { opacity: 0; } }
+.lb-frame {
+  position: relative; min-height: 0; height: 100%;
+  display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto;
+  gap: .85rem; padding: clamp(1rem, 2.5vw, 2rem);
+}
+.lb-close {
+  position: absolute; top: clamp(.75rem, 2vw, 1.25rem); right: clamp(.75rem, 2vw, 1.25rem); z-index: 2;
+  width: 44px; height: 44px; display: grid; place-items: center;
+  color: var(--paper); background: rgba(255, 255, 255, .09); border: 0; border-radius: 50%; cursor: pointer;
+  transition: background-color .2s ease;
+}
+.lb-nav {
+  width: 48px; height: 48px; display: grid; place-items: center; flex: none;
+  color: var(--paper); background: rgba(255, 255, 255, .09); border: 0; border-radius: 50%; cursor: pointer;
+  transition: background-color .2s ease;
+}
+.lb-nav[hidden] { display: none; }
+.lb-close:hover, .lb-nav:hover { background: rgba(255, 255, 255, .18); }
+.lb-close:focus-visible, .lb-nav:focus-visible, .lb-thumbs button:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+.lb-stage { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: clamp(.5rem, 2vw, 1.5rem); min-height: 0; }
+.lb-figure { margin: 0; min-height: 0; height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: .75rem; }
+.lb-photo { min-height: 0; display: grid; place-items: center; overflow: hidden; touch-action: pan-y; }
+.lb-photo picture { display: contents; }
+.lb-photo img { max-width: 100%; max-height: calc(100dvh - 15.5rem); width: auto; height: auto; object-fit: contain; border-radius: 2px; }
+.lb-caption {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: .35rem 1rem;
+  font-family: var(--sans); font-size: .8rem; color: var(--mist);
+}
+.lb-title { font-family: var(--serif-display); font-size: 1.1rem; color: var(--paper); }
+.lb-kind { letter-spacing: .14em; text-transform: uppercase; font-size: .7rem; }
+.lb-thumbs {
+  list-style: none; margin: 0 auto; padding: 0 0 .15rem;
+  display: flex; gap: .5rem; max-width: 100%; width: max-content; overflow-x: auto; justify-self: center;
+  scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .35) transparent;
+}
+.lb-thumbs button {
+  position: relative; display: block; width: 6.5rem; padding: 0; border: 2px solid transparent;
+  background: none; cursor: pointer; opacity: .6; overflow: hidden; border-radius: 2px;
+  transition: opacity .2s ease, border-color .2s ease;
+}
+.lb-thumbs button:hover { opacity: .9; }
+.lb-thumbs button[aria-current] { opacity: 1; border-color: var(--paper); }
+.lb-thumbs img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+.lb-thumbs span {
+  position: absolute; inset: auto 0 0 0; padding: .9rem .3rem .2rem; text-align: left;
+  font-family: var(--sans); font-size: .58rem; letter-spacing: .1em; text-transform: uppercase; color: var(--paper);
+  background: linear-gradient(0deg, rgba(9, 26, 26, .85), rgba(9, 26, 26, 0));
+}
+.lb-credit { margin: 0; text-align: center; font-family: var(--sans); font-size: .7rem; color: var(--mist); opacity: .8; min-height: 1em; }
+@media (max-width: 700px) {
+  .lb-stage { grid-template-columns: minmax(0, 1fr); position: relative; }
+  .lb-nav { position: absolute; top: 40%; z-index: 1; width: 42px; height: 42px; background: rgba(9, 26, 26, .55); }
+  .lb-prev { left: 0; } .lb-next { right: 0; }
+  .lb-photo img { max-height: calc(100dvh - 14rem); }
+  .lb-thumbs button { width: 5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lb[open] { animation: none; }
+  .prop-open img { transition: none; }
 }
