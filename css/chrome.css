@@ -291,6 +291,13 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   text-decoration: none;
   flex-shrink: 0;
 }
+/* The Pitons mark (lib/brand.js pitonsMark). The line is currentColor, so it takes
+   ink on the cream header and paper on every dark surface with no rule here; the
+   glow layer exists only on animated marks and is invisible until css/site.css
+   turns it on, so a mark with no motion is simply a drawn mark. */
+.piton-mark { display: block; flex: none; overflow: visible; }
+.piton-mark .piton-glow { opacity: 0; }
+
 .brand-words {
   display: flex;
   flex-direction: column;
@@ -782,11 +789,16 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
 @media (max-width: 420px) {
   .nav { gap: 0.75rem; }
   .brand-lockup { flex-shrink: 1; min-width: 0; }
+  /* The mark is 2.3x wider than tall (the ring was square): step its height down
+     so the header row still fits, exactly as the type does below. Width follows
+     from the viewBox. */
+  .brand-lockup .piton-mark { height: 18px; width: auto; }
   .brand-words b { font-size: 0.74rem; letter-spacing: 0.08em; white-space: nowrap; }
   .brand-words i { font-size: 0.58rem; letter-spacing: 0.12em; white-space: nowrap; }
 }
 
 @media (max-width: 360px) {
+  .brand-lockup .piton-mark { height: 16px; }
   .brand-words b { font-size: 0.66rem; letter-spacing: 0.05em; }
   .brand-words i { font-size: 0.52rem; letter-spacing: 0.09em; }
 }

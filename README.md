@@ -141,7 +141,7 @@ silently shipping the wrong one.
 | `lib/layouts.js` | The three layouts and every chrome component |
 | `lib/components.js` | Section renderers (one per `type`) |
 | `lib/page.js` | `<head>`, metadata, JSON-LD, asset versioning |
-| `lib/brand.js` | Ring mark, wordmark, coordinates |
+| `lib/brand.js` | Pitons mark, wordmark, coordinates |
 | `css/tokens.css` | **The single brand-token source.** Loaded by every page. |
 | `css/chrome.css` | Headers, footers, buttons. Loaded by every page. |
 | `css/site.css` | Consumer page components. NOT loaded by Foundations. |
@@ -170,8 +170,39 @@ contrast:
 - `--eclipse-on-copper` `#0A0E16` added. Midnight on a copper fill lands at
   4.41:1 — just under AA — so the copper button uses this instead (4.62:1).
 
-Full-saturation deck teal/gold/coral appear **only** in the concentric ring
-mark, inline in `lib/brand.js`. Eclipse keeps its own midnight/copper world.
+Full-saturation deck colour (the coral sun, the gold glow) appears **only** in the
+Pitons mark, inline in `lib/brand.js`. Eclipse keeps its own midnight/copper world.
+
+### The Pitons mark (replaced the concentric ring, 2026-09-30)
+
+Two peaks as one continuous line with a coral sun in the valley, rebuilt as a
+vector from the supplied artwork — the line is a five-point polyline, measured
+from the pixels (`PITON_POINTS` in `lib/brand.js`). The line is `currentColor`
+(ink on the cream header, paper on dark), so there is no per-placement colour
+logic; only the sun is fixed. `pitonsMark({ height, animate, breathe, sun })` is the
+one entry point. Sun off below ~20px.
+
+- **Static** in the header and footers (seen on every page).
+- **Animated** (`animate: true`): the hero signature and the closing invitation.
+  Drawn left to right (`pathLength=1` dash), the sun arrives, and a blurred gold
+  copy travels with the pen and settles into a halo (`css/site.css` §1, triggered
+  by `js/motion.js` §5a adding `.is-drawn`). The hero's halo keeps a slow breath,
+  paused off-screen. With no motion gate, no script or reduced motion the mark is
+  simply drawn. The Foundations page ships its own stack and does the draw in
+  CSS on load.
+- **Assets** come from one script: `py tools/build-brand-marks.py` writes
+  `assets/favicon.svg` (and the Foundations copy), `favicon-32.png`,
+  `apple-touch-icon.png`, `icon-192.png` and `assets/og-default.jpg` (rendered
+  from `tools/brand/og.html` and the original hero photograph — the old JPG had
+  the ring baked in). The PNGs are rendered by headless Chrome, not PIL, so peaks
+  stay mitred. `tools/brand-test.js` fails if the script's geometry and
+  `lib/brand.js` drift apart.
+- **Deliberately still circles:** the WELL Compass centre, the Hub "thinking"
+  loader (`.gtm-ring`) and the practitioners ecosystem pings. They do different
+  jobs from the logo. The Eclipse mark is a separate identity.
+- **Not converted (other projects):** the printed brochure, the decks, the Field
+  Guide, the Well Destination Foundations site and the root-level HTML/PPTX/PDF
+  collateral still carry the ring.
 
 ### Widths that contain display type are set in rem, never `ch`
 

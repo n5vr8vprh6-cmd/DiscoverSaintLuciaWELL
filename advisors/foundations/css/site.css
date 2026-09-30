@@ -255,18 +255,22 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
   to   { transform: translate3d(3.5%, 2.5%, 0) scale(1.09); }
 }
 
-/* Hero ring mark: the outer ring slowly orbits */
-.hero-journeyline .ring-mark circle:first-of-type {
-  stroke-dasharray: 2.5 4.5;
-  transform-box: fill-box; transform-origin: center;
-  animation: ring-orbit 38s linear infinite;
-}
-@keyframes ring-orbit { to { transform: rotate(360deg); } }
+/* Hero Pitons mark: drawn left to right on load, then a gold glow settles.
+   The consumer site does this with js/motion.js and body[data-motion]; this page
+   ships its own stack, so it is CSS-only and runs once when the page loads. Under
+   reduced motion the rule at the top of this block drops every animation, which
+   leaves the mark drawn and complete. */
+.hero-journeyline .piton-line,
+.hero-journeyline .piton-glow { stroke-dasharray: 1; animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
+.hero-journeyline .piton-glow { filter: blur(1.6px); animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both, piton-glow 2.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both; }
+.hero-journeyline .piton-sun { transform-box: fill-box; transform-origin: center; animation: piton-sun 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both; }
+@keyframes piton-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes piton-glow { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0.28; } }
+@keyframes piton-sun  { from { opacity: 0; scale: 0.35; } to { opacity: 1; scale: 1; } }
 .hero-journeyline .thread { animation: thread-breathe 4.5s ease-in-out infinite; }
 @keyframes thread-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 
-/* ── Ring mark (concentric: teal / gold / coral) ─────────────────────── */
-.ring-mark { flex: none; }
+/* ── Pitons mark: base rules live in css/chrome.css (.piton-mark) ─────── */
 
 /* ── Header / nav ─────────────────────────────────────────────────────── */
 .site-header {
@@ -1061,7 +1065,7 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
 .person .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
 /* institutional card: the brand mark stands in for a portrait */
 .person .portrait--mark { background: var(--ink); }
-.person .portrait--mark .ring-mark { opacity: 0.9; }
+.person .portrait--mark .piton-mark { opacity: 0.9; }
 .person h3 { font-size: var(--fs-h4); font-family: var(--sans); font-weight: 600; color: var(--ivory-ink); }
 .person .role { font-family: var(--sans); font-size: 0.8rem; color: var(--gold-deep); letter-spacing: 0.08em; margin: 0.25rem 0 0.6rem; }
 .person p { font-family: var(--sans); font-size: 0.86rem; margin: 0; color: var(--muted); }

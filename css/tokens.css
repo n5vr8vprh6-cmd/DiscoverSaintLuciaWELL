@@ -151,16 +151,17 @@
   /* ── Palette ──────────────────────────────────────────────────────────────
      Inherited verbatim from the Foundations design system so the two surfaces
      cannot drift. Full-saturation deck colour (teal-bright / coral) appears
-     ONLY in the concentric ring mark — the brochure rule, kept on the web.   */
+     ONLY in the Pitons mark (its coral sun and gold glow) — the brochure rule,
+     kept on the web; it belonged to the concentric ring until 2026-09-30.    */
   --charcoal:   #181A17;   /* volcanic charcoal — deep sections */
   --charcoal-2: #1F2320;   /* raised surface on charcoal */
   --ink:        #12302F;   /* deep rainforest-ink (brand ink, darkened) */
   --ink-2:      #173A38;   /* raised surface on ink */
   --teal:       #0B6E70;   /* ocean teal — deep */
-  --teal-bright:#00A6A8;   /* deck teal — ring mark only */
+  --teal-bright:#00A6A8;   /* deck teal — legacy brand colour; the compass and Hub loader only */
   --gold:       #D9A03C;   /* warm gold — accent + gold text on DARK backgrounds */
   --gold-deep:  #8A5E15;   /* deep gold — ALL gold text on LIGHT backgrounds; WCAG AA */
-  --coral:      #EF6A4A;   /* deck coral — ring mark only */
+  --coral:      #EF6A4A;   /* deck coral — the Pitons mark's sun (and the compass / Hub loader) only */
   --paper:      #FBF8F1;   /* ivory paper — editorial sections */
   --paper-2:    #F3EDE0;   /* warm sand — cards on paper */
   --ivory-ink:  #1C2B29;   /* body ink on paper */

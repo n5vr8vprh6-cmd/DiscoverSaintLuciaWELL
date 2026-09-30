@@ -858,7 +858,7 @@ body {
    Nothing here introduces a colour. Warnings borrow the gold rule already used
    by .hub-notice and the one blocking state borrows --v-movement, the same
    token .hub-flash--bad uses — full-saturation deck colour stays where the
-   brand puts it, in the ring mark on the overlay below and nowhere else. */
+   brand puts it, in the loader's rings on the overlay below and nowhere else. */
 .gtm-plan-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1016,8 +1016,8 @@ body {
 
 /* ── The thinking overlay ────────────────────────────────────────────────
    The minute where the product either feels like it works or feels like it
-   has hung. It says what it is doing, and the ring mark is the one place the
-   brand's full-saturation colour belongs. */
+   has hung. It says what it is doing, and the loader's rings are the one place
+   in the Hub the brand's full-saturation colour belongs. */
 .gtm-thinking {
   position: fixed;
   inset: 0;

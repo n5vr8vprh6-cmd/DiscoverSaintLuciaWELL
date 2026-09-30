@@ -211,6 +211,27 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════════
+     5a · The Pitons mark draws as it arrives
+     Every .piton-mark--animate (the hero signature, the closing invitation).
+     .is-drawn starts the draw and the glow once, when the mark is mostly in view;
+     .is-live tracks whether it is on screen so the hero's slow halo breath can
+     pause when it is not. Same failsafe as the reveals: if the observer never
+     delivers, draw it anyway rather than leave the mark blank.
+     ══════════════════════════════════════════════════════════════════════ */
+  document.querySelectorAll('.piton-mark--animate').forEach(function (mark) {
+    if (!('IntersectionObserver' in window)) { mark.classList.add('is-drawn', 'is-live'); return; }
+    var drawn = false, delivered = false;
+    new IntersectionObserver(function (entries) {
+      delivered = true;
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { drawn = true; mark.classList.add('is-drawn', 'is-live'); }
+        else mark.classList.remove('is-live');
+      });
+    }, { threshold: 0.6 }).observe(mark);
+    setTimeout(function () { if (!delivered && !drawn) mark.classList.add('is-drawn', 'is-live'); }, 2600);
+  });
+
+  /* ══════════════════════════════════════════════════════════════════════
      5b · Per-child indices for SVG and list animations
      The compass ticks/labels and the arc nodes need their own --i, and they
      are not children of a [data-stagger] grid.

@@ -145,21 +145,6 @@
     /* FOCAL — the ecosystem assembles when it arrives; the photographs open. */
     whenSeen($('[data-eco]'), 'is-in', 0.35);
 
-    /* LANDING — the closing invitation's ring mark pings once when the section
-       arrives, to catch the eye at the moment a reader would otherwise scroll
-       straight past to the footer. Once, never repeated; the mark is wrapped so the
-       ping rings can sit exactly on it. */
-    var begin = $('#begin');
-    var mark = begin && $('.ring-mark', begin);
-    if (mark) {
-      var wrap = document.createElement('span');
-      wrap.className = 'cta-mark';
-      mark.parentNode.insertBefore(wrap, mark);
-      wrap.appendChild(mark);
-      wrap.insertAdjacentHTML('beforeend', '<i class="cta-ping" aria-hidden="true"></i><i class="cta-ping" aria-hidden="true"></i>');
-      whenSeen(begin, 'is-landed', 0.5);
-    }
-
     /* The radar behind the diagram runs only while the diagram is on screen — a
        continuous animation that keeps running off-screen is a battery cost with no
        audience. Toggling .is-live pauses it (animation-play-state), it does not

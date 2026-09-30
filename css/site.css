@@ -246,7 +246,7 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
   margin-top: 1.5rem;
 }
 
-/* The signature: ring → gold journey line → coordinates. */
+/* The signature: Pitons mark → gold journey line → coordinates. */
 .hero-signature {
   display: flex;
   flex-direction: column;
@@ -2561,28 +2561,52 @@ body[data-motion="ready"] .settled {
    SIGNATURE ANIMATIONS
    ----------------------------------------------------------------------------
    Five additions, each with a job. None of them loop forever for decoration's
-   sake: the ring and thread mark the hero's invitation to scroll, and the other
+   sake: the Pitons mark and thread mark the hero's invitation to scroll, and the other
    four are scroll-linked, so they report progress rather than perform.
 
    Everything here is scoped to body[data-motion="ready"] and collapses under
    the reduced-motion block at the end of this file.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── 1 · Hero signature: a ring that breathes, a thread that draws ────────
-   The scroll cue said "the island opens" while nothing moved. Now the outer
-   ring pulses slowly outward like a sonar ping and the gold thread draws
-   downward on a loop, so the eye is led down the page rather than told to
-   look down. */
-body[data-motion="ready"] .hero-signature .ring-mark { overflow: visible; }
-body[data-motion="ready"] .hero-signature .ring-mark circle:first-of-type {
-  transform-origin: 50% 50%;
-  animation: sig-ping 3.6s var(--ease-out-quint) infinite;
+/* ── 1 · The Pitons mark draws, then glows ────────────────────────────────
+   Replaces the ring's sonar ping. The peaks are drawn left to right as one
+   line (stroke-dashoffset, pathLength=1, so it fits any size), the coral sun
+   arrives as the line finishes, and a blurred gold copy of the line travels with
+   the pen and then settles into a faint halo. On the hero the halo keeps a slow
+   breath, paused when the mark is off-screen (.is-live); on the closing
+   invitation it simply settles. Header and footer marks are static — they are
+   seen on every page, and a mark that performs every time is noise.
+
+   Triggered by js/motion.js adding .is-drawn as the mark arrives. Everything is
+   scoped to body[data-motion="ready"], so with no script, no motion gate or
+   reduced motion the mark is simply drawn and complete.
+   Only stroke-dashoffset, opacity, scale and a bounded blur on a ~80px SVG. */
+body[data-motion="ready"] .piton-mark--animate .piton-line,
+body[data-motion="ready"] .piton-mark--animate .piton-glow { stroke-dasharray: 1; stroke-dashoffset: 1; }
+body[data-motion="ready"] .piton-mark--animate .piton-glow { filter: blur(1.6px); }
+body[data-motion="ready"] .piton-mark--animate .piton-sun {
+  opacity: 0; scale: 0.35;
+  transform-box: fill-box; transform-origin: center;
 }
-@keyframes sig-ping {
-  0%   { transform: scale(1);    opacity: .95; }
-  55%  { transform: scale(1.55); opacity: 0; }
-  100% { transform: scale(1.55); opacity: 0; }
+body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line,
+body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.5s var(--ease-out-expo);
 }
+body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-sun {
+  opacity: 1; scale: 1;
+  transition: opacity 0.5s var(--ease-out-quint) 1.1s, scale 0.9s var(--ease-out-expo) 1.1s;
+}
+body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
+  animation: piton-glow 2.8s var(--ease-out-quint) both;
+}
+body[data-motion="ready"] .piton-mark--breathe.is-drawn .piton-glow {
+  animation: piton-glow 2.8s var(--ease-out-quint) both,
+             piton-breathe 5.5s ease-in-out 2.8s infinite alternate;
+}
+body[data-motion="ready"] .piton-mark--breathe:not(.is-live) .piton-glow { animation-play-state: paused; }
+@keyframes piton-glow    { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0.28; } }
+@keyframes piton-breathe { from { opacity: 0.28; } to { opacity: 0.6; } }
 body[data-motion="ready"] .hero-signature .thread {
   background: linear-gradient(180deg, var(--gold), rgba(217,160,60,0));
   transform-origin: top center;

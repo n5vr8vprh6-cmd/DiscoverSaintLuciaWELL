@@ -655,22 +655,10 @@ body[data-page="practitioners"] #begin .final-cta-inner .lead { max-width: 40rem
    inline-blocks). On a phone 14.5em is wider than the screen, so it wraps freely. */
 body[data-page="practitioners"] #begin h2 em { display: block; max-width: 14.5em; margin-inline: auto; }
 
-/* ── LANDING · one ping on the closing invitation ─────────────────────────
-   The ring mark bumps and two hairline rings leave it, once, when the section is
-   half on screen. Exponential ease-out; nothing repeats. */
-.cta-mark { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-.cta-ping {
-  position: absolute; inset: 0;
-  border-radius: 50%;
-  border: 1.5px solid var(--gold);
-  opacity: 0;
-  pointer-events: none;
-}
-body[data-motion="ready"] #begin.is-landed .cta-ping { animation: cta-ping 1.8s var(--ease-out-expo) 0.45s 1 both; }
-body[data-motion="ready"] #begin.is-landed .cta-ping:last-child { animation-delay: 0.85s; }
-body[data-motion="ready"] #begin.is-landed .ring-mark { animation: cta-bump 0.9s var(--ease-out-expo) 0.4s 1; }
-@keyframes cta-ping { 0% { opacity: 0.9; scale: 1; } 100% { opacity: 0; scale: 3.4; } }
-@keyframes cta-bump { 0% { scale: 1; } 35% { scale: 1.18; } 100% { scale: 1; } }
+/* ── LANDING · the closing invitation ─────────────────────────────────────
+   The Pitons mark on the closing invitation draws as it arrives (js/motion.js,
+   css/site.css). It replaced a one-off circular ping that only made sense for
+   a round mark. */
 
 /* ── CONTINUITY · the timeline ─────────────────────────────────────────────
    The spine is the ol's own ::before (track) and ::after (fill). Without the
