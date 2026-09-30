@@ -74,6 +74,9 @@ ok('no page still renders the concentric ring as its logo', ringLeft.length === 
 ok('no page still carries the ring mark\'s three-circle markup (teal r=11.5, gold r=7)',
    !pages.some((p) => /r="11\.5"[^>]*stroke="#00A6A8"[\s\S]{0,200}r="7"[^>]*stroke="#D9A03C"/.test(p.html)));
 
+ok('the home hero keeps concentric rings as decoration beside the coordinates (not the logo)',
+   /class="hero-signature"[^>]*>\s*<svg class="hero-rings"/.test(by('/')) && !/class="ring-mark"/.test(by('/')));
+
 const withMark = pages.filter((p) => /class="piton-mark/.test(p.html) && !/\/404$/.test(p.url));
 const home = by('/');
 ok('every content page carries the Pitons mark', withMark.length >= pages.length - 3,
@@ -211,7 +214,8 @@ ok('the sun\'s hidden state is gated the same way',
 ok('the un-drawn line is also transparent (a round cap would otherwise draw a dot)',
    /body\[data-motion="ready"\] \.piton-mark--animate \.piton-line \{ opacity: 0; \}/.test(css));
 ok('the base rule leaves the glow invisible (a static mark has no halo)', /\.piton-mark \.piton-glow \{ opacity: 0; \}/.test(read('css/chrome.css')));
-ok('the ring\'s sonar-ping animation is gone', !/sig-ping/.test(css) && !/cta-ping|cta-bump/.test(read('css/practitioners.css')));
+ok('the ping now belongs only to the decorative hero rings (never the logo or the closing invitation)',
+   /\.hero-rings circle:first-of-type \{[^}]*sig-ping/.test(css) && !/cta-ping|cta-bump/.test(read('css/practitioners.css')));
 ok('the Foundations page drops every animation under reduced motion (mark stays drawn)',
    /prefers-reduced-motion: reduce\)[\s\S]{0,400}animation: none !important/.test(read('advisors/foundations/css/site.css')));
 ok('the narrow-phone header steps the mark down so the row still fits',
