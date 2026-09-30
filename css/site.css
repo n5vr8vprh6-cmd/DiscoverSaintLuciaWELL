@@ -2573,7 +2573,7 @@ body[data-motion="ready"] .settled {
 /* ── 1 · The Pitons mark draws, then the light comes up ───────────────────
    Replaces the ring's sonar ping. The peaks are drawn left to right as one line
    (stroke-dashoffset, pathLength=1, so it fits any size) while a blurred gold copy
-   travels with the pen; then golden-hour light rises out of the saddle — the light
+   travels with the pen; then, only once the signature is finished (3.5s), golden-hour light rises out of the saddle — the light
    group is clipped to the sky above the skyline, so lifting it up from below reads
    as the sun coming up behind the mountains, not as a glow sliding over them. The
    hero keeps a slow breath in the light afterwards, paused when the mark is
@@ -2604,13 +2604,13 @@ body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line { opacity: 1; }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-sun {
   opacity: 1; translate: 0 0;
-  transition: opacity 1.8s var(--ease-out-quint) 1.7s, translate 2.8s var(--ease-out-expo) 1.7s;
+  transition: opacity 1.8s var(--ease-out-quint) 3.5s, translate 2.8s var(--ease-out-expo) 3.5s;
 }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
   animation: piton-write 3.8s linear both, piton-glow 4.4s var(--ease-out-quint) both;
 }
 body[data-motion="ready"] .piton-mark--breathe.is-drawn .piton-aura {
-  animation: piton-breathe 6s ease-in-out 4.6s infinite alternate;
+  animation: piton-breathe 6s ease-in-out 6.4s infinite alternate;
 }
 body[data-motion="ready"] .piton-mark--breathe:not(.is-live) .piton-aura { animation-play-state: paused; }
 @keyframes piton-write {

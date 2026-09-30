@@ -183,7 +183,7 @@ ok('Petit\'s long slope is written SLOWER than the peaks (a flourish, not a rush
 })());
 ok('the animation is slow enough to read as handwriting (a few seconds, not a flick)', /piton-write 3\.8s linear/.test(read('css/site.css')));
 ok('the light still rises as before (same translate + opacity), just timed to the slower pen',
-   /is-drawn \.piton-sun \{\s*opacity: 1; translate: 0 0;\s*transition: opacity 1\.8s var\(--ease-out-quint\) 1\.7s, translate 2\.8s var\(--ease-out-expo\) 1\.7s/.test(read('css/site.css')));
+   /is-drawn \.piton-sun \{\s*opacity: 1; translate: 0 0;\s*transition: opacity 1\.8s var\(--ease-out-quint\) 3\.5s, translate 2\.8s var\(--ease-out-expo\) 3\.5s/.test(read('css/site.css')));
 
 /* ── 3 · assets and the head ──────────────────────────────────────────── */
 console.log('\n  Assets and <head>');

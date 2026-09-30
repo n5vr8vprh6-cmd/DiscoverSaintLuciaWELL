@@ -265,7 +265,7 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
 .hero-journeyline .piton-glow { stroke-dasharray: 1; }
 .hero-journeyline .piton-line { animation: piton-write 3.8s linear 0.4s both, piton-show 0.01s 0.4s both; }
 .hero-journeyline .piton-glow { filter: blur(1.6px); animation: piton-write 3.8s linear 0.4s both, piton-glow 4.4s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both; }
-.hero-journeyline .piton-sun { animation: piton-rise 2.8s cubic-bezier(0.16, 1, 0.3, 1) 2.1s both; }
+.hero-journeyline .piton-sun { animation: piton-rise 2.8s cubic-bezier(0.16, 1, 0.3, 1) 3.9s both; }
 /* Written like a signature: brisk strokes for the peaks, a lift at Petit's tip, then
    Petit's long slope as a slow flourish (same keyframes as css/site.css). */
 @keyframes piton-write {
