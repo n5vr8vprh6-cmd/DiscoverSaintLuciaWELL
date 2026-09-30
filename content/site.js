@@ -82,7 +82,7 @@ const SITE = {
         {
           title: 'Retreat Leaders',
           links: [
-            { label: 'Build a Retreat',               href: '/practitioners#build' },
+            { label: 'Build a Retreat',               href: '/practitioners' },
             { label: 'Visiting Practitioners', href: '/practitioners#network' }
           ]
         },

@@ -150,7 +150,7 @@ const w = (o, patch) => Object.assign({}, o, patch);
      stacked.indexOf('>Retreat Leaders<') > -1
        && stacked.indexOf('>Retreat Leaders<') < stacked.indexOf('>About<'));
   ok('…with both links, on the two pathway anchors',
-     stacked.includes('href="/practitioners#build"') && stacked.includes('href="/practitioners#network"'));
+     stacked.includes('href="/practitioners"') && stacked.includes('href="/practitioners#network"'));
   ok('About\'s own links are all still there',
      ['#why-saint-lucia', '#approach', '#partners', '#contact'].every((a) => stacked.includes('/about' + a)));
 
