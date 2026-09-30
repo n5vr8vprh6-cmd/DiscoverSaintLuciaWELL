@@ -600,6 +600,18 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] .p
   margin-top: 1.1rem;
   max-width: 30ch;
 }
+/* Channels under the tagline. 44px targets around 20px glyphs; the row is pulled left so
+   the first glyph aligns with the wordmark's left edge. */
+.footer-social { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0.9rem 0 0 -0.75rem; padding: 0; list-style: none; }
+.footer-social a {
+  display: grid; place-items: center;
+  width: 44px; height: 44px;
+  color: var(--mist);
+  border-radius: 50%;
+  transition: color .2s ease, background-color .2s ease;
+}
+.footer-social a:hover { color: var(--paper); background: rgba(255, 255, 255, 0.07); }
+.footer-social a:focus-visible { color: var(--paper); outline: 2px solid var(--paper); outline-offset: -2px; }
 .footer-col h2 {
   font-family: var(--sans);
   font-size: 0.7rem;

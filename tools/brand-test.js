@@ -82,6 +82,11 @@ ok('the hero mark performs once per session: seen flag in sessionStorage, finish
    && /piton-mark--seen\.is-drawn \.piton-sun \{ transition: none; \}/.test(read('css/site.css'))
    && !/hero-mark[^>]*>[\s\S]{0,40}piton-mark--seen/.test(by('/')));
 
+ok('the consumer footer carries the four channel links, exact URLs, new tab, rel=noopener me, accessible names',
+   ['https://www.linkedin.com/showcase/discover-saint-lucia-well', 'https://www.instagram.com/discoversaintluciawell/', 'https://www.facebook.com/discoversaintluciawell', 'https://wa.me/16478745565']
+     .every((u) => by('/').includes('href="' + u + '" target="_blank" rel="noopener me" aria-label="')));
+ok('the restrained conversion footers do not carry the channel row', !/footer-social/.test(by('/advisors/foundations')));
+
 const withMark = pages.filter((p) => /class="piton-mark/.test(p.html) && !/\/404$/.test(p.url));
 const home = by('/');
 ok('every content page carries the Pitons mark', withMark.length >= pages.length - 3,

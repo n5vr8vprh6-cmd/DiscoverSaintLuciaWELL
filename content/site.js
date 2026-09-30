@@ -26,6 +26,16 @@ const SITE = {
   coords: '13°54′N  60°58′W',
   year: 2026,
 
+  /* Channels, shown as icons under the footer tagline (standard consumer footer only).
+     `label` is the accessible name. The LinkedIn link is a Showcase Page. The
+     WhatsApp number is +1 (647) 874-5565, in wa.me form (digits only). */
+  social: [
+    { key: 'linkedin',  label: 'Discover Saint Lucia WELL on LinkedIn',  href: 'https://www.linkedin.com/showcase/discover-saint-lucia-well' },
+    { key: 'instagram', label: 'Discover Saint Lucia WELL on Instagram', href: 'https://www.instagram.com/discoversaintluciawell/' },
+    { key: 'facebook',  label: 'Discover Saint Lucia WELL on Facebook',  href: 'https://www.facebook.com/discoversaintluciawell' },
+    { key: 'whatsapp',  label: 'Message Discover Saint Lucia WELL on WhatsApp', href: 'https://wa.me/16478745565' }
+  ],
+
   /* The single global consumer CTA. Referenced everywhere rather than retyped
      so it cannot drift into three slightly different phrasings. */
   primaryCta: { label: 'Find My WELL Journey', href: '/journey' },
