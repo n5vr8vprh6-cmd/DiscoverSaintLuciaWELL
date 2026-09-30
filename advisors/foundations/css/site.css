@@ -262,11 +262,15 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
    leaves the mark drawn and complete. */
 .hero-journeyline .piton-line,
 .hero-journeyline .piton-glow { stroke-dasharray: 1; animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
+.hero-journeyline .piton-line { animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both, piton-show 0.01s 0.4s both; }
 .hero-journeyline .piton-glow { filter: blur(1.6px); animation: piton-draw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both, piton-glow 2.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both; }
 .hero-journeyline .piton-sun { transform-box: fill-box; transform-origin: center; animation: piton-sun 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both; }
 @keyframes piton-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes piton-glow { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0.28; } }
 @keyframes piton-sun  { from { opacity: 0; scale: 0.35; } to { opacity: 1; scale: 1; } }
+@keyframes piton-show { from { opacity: 0; } to { opacity: 1; } }
+.hero-journeyline .piton-halo { animation: piton-halo-in 1.4s cubic-bezier(0.22, 1, 0.36, 1) 1.7s both; }
+@keyframes piton-halo-in { from { opacity: 0; } to { opacity: 0.34; } }
 .hero-journeyline .thread { animation: thread-breathe 4.5s ease-in-out infinite; }
 @keyframes thread-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
 

@@ -2583,16 +2583,22 @@ body[data-motion="ready"] .settled {
    Only stroke-dashoffset, opacity, scale and a bounded blur on a ~80px SVG. */
 body[data-motion="ready"] .piton-mark--animate .piton-line,
 body[data-motion="ready"] .piton-mark--animate .piton-glow { stroke-dasharray: 1; stroke-dashoffset: 1; }
+/* Round caps draw a dot even on a zero-length dash, so the un-drawn line is also
+   transparent (the draw itself switches it back on at once). */
+body[data-motion="ready"] .piton-mark--animate .piton-line { opacity: 0; }
 body[data-motion="ready"] .piton-mark--animate .piton-glow { filter: blur(1.6px); }
 body[data-motion="ready"] .piton-mark--animate .piton-sun {
   opacity: 0; scale: 0.35;
   transform-box: fill-box; transform-origin: center;
 }
+body[data-motion="ready"] .piton-mark--animate .piton-halo { opacity: 0; }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line,
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-glow {
   stroke-dashoffset: 0;
   transition: stroke-dashoffset 1.5s var(--ease-out-expo);
 }
+body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-line { opacity: 1; }
+body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-halo { opacity: 0.34; transition: opacity 1.4s var(--ease-out-quint) 1.3s; }
 body[data-motion="ready"] .piton-mark--animate.is-drawn .piton-sun {
   opacity: 1; scale: 1;
   transition: opacity 0.5s var(--ease-out-quint) 1.1s, scale 0.9s var(--ease-out-expo) 1.1s;

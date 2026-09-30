@@ -43,10 +43,12 @@
 <body>
 <div class="frame">
   <div class="brand">
-    <!-- Same geometry as lib/brand.js pitonsMark(); line paper, sun coral. -->
-    <svg width="92" height="40" viewBox="0 0 92 40" aria-hidden="true">
-      <polyline points="3,37 30,4.5 46,21.5 65,2.5 89,37" fill="none" stroke="#FBF8F1" stroke-width="3" stroke-linejoin="miter" stroke-miterlimit="6"/>
-      <circle cx="46" cy="11.5" r="3.2" fill="#EF6A4A"/>
+    <!-- Same geometry as lib/brand.js pitonsMark(); line paper, soft glow. -->
+    <svg width="101" height="44" viewBox="0 0 92 40" aria-hidden="true">
+      <defs><radialGradient id="g"><stop offset="0" stop-color="#FFE2C2"/><stop offset=".18" stop-color="#F58A66" stop-opacity=".95"/><stop offset=".5" stop-color="#EF6A4A" stop-opacity=".32"/><stop offset="1" stop-color="#D9A03C" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="46" cy="11.5" r="17" fill="none" stroke="#D9A03C" stroke-width=".6" opacity=".34"/>
+      <circle cx="46" cy="11.5" r="13" fill="url(#g)"/>
+      <path d="M3 37 C13 27.5 21.5 15.5 27.8 7.2 Q30 4.2 32.2 7.2 C36.8 13 41.2 18.2 44.7 20.6 Q46 21.7 47.3 20.6 C51.6 17.8 57.6 11.4 62.9 4.6 Q65 2 67.1 4.6 C74.6 14 82 27 89 37" fill="none" stroke="#FBF8F1" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
     </svg>
     <span>Discover Saint Lucia <b>WELL</b></span>
   </div>

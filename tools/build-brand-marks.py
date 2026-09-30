@@ -27,7 +27,7 @@ CHROME = r'C:\Program Files\Google\Chrome\Application\chrome.exe'
 INK = '#12302F'       # --ink: the deep tile colour, matching the supplied artwork
 PAPER = '#FBF8F1'     # --paper
 CORAL = '#EF6A4A'
-POINTS = '3,37 30,4.5 46,21.5 65,2.5 89,37'   # keep in step with lib/brand.js
+PATH = 'M3 37 C13 27.5 21.5 15.5 27.8 7.2 Q30 4.2 32.2 7.2 C36.8 13 41.2 18.2 44.7 20.6 Q46 21.7 47.3 20.6 C51.6 17.8 57.6 11.4 62.9 4.6 Q65 2 67.1 4.6 C74.6 14 82 27 89 37'   # keep in step with lib/brand.js (PITON_PATH)
 SUN = (46, 11.5)
 
 
@@ -36,13 +36,13 @@ def tile_svg(rounded=True, mark_scale=0.32):
     tx = 16 - 46 * mark_scale
     ty = 17 - 19.75 * mark_scale
     rx = ' rx="7"' if rounded else ''
-    stroke = 8   # local units; x mark_scale = px at 32
-    sun_r = 4.2
+    stroke = 7.4   # local units; x mark_scale = ~2.4px at 32
     return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs><radialGradient id="g"><stop offset="0" stop-color="#FFE2C2"/><stop offset=".18" stop-color="#F58A66" stop-opacity=".95"/><stop offset=".5" stop-color="#EF6A4A" stop-opacity=".4"/><stop offset="1" stop-color="#D9A03C" stop-opacity="0"/></radialGradient></defs>
   <rect width="32" height="32"{rx} fill="{INK}"/>
   <g transform="translate({tx:.2f} {ty:.2f}) scale({mark_scale})">
-    <polyline points="{POINTS}" fill="none" stroke="{PAPER}" stroke-width="{stroke}" stroke-linejoin="miter" stroke-miterlimit="6"/>
-    <circle cx="{SUN[0]}" cy="{SUN[1]}" r="{sun_r}" fill="{CORAL}"/>
+    <circle cx="{SUN[0]}" cy="{SUN[1]}" r="14" fill="url(#g)"/>
+    <path d="{PATH}" fill="none" stroke="{PAPER}" stroke-width="{stroke}" stroke-linejoin="round" stroke-linecap="round"/>
   </g>
 </svg>
 '''
