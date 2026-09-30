@@ -248,6 +248,7 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
 
 /* The signature: Pitons mark → gold journey line → coordinates. */
 .hero-signature {
+  --piton-teal: #DFF6F4;  /* over the photograph; see chrome.css */
   display: flex;
   flex-direction: column;
   align-items: center;

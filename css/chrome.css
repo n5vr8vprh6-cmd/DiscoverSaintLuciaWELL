@@ -278,7 +278,9 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] {
   backdrop-filter: none;
   border-bottom-color: transparent;
   color: var(--paper);
-  --piton-teal: #00A6A8;
+  /* Over the photograph teal would melt into foliage and water: Gros goes pale, the
+     warm half already contrasts. */
+  --piton-teal: #DFF6F4;
   --piton-gold: #D9A03C;
   --piton-coral: #EF6A4A;
 }
