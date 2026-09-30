@@ -547,6 +547,9 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] .p
   justify-content: space-between;
   gap: 1rem;
   min-height: 56px;
+  /* The button is taller than the 56px floor on some pages (Foundations), so without
+     this it sat flush against both rules of the bar. */
+  padding-block: 0.7rem;
 }
 .conv-links { display: flex; flex-wrap: wrap; gap: clamp(1rem, 2vw, 1.9rem); }
 .conv-links a {

@@ -113,11 +113,11 @@ ok('the privacy notice names the new button and the consenting step',
 console.log('\n  Foundations and Immersion');
 const fnd = page('/advisors/foundations');
 const imm = page('/advisors/immersion');
-ok('Foundations Saint Lucia is $500 to reserve and about $5,000 all in — everywhere it appears',
-   /<p class="price">\$500 <small>USD to reserve<\/small><\/p>/.test(fnd) && /Budget around <b>\$5,000 all in<\/b>/.test(fnd)
-   && /Saint(?:&nbsp;| | )Lucia from \$500 to reserve/.test(fnd) && /Foundations Saint(?:&nbsp;| | )Lucia is \$500 to reserve, with around \$5,000/.test(fnd)
-   && (fnd.match(/Reserve · Saint(?:&nbsp;| |\u00a0)Lucia · \$500/g) || []).length === 2);
-ok('no stale $300 or $3,000 is left on the Foundations page', !/\$300\b|\$3,000/.test(fnd));
+ok('Foundations Saint Lucia is $300 to reserve and about $3,000 all in — everywhere it appears',
+   /<p class="price">\$300 <small>USD to reserve<\/small><\/p>/.test(fnd) && /Budget around <b>\$3,000 all in<\/b>/.test(fnd)
+   && /Saint(?:&nbsp;| | )Lucia from \$300 to reserve/.test(fnd) && /Foundations Saint(?:&nbsp;| | )Lucia is \$300 to reserve, with around \$3,000/.test(fnd)
+   && (fnd.match(/Reserve · Saint(?:&nbsp;| |\u00a0)Lucia · \$300/g) || []).length === 2);
+ok('the mistaken $500 / $5,000 figures (briefly live on 2026-09-30) are gone from the Foundations page', !/$500|$5,000/.test(fnd));
 ok('Day two carries a Group travel topic with an icon',
    /<li class="has-icon"><svg[^>]*aria-hidden="true"[\s\S]*?<\/svg>Group travel<\/li>/.test(fnd));
 ok('the Immersion waiting-list link has one arrow (the CSS adds it; the copy must not)',
