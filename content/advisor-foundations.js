@@ -135,15 +135,30 @@ function ctaRow() {
     : `<a class="btn btn--gold" data-cta="enrollment-pending" data-offer="online" href="${BRIEFING}">Online · $697 · opening soon</a>` + GAP +
       liveButton('island', 'btn--ghost', 'Reserve · Saint Lucia · $300');
 }
+/* The two lines under the final-CTA row. They must describe the row they sit
+   under: "enrollment is opening soon" directly beneath a live Enroll button is
+   a sentence arguing with its own button, which is what the mixed states did
+   before this was split four ways. Each branch says only what is true of it. */
 function ctaNotes() {
   const o = isLive('online'), i = isLive('island');
   const GAP = '\n      ';
+  const refund = 'Attend day one, and if it isn’t what you expected, tell us before day two for a full refund.';
+  const note = (t) => `<p class="cta-buy-note">${t}</p>`;
+
   if (o && i) {
-    return '<p class="cta-buy-note">Secure checkout · attend day one, and if it isn’t what you expected, tell us before day two for a full refund.</p>' + GAP +
-           '<p class="cta-buy-note">Adding VIP support? Choose it at checkout, either format · +$800.</p>';
+    return note('Secure checkout · ' + refund[0].toLowerCase() + refund.slice(1)) + GAP +
+           note('Adding VIP support? Choose it at checkout, either format · +$800.');
   }
-  return '<p class="cta-buy-note">Enrollment is opening soon. Foundations Online is $697 and Foundations Saint Lucia is $300 to reserve; the free briefing is the best place to start.</p>' + GAP +
-         '<p class="cta-buy-note">Attend day one, and if it isn’t what you expected, tell us before day two for a full refund. VIP is +$800 on either format, chosen at checkout.</p>';
+  if (o) {
+    return note('Secure checkout · ' + refund[0].toLowerCase() + refund.slice(1)) + GAP +
+           note('Adding VIP support? Choose it at checkout · +$800. Foundations Saint Lucia opens for reservations soon; the free briefing is the best way to hear about it.');
+  }
+  if (i) {
+    return note('Foundations Online opens for enrollment soon; the free briefing is the best place to start.') + GAP +
+           note('Reserve your Saint Lucia place with a $300 deposit. VIP is +$800, chosen at checkout.');
+  }
+  return note('Enrollment is opening soon. Foundations Online is $697 and Foundations Saint Lucia is $300 to reserve; the free briefing is the best place to start.') + GAP +
+         note(refund + ' VIP is +$800 on either format, chosen at checkout.');
 }
 
 /* The hero's one primary action. It always goes to the format choice — there

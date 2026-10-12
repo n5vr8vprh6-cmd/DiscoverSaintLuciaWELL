@@ -154,17 +154,36 @@ const SITE = {
      "Enrollment opening soon" and routes to the free briefing: tuition and
      format stay visible, nobody is sent to a page that cannot take payment.
 
-     Both are false because, checked 2026-10-12 against the live URLs:
-       online  — ThriveCart renders "This product is in test mode… payment will
-                 not be processed" and the placeholder "Enter your bullet
-                 points here." in the visible page.
-       island  — the deposit product returns 404.
-     Neither is something this repository can repair. Fix the product in
-     ThriveCart, open the URL yourself in a private window, then flip the flag
-     and deploy. Never flip it on the strength of this comment. */
+     STATUS, checked 2026-10-12 against the live pages and ThriveCart's own page
+     data (not against anyone's description of them):
+
+       online  — VERIFIED. HTTP 200, no test-mode banner rendered, price 697.00,
+                 and the VIP order bump is 800.00: all agree with this site.
+       island  — VERIFIED. Same checks. Titled "On-site Deposit" and priced
+                 300.00, which is what this site says. It was first found priced
+                 50.00 and was repriced the same day.
+
+     TWO THINGS TO KNOW ABOUT WHAT THESE CHECKS CAN AND CANNOT SEE
+       · The VIP bump is NOT pre-ticked: its summary row starts hidden and the
+         default-selected setting is false, so "VIP is chosen at checkout" on
+         this site is accurate.
+       · ThriveCart's pages carry template strings that a buyer never sees: a
+         CSS-hidden column ("Enter your bullet points here.") and a default
+         bump ("Special one-time offer, only $19!") that live in markup and
+         config. Text extracted from the HTML is not what is on screen. Judge
+         by a rendered page.
+
+     There are still no cohort dates for Foundations Saint Lucia. The card says
+     dates are set with the destination before places open, so the page is
+     honest about it, but the deposit can now be paid before any date exists.
+
+     The rule when flipping: fix the product in ThriveCart, open the URL
+     yourself in a private window, confirm the price on the page is the price
+     this site states, then flip the flag and deploy. Never flip it on the
+     strength of this comment. */
   checkout: {
-    online: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations/',          verified: false },
-    island: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations-deposit/',  verified: false }
+    online: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations/',          verified: true  },
+    island: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations-deposit/',  verified: true  }
   },
 
   /* Institutional partners. Limited to relationships already stated publicly
