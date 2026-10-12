@@ -1352,7 +1352,7 @@ body.js:not(.loaded) .hero [data-splitted].in .wi { transform: translateY(112%);
   gap: clamp(1.2rem, 3vw, 2rem);
   margin-top: 1.8rem; padding-top: 1.6rem; border-top: 1px solid var(--hairline-d);
 }
-.vip-ctas { display: flex; gap: 0.8rem; flex: none; }
+.vip-ctas { display: flex; flex-wrap: wrap; gap: 0.8rem; flex: 0 1 auto; justify-content: flex-end; }
 @media (max-width: 720px) {
   .vip-head { flex-direction: column; }
   .vip-price { text-align: left; }
@@ -1700,3 +1700,11 @@ input.shake { animation: field-shake 0.4s var(--ease-out-quint); }
    two peers. */
 .formats .invest-card { display: flex; flex-direction: column; }
 .formats .invest-card .fine { margin-top: auto; padding-top: 1.1rem; }
+
+/* The one-line boundary under the outcomes strip: the free tools, and that
+   booking, rates and availability are confirmed separately. Quiet on purpose;
+   it is a limit on the claim above it, not a second claim. */
+.assure-bar-note {
+  max-width: 62ch; margin: 1rem auto 0; text-align: center;
+  font-family: var(--sans); font-size: var(--fs-small); color: var(--muted);
+}

@@ -116,8 +116,12 @@ const imm = page('/advisors/immersion');
 ok('Foundations Saint Lucia is $300 to reserve and about $3,000 all in — everywhere it appears',
    /<p class="price">\$300 <small>USD to reserve<\/small><\/p>/.test(fnd) && /Budget around <b>\$3,000 all in<\/b>/.test(fnd)
    && /Saint(?:&nbsp;| | )Lucia from \$300 to reserve/.test(fnd) && /Foundations Saint(?:&nbsp;| | )Lucia is \$300 to reserve, with around \$3,000/.test(fnd)
-   && (fnd.match(/Reserve · Saint(?:&nbsp;| |\u00a0)Lucia · \$300/g) || []).length === 2);
-ok('the mistaken $500 / $5,000 figures (briefly live on 2026-09-30) are gone from the Foundations page', !/$500|$5,000/.test(fnd));
+   /* The island offer has TWO call-to-action surfaces: its card and the final-CTA row. Since the
+      checkout gate (content/site.js) each is either a live button that carries the price, or a
+      pending one that says so. Either way both must be there, and a live one must say $300. */
+   && (fnd.match(/data-cta="island"|data-offer="(?:island|both)"/g) || []).length === 2
+   && (fnd.match(/<a[^>]*data-cta="island"[^>]*>([^<]*)<\/a>/g) || []).every((a) => /Reserve · Saint(?:&nbsp;|\s)Lucia · \$300/.test(a)));
+ok('the mistaken $500 / $5,000 figures (briefly live on 2026-09-30) are gone from the Foundations page', !/\$500(?![\d,])|\$5,000/.test(fnd));
 ok('Day two carries a Group travel topic with an icon',
    /<li class="has-icon"><svg[^>]*aria-hidden="true"[\s\S]*?<\/svg>Group travel<\/li>/.test(fnd));
 ok('the Immersion waiting-list link has one arrow (the CSS adds it; the copy must not)',

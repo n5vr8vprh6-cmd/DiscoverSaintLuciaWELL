@@ -148,6 +148,25 @@ const SITE = {
      advisor gateway, the intro page and the Foundations page alike. */
   briefingUrl: 'https://luma.com/s9th4gfr',
 
+  /* ── PAID CHECKOUTS — the single switch ─────────────────────────────────
+     Each product has a URL and a `verified` flag, and a paid button renders
+     as a live link ONLY when its flag is true. Until then the same place reads
+     "Enrollment opening soon" and routes to the free briefing: tuition and
+     format stay visible, nobody is sent to a page that cannot take payment.
+
+     Both are false because, checked 2026-10-12 against the live URLs:
+       online  — ThriveCart renders "This product is in test mode… payment will
+                 not be processed" and the placeholder "Enter your bullet
+                 points here." in the visible page.
+       island  — the deposit product returns 404.
+     Neither is something this repository can repair. Fix the product in
+     ThriveCart, open the URL yourself in a private window, then flip the flag
+     and deploy. Never flip it on the strength of this comment. */
+  checkout: {
+    online: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations/',          verified: false },
+    island: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations-deposit/',  verified: false }
+  },
+
   /* Institutional partners. Limited to relationships already stated publicly
      on the Foundations page — nothing added without confirmation.
 

@@ -75,19 +75,63 @@
     var href = a.getAttribute('href') || '';
     var label = (a.textContent || '').trim().slice(0, 80);
 
+    var where = sectionOf(a);
+    var cta = a.getAttribute('data-cta') || '';
+
     /* The one CTA that carries the whole consumer funnel. */
     if (/^\/journey/.test(href)) {
-      track('finder_cta_click', { location: sectionOf(a), label: label });
+      track('finder_cta_click', { location: where, label: label });
       return;
     }
-    /* Crossing from the consumer surface into the advisor hierarchy. */
-    if (/^\/advisors/.test(href)) {
-      track('advisor_surface_click', { location: sectionOf(a), destination: href, label: label });
+
+    /* ── Advisor funnel (brief 2026-10-11 §6) ──────────────────────────────
+       The brief's event names, added alongside the three that already existed
+       rather than instead of them — nothing has ever been transmitted (the GTM
+       id is empty), so there is no history to protect, but a trigger written
+       against the old names should keep working the day one is set.
+
+       NO PERSONAL DATA in any of these. Properties are the page, the place on
+       it, and a fixed offer code. A click is also only a click: nothing here
+       records that an enrolment, a registration or a purchase HAPPENED. Luma
+       and ThriveCart complete on their own domains and need their own
+       integration or callback to be counted; this file does not pretend. */
+    var props = { source_page: pageKey, cta_location: where };
+
+    /* A paid checkout, and ONLY a live one. A button that is still pending
+       renders as a link to the briefing (content/advisor-foundations.js) with
+       data-cta="enrollment-pending", so this branch cannot fire for it. */
+    if ((cta === 'online' || cta === 'island' || cta === 'vip') && /theburnoutclinic\.com/.test(href)) {
+      track('advisor_foundations_checkout_click', { source_page: pageKey, cta_location: where, offer_variant: cta });
       return;
     }
-    /* Outbound briefing registration. */
+    /* Interest in a product that is not open yet. Useful precisely because it
+       is NOT a checkout: it measures demand for the offer without claiming
+       that anything was bought. */
+    if (cta === 'enrollment-pending') {
+      track('advisor_enrollment_pending_click', {
+        source_page: pageKey, cta_location: where, offer_variant: a.getAttribute('data-offer') || undefined
+      });
+      return;
+    }
     if (/luma\.com/.test(href)) {
-      track('briefing_click', { location: sectionOf(a), label: label });
+      track('briefing_click', { location: where, label: label });                 /* legacy */
+      track('advisor_luma_outbound_click', props);
+      return;
+    }
+    if (/^\/advisors\/intro(?:[?#]|$)/.test(href)) {
+      track('advisor_briefing_cta_click', props);
+    }
+    if (/^\/hub\/register(?:[?#]|$)/.test(href)) {
+      track('advisor_hub_signup_click', { source_page: pageKey, cta_location: where });
+    }
+    if (/^\/advisors\/immersion\/waitlist(?:[?#]|$)/.test(href)) {
+      track('advisor_immersion_waitlist_click', { source_page: pageKey, cta_location: where });
+    }
+
+    /* Crossing from the consumer surface into the advisor hierarchy. Kept last
+       and kept as it was, so the three branches above can also report here. */
+    if (/^\/advisors/.test(href)) {
+      track('advisor_surface_click', { location: where, destination: href, label: label });
     }
   });
 

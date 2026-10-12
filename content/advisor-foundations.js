@@ -30,6 +30,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const SITE = require('./site.js');
+
 const SRC = path.join(__dirname, '..', 'advisors', 'foundations', 'index.src.html');
 
 function extractMain(html) {
@@ -77,7 +79,95 @@ function absolutise(html) {
 }
 
 const src = fs.readFileSync(SRC, 'utf8');
-const body = absolutise(extractMain(src) + '\n\n' + extractDialog(src));
+/* -- PAID-CHECKOUT GATE ------------------------------------------------------
+   index.src.html carries tokens instead of checkout links:
+
+     {{cta:KEY|CLASS|LABEL}}   one button   (KEY: online | island | vip)
+     {{ctarow}} / {{ctanotes}} the final-CTA pair and the two lines under it
+
+   Each renders as a live link ONLY when SITE.checkout[product].verified is
+   true. Otherwise the same spot offers the free briefing and says plainly that
+   enrollment is not open yet. Why this exists and how to flip it: content/site.js.
+
+   `vip` has no product of its own: the bump lives inside the Online cart, so it
+   follows `online`. Pending buttons carry data-cta="enrollment-pending" and
+   data-offer so demand is measurable without recording a purchase that has not
+   happened (js/analytics.js). */
+const BRIEFING = '/advisors/intro';
+const productFor = (key) => (key === 'vip' ? 'online' : key);
+const isLive = (key) => {
+  const p = SITE.checkout[productFor(key)];
+  return Boolean(p && p.verified === true);
+};
+
+function liveButton(key, cls, label) {
+  const url = SITE.checkout[productFor(key)].url;
+  return `<a class="btn ${cls}" data-cta="${key}" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+}
+function pendingButton(key, cls) {
+  /* The VIP button sits in a row beside a second button, and the full sentence
+     does not fit it at tablet width. The VIP block already says VIP is chosen
+     at checkout, so "enrollment opening soon" is carried by the cards above it. */
+  const label = key === 'vip' ? 'Join the free briefing' : 'Enrollment opening soon · Join the free briefing';
+  return `<a class="btn ${cls}" data-cta="enrollment-pending" data-offer="${key}" href="${BRIEFING}">${label}</a>`;
+}
+function button(key, cls, label) {
+  return isLive(key) ? liveButton(key, cls, label) : pendingButton(key, cls);
+}
+
+/* The final-CTA pair. When BOTH are pending the pair would be two buttons to
+   the same page, so it collapses to one; when only one is pending the live
+   product keeps its button and the other becomes a briefing link that names
+   the offer, so nobody is left guessing what is and is not open. */
+function ctaRow() {
+  const o = isLive('online'), i = isLive('island');
+  const GAP = '\n        ';
+  if (o && i) {
+    return liveButton('online', 'btn--gold', 'Enroll · Online · $697') + GAP +
+      liveButton('island', 'btn--ghost', 'Reserve · Saint Lucia · $300');
+  }
+  if (!o && !i) {
+    return `<a class="btn btn--gold" data-cta="enrollment-pending" data-offer="both" href="${BRIEFING}">Join the free briefing</a>`;
+  }
+  return o
+    ? liveButton('online', 'btn--gold', 'Enroll · Online · $697') + GAP +
+      `<a class="btn btn--ghost" data-cta="enrollment-pending" data-offer="island" href="${BRIEFING}">Saint Lucia · $300 to reserve · opening soon</a>`
+    : `<a class="btn btn--gold" data-cta="enrollment-pending" data-offer="online" href="${BRIEFING}">Online · $697 · opening soon</a>` + GAP +
+      liveButton('island', 'btn--ghost', 'Reserve · Saint Lucia · $300');
+}
+function ctaNotes() {
+  const o = isLive('online'), i = isLive('island');
+  const GAP = '\n      ';
+  if (o && i) {
+    return '<p class="cta-buy-note">Secure checkout · attend day one, and if it isn’t what you expected, tell us before day two for a full refund.</p>' + GAP +
+           '<p class="cta-buy-note">Adding VIP support? Choose it at checkout, either format · +$800.</p>';
+  }
+  return '<p class="cta-buy-note">Enrollment is opening soon. Foundations Online is $697 and Foundations Saint Lucia is $300 to reserve; the free briefing is the best place to start.</p>' + GAP +
+         '<p class="cta-buy-note">Attend day one, and if it isn’t what you expected, tell us before day two for a full refund. VIP is +$800 on either format, chosen at checkout.</p>';
+}
+
+/* The hero's one primary action. It always goes to the format choice — there
+   are two formats, so a button straight to one checkout would pick for the
+   reader — and its label says what is true: "Enroll" only once something can
+   actually be enrolled in. */
+const heroEnroll = () =>
+  `<a class="btn btn--gold" href="#invest">${isLive('online') || isLive('island') ? 'Enroll in Foundations' : 'See formats and pricing'}</a>`;
+
+let gated = extractMain(src) + '\n\n' + extractDialog(src);
+gated = gated
+  .replace(/\{\{cta:(online|island|vip)\|([^|}]+)\|([^}]+)\}\}/g, (_m, key, cls, label) => button(key, cls.trim(), label.trim()))
+  .replace('{{heroenroll}}', heroEnroll)
+  .replace('{{ctarow}}', ctaRow)
+  .replace('{{ctanotes}}', ctaNotes);
+
+/* A token that survives is a button that renders as literal braces. Fail the
+   build, the same way a surviving relative asset path does below. */
+const strayToken = gated.match(/\{\{[^}]*\}\}/);
+if (strayToken) {
+  throw new Error('advisor-foundations: checkout token was not rendered: ' + strayToken[0]);
+}
+
+const body = absolutise(gated);
 
 /* Nothing relative may survive. A missed attribute does not throw and does not
    look wrong in the markup — it 404s silently in the browser, which is how the
@@ -114,8 +204,8 @@ module.exports = {
   path: '/advisors/foundations',
   layout: 'conversion',
   surface: 'advisor',
-  title: 'Well Destination Foundations — Discover Saint Lucia WELL',
-  description: 'A three-day live intensive that trains experienced travel advisors to design transformational wellness journeys, beginning with Saint Lucia, the Caribbean’s first Well Destination.',
+  title: 'WELL Journey Launch, powered by Well Destination Foundations — Discover Saint Lucia WELL',
+  description: 'Build your first market-ready WELL Journey and launch your 30-day campaign: three live days of Well Destination Foundations for travel advisors. From $697 online.',
   ogTitle: 'Well Destination Foundations',
   ogImage: '/advisors/foundations/assets/hero-pitons.jpg',
 
