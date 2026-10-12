@@ -56,6 +56,12 @@ const SCREENS = {
      and should not need one. Writes its own table and reads nothing. */
   practitioner: () => require('../_lib/hub-screens/practitioner.js'),
 
+  /* PUBLIC on purpose, for the same reason again: an advisor asking DSW to
+     consider a group concept is a prospect, not yet an account. It is what
+     the /advisors/groups form posts to. Writes its own table
+     (advisor_group_applications) and reads nothing. */
+  groupStudio: () => require('../_lib/hub-screens/groups.js'),
+
   /* Admin. These are ordinary screens in every respect except that their guard
      is requireAdmin rather than requireAdvisor — there is no route-level auth
      here, so each screen's own guard is the only thing protecting it. */

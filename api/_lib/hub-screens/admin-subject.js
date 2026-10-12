@@ -105,10 +105,10 @@ module.exports = async function handler(req, res) {
 
     ${!q ? '' : !looksLikeEmail(q) ? `
     <section class="hub-card"><p class="hub-hint">That is not an email address.</p></section>`
-    : !found || (!found.journeys.length && !found.advisorAccount && !(found.waitlist || []).length && !(found.practitionerApplications || []).length) ? `
+    : !found || (!found.journeys.length && !found.advisorAccount && !(found.waitlist || []).length && !(found.practitionerApplications || []).length && !(found.groupApplications || []).length) ? `
     <section class="hub-card">
       <h2>Nothing held</h2>
-      <p class="hub-hint">No Journey, no advisor account, no waiting-list entry and no practitioner application for
+      <p class="hub-hint">No Journey, no advisor account, no waiting-list entry, no practitioner application and no Group Studio application for
         <strong>${esc(q)}</strong>.
         That is itself a complete answer to an access request — tell them so plainly, and
         that nothing needed deleting.</p>
@@ -162,6 +162,19 @@ function renderFound(f) {
       <p class="hub-hint">Submitted on /practitioners. Nothing was promised to them. Erasing
         below removes these rows too; the notification email that went to the practitioner
         inbox is in that mailbox and nothing here touches it.</p>
+    </section>` : ''}
+
+    ${(f.groupApplications || []).length ? `
+    <section class="hub-card">
+      <h2>${f.groupApplications.length === 1 ? 'A Group Studio application' : `${f.groupApplications.length} Group Studio applications`}</h2>
+      ${f.groupApplications.map((a) => `<p class="hub-hint">
+        Submitted ${esc(String(a.created_at).slice(0, 10))} ·
+        ${esc(`${a.first_name || ''} ${a.last_name || ''}`.trim())} ·
+        ${esc(a.business || 'no business')} · ${esc(a.program_interest)} · ${esc(a.status)}
+      </p>`).join('')}
+      <p class="hub-hint">Submitted on /advisors/groups. Nothing was quoted, held or promised
+        to them. Erasing below removes these rows too; the notification email that went to
+        the concierge inbox is in that mailbox and nothing here touches it.</p>
     </section>` : ''}
 
     ${f.journeys.map(journeyCard).join('')}

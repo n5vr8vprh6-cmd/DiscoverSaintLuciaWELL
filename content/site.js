@@ -74,6 +74,7 @@ const SITE = {
         { label: 'Travel Advisor Hub',          href: '/advisors/hub' },
         { label: 'Complimentary Briefing',      href: '/advisors/intro' },
         { label: 'Well Destination Foundations',href: '/advisors/foundations' },
+        { label: 'WELL Group Studio',           href: '/advisors/groups' },
         { label: 'Saint Lucia WELL Immersion',  href: '/advisors/immersion' }
       ]
     },
@@ -185,6 +186,15 @@ const SITE = {
     online: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations/',          verified: true  },
     island: { url: 'https://shop.theburnoutclinic.com/discover-saint-lucia-well-foundations-deposit/',  verified: true  }
   },
+
+  /* ── WELL GROUP STUDIO INTAKE ───────────────────────────────────────────
+     Off, the /advisors/groups page shows an honest "applications open
+     shortly" panel and renders NO form — a form that cannot store what it
+     collects is worse than none. Turn it on only after
+     db/migrations/029-advisor-group-applications.sql has been run in the
+     Supabase SQL editor; api/_lib/group-studio.js fails closed ("unavailable")
+     without the table, but the page should not invite the attempt. */
+  groupStudio: { intakeOpen: false },
 
   /* Institutional partners. Limited to relationships already stated publicly
      on the Foundations page — nothing added without confirmation.

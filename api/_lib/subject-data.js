@@ -55,7 +55,7 @@ async function findSubject(email) {
   const norm = String(email || '').trim().toLowerCase();
   if (!supabase || !norm) return null;
 
-  const [shares, advisor, waiting, applied] = await Promise.all([
+  const [shares, advisor, waiting, applied, grouped] = await Promise.all([
     supabase.from('journey_shares')
       .select('id, created_at, advisor_id, answers, villages, consumer_first, consumer_last, ' +
               'consumer_email, consumer_phone, timing, travel_window, context, stage, ' +
@@ -80,6 +80,17 @@ async function findSubject(email) {
       .select('id, created_at, pathway, first_name, last_name, email, phone, business, website, ' +
               'social, country, years, modality, work, serves, community, led_before, ' +
               'led_before_detail, audience_size, notes, retreat, visiting, source, status')
+      .ilike('email', norm),
+    /* Added with migration 029 — WELL Group Studio applications. Same rule
+       as the two above, and the same reason: a store this module does not
+       know about survives an erasure request while the screen reports
+       success. */
+    supabase.from('advisor_group_applications')
+      .select('id, created_at, submission_source, program_interest, first_name, last_name, ' +
+              'email, phone, business, website, social, country, host_agency, experience, ' +
+              'group_experience, concept, audience, audience_size, expected_travellers, ' +
+              'departure_window, budget_range, support_needed, how_you_sell, notes, ' +
+              'contact_consent, source, status')
       .ilike('email', norm)
   ]);
 
@@ -100,6 +111,14 @@ async function findSubject(email) {
     console.error('findSubject: practitioner_applications is missing — run db/migrations/028.');
   } else if (applied.error) {
     console.error('findSubject practitioner applications', applied.error);
+  }
+
+  /* And again for migration 029. A silent empty result here would read as
+     "we hold nothing" about somebody who applied to Group Studio. */
+  if (grouped.error && (grouped.error.code === '42P01' || grouped.error.code === 'PGRST205')) {
+    console.error('findSubject: advisor_group_applications is missing — run db/migrations/029.');
+  } else if (grouped.error) {
+    console.error('findSubject group applications', grouped.error);
   }
 
   const rows = shares.data || [];
@@ -161,6 +180,7 @@ async function findSubject(email) {
     advisorAccount: advisor.data || null,
     waitlist: (waiting.error ? [] : (waiting.data || [])),
     practitionerApplications: (applied.error ? [] : (applied.data || [])),
+    groupApplications: (grouped.error ? [] : (grouped.data || [])),
     /* Held for rate limiting only, never the address itself, and not reversible
        — but it IS derived from them, so an honest access response says so
        rather than quietly omitting it. */
@@ -254,6 +274,22 @@ function accessExport(found) {
       review_status: a.status
     })),
 
+    group_studio_applications: (found.groupApplications || []).map((a) => ({
+      submitted_at: a.created_at,
+      program_interest: a.program_interest,
+      you_told_us: {
+        first_name: a.first_name, last_name: a.last_name, email: a.email, phone: a.phone,
+        business: a.business, website: a.website, social: a.social, country: a.country,
+        host_agency: a.host_agency, travel_experience: a.experience,
+        group_experience: a.group_experience, group_concept: a.concept, audience: a.audience,
+        audience_size: a.audience_size, expected_travellers: a.expected_travellers,
+        target_window: a.departure_window, budget_per_person: a.budget_range,
+        support_wanted: a.support_needed || [], how_you_sell_to_this_audience: a.how_you_sell,
+        anything_else: a.notes, consented_to_be_contacted: a.contact_consent
+      },
+      review_status: a.status
+    })),
+
     also_held: found.ipHashHeld
       ? ['A one-way salted hash of the IP address you submitted from, used only to rate-limit ' +
          'the public form. It cannot be turned back into an address.']
@@ -332,6 +368,19 @@ async function eraseSubject(email) {
       .from('practitioner_applications').delete().in('id', appRows.map((a) => a.id));
     if (aErr) { console.error('eraseSubject practitioner applications', aErr); return { ok: false, error: 'failed' }; }
     applicationsRemoved = appRows.length;
+  }
+
+  /* Group Studio applications (migration 029), same argument a third time: an
+     advisor who only ever applied here has no journey_shares row either. They
+     are counted into the same `applications` figure, because that is the one
+     number whoever ran this reads, and "2 applications" is true of both. */
+  const { data: grpRows } = await supabase
+    .from('advisor_group_applications').select('id').ilike('email', norm);
+  if (grpRows && grpRows.length) {
+    const { error: gErr } = await supabase
+      .from('advisor_group_applications').delete().in('id', grpRows.map((a) => a.id));
+    if (gErr) { console.error('eraseSubject group applications', gErr); return { ok: false, error: 'failed' }; }
+    applicationsRemoved += grpRows.length;
   }
 
   if (!rows || !rows.length) {

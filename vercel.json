@@ -195,6 +195,10 @@
       "destination": "/api/hub?screen=practitioner"
     },
     {
+      "source": "/advisors/groups/apply",
+      "destination": "/api/hub?screen=groupStudio"
+    },
+    {
       "source": "/j/:token",
       "destination": "/api/hub?screen=itinerary&t=:token"
     },

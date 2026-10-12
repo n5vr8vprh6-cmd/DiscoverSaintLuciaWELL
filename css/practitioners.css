@@ -829,3 +829,20 @@ body[data-motion="ready"] .pf-done:not([hidden]) .pf-check path {
 @media (prefers-reduced-motion: reduce) {
   .practitioner-sticky { transition: none; }
 }
+
+/* ── WELL Group Studio form (/advisors/groups) ──────────────────────────────
+   Almost everything is the practitioner form's own .pf-* styling. These are the
+   three things that form does not have: a section break inside one step, a
+   consent line, and the closed state's list of routes. */
+.gf-section { margin-top: 2.2rem; padding-top: 1.6rem; border-top: 1px solid var(--hairline-l); }
+.pf-consent {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  margin-top: 1.6rem; min-height: 44px;
+  font-size: 0.95rem; line-height: 1.45; color: var(--ivory-ink); cursor: pointer;
+}
+.pf-consent input { flex: none; width: 1.1rem; height: 1.1rem; margin: 0.2rem 0 0; accent-color: var(--teal); }
+.gf-routes { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6rem; }
+.gf-routes li { border-top: 1px solid var(--hairline-l); padding-top: 1.2rem; }
+.gf-routes li:first-child { border-top: 0; padding-top: 0; }
+.gf-routes h3 { font-size: var(--fs-h4); margin: 0 0 0.4rem; }
+.gf-routes p { margin: 0 0 0.7rem; color: var(--muted); }

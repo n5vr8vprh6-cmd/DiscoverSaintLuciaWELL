@@ -380,6 +380,7 @@ body[data-hero="dark"] .site-header[data-at-top="true"] .nav {
    this gets reviewed at. Emitted by lens() in lib/components.js when there are
    exactly four, so it cannot be forgotten on the next one. */
 .lens-grid--four { grid-template-columns: repeat(2, 1fr); }
+.lens-grid--two { grid-template-columns: repeat(2, 1fr); }
 .lens-item { border-top: 1px solid var(--hairline-l); padding-top: 1.4rem; }
 
 /* A UI SCREENSHOT NEEDS AN EDGE; A PHOTOGRAPH DOES NOT.
@@ -611,6 +612,20 @@ body[data-motion="ready"] .lens-item {
   padding-block: clamp(4.5rem, 11vw, 8rem) clamp(3rem, 7vw, 5rem);
 }
 .page-header h1 { max-width: min(46rem, 100%); margin-bottom: 0.35em; }
+/* Opt-in (pageHeader `long: true`). On a phone the token's floor is 2.6rem, and
+   a glued brand phrase such as "Saint Lucia WELL" is 9.1em wide, so it cannot
+   fit a 320px column and the page scrolls sideways. 9vw keeps it inside the
+   column down to very narrow screens; at desktop widths the clamp returns the
+   token unchanged. */
+.page-header--long h1 { font-size: clamp(1.85rem, 9vw, var(--fs-hero)); }
+/* The typographic glue also ties the closing two words together with nowrap, so
+   "Saint Lucia WELL Journeys." became ONE unbreakable run 13.3em wide: no font
+   size a phone can carry would fit it. The brand phrase itself is protected by
+   non-breaking spaces inside a single word, so relaxing the outer glue keeps
+   "Saint Lucia WELL" whole and only lets the last word wrap beneath it. */
+@media (max-width: 560px) {
+  .page-header--long h1 .nb { white-space: normal; }
+}
 .page-header .lead { max-width: var(--measure); }
 .page-header-meta {
   display: flex;
@@ -3408,4 +3423,12 @@ html.lb-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .lb[open] { animation: none; }
   .prop-open img { transition: none; }
+}
+
+/* Touch targets. These links sit at the end of a card or a step as a bare line
+   of text, 21px tall — under the 44px comfortable minimum on a phone. Only for
+   a coarse pointer, so a mouse user sees no change, and only the height: the
+   text, the underline and the arrow are untouched. */
+@media (pointer: coarse) {
+  .contact-link { display: inline-flex; align-items: center; min-height: 44px; }
 }

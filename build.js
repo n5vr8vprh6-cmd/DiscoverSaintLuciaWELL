@@ -34,6 +34,7 @@ const PAGES = [
   require('./content/practitioners.js'),
   require('./content/advisor-hub.js'),
   require('./content/advisor-intro.js'),
+  require('./content/advisor-groups.js'),
   require('./content/advisor-immersion.js'),
   require('./content/advisor-foundations.js'),
   require('./content/advisor-undertaking.js'),
