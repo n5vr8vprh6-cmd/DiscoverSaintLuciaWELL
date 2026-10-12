@@ -87,7 +87,7 @@ module.exports = {
          the payoff instead and let the link be explained where there is room
          to explain it. */
       headline: 'Meet your travellers <em>before the first call.</em>',
-      lead: `The WELL Journey Finder asks a traveller ${countWord} questions about how they want to feel. When someone completes it through your link and chooses to share the result, it lands in your Hub — with what they actually asked for, not just an email address.`,
+      lead: `The WELL Journey Finder asks a traveller ${countWord} questions about how they want to feel. When someone completes it through your link and chooses to share the result, it lands in your Hub — with what they actually asked for, not just an email address. This is your free entry point into the Discover Saint Lucia WELL Partner Program.`,
       meta: ['Free', 'No card', 'Yours in about a minute'],
       /* Both buttons already existed — in the sticky header and again in the
          final CTA — so somebody convinced by the first screen had to hunt the
@@ -95,8 +95,8 @@ module.exports = {
          this page exists to create Hubs; Sign in second, because a returning
          advisor knows where they are going and will find it either way. */
       actions: [
-        { label: 'Create your Hub', href: '/hub/register' },
-        { label: 'Sign in', href: '/hub/login' }
+        { label: 'Create your free Hub', href: '/hub/register' },
+        { label: 'See the free briefing', href: '/advisors/intro' }
       ]
     },
 
@@ -231,7 +231,7 @@ module.exports = {
     {
       type: 'pathway',
       id: 'how',
-      headline: 'Three steps, then it is running.',
+      headline: 'Four steps, then it is running.',
       lead: 'There is no setup, no integration and nothing to configure.',
       steps: [
         {
@@ -241,9 +241,19 @@ module.exports = {
           cta: { label: 'Create your Hub', href: '/hub/register' }
         },
         {
+          key: 'campaign',
+          title: 'Start your 30-day campaign',
+          /* Second, for the reason the list above gives: the campaign is how
+             the link gets in front of anybody. Journey design is described as
+             what it is, a button on a Journey that has been shared with you,
+             and not as a separate product — the product itself calls it
+             "Design this journey". */
+          text: 'The words are already written, so you have something to say and somewhere to send it. When a conversation is under way you can start designing a journey from what the traveller actually answered.'
+        },
+        {
           key: 'share',
           title: 'Put your link somewhere',
-          text: 'Ten people you already know works better than a broadcast, and it is quicker. You can see how many arrived and how many finished.'
+          text: 'Ten people you already know works better than a broadcast, and it is quicker. You can see how many arrived and how many finished. Nobody is promised a result: it depends on who you send it to.'
         },
         {
           key: 'answer',

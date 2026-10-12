@@ -23,8 +23,8 @@ module.exports = {
   path: '/advisors/immersion',
   layout: 'conversion',
   surface: 'advisor',
-  title: 'Saint Lucia WELL Immersion — for trained advisors',
-  description: 'Not a traditional FAM. Experience how Saint Lucia’s properties, nature, culture and practitioners connect to create intentional wellbeing journeys.',
+  title: 'Saint Lucia WELL Immersion — advanced field experience for trained advisors',
+  description: 'Experience the destination and strengthen your ability to sell it: applied, on-island professional field learning for advisors who have completed Foundations.',
   ogTitle: 'The Saint Lucia WELL Immersion',
 
   conversion: {
@@ -34,9 +34,9 @@ module.exports = {
       { label: 'What it is',   href: '#what' },
       { label: 'What it covers', href: '#outcomes' },
       { label: 'Foundations first', href: '#fit' },
-      { label: 'Apply',        href: '#apply' }
+      { label: 'Waitlist',     href: '#apply' }
     ],
-    cta: { label: 'Apply', href: '#apply' },
+    cta: { label: 'Join the waitlist', href: '/advisors/immersion/waitlist' },
     footerCols: [
       {
         title: 'The Immersion',
@@ -59,10 +59,14 @@ module.exports = {
   sections: [
     {
       type: 'pageHeader',
-      eyebrow: 'Advisor Immersion',
-      headline: 'You have seen the journey through your client’s eyes. <em>Now experience it through your own.</em>',
-      lead: 'Not a traditional FAM. A guided passage through the Wellness Villages, learning the journey architecture from inside it.',
-      meta: ['In Saint Lucia', 'Foundations required', 'By application']
+      eyebrow: 'Advanced professional field experience',
+      headline: 'Experience the destination. <em>Strengthen your ability to sell it.</em>',
+      lead: 'Go beyond familiarization into applied WELL Journey design. Meet the people behind Saint Lucia’s properties and experiences, evaluate them firsthand, and practise the judgment it takes to recommend them with confidence.',
+      meta: ['On island', 'Foundations required', 'Limited places · by application'],
+      actions: [
+        { label: 'Join the Immersion waitlist', href: '/advisors/immersion/waitlist' },
+        { label: 'Start with Foundations', href: '/advisors/foundations' }
+      ]
     },
 
     {
@@ -73,7 +77,11 @@ module.exports = {
       headline: 'Not a traditional FAM.',
       body: [
         'A familiarization trip shows you rooms. This shows you how Saint Lucia’s properties, nature, culture and practitioners connect to create intentional wellbeing journeys.',
-        'You travel the villages roughly as a guest would — sequenced, paced, and debriefed — so that the architecture stops being a diagram and becomes something you have felt.'
+        'You travel the villages roughly as a guest would — sequenced, paced, and debriefed — so that the architecture stops being a diagram and becomes something you have felt.',
+        /* Two on-island offers exist and they are easy to confuse. Foundations
+           Saint Lucia is the SAME three-day Foundations curriculum delivered on
+           the island; this comes after it and is a different thing. */
+        'This is not Foundations Saint Lucia. That is the same three-day Foundations curriculum, delivered on island. The Immersion comes after it.'
       ],
       closing: 'Learn to sell and market wellbeing journeys without becoming a health practitioner.',
       img: {
@@ -89,12 +97,12 @@ module.exports = {
       eyebrow: 'You will',
       headline: 'What the Immersion covers.',
       items: [
-        { title: 'Experience the villages',   text: 'All six, in sequence, as a traveller moves through them rather than as a site inspection.' },
-        { title: 'Meet the partners',         text: 'Resort and destination partners, local guides, practitioners and cultural hosts.' },
-        { title: 'Learn journey architecture', text: 'How sequencing, pacing and readiness turn a good itinerary into a designed journey.' },
-        { title: 'Know the difference',       text: 'Between wellness travel and structured recovery — and which client is asking for which.' },
-        { title: 'Identify client profiles',  text: 'Who this is for, who it is not for, and how to tell early in a conversation.' },
-        { title: 'Practise the conversation', text: 'The actual client discussion, rehearsed with feedback rather than described on a slide.' }
+        { title: 'Evaluate fit firsthand',       text: 'Property and experience fit across different traveller profiles, judged by being there rather than from a brochure.' },
+        { title: 'Build a sequenced journey',    text: 'How sequencing, pacing and readiness turn a good itinerary into a designed journey, using what you have seen.' },
+        { title: 'Recommend within the framework', text: 'Present a recommendation grounded in the WELL Compass and the six Villages, so you can say why it fits.' },
+        { title: 'Practise the conversation',    text: 'The actual client discussion, rehearsed with feedback rather than described on a slide.' },
+        { title: 'Know where the boundaries are', text: 'Which destination partners to involve, how referrals and commercial handoffs work, and where practitioner scope begins.' },
+        { title: 'Meet the people',              text: 'Resort and destination partners, local guides, practitioners and cultural hosts.' }
       ],
       closing: 'Marketing and sales assets are provided at the end.'
     },
@@ -108,7 +116,8 @@ module.exports = {
       headline: 'Foundations comes first.',
       body: [
         'The Immersion assumes the method. Three days of Foundations gives you the client-matching approach, the village structure and the language — the Immersion is where you use them in the place itself.',
-        'Places are limited by the nature of the format: small groups, real practitioners, actual properties. Applications are reviewed rather than processed.'
+        'Places are limited by the nature of the format: small groups, real practitioners, actual properties. Applications are reviewed rather than processed.',
+        'Attending does not by itself confer an advisor designation. That is earned on demonstrated capability, and it is still being built.'
       ],
       cta: { label: 'Start with Foundations', href: '/advisors/foundations' },
       ctaVariant: 'gold',
