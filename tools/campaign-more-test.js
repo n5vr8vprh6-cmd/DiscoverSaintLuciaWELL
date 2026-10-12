@@ -146,9 +146,22 @@ const GRADUATE = Object.assign({}, REGISTERED, { id: 'g', foundations_at: '2026-
   ok('and payment plans are mentioned, as the marketing page does',
     /payment plans/i.test(html) && /payment plans/i.test(marketing));
 
+  /* The Foundations page no longer carries the checkout URL as a literal: its
+     buttons are `{{cta:online|…}}` tokens that advisor-foundations.js fills
+     from SITE.checkout.online.url (and gates on `verified`). So "the button on
+     the marketing page" is that value, and this page must link the same one.
+     Two assertions, because the second is what keeps the first meaningful: if
+     the marketing source stopped using the token, comparing against
+     SITE.checkout would no longer be comparing against its button. */
+  const SITE_CHECKOUT = require(path.join(ROOT, 'content', 'site.js')).checkout;
   const url = (html.match(/href="(https:\/\/shop\.[^"]+)"/) || [])[1] || '';
-  ok('the checkout URL matches the Foundations page', url && marketing.indexOf(url) !== -1,
-    'page links "' + url + '", which is not the button on the marketing page');
+  ok('the checkout URL matches the Foundations page',
+    url && SITE_CHECKOUT && SITE_CHECKOUT.online && url === SITE_CHECKOUT.online.url,
+    'page links "' + url + '", but the Foundations button is SITE.checkout.online.url ("' +
+    (SITE_CHECKOUT && SITE_CHECKOUT.online && SITE_CHECKOUT.online.url) + '")');
+  ok('and the Foundations source still takes that button from SITE.checkout',
+    marketing.indexOf('{{cta:online|') !== -1,
+    'index.src.html no longer has a {{cta:online|…}} button — the comparison above is against nothing');
 
   ok('no health or outcome claim slipped in',
     !/(heal|cure|treat|reduce stress|wellness benefits)/i.test(html),
