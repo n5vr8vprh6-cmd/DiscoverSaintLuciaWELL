@@ -193,8 +193,13 @@ const SITE = {
      collects is worse than none. Turn it on only after
      db/migrations/029-advisor-group-applications.sql has been run in the
      Supabase SQL editor; api/_lib/group-studio.js fails closed ("unavailable")
-     without the table, but the page should not invite the attempt. */
-  groupStudio: { intakeOpen: false },
+     without the table, but the page should not invite the attempt.
+
+     STATUS, 2026-10-12: migration 029 was run and its closing SELECT read
+     has_table true, rls_on true, retention_months 24, practitioner_still_24 24,
+     rows_now 0. The form is open. To close it again, set this back to false
+     and deploy; nothing already stored is touched. */
+  groupStudio: { intakeOpen: true },
 
   /* Institutional partners. Limited to relationships already stated publicly
      on the Foundations page — nothing added without confirmation.
