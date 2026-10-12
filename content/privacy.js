@@ -78,7 +78,7 @@ module.exports = {
     {
       type: 'prose',
       id: 'policy',
-      updated: '12 August 2026',
+      updated: '12 October 2026',
       blocks: [
         {
           body: [
@@ -106,6 +106,10 @@ module.exports = {
             'Travel-related information, such as travel timing, party or companion information, preferences, interests, destination intentions, and information you choose to provide about the kind of trip you are seeking.',
             'Journey sharing information, including Journey Finder results and any additional context you voluntarily submit when asking an advisor to contact you.',
             'Practitioner and retreat-leader applications, including contact details, business or practice name, website and social profiles, country, area of practice, credentials, a description of your work and audience, and — depending on the pathway you choose — your retreat idea, group size, timing and the help you would like, or the onsite experience and availability you could offer. We use it to review your application and to reply to you by email; we do not publish it.',
+            /* Added 12 October 2026 with /advisors/groups. Field list is the columns of
+               advisor_group_applications (029); the IP hash is what the rate limit counts.
+               Nothing here is a booking, a price or a promise, and the page says so. */
+            'WELL Group Studio applications from travel advisors and group producers, including name, email address, optional telephone number, business name, website and social profiles, country, host agency, your experience, a description of your group concept and audience, expected size, timing and budget range, the kind of support you would like, how you sell to that audience, any notes you add, and your consent to be contacted about the application. We use it to review the application and to reply to you by email; we do not publish it. An application is not a booking, a quote or an agreement. We also keep a one-way, salted hash of your IP address, never the address itself, to limit repeated submissions.',
             'Advisor account information, including business name, host agency or consortium affiliation, market, website or social profiles, specialties, campaign preferences, and account credentials.',
             'Registration and communications information for briefings, webinars, Foundations, Immersion, newsletters, events, waitlists, or similar programs.',
             'Purchase and transaction information. Payment card details are generally handled by our payment providers rather than stored directly by us.',
@@ -262,7 +266,7 @@ module.exports = {
           body: ['We may disclose personal information to service providers and recipients that help us operate the Services, including:'],
           list: [
             '<strong>Supabase</strong> for authentication, database, and related infrastructure.',
-            '<strong>Resend</strong> for transactional email, including the notification sent to an advisor when you choose to share your Journey.',
+            '<strong>Resend</strong> for transactional email, including the notification sent to an advisor when you choose to share your Journey and the notification we receive when you submit an application.',
             '<strong>Encharge</strong> for email marketing and communications.',
             '<strong>Google, Vercel, and Meta</strong> for analytics, measurement, performance, and/or advertising technologies, depending on configuration and consent.',
             '<strong>jsDelivr</strong> serves animation libraries used on the Well Destination Foundations page and receives your IP address when that page loads.',
@@ -300,6 +304,11 @@ module.exports = {
                is now a scheduled job enforcing it and a figure on the admin
                dashboard that climbs into view if that job stops. */
             '<strong>A shared WELL Journey is deleted automatically 24 months after it was shared</strong>, together with any notes the advisor recorded against it, unless it has become a booking — in which case it is a transaction record and is kept for the purposes described above. You do not need to ask for this to happen, and you may ask for it sooner.',
+            /* Added 12 October 2026. Both application stores are swept by the same
+               purge_expired() as Journeys (028 added practitioners, 029 added Group
+               Studio) and the same 24-month figure. The sweep was confirmed running
+               with tools/retention.js before this was written. */
+            '<strong>Practitioner and WELL Group Studio applications are deleted automatically 24 months after they were submitted.</strong> You do not need to ask for this to happen, and you may ask for it sooner.',
             'Deletion here does not reach a copy already sent to your advisor by email. Where you ask us to erase your information, we will delete what we hold and ask your advisor to delete their copy, which their Advisor Data Undertaking requires them to do.',
             'When information is no longer required, we will take reasonable steps to delete, destroy, anonymize, or otherwise de-identify it, subject to legal and technical limitations.'
           ]
@@ -356,7 +365,7 @@ module.exports = {
                then the section offered rights with no mechanism behind them,
                which is the discrepancy the Implementation Guide asks to have
                flagged — and the one nobody notices until somebody asks. */
-            '<strong>What happens when you ask.</strong> We look up everything held against your email address and reply within 30 days. For an access request that means a machine-readable copy of every Journey held, the advisor who received it, any notes they recorded about you, and the exact wording you agreed to at the time. For an erasure request we delete all of it, including the consent record and the advisor’s notes, and tell you plainly what we could not reach — an email already delivered to your advisor sits in their mailbox, so we ask them to delete it rather than claim it is gone.',
+            '<strong>What happens when you ask.</strong> We look up everything held against your email address and reply within 30 days. For an access request that means a machine-readable copy of every Journey held, the advisor who received it, any notes they recorded about you, the exact wording you agreed to at the time, and any practitioner or WELL Group Studio application you submitted. For an erasure request we delete all of it, including the consent record and the advisor’s notes, and tell you plainly what we could not reach — an email already delivered to your advisor sits in their mailbox, so we ask them to delete it rather than claim it is gone.',
             'Please write from the address you shared with, or tell us which one it was. It is the only way we can find your records, and answering the wrong address with “we hold nothing about you” would be worse than no answer at all.'
           ]
         },
