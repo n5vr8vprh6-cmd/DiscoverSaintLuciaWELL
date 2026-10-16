@@ -241,6 +241,12 @@ function main() {
   const js = copyDir(path.join(ROOT, 'js'), path.join(DIST, 'js'));
   const assets = copyDir(path.join(ROOT, 'assets'), path.join(DIST, 'assets'));
 
+  /* Files that must be served from the site ROOT, byte for byte: search-engine
+     ownership proofs such as BingSiteAuth.xml. Whatever sits in public/ lands at
+     the top of dist/, so /BingSiteAuth.xml resolves. Leave these in place after
+     verifying; removing one drops the verification. */
+  copyDir(path.join(ROOT, 'public'), DIST);
+
   /* Foundations keeps its own css/js/assets alongside its page, so its many
      relative references (assets/hero-pitons.jpg and friends) resolve without
      rewriting a 1,000-line document. index.src.html is the SOURCE for the page
