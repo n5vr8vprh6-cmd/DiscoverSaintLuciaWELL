@@ -7,15 +7,25 @@
    stay distinguishable while still allowing funnel reporting across the same
    domain — one dataLayer, one schema, one extra field.
 
-   ── TO ACTIVATE ──────────────────────────────────────────────────────────
-   Paste the GTM container ID below. Left empty this file stays inert: events
-   still queue on dataLayer and can be inspected in the console, but no network
-   request is made and the page behaves exactly as it does now.
+   ── HOW IT IS SWITCHED ON ────────────────────────────────────────────────
+   Events always queue on dataLayer, so they can be inspected in the console.
+   NOTHING is transmitted until the visitor accepts analytics in the notice
+   built by js/consent.js (window.dslwConsent). Until then no Google script is
+   requested and no analytics cookie is set; privacy §7 says exactly that.
+
+   Google Analytics 4 loads directly (GA_ID below), not through Tag Manager.
+   GTM_ID is kept for the day a container is wanted, and sits behind the same
+   consent check. It is empty, so it does nothing.
+
+   It transmits only from the production host, and never from automated
+   browsers: a local preview or a *.vercel.app deploy runs the same code and
+   queues the same commands, but sends no request and pollutes no data.
    ========================================================================== */
 (function () {
   'use strict';
 
   var GTM_ID = '';
+  var GA_ID = 'G-9Y3VLWDRSE';
 
   window.dataLayer = window.dataLayer || [];
 
@@ -41,10 +51,86 @@
       }
     }
     window.dataLayer.push(payload);
+    if (event === 'page_view') pageView = payload;
+    sendGA(event, payload);
   }
   window.dslwTrack = track;
 
-  if (GTM_ID && !automated) {
+  /* ── Google Analytics 4, behind consent ──────────────────────────────────
+     Consent Mode is set to denied for everything first, then analytics storage
+     alone is granted: ad storage, ad user data and ad personalisation are never
+     granted, and Google signals and ad-personalisation signals are off, because
+     this site runs no advertising and the policy should not have to say it does.
+
+     gtag() must push `arguments`, not an array: that is what gtag.js reads. */
+  var onProduction = /(^|\.)discoversaintluciawell\.com$/.test(location.hostname);
+  var gaOn = false;
+  var gaScript = null;
+  var pageView = null;       /* this page's page_view payload, kept for the first send */
+  var pageViewSent = false;
+
+  function gtag() { window.dataLayer.push(arguments); }
+
+  /* The payload's own names, with the few GA4 also uses for traffic source or the
+     page itself renamed so they cannot be mistaken for those. */
+  var GA_NAMES = { page: 'page_key', source: 'ref_source', campaign: 'ref_campaign',
+                   location: 'site_section', path: 'page_path', title: 'page_title' };
+
+  function sendGA(event, payload) {
+    if (!gaOn) return;
+    var params = {};
+    for (var k in payload) {
+      if (Object.prototype.hasOwnProperty.call(payload, k) && k !== 'event') {
+        params[GA_NAMES[k] || k] = payload[k];
+      }
+    }
+    /* The path, never the query string: advisor referral codes already travel as
+       the advisor_ref parameter and need not ride along in a URL as well. */
+    if (event === 'page_view') params.page_location = location.origin + location.pathname;
+    gtag('event', event, params);
+  }
+
+  function startGA() {
+    if (gaOn || !GA_ID) return;
+    gaOn = true;
+    window['ga-disable-' + GA_ID] = false;
+    gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied',
+                                 ad_personalization: 'denied', analytics_storage: 'denied' });
+    gtag('js', new Date());
+    gtag('consent', 'update', { analytics_storage: 'granted' });
+    gtag('config', GA_ID, { send_page_view: false, allow_google_signals: false,
+                            allow_ad_personalization_signals: false });
+    if (onProduction && !automated && !gaScript) {
+      gaScript = document.createElement('script');
+      gaScript.async = true;
+      gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(GA_ID);
+      document.head.appendChild(gaScript);
+    }
+    /* The page the visitor is already on. Accepting mid-page is the common case,
+       and the page_view fired at parse time went nowhere. Sent once per load. */
+    if (pageView && !pageViewSent) { pageViewSent = true; sendGA('page_view', pageView); }
+  }
+
+  /* Withdrawing consent stops sending and expires the cookies GA set. A script
+     already running cannot be unloaded, so this is what makes "off" mean off. */
+  function stopGA() {
+    if (!gaOn) return;
+    gaOn = false;
+    window['ga-disable-' + GA_ID] = true;
+    gtag('consent', 'update', { analytics_storage: 'denied' });
+    var host = location.hostname, parts = host.split('.');
+    var domains = [host, '.' + host];
+    if (parts.length > 2) domains.push('.' + parts.slice(-2).join('.'));
+    var names = ['_ga', '_ga_' + GA_ID.replace(/^G-/, '')];
+    var gone = '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    for (var i = 0; i < names.length; i++) {
+      document.cookie = names[i] + gone;
+      for (var j = 0; j < domains.length; j++) document.cookie = names[i] + gone + '; domain=' + domains[j];
+    }
+  }
+
+  function startGTM() {
+    if (!GTM_ID || automated || !onProduction) return;
     window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
     var s = document.createElement('script');
     s.async = true;
@@ -58,6 +144,18 @@
      (/ → /journey) and an advisor path (/advisors → /advisors/foundations)
      stay separable in reporting while still joining on the advisor referral. */
   track('page_view', { path: location.pathname, title: document.title });
+
+  /* Consent. Registered AFTER the page_view above, so that an already-accepted
+     visitor gets this page's view sent by startGA(), and a visitor who accepts
+     later gets it then. No dslwConsent (the script failed to load, or was left
+     out of a page) means no consent: nothing is transmitted. */
+  var consent = window.dslwConsent;
+  if (consent) {
+    if (consent.analytics()) { startGA(); startGTM(); }
+    consent.onChange(function (granted) {
+      if (granted) { startGA(); startGTM(); } else { stopGA(); }
+    });
+  }
 
   /* ── Where on the page did it happen? ───────────────────────────────────── */
   function sectionOf(el) {

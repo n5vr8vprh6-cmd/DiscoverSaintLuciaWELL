@@ -835,3 +835,81 @@ body[data-enhanced="true"][data-hero="dark"] .site-header[data-at-top="true"] .p
 @media (min-width: 1600px) {
   :root { --maxw: 1400px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONSENT NOTICE (js/consent.js builds it; nothing in the HTML)
+   One small card, bottom left, ink with paper type like the footer. Both answers
+   are the same size and both one click: declining is not hidden behind a link.
+   Not modal, so it never traps focus or blocks reading; it sits above the page's
+   sticky bars (z-index) but below nothing that matters. On phones it spans the
+   width with a small margin so the buttons stay thumb-sized.
+   ══════════════════════════════════════════════════════════════════════════ */
+.consent {
+  position: fixed;
+  z-index: 9000;
+  /* Bottom RIGHT: the hero copy and its buttons are left-aligned on nearly every
+     page, and the header's primary button is top right, so this corner is the
+     one that covers the least on a first view. */
+  right: var(--gutter);
+  bottom: 1.25rem;
+  width: min(26rem, calc(100vw - 2 * var(--gutter)));
+  padding: 1.2rem 1.3rem 1.25rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--hairline-d);
+  border-radius: 2px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  font-family: var(--sans);
+}
+.consent-text {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--paper);
+}
+.consent-text a {
+  color: var(--gold);
+  text-underline-offset: 0.2em;
+}
+.consent-text a:hover { color: #E7B054; }
+.consent-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+/* Own button styles, not .btn: the Foundations stylesheet restyles .btn variants
+   and made "No thanks" nearly invisible there. Both answers are the same size,
+   and the decline keeps a clearly visible border and full-strength text. */
+.consent .consent-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 0;
+  padding: 0.7em 1.25em;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: transparent;
+  color: var(--paper);
+  border: 1px solid rgba(251, 248, 241, 0.55);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color .24s var(--ease-out-quint), border-color .24s var(--ease-out-quint);
+}
+.consent .consent-btn:hover { background: rgba(251, 248, 241, 0.10); border-color: var(--paper); }
+.consent .consent-btn--accept { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+.consent .consent-btn--accept:hover { background: #E7B054; border-color: #E7B054; }
+
+/* No entrance animation, deliberately. The notice is a legal control and has to be
+   there the moment the page is: on the heavy Foundations page a fade-in left it
+   invisible for seconds while the main thread was busy decoding video. */
+
+@media (max-width: 640px) {
+  .consent { left: 0.75rem; right: 0.75rem; bottom: 0.75rem; width: auto; }
+  .consent-text { font-size: 0.86rem; }
+}

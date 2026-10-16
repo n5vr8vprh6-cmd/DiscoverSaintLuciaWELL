@@ -25,8 +25,10 @@
    not a person.
 
    Going the other way, the policy still names technologies this site does not
-   load — Meta, Stripe, ThriveCart, OpenAI, Anthropic, and Google
-   Analytics (GTM_ID in js/analytics.js is empty, so no request is made). The
+   load — Meta, Stripe, ThriveCart, OpenAI and Anthropic. Google
+   Analytics is no longer one of them: from 16 October 2026 it loads, but only
+   behind the cookie notice in js/consent.js, and §7 says so in its own words.
+   The
    wording is "may use ... depending on configuration", which is forward-looking
    rather than inaccurate, so it stands. §7's rule is the one to keep in view if
    that changes: the policy must reflect the scripts actually deployed.
@@ -231,6 +233,15 @@ module.exports = {
                the ones actually in use would be the wrong way round. */
             'If you hold an advisor account, signing in sets cookies that are strictly necessary for that account: a session cookie that keeps you signed in, which is not readable by page scripts, and a small display cookie holding only your first name and initials so the site can show your account menu. Signing out clears both. Browsing the site without an advisor account sets neither.',
             'Our analytics and advertising technologies include services provided by Google, Vercel, and Meta. Depending on configuration, these technologies may receive device, browser, usage, campaign, cookie, IP-address, or similar information.',
+            /* Added 16 October 2026, with the cookie notice. Each sentence
+               describes what js/consent.js and js/analytics.js do: nothing
+               loads before "Accept analytics"; Google signals and ad
+               personalisation are off; GA4 event retention was set to 14 months
+               in the property by Duncan; withdrawing stops sending and expires
+               _ga / _ga_<id>; GPC is read as a decline. If any of those change,
+               change this too. */
+            'The only analytics tool this site currently loads is Google Analytics, and only if you accept it in the cookie notice. Until you do, no analytics script is requested and no analytics cookies are set. If you accept, Google Analytics sets cookies (named _ga and _ga_ followed by an identifier) and receives information about how you use the site, such as the pages you view, the buttons and links you select, how far down a page you scroll, and your device, browser and approximate location. We have turned off Google signals and advertising personalisation for it, and its event data is kept for 14 months.',
+            'Your choice is stored in your browser on this device, is asked again after twelve months, and can be changed at any time with “Cookie settings” in the footer. Withdrawing it stops analytics and clears the analytics cookies it set. If your browser sends a Global Privacy Control signal, we treat that as a choice not to accept analytics.',
             /* Added because it is the honest counterpart to removing Google
                Fonts from §10: the typefaces used to be fetched from Google on
                every page load, which disclosed an IP address before anybody had

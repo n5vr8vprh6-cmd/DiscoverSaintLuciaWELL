@@ -124,6 +124,7 @@ const SITE = {
     { label: 'Privacy',       href: '/privacy' },
     { label: 'Terms',         href: '/terms' },
     { label: 'Accessibility', href: '/accessibility' },
+    { label: 'Cookie settings', href: '/privacy#cookies', consent: true },
     /* Two Hub routes exist in this footer and they do different jobs. The
        "Travel Advisor Hub" entry in the Travel Advisors column above explains
        what it is, for someone deciding. This one is for someone who has already
@@ -148,6 +149,7 @@ const SITE = {
       { label: 'Discover Saint Lucia WELL', href: '/' },
       { label: 'Advisor Hub', href: '/hub' },
       { label: 'Privacy', href: '/privacy' },
+      { label: 'Cookie settings', href: '/privacy#cookies', consent: true },
       { label: 'Terms',   href: '/terms' },
       { label: 'Contact', href: '/about#contact' }
     ]

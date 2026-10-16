@@ -1808,8 +1808,18 @@ served for one visit, which is the only honest number.
   Journeys is not, until the row is set to `active` by hand. If that gate is
   ever removed, the privacy policy's promise that data goes to "an independent
   travel advisor" needs re-reading first.
-- GTM container — `GTM_ID` in `js/analytics.js`. Empty means events queue on
-  `dataLayer` but no network request is made.
+- **Analytics (added 2026-10-16).** GA4 (`GA_ID` in `js/analytics.js`) loads
+  directly, and only after a visitor accepts the notice built by `js/consent.js`;
+  until then nothing is requested and no cookie is set. Declining, a Global
+  Privacy Control signal, or no stored answer all mean off. It transmits only
+  from `*.discoversaintluciawell.com` and never from automated browsers, so
+  previews and local runs queue events but send none. Run
+  `node tools/consent-test.js` after touching either file. `GTM_ID` is empty and
+  sits behind the same check. In GA4 itself: event retention is 14 months and
+  Google signals are off; to see the custom parameters (`surface`, `advisor_ref`,
+  `site_section`, `cta_location`…) in reports, register them under Admin → Custom
+  definitions, and mark the advisor click events as key events. Privacy §7 now
+  describes this; if the behaviour changes, change that text.
 - New photography — see the image list in the plan. Property photography must
   come from official press kits; AI generation is not an option for real named
   hotels.

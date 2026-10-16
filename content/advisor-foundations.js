@@ -277,6 +277,7 @@ module.exports = {
     'https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js',
     'https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js',
     '/js/attribution.js',
+    '/js/consent.js',
     '/js/analytics.js',
     '/advisors/foundations/js/site.js',
     '/advisors/foundations/js/motion.js',
