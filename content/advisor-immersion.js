@@ -23,7 +23,7 @@ module.exports = {
   path: '/advisors/immersion',
   layout: 'conversion',
   surface: 'advisor',
-  title: 'Saint Lucia WELL Immersion — advanced field experience for trained advisors',
+  title: 'Saint Lucia WELL Immersion — field experience for advisors',
   description: 'Experience the destination and strengthen your ability to sell it: applied, on-island professional field learning for advisors who have completed Foundations.',
   ogTitle: 'The Saint Lucia WELL Immersion',
 

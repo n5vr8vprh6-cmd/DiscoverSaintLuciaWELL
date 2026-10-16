@@ -214,12 +214,57 @@ for (const a of ANCHORS) {
   }
 }
 
+/* ── STRUCTURED DATA THAT MUST MATCH THE PAGE ────────────────────────────────
+   Search engines and AI answer engines read this block alongside the visible
+   page, and markup that says something the page does not is worse than none.
+   So neither piece below is retyped:
+
+     · FAQPage is parsed OUT of the FAQ section in index.src.html, question and
+       answer, so it cannot drift from the 12 <details> a visitor sees. The
+       build fails if the count differs, i.e. if the section's markup changes
+       shape and the parse silently stops matching.
+     · The two instructors are named from the facilitators section; the guard
+       below fails the build if either stops appearing on the page. Roles are
+       the ones printed there, nothing more.
+
+   (Google no longer shows FAQ rich results for most sites; the value of the
+   markup is that a crawler or assistant gets each question and its answer as a
+   clean pair.) */
+const decode = (s) => s
+  .replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/&middot;/g, '·')
+  .replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+const plain = (html) => decode(html.replace(/<\/p>\s*<p[^>]*>/g, ' ').replace(/<[^>]+>/g, ''))
+  .replace(/\s+/g, ' ').trim();
+
+function faqEntities(html) {
+  const section = (html.match(/<section[^>]*id="faq"[\s\S]*?<\/section>/) || [])[0] || '';
+  const found = [...section.matchAll(
+    /<details>\s*<summary>([\s\S]*?)<\/summary>\s*<div class="answer">([\s\S]*?)<\/div>\s*<\/details>/g
+  )].map((m) => ({
+    '@type': 'Question',
+    name: plain(m[1]),
+    acceptedAnswer: { '@type': 'Answer', text: plain(m[2]) }
+  }));
+  const onPage = (section.match(/<details>/g) || []).length;
+  if (!found.length || found.length !== onPage) {
+    throw new Error(`advisor-foundations: FAQ markup parse found ${found.length} of ${onPage} questions — the section's shape changed`);
+  }
+  return found;
+}
+
+for (const must of ['<h3>Duncan So</h3>', '<p class="role">Lead facilitator</p>',
+                    '<h3>Diana St. Hill</h3>', '<p class="affil">Program Director, Discover Saint Lucia WELL</p>']) {
+  if (!src.includes(must)) {
+    throw new Error(`advisor-foundations: instructor markup no longer on the page (${must}); update the Person schema to match`);
+  }
+}
+
 module.exports = {
   key: 'advisor-foundations',
   path: '/advisors/foundations',
   layout: 'conversion',
   surface: 'advisor',
-  title: 'WELL Journey Launch, powered by Well Destination Foundations — Discover Saint Lucia WELL',
+  title: 'Well Destination Foundations | Discover Saint Lucia WELL',
   description: 'Build your first market-ready WELL Journey and launch your 30-day campaign: three live days of Well Destination Foundations for travel advisors. From $697 online.',
   ogTitle: 'Well Destination Foundations',
   ogImage: '/advisors/foundations/assets/hero-pitons.jpg',
@@ -241,28 +286,40 @@ module.exports = {
     '/advisors/foundations/js/exit-intent.js'
   ],
 
-  jsonLd: {
+  jsonLd: [{
     '@context': 'https://schema.org',
     '@type': 'Course',
     name: 'Well Destination Foundations',
+    url: SITE.domain + '/advisors/foundations',
     description: 'A three-day live virtual intensive training travel advisors to design transformational wellness journeys, and the prerequisite for the Saint Lucia WELL Immersion.',
     provider: {
       '@type': 'Organization',
+      '@id': SITE.domain + '/#organization',
       name: 'Discover Saint Lucia WELL',
-      url: 'https://discoversaintluciawell.com'
+      url: SITE.domain
     },
-    offers: {
+    offers: Object.assign({
       '@type': 'Offer',
       price: '697',
       priceCurrency: 'USD',
       category: 'Professional Education'
-    },
+    }, isLive('online') ? { url: SITE.checkout.online.url } : {}),
     hasCourseInstance: {
       '@type': 'CourseInstance',
       courseMode: 'online',
-      courseWorkload: 'P3D'
+      courseWorkload: 'P3D',
+      instructor: [
+        { '@type': 'Person', name: 'Duncan So', jobTitle: 'Lead facilitator',
+          affiliation: { '@type': 'Organization', name: 'Burnout Concierge' } },
+        { '@type': 'Person', name: 'Diana St. Hill', jobTitle: 'Program Director',
+          worksFor: { '@type': 'Organization', name: 'Discover Saint Lucia WELL' } }
+      ]
     }
-  },
+  }, {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqEntities(src)
+  }],
 
   conversion: {
     context: 'Professional Education',

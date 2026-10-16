@@ -49,7 +49,7 @@ module.exports = {
   layout: 'professional',
   surface: 'advisor',
 
-  title: 'WELL Group Studio — group collaborations for travel advisors | Discover Saint Lucia WELL',
+  title: 'WELL Group Studio for Advisors | Discover Saint Lucia WELL',
   description: 'Have a community, a group opportunity or a retreat concept? Explore a collaboration with Discover Saint Lucia WELL to design and launch a Saint Lucia WELL group journey.',
   ogTitle: 'WELL Group Studio',
 

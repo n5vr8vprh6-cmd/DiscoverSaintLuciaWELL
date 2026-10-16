@@ -100,7 +100,7 @@ const w = (o, patch) => Object.assign({}, o, patch);
   ok('the H1 is the brief\'s', /<h1>Bring the work\. We’ll help build the retreat around it\.<\/h1>/.test(html));
   ok('the meta title is the brief\'s',
      html.includes('<title>Host a Wellness Retreat in Saint Lucia | Discover Saint Lucia WELL</title>'));
-  ok('the canonical URL is /practitioners', html.includes('href="https://discoversaintluciawell.com/practitioners"'));
+  ok('the canonical URL is /practitioners', html.includes('href="https://www.discoversaintluciawell.com/practitioners"'));
   ok('it is indexable', !/name="robots"/.test(html));
   ok('the practitioner surface is stamped for analytics', /data-surface="practitioner"/.test(html));
 

@@ -21,8 +21,16 @@
 
 const SITE = {
   name: 'Discover Saint Lucia WELL',
-  domain: 'https://discoversaintluciawell.com',
+  /* The `www` host IS the canonical one. Vercel 308s the apex to www, and the
+     email and API code already build their links on www (SITE_ORIGIN). Naming
+     the apex here told crawlers the canonical URL of every page was an address
+     that redirects away: canonical, og:url, the sitemap and robots.txt all read
+     this one value, so they now agree with where the redirect actually lands. */
+  domain: 'https://www.discoversaintluciawell.com',
   tagline: 'Wellbeing, designed by the island.',
+  /* The public concierge inbox, as already printed on /about, /terms and the
+     accessibility statement. Structured data reads it from here. */
+  contactEmail: 'concierge@discoversaintluciawell.com',
   coords: '13°54′N  60°58′W',
   year: 2026,
 

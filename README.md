@@ -1789,9 +1789,11 @@ served for one visit, which is the only honest number.
 
 ### Open items
 
-- Custom domain. GitHub → Vercel is live and auto-deploys on push to `main`;
-  `discoversaintluciawell.com` is not connected yet, so canonical URLs point at
-  a domain that does not serve the site.
+- ~~Custom domain.~~ Connected: GitHub → Vercel auto-deploys on push to `main`,
+  and `discoversaintluciawell.com` 308s to the `www` host. `SITE.domain` in
+  `content/site.js` is the `www` host, so canonical URLs, `og:url`, the sitemap
+  and `robots.txt` all point at the address that actually serves the site
+  (changed 2026-10-16; they named the apex, which redirects away).
 - ESP endpoint — `CAPTURE_ENDPOINT` in `js/journey.js`. Until it is set the form
   validates and says plainly that nothing was sent.
 - **Duncan's privacy review, before the beta takes real consumer data.** The

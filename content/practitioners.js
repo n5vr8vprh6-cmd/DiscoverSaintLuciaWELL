@@ -55,7 +55,7 @@ module.exports = {
   surface: 'practitioner',
 
   title: 'Host a Wellness Retreat in Saint Lucia | Discover Saint Lucia WELL',
-  description: 'Bring your community and expertise to Saint Lucia. Discover Saint Lucia WELL helps retreat leaders connect with properties, travel advisors, destination experiences and practitioners to build exceptional group wellness journeys.',
+  description: 'Bring your community and expertise to Saint Lucia. We connect retreat leaders with properties, travel advisors and practitioners to build group wellness journeys.',
   ogTitle: 'Practitioners & Retreat Leaders',
 
   extraStyles: ['/css/practitioners.css'],
