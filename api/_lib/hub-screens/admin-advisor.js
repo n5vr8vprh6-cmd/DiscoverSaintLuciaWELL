@@ -24,6 +24,7 @@
 const { requireAdmin, setViewAs, VIEWAS_MINUTES } = require('../auth.js');
 const { str, body: parseBody } = require('../core.js');
 const { hubPage, esc, emptyState, since } = require('../hub-render.js');
+const { isDemo } = require('../demo.js');
 const {
   advisorById, auditLog, audit, updateAdvisor, setHouse, setTraining, ACTION_LABEL
 } = require('../admin-data.js');
@@ -109,6 +110,9 @@ module.exports = async function handler(req, res) {
         ${advisor.is_master ? '<span class="hub-tag" data-tag="admin">Master</span>' : ''}
         ${advisor.is_house ? '<span class="hub-tag" data-tag="house">Lead pool</span>' : ''}
         ${/^SEED/.test(advisor.public_code || '') ? '<span class="hub-tag" data-tag="test">Test</span>' : ''}
+        ${/* Approving the demo would make it a live delivery target for real
+              consumers; the tag says so where the Approve button is. */''}
+        ${isDemo(advisor) ? '<span class="hub-tag" data-tag="test">Demo · keep paused</span>' : ''}
       </p>
       <div class="hub-actions">
         <a class="btn btn--gold" href="mailto:${esc(advisor.email)}?subject=${

@@ -403,22 +403,22 @@ const CASES = [
 
 { id: 'A-50', role: 'advisor', priority: 2, area: 'Hub home',
   title: 'The prominent Copy button actually copies',
-  steps: ['Open /hub as an advisor with no visits yet',
-          'Press the gold "Copy your WELL link" button under Next',
-          'Paste somewhere'],
-  expect: 'The link is on the clipboard and the button says Copied. It does not scroll you to a second Copy button.',
+  steps: ['Open /hub as an advisor with no inquiries yet',
+          'Press "Copy your WELL link" in the empty Inquiries card, then "Copy link" on the WELL link card, then "Copy" in the header\'s Share my link',
+          'Paste after each'],
+  expect: 'Each puts the link on the clipboard and says Copied. None scrolls you to a second Copy button.',
   why: 'It used to be an anchor to the input holding the link, so you pressed copy twice to copy once. Nothing errored and no test could catch it — valid markup, working anchor, reachable link, and a button whose label promised something it did not do. Found in UAT on 17 Aug.' },
 
 { id: 'A-11', role: 'advisor', priority: 1, area: 'Hub home',
   title: 'The Hub home shows the WELL link and the funnel',
-  steps: ['Open /hub'],
-  expect: 'Their WELL link, a QR code, and counts for visits, Journeys started and shared.',
+  steps: ['Open /hub', 'Switch the campaign card between Last 30 days and All time'],
+  expect: 'Their www WELL link with the QR drawn beside it, and Link visits, Finder completions and Shared with you, each with its one-line definition. The URL says ?range=all when All time is chosen, and both views count the same window for all three numbers.',
   why: 'This is the page that answers "is any of this working". It is also where they get the link they actually share.' },
 
 { id: 'A-12', role: 'advisor', priority: 2, area: 'Hub home',
   title: 'The QR code downloads and scans',
-  steps: ['Download the QR code', 'Scan it with a phone'],
-  expect: 'It resolves to their WELL link.',
+  steps: ['On Home or Marketing press Download QR (SVG), then PNG', 'Scan the screen, the SVG and the PNG with a phone'],
+  expect: 'Two files, well-link-qr.svg and well-link-qr.png (1024px), and all three scans resolve to their WELL link.',
   why: 'These get printed on cards and put on tables. A QR that does not scan fails silently and expensively.' },
 
 { id: 'A-13', role: 'advisor', priority: 1, area: 'Journeys',
@@ -1530,6 +1530,71 @@ const CASES = [
   expect: 'No test application remains in the table or in the inbox DSW works from.',
   why: 'Otherwise the first real review starts with somebody wondering whether "ZZTest Studio" is a lead.' },
 
+
+/* ══ THE HUB UX LIFT — 23 Oct 2026 (Hub brief v2) ═════════════════════════
+   One header, a Home that adapts to the advisor, three new destinations, and
+   honest numbers. The guards are the promises that would otherwise fail
+   silently: a link shown to the wrong person, a count that includes the
+   advisor, a demo that could receive a real traveller. */
+{ id: 'A-71', pass: 'Hub UX lift', role: 'advisor', priority: 1, area: 'Hub shell',
+  title: 'One header, five destinations, the right one lit',
+  steps: ['Open /hub, /hub/journeys, a briefing, Design this journey, /hub/designer, /hub/explore, /hub/marketing, /hub/campaign, /hub/sweepstakes and /hub/account in turn'],
+  expect: 'One header only (no Explore / Eclipse / Find My WELL Journey row above it). Home, Clients, Journey Designer, Explore Saint Lucia and Marketing; the briefing lights Clients, ASK WELL lights Journey Designer, Campaign and Draws light Marketing with their tab underlined, and Account lights nothing.',
+  why: 'Two stacked menus told an advisor at work they were still on a holiday site, and an unlit or wrongly lit item is how people get lost in a product.' },
+
+{ id: 'A-72', pass: 'Hub UX lift', role: 'advisor', priority: 1, area: 'Hub shell',
+  title: 'The menu opens on a phone and a tablet',
+  steps: ['At 390px and at 900px wide, open /hub', 'Press Menu, choose Marketing', 'Open Menu again and press Escape, then tap outside it'],
+  expect: 'The drawer opens with the five destinations, Account settings, Help and training, and Sign out; it closes on Escape and on an outside tap; the page never scrolls sideways.',
+  why: 'Before the lift, the Hub\'s menu could not be opened at all below 860px: the toggle script never loaded on Hub pages.' },
+
+{ id: 'A-73', pass: 'Hub UX lift', role: 'advisor', priority: 1, area: 'Hub home',
+  title: 'Home follows the advisor\'s state',
+  steps: ['Sign in as a brand-new advisor', 'Then as one with a waiting inquiry', 'Then as one whose inquiries are all contacted'],
+  expect: 'New: the large welcome, two equal paths (Find new clients / I have a client) and "How your campaign fills" instead of three zeros. Waiting: a slim greeting band, then a dark card naming the people waiting, with "Open <name>\'s briefing" opening that person\'s briefing directly. All contacted: the quiet "Nobody is waiting on you" card. The greeting matches your local time of day.',
+  why: 'An advisor with a client and an advisor with an empty link need different first screens; and the old "Open the newest" opened a list, not a person.' },
+
+{ id: 'A-74', pass: 'Hub UX lift', role: 'advisor', priority: 2, area: 'Hub home',
+  title: 'Every tool tile tells the truth about its state',
+  steps: ['On /hub open each of the five tool tiles'],
+  expect: 'Journey Designer, Explore Saint Lucia and Marketing open working screens. WELL Group Studio says "By application" and opens /advisors/groups. Field Guide says "Coming soon" and opens the Field Guide panel on Explore, which says the tool is coming.',
+  why: 'A Coming Soon tile that opens nothing is a dead end; a live tool labelled Coming Soon (the brief\'s mockup did this to the Designer) undersells what already works.' },
+
+{ id: 'A-75', pass: 'Hub UX lift', role: 'advisor', priority: 2, area: 'Hub home',
+  title: 'Training is offered, never imposed',
+  steps: ['Sign in fresh and look for a pop-up', 'On Home press × on the training card, reload', 'As an advisor with Foundations recorded, open /hub'],
+  expect: 'No modal at sign-in. The card stays hidden after ×. With Foundations recorded the card offers the Immersion, not the briefing; nothing anywhere says an advisor has not trained.',
+  why: 'The Hub cannot see a briefing someone attended, so "you have not taken this" would be a guess presented as a fact; and a login pop-up competes with the first useful thing they came to do.' },
+
+{ id: 'A-76', pass: 'Hub UX lift', role: 'advisor', priority: 2, area: 'Journey Designer',
+  title: 'The Designer starts from a client who shared',
+  steps: ['Open /hub/designer', 'Press Design beside a client'],
+  expect: '"From a client who shared" is live; intention and property starts say Coming soon and are not links; "For a group" opens Group Studio. Design opens that client\'s ASK WELL workspace, with Journey Designer lit in the header.',
+  why: 'This is the runway the next build lands on, and the one start that works today must be the obvious one.' },
+
+{ id: 'G-51', pass: 'Hub UX lift', role: 'guard', priority: 1, area: 'Hub shell',
+  title: 'Admin appears only for admins, and never in view-as',
+  steps: [`As ${UAT1} open the account menu`, 'As an admin open it', 'As an admin, view as an advisor and open it'],
+  expect: 'Admin is listed only for the admin, and disappears while viewing as someone. /hub/admin still refuses a non-admin.',
+  why: 'The menu item is decided on the server from the role; a cookie-driven menu would let anyone claim it.' },
+
+{ id: 'G-52', pass: 'Hub UX lift', role: 'guard', priority: 1, area: 'Campaign numbers',
+  title: 'Your own visits and previews are not counted',
+  steps: ['Note Link visits and Finder completions on /hub', 'Press Preview on the link card and complete the Finder in that tab', 'Signed in, open your own /well/ link in a new tab and complete the Finder twice', 'Reload /hub'],
+  expect: 'Neither number has moved. In a private window, signed out, one visit and one completion are counted however many times the Finder is run in that tab.',
+  why: 'Completions used to exceed visits because repeat runs and the advisor\'s own testing were counted, which made the numbers argue with themselves.' },
+
+{ id: 'G-53', pass: 'Hub UX lift', role: 'guard', priority: 1, area: 'Demo advisor',
+  title: 'The demo account can never receive a real traveller',
+  steps: ['Open the demo account\'s /well/ link in a private window', 'Complete the Finder and share it', 'Check which advisor received the share, and the demo account\'s status and tags in admin'],
+  expect: 'The link lands unattributed; the share goes to the house account, not the demo. The demo is paused, tagged "Demo · keep paused", and its Hub shows "Sample data" in the header and no "being confirmed" notice.',
+  why: 'The demo\'s QR code will be on screen in front of a webinar audience. Anyone who scans it must reach a person who reads their message.' },
+
+{ id: 'G-54', pass: 'Hub UX lift', role: 'guard', priority: 2, area: 'Hub shell',
+  title: 'The signed-in footer keeps every legal control',
+  steps: ['Scroll to the footer on /hub, /hub/marketing and a briefing', 'Press Cookie settings'],
+  expect: 'Privacy, Terms, Accessibility and Cookie settings are present; "Advisor sign in" is replaced by Account; Cookie settings opens the notice; there is no large empty band between the last section and the footer.',
+  why: 'The brief allows the footer to change shape, never to lose a control a visitor is owed.' },
 ];
 
 module.exports = { CASES, ROLES, SITE };

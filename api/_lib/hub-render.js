@@ -15,11 +15,35 @@
 'use strict';
 
 const { render } = require('../../lib/page.js');
+const { hubSection } = require('../../lib/layouts.js');
+const SITE = require('../../content/site.js');
+
+/* ONE place builds an advisor's WELL link. Home and Account used to hard-code
+   the apex host while Draws, the campaign copy and admin used SITE_ORIGIN
+   (the www host) — two spellings of one link, both working, which is exactly
+   the kind of difference an advisor notices on a printed card and asks about.
+   Same default as api/_lib/gtm.js wellLink(), which the campaign copy uses. */
+const SITE_ORIGIN = process.env.SITE_ORIGIN || SITE.domain;
+function wellLinkFor(advisor) {
+  const code = advisor && advisor.public_code;
+  return code ? `${SITE_ORIGIN}/well/${code}` : '';
+}
 
 /* `js` adds a screen-specific script alongside hub.js. Only /hub/campaign uses
    one — it orchestrates a dozen sequential fetches and would otherwise be
    several hundred lines that every other Hub page downloads and never runs. */
-function hubPage(res, { path, title, advisor, body, status, js }) {
+/* `section` names the Hub destination to light up when the URL alone would
+   pick the wrong one (see hubSection() in lib/layouts.js). */
+function hubPage(res, { path, title, advisor, body, status, js, section, subnav }) {
+  /* Marketing's screens share a tab strip. Which tab is lit is the screen's to
+     say (`subnav`); left out, it follows the URL. Required lazily: hub-ui
+     requires this file. */
+  const inMarketing = advisor && hubSection({ path, hubSection: section }) === 'marketing';
+  if (inMarketing) {
+    const tab = subnav || (path.startsWith('/hub/sweepstakes') ? 'draws'
+      : path.startsWith('/hub/marketing') ? 'overview' : 'campaign');
+    body = require('./hub-ui.js').marketingTabs(tab) + body;
+  }
   const html = render({
     key: 'hub',
     path,
@@ -38,7 +62,10 @@ function hubPage(res, { path, title, advisor, body, status, js }) {
        .eyebrow, the type scale — without also inheriting three thousand lines
        of consumer section styling that would never match a selector here. */
     styles: ['/css/hub.css'],
-    advisor
+    advisor,
+    hubSection: section || null,
+    /* The header's "Share my link" needs it on every screen. */
+    wellLink: wellLinkFor(advisor)
   }, body);
 
   res.statusCode = status || 200;
@@ -133,6 +160,6 @@ function ago(iso) {
 }
 
 module.exports = {
-  hubPage, esc, pageHead, emptyState,
+  hubPage, wellLinkFor, esc, pageHead, emptyState,
   STAGES, STAGE_LABEL, WINDOW_LABEL, WINDOW_ORDER, since, ago
 };

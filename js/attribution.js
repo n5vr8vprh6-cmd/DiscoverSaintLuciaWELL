@@ -68,6 +68,20 @@
     if (v) { stored[p] = v.slice(0, 120); changed = true; }
   });
 
+  /* ── Traffic that is not a client ───────────────────────────────────────
+     Two kinds of visit used to land in an advisor's own numbers: their own
+     clicks on their own link (testing it, showing it to someone), and the
+     Hub's Preview button. Both now attribute normally — the consent wording
+     still names the advisor, so a preview shows exactly what a client sees —
+     but neither is COUNTED as a visit or a Finder completion.
+       · ?preview=1, which /well/<code> passes through from the Hub;
+       · the dslw_who cookie, which only a browser signed in to the Hub holds
+         (api/_lib/auth.js) — an advisor's or an admin's, never a client's.
+     Remembered for the session, so the rest of a preview stays uncounted. */
+  if (params.get('preview') === '1' && !stored.preview) { stored.preview = true; changed = true; }
+  var signedIn = /(?:^|;\s*)dslw_who=/.test(document.cookie || '');
+  window.dslwUncounted = function () { return !!stored.preview || signedIn; };
+
   if (!stored.landing) {
     stored.landing = location.pathname;
     stored.referrer = document.referrer || '(direct)';
@@ -90,6 +104,8 @@
       var url = new URL(a.getAttribute('href'), location.origin);
       if (url.searchParams.has(key)) continue;
       url.searchParams.set(key, stored.advisor);
+      /* A preview opened in a new tab stays a preview. */
+      if (stored.preview) url.searchParams.set('preview', '1');
       a.setAttribute('href', url.pathname + url.search + url.hash);
     }
   }
@@ -110,6 +126,7 @@
      visitor reading six pages produces one visit rather than six. */
   (function pingVisit() {
     if (!stored.advisor) return;
+    if (window.dslwUncounted()) return;
     var FLAG = 'dslw.visited';
     try { if (sessionStorage.getItem(FLAG)) return; } catch (e) { return; }
 

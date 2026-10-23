@@ -14,7 +14,7 @@
 
 const { requireAdvisor } = require('../auth.js');
 const { db, str, body: parseBody } = require('../core.js');
-const { hubPage, esc, pageHead } = require('../hub-render.js');
+const { hubPage, esc, pageHead, wellLinkFor } = require('../hub-render.js');
 const { field } = require('../hub-forms.js');
 
 module.exports = async function handler(req, res) {
@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
 
   const url = new URL(req.url, 'https://x');
   const flag = url.searchParams.get('saved');
-  const link = `https://discoversaintluciawell.com/well/${advisor.public_code}`;
+  const link = wellLinkFor(advisor);
 
   const body = `<div class="hub-main">
   <div class="wrap wrap--narrow">

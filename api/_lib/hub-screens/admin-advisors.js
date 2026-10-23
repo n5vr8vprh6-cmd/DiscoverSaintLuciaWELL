@@ -90,6 +90,7 @@ function row(a) {
       <span class="hub-journey-name">${esc(name)}${
         a.role === 'admin' ? ' <span class="hub-tag" data-tag="admin">Admin</span>' : ''}${
         a.isTest ? ' <span class="hub-tag" data-tag="test">Test</span>' : ''}${
+        a.isDemo ? ' <span class="hub-tag" data-tag="test">Demo · keep paused</span>' : ''}${
         a.is_house ? ' <span class="hub-tag" data-tag="house">Lead pool</span>' : ''}</span>
       <span class="hub-journey-meta">
         ${a.waiting ? `<span class="hub-tag" data-tag="waiting">${a.waiting} waiting</span>` : ''}

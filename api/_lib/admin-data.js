@@ -23,6 +23,7 @@
 
 const { db } = require('./core.js');
 const { STAGES } = require('./hub-render.js');
+const { isDemo } = require('./demo.js');
 
 /* Journeys sitting unanswered past this point are the number the dashboard
    exists to surface. Two days is long enough to be a real weekend and short
@@ -73,7 +74,10 @@ async function allAdvisors() {
     waiting: stale[a.id] || 0,
     /* Seeded fixtures are shown, not hidden — the console must not describe a
        database different from the one it is reading. See tools/seed-advisors.js. */
-    isTest: /^SEED/.test(a.public_code || '')
+    isTest: /^SEED/.test(a.public_code || ''),
+    /* The webinar demo account (api/_lib/demo.js): shown, tagged, and its
+       sample Journeys counted like any others, for the same reason. */
+    isDemo: isDemo(a)
   }));
 }
 

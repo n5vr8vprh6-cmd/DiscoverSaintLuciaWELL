@@ -889,9 +889,20 @@
   /* Fire and forget, and only when there is an advisor to attribute it to.
      `keepalive` so it survives the visitor immediately navigating away, and
      every failure is swallowed — a counter must never be visible to anyone. */
+  /* ONCE PER VISIT. "Start again" and a second run in the same tab used to
+     add a completion each time while the visit was counted once — which is
+     how an advisor's Home could show more completions than visits. A run in
+     a preview, or in a browser signed in to the Hub, is not counted at all
+     (js/attribution.js dslwUncounted). api/visit.js enforces the same rule
+     on the server for any client that does not run this. */
   function countCompletion() {
     var attr = attribution();
     if (!attr.advisor) return;
+    if (window.dslwUncounted && window.dslwUncounted()) return;
+    try {
+      if (sessionStorage.getItem('dslw.completed')) return;
+      sessionStorage.setItem('dslw.completed', '1');
+    } catch (e) { /* no storage: the server-side check still applies */ }
     try {
       fetch('/api/visit', {
         method: 'POST',

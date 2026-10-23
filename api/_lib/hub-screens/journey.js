@@ -89,7 +89,7 @@ module.exports = async function handler(req, res) {
   const body_ = `<div class="hub-main hub-main--detail">
   <div class="wrap">
 
-    <p class="hub-back"><a href="/hub/journeys">← All Journeys</a></p>
+    <p class="hub-back"><a href="/hub/journeys">← All clients</a></p>
 
     ${advisor.viewingAs ? (revealed
       ? `<p class="hub-flash hub-flash--bad">Their details are showing, and that has been recorded
@@ -128,7 +128,7 @@ module.exports = async function handler(req, res) {
         ${/* Shown in view-as as well. The workspace is read-only there, and its
              consultation carries codes rather than anybody's words, so there is
              nothing on it to withhold. */''}
-        <a class="btn btn--ghost" href="/hub/journeys/${esc(id)}/design">Design this journey</a>
+        <a class="btn btn--ink" href="/hub/journeys/${esc(id)}/design">Design this journey</a>
       </div>
       <p class="hub-contact">
         ${j.consumer_email ? `<span>${esc(j.consumer_email)}</span>` : ''}
@@ -254,6 +254,6 @@ function notFound(res, advisor) {
     body: `<div class="hub-main"><div class="wrap">${emptyState(
       'That Journey is not here.',
       'It may have been removed, or it belongs to another advisor.',
-      { label: 'All Journeys', href: '/hub/journeys' })}</div></div>`
+      { label: 'All clients', href: '/hub/journeys' })}</div></div>`
   });
 }

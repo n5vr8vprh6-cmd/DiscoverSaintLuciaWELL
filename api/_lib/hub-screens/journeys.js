@@ -13,10 +13,11 @@
 const { requireAdvisor } = require('../auth.js');
 const {
   hubPage, esc, pageHead, emptyState,
-  STAGES, STAGE_LABEL, WINDOW_LABEL, WINDOW_ORDER, since
+  STAGES, STAGE_LABEL, WINDOW_ORDER
 } = require('../hub-render.js');
 const { journeysFor, needsAttention } = require('../hub-data.js');
 const { maskJourneys } = require('../hub-mask.js');
+const { inquiryRow } = require('../hub-ui.js');
 
 const VIEWS = [
   { id: 'attention', label: 'Needs attention' },
@@ -39,8 +40,10 @@ module.exports = async function handler(req, res) {
 
   const body = `<div class="hub-main">
   <div class="wrap">
-    ${pageHead('Journeys', all.length === 1 ? '1 Journey' : `${all.length} Journeys`,
-      'People who completed the Finder through your link and chose to share the result.')}
+    ${/* "Clients" is the workspace, "Inquiries" the shared Finder results in it
+          (Hub brief v2 naming rule). The URL stays /hub/journeys. */''}
+    ${pageHead('Clients', all.length === 1 ? '1 inquiry' : `${all.length} inquiries`,
+      'People who completed the Journey Finder through your link and chose to share it with you.')}
 
     ${all.length ? `
     <nav class="hub-views" aria-label="View">
@@ -52,11 +55,11 @@ module.exports = async function handler(req, res) {
     ` : emptyState(
       'No Journeys yet.',
       'When someone completes the Finder through your link and chooses to share it, they arrive here — with what they asked for, not just their contact details.',
-      { label: 'Get your WELL link', href: '/hub#well-link' })}
+      { label: 'Get your WELL link', href: '/hub/marketing#well-link-card' })}
   </div>
 </div>`;
 
-  hubPage(res, { path: '/hub/journeys', title: 'Journeys', advisor, body });
+  hubPage(res, { path: '/hub/journeys', title: 'Clients', advisor, body });
 };
 
 function renderView(view, all) {
@@ -69,7 +72,7 @@ function renderView(view, all) {
       return `<section class="hub-group">
       <h2 class="hub-group-head"><span class="hub-stage" data-stage="${s}">${esc(STAGE_LABEL[s])}</span>
         <span class="hub-group-n">${rows.length}</span></h2>
-      <ul class="hub-journeys">${rows.map(row).join('')}</ul>
+      <ul class="hub-rows hub-card hub-card--list">${rows.map((j) => inquiryRow(j)).join('')}</ul>
     </section>`;
     }).join('');
   }
@@ -92,7 +95,7 @@ function renderView(view, all) {
   if (!rows.length) {
     return emptyState('Nothing in this view.',
       'Everything has been picked up, or is already booked and closed.',
-      { label: 'See all Journeys', href: '/hub/journeys?view=newest' });
+      { label: 'See all clients', href: '/hub/journeys?view=newest' });
   }
 
   /* Needs Attention drops booked and closed Journeys, which otherwise reads as
@@ -106,25 +109,5 @@ function renderView(view, all) {
        <a href="/hub/journeys?view=newest">Show everything</a></p>`
     : '';
 
-  return `<ul class="hub-journeys">${rows.map(row).join('')}</ul>${note}`;
-}
-
-function row(j) {
-  const name = `${j.consumer_first || ''} ${j.consumer_last || ''}`.trim() || 'Someone';
-  const villages = (j.villages || []).slice(0, 3).join(' · ');
-  return `<li class="hub-journey">
-    <a href="/hub/journeys/${esc(j.id)}">
-      <span class="hub-journey-name">${esc(name)}</span>
-      <span class="hub-journey-meta">
-        <span class="hub-stage" data-stage="${esc(j.stage)}">${esc(STAGE_LABEL[j.stage] || j.stage)}</span>
-        ${j.travel_window ? `<span>${esc(WINDOW_LABEL[j.travel_window] || j.travel_window)}</span>` : ''}
-        ${/* Marked because it changes how you open the conversation: somebody
-              who came in through a giveaway is warmer about the prize than
-              about the trip, and worth greeting differently. */''}
-        ${j.sweepstakes_id ? '<span class="hub-tag" data-tag="draw">Prize draw</span>' : ''}
-        <span>Shared ${esc(since(j.created_at))}</span>
-      </span>
-      ${villages ? `<span class="hub-journey-villages">${esc(villages)}</span>` : ''}
-    </a>
-  </li>`;
+  return `<ul class="hub-rows hub-card hub-card--list">${rows.map((j) => inquiryRow(j)).join('')}</ul>${note}`;
 }

@@ -219,7 +219,7 @@ module.exports = async function handler(req, res) {
                             done: str(url.searchParams.get('done'), 20) });
 
   hubPage(res, {
-    path: '/hub/journeys', title: 'Design · ' + name, advisor,
+    path: '/hub/journeys', title: 'Design · ' + name, advisor, section: 'designer',
     body: body_, js: ['/js/hub-design.js']
   });
 };

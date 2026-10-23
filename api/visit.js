@@ -46,6 +46,16 @@ module.exports = async function handler(req, res) {
     if (!advisor) return json(res, 204, {});
 
     if (kind === 'finder_complete') {
+      /* One completion per visit, enforced here as well as in the browser:
+         a repeat run in the same session is the same person deciding, not a
+         second one. Without a session id there is nothing to join on, and the
+         row is kept rather than guessed at. */
+      if (sessionId) {
+        const { count } = await supabase.from('finder_completions')
+          .select('id', { count: 'exact', head: true })
+          .eq('advisor_id', advisor.id).eq('session_id', sessionId);
+        if (count) return json(res, 204, {});
+      }
       await supabase.from('finder_completions').insert({
         advisor_id: advisor.id,
         session_id: sessionId || null

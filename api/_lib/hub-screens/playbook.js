@@ -98,6 +98,7 @@ module.exports = async function handler(req, res) {
 
   hubPage(res, {
     path: '/hub/campaign',
+    subnav: 'playbook',
     title: 'Your Playbook',
     advisor,
     body: buildBody({

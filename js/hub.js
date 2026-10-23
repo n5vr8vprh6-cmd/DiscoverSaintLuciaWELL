@@ -185,7 +185,8 @@
     var done = function () {
       var was = btn.textContent;
       btn.textContent = 'Copied';
-      setTimeout(function () { btn.textContent = was; }, 1600);
+      btn.setAttribute('data-copied', '');
+      setTimeout(function () { btn.textContent = was; btn.removeAttribute('data-copied'); }, 1600);
     };
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -452,5 +453,99 @@
     fetch('/api/auth/logout', { method: 'POST' })
       .then(function () { location.assign('/'); })
       .catch(function () { location.assign('/'); });
+  });
+/* ── 5. The Hub UX lift (brief v2, 23 Oct 2026) ─────────────────────────
+     Everything here is an enhancement of markup that already works: the
+     greeting reads correctly as "Welcome back", the menus are <details>, the
+     training card is simply there, the link is in an input with Copy. */
+
+  /* 5a. Greeting in the advisor's own clock. The server cannot know it and
+     used to guess UTC, wishing a Toronto advisor good evening at 2pm. */
+  var greet = document.querySelectorAll('[data-greet]');
+  if (greet.length) {
+    var h = new Date().getHours();
+    var part = h < 5 ? 'Good evening' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    greet.forEach(function (el) {
+      var name = el.getAttribute('data-greet');
+      el.textContent = part + (name ? ', ' + name : '') + '.';
+    });
+  }
+
+  /* 5b. The QR, drawn where the link is shown rather than behind a toggle.
+     Same encoder as the button above (and the one tools/qr-test.js proves). */
+  document.querySelectorAll('[data-qr-inline]').forEach(function (box) {
+    try {
+      var svg = qrSvg(box.getAttribute('data-qr-inline'));
+      var px = box.getAttribute('data-qr-size') || '160';
+      svg.setAttribute('width', px);
+      svg.setAttribute('height', px);
+      box.appendChild(svg);
+    } catch (err) {
+      box.textContent = 'This link is too long for a QR code here.';
+    }
+  });
+
+  /* 5c. Download what is on screen. SVG for print (it scales to any size);
+     PNG at 1024px for anything that wants a picture. Both are exports of the
+     drawn QR, so the file and the screen cannot disagree. */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-qr-download]');
+    if (!btn) return;
+    var box = document.getElementById(btn.getAttribute('data-qr-for'));
+    var svg = box && box.querySelector('svg');
+    if (!svg) return;
+    var clone = svg.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width', '1024');
+    clone.setAttribute('height', '1024');
+    var xml = new XMLSerializer().serializeToString(clone);
+    var save = function (href, name) {
+      var a = document.createElement('a');
+      a.href = href; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+    };
+    if (btn.getAttribute('data-qr-download') === 'svg') {
+      var url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml' }));
+      save(url, 'well-link-qr.svg');
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      return;
+    }
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas');
+      c.width = 1024; c.height = 1024;
+      var ctx = c.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, 0, 0, 1024, 1024);
+      save(c.toDataURL('image/png'), 'well-link-qr.png');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+  });
+
+  /* 5d. Menus: one open at a time, closed by Escape or a click elsewhere. */
+  var pops = function () { return document.querySelectorAll('.hub-pop[open], .hub-drawer[open]'); };
+  document.addEventListener('click', function (e) {
+    pops().forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    pops().forEach(function (d) {
+      d.removeAttribute('open');
+      var s = d.querySelector('summary'); if (s) s.focus();
+    });
+  });
+
+  /* 5e. Suggestions an advisor can put away. Per browser, which is enough
+     until a preference is stored on the account; storage that throws (private
+     modes) just means the card comes back next time. */
+  document.querySelectorAll('[data-dismissable]').forEach(function (card) {
+    var key = 'dslw.hub.hide.' + card.getAttribute('data-dismissable');
+    try { if (localStorage.getItem(key)) card.hidden = true; } catch (err) { /* show it */ }
+    var x = card.querySelector('[data-dismiss]');
+    if (!x) return;
+    x.addEventListener('click', function () {
+      card.hidden = true;
+      try { localStorage.setItem(key, String(Date.now())); } catch (err) { /* this visit only */ }
+    });
   });
 })();

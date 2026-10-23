@@ -48,6 +48,7 @@ const KNOWN = [
   '/hub/account', '/hub/journeys', '/hub/campaign', '/hub/campaign/profile',
   '/hub/campaign/more', '/hub/campaign/playbook',
   '/hub/sweepstakes', '/hub/undertaking',
+  '/hub/designer', '/hub/explore', '/hub/marketing',
   '/hub/admin', '/hub/admin/advisors', '/hub/admin/advisors/new',
   '/hub/admin/import', '/hub/admin/audit', '/hub/admin/subject',
   '/hub/admin/waitlist', '/hub/viewas/exit'

@@ -65,13 +65,20 @@ async function notesFor(advisorId, shareId) {
 }
 
 /* The funnel the dashboard shows: visits -> completions -> shares. Counts
-   only; no answers, nothing identifying. */
-async function funnelFor(advisorId) {
+   only; no answers, nothing identifying.
+
+   `since` (an ISO time) narrows all three to the same window, so Home can say
+   "last 30 days" and mean it for every number on the row. Without it the
+   counts are all-time — which, because the retention purge removes all three
+   tables' rows at 24 months, is in practice the last two years. */
+async function funnelFor(advisorId, { since } = {}) {
   const supabase = db();
   if (!supabase) return { visits: 0, completions: 0, shares: 0, lastVisitAt: null };
   const count = async (table) => {
-    const { count: n } = await supabase
+    let q = supabase
       .from(table).select('id', { count: 'exact', head: true }).eq('advisor_id', advisorId);
+    if (since) q = q.gte('created_at', since);
+    const { count: n } = await q;
     return n || 0;
   };
   /* WHEN, not just how many. Three totals answer "has any of this worked ever"

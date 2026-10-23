@@ -109,56 +109,37 @@ const stat = (label, n, note) => `<div class="hub-stat">
     <span class="hub-stat-note">${esc(note)}</span>
   </div>`;
 
-function home() {
-  const attention = needsAttention(JOURNEYS).slice(0, 5);
-  const link = 'https://discoversaintluciawell.com/well/' + ADVISOR.public_code;
-  return `<div class="hub-main"><div class="wrap">
-    <div class="hub-greeting">
-      <p class="eyebrow">Travel Advisor Hub</p>
-      <h1>Good morning, ${esc(ADVISOR.first_name)}.</h1>
-    </div>
-    <section class="hub-nba">
-      <p class="eyebrow eyebrow--gold">Next</p>
-      <h2>2 people are waiting to hear from you.</h2>
-      <p>They shared a Journey deliberately. A reply in the first day or two is what turns it into a conversation.</p>
-      <a class="btn btn--gold" href="./journeys.html">Open the newest</a>
-    </section>
-    <section class="hub-section">
-      <h2>Your campaign</h2>
-      <div class="hub-funnel">
-        ${stat('Visits', FUNNEL.visits, 'people arrived through your link')}
-        ${stat('Finder completions', FUNNEL.completions, 'finished the Journey Finder')}
-        ${stat('Journeys shared', FUNNEL.shares, 'chose to share with you')}
-      </div>
-      <div class="hub-link">
-        <label class="hub-field-label" for="well-link">Your WELL link</label>
-        <div class="hub-link-row">
-          <input id="well-link" value="${esc(link)}" readonly>
-          <button class="btn btn--ghost btn--sm" type="button" data-copy="#well-link">Copy</button>
-          <button class="btn btn--ghost btn--sm" type="button" data-qr="${esc(link)}">QR code</button>
-        </div>
-        <p class="hub-hint">This link identifies you without putting your name in the address.</p>
-      </div>
-    </section>
-    <section class="hub-section">
-      <h2>Needs attention</h2>
-      <ul class="hub-journeys">${attention.map(row).join('')}</ul>
-      <p class="hub-more"><a href="./journeys.html">All Journeys (${JOURNEYS.length})</a></p>
-    </section>
-  </div></div>`;
+/* Home is rendered by the SCREEN'S OWN builder, once per advisor state the
+   Hub UX lift distinguishes (brief v2 §9), so each variant here is what that
+   advisor sees rather than a copy of it. */
+const HOME_LINK = 'https://www.discoversaintluciawell.com/well/' + ADVISOR.public_code;
+function homeFor(state) {
+  const { buildBody } = require('../api/_lib/hub-screens/home.js');
+  const recent = { visits: 86, completions: 31, shares: 4, lastVisitAt: new Date(Date.now() - 7200000).toISOString() };
+  const all = { visits: 214, completions: 38, shares: 7, lastVisitAt: recent.lastVisitAt };
+  const zero = { visits: 0, completions: 0, shares: 0, lastVisitAt: null };
+  const settled = JOURNEYS.map((j) => Object.assign({}, j, { stage: j.stage === 'new' ? 'contacted' : j.stage }));
+  const M = {
+    waiting:  { advisor: ADVISOR, journeys: JOURNEYS, waiting: 2, funnel: recent, funnelAll: all },
+    quiet:    { advisor: Object.assign({}, ADVISOR, { foundations_at: day(40) }), journeys: settled, waiting: 0, funnel: recent, funnelAll: all },
+    new:      { advisor: ADVISOR, journeys: [], waiting: 0, funnel: zero, funnelAll: zero },
+    pending:  { advisor: Object.assign({}, ADVISOR, { status: 'pending' }), journeys: [], waiting: 0, funnel: zero, funnelAll: zero },
+    demo:     { advisor: Object.assign({}, ADVISOR, { status: 'paused', slug: 'demo-0123456789abcdef' }), journeys: JOURNEYS, waiting: 2, funnel: recent, funnelAll: all }
+  }[state];
+  return { advisor: M.advisor, body: buildBody(Object.assign({ range: '30d', link: HOME_LINK }, M)) };
 }
 
 function journeys() {
   const views = [['attention', 'Needs attention'], ['soonest', 'Travelling soonest'],
                  ['newest', 'Newest'], ['stage', 'By stage']];
   return `<div class="hub-main"><div class="wrap">
-    ${pageHead('Journeys', `${JOURNEYS.length} Journeys`,
-      'People who completed the Finder through your link and chose to share the result.')}
+    ${pageHead('Clients', `${JOURNEYS.length} inquiries`,
+      'People who completed the Journey Finder through your link and chose to share it with you.')}
     <nav class="hub-views" aria-label="View">
       ${views.map(([id, label], i) =>
         `<a href="#${id}"${i === 0 ? ' aria-current="true" class="is-current"' : ''}>${esc(label)}</a>`).join('')}
     </nav>
-    <ul class="hub-journeys">${needsAttention(JOURNEYS).map(row).join('')}</ul>
+    <ul class="hub-rows hub-card hub-card--list">${needsAttention(JOURNEYS).map((j) => require('../api/_lib/hub-ui.js').inquiryRow(j)).join('')}</ul>
     <p class="hub-more">One Journey is booked or closed and is not shown here.
       <a href="./journeys.html">Show everything</a></p>
   </div></div>`;
@@ -247,7 +228,7 @@ function journeyDetail() {
 }
 
 function account() {
-  const link = 'https://discoversaintluciawell.com/well/' + ADVISOR.public_code;
+  const link = HOME_LINK;
   return `<div class="hub-main"><div class="wrap wrap--narrow">
     ${pageHead('Account', 'Your details',
       'These appear where a consumer is asked whether to share their Journey with you.')}
@@ -377,8 +358,22 @@ async function designWorkspace(step) {
    so the nav's current-page state is the one the deployed Hub will show. */
 let FIXTURE_DOC = null;
 const PAGES = [
-  ['index.html',    'Home',       '/hub',          ADVISOR, home()],
-  ['journeys.html', 'Journeys',   '/hub/journeys', ADVISOR, journeys()],
+  ['index.html',        'Home', '/hub', homeFor('waiting').advisor, homeFor('waiting').body],
+  ['home-quiet.html',   'Home', '/hub', homeFor('quiet').advisor,   homeFor('quiet').body],
+  ['home-new.html',     'Home', '/hub', homeFor('new').advisor,     homeFor('new').body],
+  ['home-pending.html', 'Home', '/hub', homeFor('pending').advisor, homeFor('pending').body],
+  ['home-demo.html',    'Home', '/hub', homeFor('demo').advisor,    homeFor('demo').body],
+  ['journeys.html', 'Clients',    '/hub/journeys', ADVISOR, journeys()],
+  ['designer.html', 'Journey Designer', '/hub/designer', ADVISOR,
+    require('../api/_lib/hub-screens/designer.js').buildBody({ advisor: ADVISOR, journeys: JOURNEYS })],
+  ['explore.html',  'Explore Saint Lucia', '/hub/explore', ADVISOR,
+    require('../api/_lib/hub-screens/explore.js').buildBody({ advisor: ADVISOR })],
+  /* hubPage() puts the Marketing tabs above the body; render() alone does
+     not, so the preview adds them the same way. */
+  ['marketing.html', 'Marketing', '/hub/marketing', ADVISOR,
+    require('../api/_lib/hub-ui.js').marketingTabs('overview') +
+    require('../api/_lib/hub-screens/marketing.js').buildBody({ advisor: ADVISOR, link: HOME_LINK,
+      draws: [{ id: 'd1', name: 'Spring giveaway', status: 'open', entries: 12 }] })],
   ['journey.html',  'Marguerite Okonkwo', '/hub/journeys', ADVISOR, journeyDetail()],
   ['account.html',  'Account',    '/hub/account',  ADVISOR, account()],
   ['empty.html',    'Journeys',   '/hub/journeys', ADVISOR, empty()],
@@ -415,6 +410,8 @@ PAGES.forEach(([file, title, routePath, advisor, body]) => {
     key: 'hub', path: routePath, layout: 'hub', surface: 'advisor',
     title: title + ' — Saint Lucia WELL', description: 'Private advisor workspace.',
     noindex: true, scripts: false, styles: ['/css/hub.css'], advisor,
+    wellLink: advisor ? HOME_LINK : '',
+    hubSection: /^design/.test(file) ? 'designer' : null,
     js: /^design/.test(file) ? ['/js/hub.js', '/js/hub-design.js'] : ['/js/hub.js']
   }, body);
   fs.writeFileSync(path.join(OUT, file), html);

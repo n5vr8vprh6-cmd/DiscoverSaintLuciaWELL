@@ -111,6 +111,18 @@
       "destination": "/api/hub?screen=account"
     },
     {
+      "source": "/hub/designer",
+      "destination": "/api/hub?screen=designer"
+    },
+    {
+      "source": "/hub/explore",
+      "destination": "/api/hub?screen=explore"
+    },
+    {
+      "source": "/hub/marketing",
+      "destination": "/api/hub?screen=marketing"
+    },
+    {
       "source": "/hub/journeys",
       "destination": "/api/hub?screen=journeys"
     },

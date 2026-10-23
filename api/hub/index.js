@@ -26,6 +26,10 @@
 
 const SCREENS = {
   home:     () => require('../_lib/hub-screens/home.js'),
+  /* The Hub UX lift's three destinations (brief v2, 23 Oct 2026). */
+  designer:  () => require('../_lib/hub-screens/designer.js'),
+  explore:   () => require('../_lib/hub-screens/explore.js'),
+  marketing: () => require('../_lib/hub-screens/marketing.js'),
   journeys: () => require('../_lib/hub-screens/journeys.js'),
   journey:  () => require('../_lib/hub-screens/journey.js'),
   design:   () => require('../_lib/hub-screens/design.js'),

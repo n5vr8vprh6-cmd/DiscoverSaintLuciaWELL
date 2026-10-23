@@ -81,9 +81,13 @@ module.exports = async function handler(req, res) {
     if (draw && draw.status !== OPEN) draw = null;
   }
 
-  const target = ref
+  let target = ref
     ? `${to}?advisor=${encodeURIComponent(ref)}${draw ? '&s=' + encodeURIComponent(draw.code || sweeps.toUpperCase()) : ''}`
     : to;
+  /* The Hub's Preview button opens /well/<code>?preview=1. Carried through so
+     js/attribution.js can show the advisor exactly what a client sees without
+     counting it as a visit. It grants nothing and changes no attribution. */
+  if (url.searchParams.get('preview') === '1') target += (target.includes('?') ? '&' : '?') + 'preview=1';
 
   /* 302, not 301. A permanent redirect would be cached by the browser, and an
      advisor who is later paused — or a code aimed somewhere new — would keep

@@ -556,6 +556,9 @@ functions through the site's own renderer** — `render(page, body)` in
 | `/hub/journeys/:id/design` | `hub-screens/design.js` | ASK WELL. GET is pure computation; POST returns JSON |
 | `/hub/campaign/playbook` | `hub-screens/playbook.js` | The Advisor Playbook. Assembles, never generates |
 | `/j/:token` | `hub-screens/itinerary.js` | **Public.** The document a client keeps |
+| `/hub/designer` | `hub-screens/designer.js` | The Journey Designer's front door: starts, clients ready to design |
+| `/hub/explore` | `hub-screens/explore.js` | Explore Saint Lucia: Villages, places, framework, Field Guide (coming) |
+| `/hub/marketing` | `hub-screens/marketing.js` | Link + QR at full size; Campaign, Playbook, Draws under one tab strip |
 | `/hub/account` | `hub-screens/account.js` | Profile only — never status, code, slug or auth id |
 | `/hub/login` · `register` · `forgot` · `reset` | `hub-screens/*.js` | Signed-out screens; the POST targets live in `api/auth/` |
 
@@ -629,6 +632,52 @@ The encoder stops at version 5. Version 6-L is the first that splits the payload
 across two blocks, and interleaving them is real machinery for a case we do not
 have — a WELL link is ~45 characters and version 5 holds 106. Longer payloads
 throw, and the caller says so rather than drawing something unscannable.
+
+### The Hub UX lift (23 Oct 2026, Hub brief v2)
+
+**One header.** The Hub no longer borrows the consumer header with a dark band
+under it. `hubHeader()` in `lib/layouts.js` is the Pitons lockup, five
+destinations (Home · Clients · Journey Designer · Explore Saint Lucia ·
+Marketing), a "Share my link" popover and the account menu; below 1020px all of
+it moves into a `<details>` drawer, so it opens without script. (The old band
+could not be opened at all below 860px — the toggle lived in `js/site.js`,
+which Hub pages never load.) Which item is lit is `hubSection()`; a screen can
+override it (`hubPage({ section })`, as ASK WELL does). **No URL changed**:
+"Clients" is a label over `/hub/journeys`, and Marketing is a parent over
+`/hub/campaign*` and `/hub/sweepstakes*`, whose tab strip `hubPage()` adds.
+`hubFooter()` is `globalFooter()` with "Advisor sign in" swapped for Account.
+
+**Shared pieces live in `api/_lib/hub-ui.js`** — the person row, Village
+chips, tool tiles, Village cards, the WELL link card. People are shown as
+initials on their leading Village's accent, never a stock photo. Imagery is the
+site's own atmosphere frames (`IMAGES`), never a named property.
+
+**Home is `buildBody(model)`**, rendered per advisor state by the preview
+(`index`, `home-quiet`, `home-new`, `home-pending`, `home-demo`). A new
+advisor gets the welcome and two equal paths, not three zeros; a waiting person
+is one click from their briefing; training is a dismissable card whose offer
+follows `rung()` and never claims an advisor has not trained.
+
+**The geometry departs from the public site on purpose**: 14px cards, 10px
+buttons, pills, ink-tinted elevation, sentence-case Caslon section titles. Same
+tokens; nothing new in the palette.
+
+**Honest numbers.** Home's three counts default to the last 30 days
+(`funnelFor(id, { since })`) with an All time switch. A Finder completion now
+counts once per visit (browser flag in `js/journey.js` *and* a check in
+`api/visit.js`), and neither a visit nor a completion is counted from a
+browser signed in to the Hub (`dslw_who`) or from the Preview button
+(`?preview=1`, passed through `/well/`). Forward-only: older rows are not
+rewritten, and the card says so.
+
+**The webinar demo account** (`api/_lib/demo.js`): an ordinary account that is
+`paused` and carries slug `demo-<16 hex>`. Paused means no consumer can ever
+reach it — the existing `activeAdvisor()` / `/well/` guard — so a QR shown in a
+webinar is harmless. The marker only changes display: no "being confirmed"
+notice, a "Sample data" chip, and "Demo · keep paused" in admin. Create the
+account at `/hub/admin/advisors/new`, then `node tools/seed-demo.js --email
+<addr> --claim` and `node tools/seed-demo.js --email <addr>` (`--dry`,
+`--reset`). `tools/hub-shell-test.js` holds all of the above down.
 
 ### Looking at the Hub
 
@@ -865,6 +914,7 @@ system after.
 | `node tools/design-itinerary-test.js` | nothing | The day layout, what the document may carry, the four dead-link states |
 | `node tools/design-migration-check.js` | `.env` | That `022` landed where the deployment can see it |
 | `node tools/playbook-test.js` | nothing | The doctrine bank and the seed merge |
+| `node tools/hub-shell-test.js` | nothing | The Hub header, sections, Admin gating, signed-in footer, demo marker, Home per state |
 | `node tools/practitioner-test.js` | nothing (`.env` optional) | `/practitioners`: no calendar anywhere, the footer's shape, the form's markup, validation, the endpoint. The database half runs only once migration 028 is applied |
 | `node tools/seed-advisors.js` | `.env` | Not a test — the fixture set the admin console is built against |
 
