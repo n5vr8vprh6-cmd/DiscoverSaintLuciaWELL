@@ -3626,15 +3626,16 @@ a.hub-start:hover { box-shadow: var(--hub-elev-2); transform: translateY(-2px); 
    Hub's page and cards are white, separated by a hairline and a soft shadow,
    and cream is kept for the few places meant to feel like an invitation: the
    training card, the Field Guide panel, and one full-width band under the
-   Villages. Utility surfaces (inputs, hovers, the period switch) take a cool
-   near-white instead, so they read as controls rather than as warmth.
+   Villages. Utility surfaces (inputs, hovers, the period switch) take a pale
+   teal mist instead, so they read as controls rather than as warmth.
 
    Scoped to Hub pages by body[data-page="hub"] (lib/page.js). The client's
    itinerary at /j/:token also loads this sheet and keeps its paper.
    ══════════════════════════════════════════════════════════════════════════ */
 body[data-page="hub"] {
   --hub-line: rgba(18, 48, 47, 0.11);
-  --hub-cool: #F5F7F6;
+  --hub-cool: #EEF6F5;        /* teal mist: the brand teal at about 6% on white */
+  --hub-mist-line: rgba(11, 110, 112, 0.16);
   --hub-elev-1: 0 1px 2px rgba(18, 48, 47, 0.05), 0 4px 14px rgba(18, 48, 47, 0.06);
   --hub-elev-2: 0 2px 6px rgba(18, 48, 47, 0.07), 0 16px 36px rgba(18, 48, 47, 0.12);
   background: #fff;
@@ -3649,11 +3650,11 @@ body[data-page="hub"] .hub-row-main:hover,
 body[data-page="hub"] .hub-acct-menu a:hover,
 body[data-page="hub"] .hub-acct-menu button:hover,
 body[data-page="hub"] .hub-journey a:hover { background: var(--hub-cool); }
-body[data-page="hub"] .hub-seg { background: #EDF1F0; }
-body[data-page="hub"] .hub-empty { background: #FAFBFB; }
+body[data-page="hub"] .hub-seg { background: #E3EFEE; }
+body[data-page="hub"] .hub-empty { background: #F5FAF9; border-color: var(--hub-mist-line); }
 body[data-page="hub"] .hub-step::before { background: #EAF1F0; }
 body[data-page="hub"] .hub-tile-media,
-body[data-page="hub"] .hub-village-media { background: #EEF2F1; }
+body[data-page="hub"] .hub-village-media { background: #E6F0EF; }
 body[data-page="hub"] .hub-drawer-panel { background: #fff; }
 body[data-page="hub"] .hub-drawer-link[aria-current="page"] { background: var(--hub-cool); }
 body[data-page="hub"] .hub-start--soon { border-color: rgba(18, 48, 47, 0.2); }
@@ -3729,3 +3730,18 @@ body[data-page="hub"] .hub-step::before { background: #fff; border: 1px solid rg
 .hub-pulse { display: flex; flex-direction: column; }
 .hub-pulse .hub-card-link { margin-top: auto; padding-top: 1.25rem; align-self: flex-start; }
 .hub-pulse .hub-steps { margin-bottom: 0.25rem; }
+
+/* ── Teal mist instead of grey (Duncan, 23 Oct) ─────────────────────────────
+   The Hub's light working surfaces were a neutral grey, which read as a
+   placeholder. They now take one tint of the brand teal (--hub-cool, about
+   6% on white): inputs, row hovers, the period switch, empty states and the
+   step tiles. Step numbers are solid teal, so the sequence reads at a glance.
+   Text on every one of these stays ink or muted ink; the tint is a surface,
+   never a colour block. */
+body[data-page="hub"] .hub-step { background: var(--hub-cool); border-color: var(--hub-mist-line); }
+body[data-page="hub"] .hub-step::before { background: var(--teal); border-color: var(--teal); color: #fff; }
+body[data-page="hub"] .hub-copyfield input,
+body[data-page="hub"] .hub-link-row input,
+body[data-page="hub"] .hub-main input:not([type="radio"]):not([type="checkbox"]),
+body[data-page="hub"] .hub-main textarea,
+body[data-page="hub"] .hub-main select { border-color: var(--hub-mist-line); }
