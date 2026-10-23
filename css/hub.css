@@ -3616,3 +3616,70 @@ a.hub-start:hover { box-shadow: var(--hub-elev-2); transform: translateY(-2px); 
 .hub-tiles--three .hub-tile-media { aspect-ratio: 16 / 9; }
 .hub-designer .hub-hero-media img { object-position: 75% 50%; }
 .hub-explore .hub-hero-media img { object-position: 50% 30%; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SURFACES — white to work on, cream for the warm moments (Duncan, 23 Oct 2026)
+   --------------------------------------------------------------------------
+   The Hub inherited the consumer site's cream page. Under photography that
+   reads as editorial paper; behind lists and forms it filled every empty area
+   and read faintly yellow, and white cards on it barely separated. So the
+   Hub's page and cards are white, separated by a hairline and a soft shadow,
+   and cream is kept for the few places meant to feel like an invitation: the
+   training card, the Field Guide panel, and one full-width band under the
+   Villages. Utility surfaces (inputs, hovers, the period switch) take a cool
+   near-white instead, so they read as controls rather than as warmth.
+
+   Scoped to Hub pages by body[data-page="hub"] (lib/page.js). The client's
+   itinerary at /j/:token also loads this sheet and keeps its paper.
+   ══════════════════════════════════════════════════════════════════════════ */
+body[data-page="hub"] {
+  --hub-line: rgba(18, 48, 47, 0.11);
+  --hub-cool: #F5F7F6;
+  --hub-elev-1: 0 1px 2px rgba(18, 48, 47, 0.05), 0 4px 14px rgba(18, 48, 47, 0.06);
+  --hub-elev-2: 0 2px 6px rgba(18, 48, 47, 0.07), 0 16px 36px rgba(18, 48, 47, 0.12);
+  background: #fff;
+}
+body[data-page="hub"] .hub-bar { background: rgba(255, 255, 255, 0.94); }
+body[data-page="hub"] .hub-copyfield input,
+body[data-page="hub"] .hub-link-row input,
+body[data-page="hub"] .hub-main input:not([type="radio"]):not([type="checkbox"]),
+body[data-page="hub"] .hub-main textarea,
+body[data-page="hub"] .hub-main select { background: var(--hub-cool); }
+body[data-page="hub"] .hub-row-main:hover,
+body[data-page="hub"] .hub-acct-menu a:hover,
+body[data-page="hub"] .hub-acct-menu button:hover,
+body[data-page="hub"] .hub-journey a:hover { background: var(--hub-cool); }
+body[data-page="hub"] .hub-seg { background: #EDF1F0; }
+body[data-page="hub"] .hub-empty { background: #FAFBFB; }
+body[data-page="hub"] .hub-step::before { background: #EAF1F0; }
+body[data-page="hub"] .hub-tile-media,
+body[data-page="hub"] .hub-village-media { background: #EEF2F1; }
+body[data-page="hub"] .hub-drawer-panel { background: #fff; }
+body[data-page="hub"] .hub-drawer-link[aria-current="page"] { background: var(--hub-cool); }
+body[data-page="hub"] .hub-start--soon { border-color: rgba(18, 48, 47, 0.2); }
+/* The warm moments keep their cream. */
+body[data-page="hub"] .hub-train,
+body[data-page="hub"] .hub-fieldguide { background: var(--paper-2); }
+
+/* One warm band, edge to edge, behind the Villages: the island section is
+   the invitation on Home. Drawn with a spread shadow clipped to the band's
+   own height, so it reaches the window edges without ever widening the page
+   (a 100vw pseudo-element would add a sideways scroll). */
+body[data-page="hub"] .hub-home .hub-stack > .hub-block:last-child {
+  background: var(--paper);
+  box-shadow: 0 0 0 100vmax var(--paper);
+  clip-path: inset(0 -100vmax);
+  padding-block: clamp(2rem, 4vw, 3.25rem) clamp(2.5rem, 5vw, 4rem);
+}
+body[data-page="hub"] .hub-home { padding-bottom: 0; }
+
+/* Village accents must win over the neutral defaults on .hub-chip and
+   .hub-avatar. Both selectors weigh the same as [data-v="…"], and the
+   defaults come later in the sheet, so every chip rendered teal and every
+   avatar ink until this rule restated the Village colours with the class. */
+.hub-chip[data-v="longevity"],  .hub-avatar[data-v="longevity"]  { --v: var(--v-longevity);  --v-ink: var(--v-longevity-ink); }
+.hub-chip[data-v="rainforest"], .hub-avatar[data-v="rainforest"] { --v: var(--v-rainforest); --v-ink: var(--v-rainforest-ink); }
+.hub-chip[data-v="ocean"],      .hub-avatar[data-v="ocean"]      { --v: var(--v-ocean);      --v-ink: var(--v-ocean-ink); }
+.hub-chip[data-v="heritage"],   .hub-avatar[data-v="heritage"]   { --v: var(--v-heritage);   --v-ink: var(--v-heritage-ink); }
+.hub-chip[data-v="movement"],   .hub-avatar[data-v="movement"]   { --v: var(--v-movement);   --v-ink: var(--v-movement-ink); }
+.hub-chip[data-v="connection"], .hub-avatar[data-v="connection"] { --v: var(--v-connection); --v-ink: var(--v-connection-ink); }
