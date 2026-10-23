@@ -3683,3 +3683,49 @@ body[data-page="hub"] .hub-home { padding-bottom: 0; }
 .hub-chip[data-v="heritage"],   .hub-avatar[data-v="heritage"]   { --v: var(--v-heritage);   --v-ink: var(--v-heritage-ink); }
 .hub-chip[data-v="movement"],   .hub-avatar[data-v="movement"]   { --v: var(--v-movement);   --v-ink: var(--v-movement-ink); }
 .hub-chip[data-v="connection"], .hub-avatar[data-v="connection"] { --v: var(--v-connection); --v-ink: var(--v-connection-ink); }
+
+/* ── Steps as a sequence, not floating text (Duncan, 23 Oct) ────────────────
+   "How your campaign fills" and "How a design comes together" were a heading
+   and two lines each, loose on the card. Each step is now a soft tile, and a
+   short gold rule — the brand's journey line — joins one to the next, so the
+   three read as an order rather than as three facts. The rule turns
+   vertical when the steps stack, and is dropped at a row end. */
+.hub-steps { gap: 1rem; align-items: stretch; margin: 0; padding: 0; list-style: none; }
+.hub-step {
+  position: relative;
+  background: #F7F9F8;
+  border: 1px solid var(--hub-line);
+  border-radius: var(--hub-r-sm);
+  padding: 1.1rem 1.15rem 1.25rem;
+}
+body[data-page="hub"] .hub-step::before { background: #fff; border: 1px solid rgba(18, 48, 47, 0.18); color: var(--teal); }
+.hub-step b { font-size: 0.96rem; line-height: 1.35; margin-top: 0.15rem; }
+.hub-step span { font-size: 0.84rem; }
+.hub-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(1.1rem + 15px);
+  left: calc(100% + 1px);
+  width: calc(1rem - 2px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+@media (max-width: 1100px) {
+  .hub-steps--four .hub-step:nth-child(2n)::after { display: none; }
+}
+@media (max-width: 760px) {
+  .hub-step:not(:last-child)::after,
+  .hub-steps--four .hub-step:nth-child(2n)::after {
+    display: block;
+    top: calc(100% + 1px);
+    left: calc(1.15rem + 14px);
+    width: 2px;
+    height: calc(1rem - 2px);
+  }
+}
+/* The campaign card's link sits at the foot of the card, so a short card and
+   its taller neighbour end on the same line instead of leaving a gap. */
+.hub-pulse { display: flex; flex-direction: column; }
+.hub-pulse .hub-card-link { margin-top: auto; padding-top: 1.25rem; align-self: flex-start; }
+.hub-pulse .hub-steps { margin-bottom: 0.25rem; }

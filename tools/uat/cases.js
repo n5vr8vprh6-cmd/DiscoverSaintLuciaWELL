@@ -417,7 +417,7 @@ const CASES = [
 
 { id: 'A-12', role: 'advisor', priority: 2, area: 'Hub home',
   title: 'The QR code downloads and scans',
-  steps: ['On Home or Marketing press Download QR (SVG), then PNG', 'Scan the screen, the SVG and the PNG with a phone'],
+  steps: ['On Home or Marketing press QR · SVG, then QR · PNG', 'Scan the screen, the SVG and the PNG with a phone'],
   expect: 'Two files, well-link-qr.svg and well-link-qr.png (1024px), and all three scans resolve to their WELL link.',
   why: 'These get printed on cards and put on tables. A QR that does not scan fails silently and expensively.' },
 

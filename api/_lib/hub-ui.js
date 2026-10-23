@@ -187,8 +187,8 @@ function linkCard(link, { pending = false, inputId = 'well-link' } = {}) {
         <button class="hub-btn hub-btn--primary" type="button" data-copy="#${esc(inputId)}">Copy link</button>
       </div>
       <div class="hub-linkcard-actions">
-        <button class="hub-btn hub-btn--quiet" type="button" data-qr-download="svg" data-qr-for="${esc(inputId)}-qr">Download QR (SVG)</button>
-        <button class="hub-btn hub-btn--quiet" type="button" data-qr-download="png" data-qr-for="${esc(inputId)}-qr">PNG</button>
+        <button class="hub-btn hub-btn--quiet" type="button" data-qr-download="svg" data-qr-for="${esc(inputId)}-qr" aria-label="Download the QR code as SVG">QR · SVG</button>
+        <button class="hub-btn hub-btn--quiet" type="button" data-qr-download="png" data-qr-for="${esc(inputId)}-qr" aria-label="Download the QR code as PNG">QR · PNG</button>
         <a class="hub-btn hub-btn--quiet" href="${esc(preview)}" target="_blank" rel="noopener">Preview<span class="hub-arrow" aria-hidden="true">↗</span></a>
       </div>
       ${pending
