@@ -152,10 +152,11 @@ console.log('\n  DESIGN MATCH\n  ' + '─'.repeat(60) + '\n');
   /* ══ What is never scored ════════════════════════════════════════════════ */
   console.log('\n  What is never scored');
   const all = await K.properties();
-  ok('only the thirty scorable properties are ranked', all.length === 30);
+  ok('only scorable properties are ranked', all.length > 0 && all.every((p) => p.scorable));
+  ok('every derived vector says what it rests on', all.filter((p) => p.vectorSource === 'derived').every((p) => p.fitBasis && p.vectorBasis && p.vectorStrength));
   ok('supporting and basecamp inventory never appears in a shortlist',
     list.every((c) => all.some((p) => p.slug === c.slug)),
-    'one village and one line of signal is not a vector');
+    'unscored inventory (tier D, X, P, or no mapping) is never ranked');
 
   console.log('\n  ' + '─'.repeat(60));
   console.log(`  ${pass} passed, ${fail} failed\n`);

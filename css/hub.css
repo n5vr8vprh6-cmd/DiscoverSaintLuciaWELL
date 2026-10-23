@@ -2420,6 +2420,10 @@ a.hub-stage--count:focus-visible { background: var(--paper-2); }
 }
 .design .design-prop-hook { font-family: var(--serif); font-size: 1.05rem; line-height: 1.55; margin: 0 0 .8em; }
 .design .design-prop-best { margin: 0 0 .9em; line-height: 1.5; }
+.design .design-prop-fit { margin: 0 0 .8em; line-height: 1.5; font-size: .92rem; color: var(--muted); }
+.design .design-prop-fit b { color: var(--ink); font-weight: 600; }
+.design .design-strip { margin-top: 2.4rem; padding-top: 1.6rem; border-top: 1px solid var(--rule, rgba(19,50,57,.18)); }
+.design .design-strip h2 { margin: 0 0 .4em; }
 .design .design-prop-best b {
   font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase;
   color: var(--muted); margin-right: .5em; font-weight: 600;

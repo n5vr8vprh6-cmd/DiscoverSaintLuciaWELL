@@ -355,8 +355,8 @@ module.exports = {
         "movement",
         "mind"
       ],
-      "model": "Luxury resort spa; most movement programming included, spa treatments à la carte.",
-      "modelTag": "Wellness-deep luxury resort",
+      "model": "A rainforest resort with a treehouse spa, a recovery layer (Temazcal, ice bath, PEMF mats, compression) and a guest fitness centre with scheduled classes; no multi-day wellness programme is published.",
+      "modelTag": "Rainforest spa and recovery resort",
       "hook": "A rainforest spa under the Pitons, with enough movement and recovery technology to turn a luxury stay into a deliberate reset.",
       "included": [
         {
@@ -649,9 +649,9 @@ module.exports = {
         "recovery",
         "movement"
       ],
-      "model": "Luxury wellness within a highly private resort; scheduled yoga included, spa à la carte or bundled in select packages.",
-      "modelTag": "Private luxury wellness",
-      "hook": "A high-privacy wellness proposition where yoga, estate movement and spa can come directly into the sanctuary.",
+      "model": "High-privacy sanctuary stay on a shared estate: included yoga, fitness and guided walks, with paid in-sanctuary spa, private yoga and a yoga-and-spa Serenity Package.",
+      "modelTag": "Privacy-led sanctuary stay with wellness layers",
+      "hook": "Twenty-nine open-air sanctuaries above the Pitons, with yoga, a fitness studio and guided estate walks included and spa treatments delivered to the sanctuary.",
       "included": [
         {
           "text": "Complimentary scheduled yoga; shared published schedule with Anse Chastanet, subject to change.",
@@ -944,9 +944,9 @@ module.exports = {
         "food",
         "mind"
       ],
-      "model": "Activity-rich beach resort with substantial à-la-carte spa and complimentary scheduled yoga.",
-      "modelTag": "Activity-rich wellness resort",
-      "hook": "One of the island’s broadest “build-your-own wellness” environments: yoga and holistic spa meet diving, biking, estate food and ocean activity.",
+      "model": "Build-your-own wellness on an estate: included daily yoga and non-motorised activities, with paid spa, diving, private movement sessions and farm and chocolate experiences.",
+      "modelTag": "Estate-based, build-your-own wellness",
+      "hook": "A 600-acre beachfront estate where yoga, estate hikes and watersports are included and spa, diving, biking and cacao are layered on.",
       "included": [
         {
           "text": "Scheduled yoga.",
@@ -1225,8 +1225,8 @@ module.exports = {
         "movement",
         "community"
       ],
-      "model": "Full-service resort spa with distinctive clinical and women’s-wellness programming; gym and classes supplement à-la-carte treatments.",
-      "modelTag": "Full-service spa + specialist programming",
+      "model": "An all-suite beachfront and marina resort with a full-service spa that publishes a female-focused programme and an oncology skin care menu, plus complimentary guest classes.",
+      "modelTag": "Marina resort with specialist spa programmes",
       "hook": "A conventional luxury resort with an unusually specialist wellness layer — particularly women’s health physiotherapy and adapted oncology aesthetics.",
       "included": [
         {
@@ -1773,9 +1773,9 @@ module.exports = {
         "stay",
         "nature"
       ],
-      "model": "Dedicated all-inclusive wellness resort with a daily therapeutic treatment and extensive classes included.",
-      "modelTag": "Dedicated all-inclusive wellness",
-      "hook": "The island’s clearest all-inclusive wellness institution: a daily treatment plus a deep class, sport and mind-body schedule.",
+      "model": "All-inclusive wellness institution: a daily spa treatment and a full class and sport schedule in the rate, plus paid specialist therapies, structured programmes and a diagnostic clinic.",
+      "modelTag": "All-inclusive wellness resort",
+      "hook": "An all-inclusive wellness resort: a daily treatment, yoga, classes and sport in the rate, with specialist care and programmes on top.",
       "included": [
         {
           "text": "One 50-minute / one-hour therapeutic treatment per full day, subject to stay rules.",
@@ -2059,9 +2059,9 @@ module.exports = {
         "mind",
         "movement"
       ],
-      "model": "Phased destination development. TheLifeCo wellness centre is operating; A’ILA Cove and Palm are promoted for 2027.",
-      "modelTag": "Phased destination development",
-      "hook": "A destination-scale longevity vision — but the advisor must separate what is open now from what is still future.",
+      "model": "Medically supervised retreat programmes at TheLifeCo, all-inclusive by the night; every other A'ILA phase is future and carries no operating offer.",
+      "modelTag": "Operating: TheLifeCo only",
+      "hook": "A phased longevity destination: only TheLifeCo medical wellness retreat is open today.",
       "included": [
         {
           "text": "The current operating anchor is TheLifeCo, combining accommodation, nutrition, core therapies, medical consultation and scheduled activities.",
@@ -2242,9 +2242,9 @@ module.exports = {
         "recovery",
         "community"
       ],
-      "model": "Adults-only holistic all-inclusive; a broad included mind, body and sports program, with spa à la carte or via a wellness rate.",
-      "modelTag": "Holistic adults-only all-inclusive",
-      "hook": "A softer, more social register of wellness: movement, mindfulness, play and connection rather than a highly clinical or prescriptive retreat.",
+      "model": "A social, activity-led all-inclusive: classes, sports and mindfulness are included, spa treatments are extra or come with a wellness rate; no clinical programme.",
+      "modelTag": "Beachfront all-inclusive with mind-body classes",
+      "hook": "An adults-only all-inclusive beach resort where mind-and-body classes sit inside the rate and the spa is an add-on.",
       "included": [
         {
           "text": "Breathing, meditation, yoga, stretching and toning, sound therapy, tai chi, Krav Maga, Pilates, Caribbean dance fitness and holistic fitness.",
@@ -2499,9 +2499,9 @@ module.exports = {
         "movement",
         "culture"
       ],
-      "model": "Adults-only cacao and rainforest retreat; yoga and estate discovery included, spa and excursions extra.",
-      "modelTag": "Cacao / rainforest retreat",
-      "hook": "A coherent cacao ecosystem where farming, food, education, sensory ritual and spa all tell the same wellness story.",
+      "model": "A cacao-estate stay where spa, estate trails, a cacao farm tour and organised activities such as yoga share one setting; structured wellness is spa-led, with yoga times not published.",
+      "modelTag": "Cacao-estate spa hotel",
+      "hook": "An adults-only open-air cacao-estate hotel above Soufriere, with an estate-ingredient spa and a complimentary cacao tour.",
       "included": [
         {
           "text": "Sunrise and sunset yoga on selected days.",
@@ -2779,9 +2779,9 @@ module.exports = {
         "movement",
         "food"
       ],
-      "model": "Luxury resort with an integrated Lévé spa, a movement schedule and priced private wellness experiences.",
-      "modelTag": "Luxury nature + spa",
-      "hook": "A Piton-immersive resort where spa, trail, movement and local ingredients are spatially embedded in the landscape.",
+      "model": "Wellness woven into a landscape resort: a destination spa (lévé), a guided on-site trail and yoga platform, a scheduled movement rhythm, and Piton hiking arranged through the resort.",
+      "modelTag": "Piton-immersive spa and trail resort",
+      "hook": "A hillside resort between the Pitons with a volcanic-mineral spa, guided trail and complimentary guest yoga.",
       "included": [
         {
           "text": "Complimentary weekday yoga.",
@@ -3059,9 +3059,9 @@ module.exports = {
         "movement",
         "food"
       ],
-      "model": "Boutique luxury resort; spa and private wellness à la carte, with modest active programming.",
-      "modelTag": "Boutique luxury + spa",
-      "hook": "Boutique romance with a wellness layer made distinctive by where treatments can happen: room, roof, gazebo, Rock Maison or beach deck.",
+      "model": "Boutique hotel with a wellness layer: a spa with flexible treatment locations, yoga on request, a fitness studio and a guided running and hiking club.",
+      "modelTag": "Boutique luxury with a wellness layer",
+      "hook": "Boutique luxury with a spa that comes to your terrace or gazebo and a guided Atlantic-coast hike and run club.",
       "included": [
         {
           "text": "Fitness facilities and general resort recreation.",
@@ -3330,8 +3330,8 @@ module.exports = {
         "movement",
         "stay"
       ],
-      "model": "Medical-wellness retreat operating within A’ILA; accommodation and core program bundled.",
-      "modelTag": "Medical-wellness retreat",
+      "model": "A residential medical-wellness retreat with 4 to 21 day all-inclusive stays, daily coaching, medical consultations and an on-site clinic, set within the A'ila development.",
+      "modelTag": "Medical-wellness retreat, 4-21 day stays",
       "hook": "Saint Lucia’s deepest structured medical-wellness proposition: multi-day protocols, purposeful nutrition, coaching, diagnostics and recovery technology.",
       "included": [
         {
@@ -3601,9 +3601,9 @@ module.exports = {
         "recovery",
         "food"
       ],
-      "model": "Adults-only villa resort with spa, yoga studios and gym; most structured wellness à la carte.",
-      "modelTag": "Villa wellness / retreat-ready",
-      "hook": "A quiet villa environment with yoga infrastructure, spa and retreat space — flexible enough for hosted wellness without behaving like a fixed daily-program resort.",
+      "model": "A quiet villa estate with its own spa, gym and yoga studio; wellness is facilities-led rather than a fixed daily programme, and the event centre can host groups.",
+      "modelTag": "Plantation villa estate with spa and yoga studio",
+      "hook": "Adults-only plantation villas above Soufriere with an outdoor yoga studio, a spa with hydrotherapy circuit and a digital-detox setting.",
       "included": [
         {
           "text": "Use of the yoga studio and fitness centre; class and private-session availability depends on schedule.",
@@ -4383,9 +4383,9 @@ module.exports = {
         "nature",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "La Mer Spa, yoga, aquarobics, fitness and beachfront recreation; an Ayurveda collaboration signals additional depth.",
+      "model": "Mainstream beachfront resort with a spa and included water activities; fitness and class access runs through the wider Bay Gardens group.",
+      "modelTag": "Beachfront resort with spa",
+      "hook": "Beachfront resort on Reduit Beach with La Mer Spa and free beach watersports.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4432,9 +4432,9 @@ module.exports = {
         "nature",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Current golf and sport depth is strong; additional dedicated wellness facilities have been publicly discussed but require operating-status verification.",
+      "model": "Movement and golf-led estate; today's wellness is limited to spa services and yoga listed on the Experiences page. Dedicated spa, fitness and clubhouse are pipeline.",
+      "modelTag": "Golf estate; wellness layer pipeline",
+      "hook": "Golf-led coastal estate on Saint Lucia's northern tip; wellness facilities announced, not yet shown open.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4483,9 +4483,9 @@ module.exports = {
         "nature",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Broad all-inclusive movement, water and spa assets create unusually strong activity depth for a mainstream resort.",
+      "model": "High-choice all-inclusive resort where fitness classes, courts and water activities are part of the package and the spa is a separate indulgence.",
+      "modelTag": "All-inclusive with spa and fitness",
+      "hook": "Large all-inclusive beach resort with an oceanfront spa, daily fitness classes and an adults-only wing.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4534,9 +4534,9 @@ module.exports = {
         "food",
         "mind"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "An intimate botanical setting and slow-paced hospitality create a naturally restorative small-property proposition.",
+      "model": "Small all-inclusive where a weekly programme of classes, garden tours and cooking sits alongside an on-site garden spa.",
+      "modelTag": "Small garden all-inclusive",
+      "hook": "Thirty-room garden-and-sea all-inclusive with a garden spa and scheduled yoga and Pilates.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4586,9 +4586,9 @@ module.exports = {
         "community",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Cacao estate, culture, land and food are integrated into the stay rather than bolted on as excursions.",
+      "model": "Estate-led stay where cacao, food, hiking and heritage tours are the programme; the spa is a quiet add-on and there is no stated class schedule.",
+      "modelTag": "Cocoa estate stay",
+      "hook": "Cottages on a working cocoa estate in Soufriere, with bean-to-bar tours and farm-to-table dining.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4639,9 +4639,9 @@ module.exports = {
         "food",
         "culture"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Treehouse-style spa overlooking the Pitons, with solo and couple treatments in a boutique Soufrière setting.",
+      "model": "Small hillside resort where the spa, views and Soufriere excursions are the wellness offer; no scheduled classes found.",
+      "modelTag": "Spa and Piton views",
+      "hook": "Treehouse-style spa and 30 hillside rooms facing the Pitons, with a published spa menu for solo and couples treatments.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4690,9 +4690,9 @@ module.exports = {
         "recovery",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Dive and water access in Marigot Bay creates a movement-led proposition with restorative potential.",
+      "model": "Water-and-dive led resort; spa on request; no scheduled mind-body classes found.",
+      "modelTag": "Dive and bay",
+      "hook": "Marigot Bay resort with dive packages through local dive partners, a small spa and arranged Soufriere excursions.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4741,9 +4741,9 @@ module.exports = {
         "stay",
         "nature"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Royalton Fit plus resort spa infrastructure creates credible structured movement within a conventional all-inclusive.",
+      "model": "Mainstream all-inclusive resort with included fitness classes and a resort spa; no wellness retreat format.",
+      "modelTag": "All-inclusive with fitness classes",
+      "hook": "Family-friendly all-inclusive with the Royal Spa and included Royalton Fit classes (yoga, bootcamp, aqua-fitness).",
       "included": [],
       "addons": [],
       "price": null,
@@ -4843,9 +4843,9 @@ module.exports = {
         "nature",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "A small wellness-first hotel and studio with a mind-body orientation that adds depth often missing from larger resort inventories.",
+      "model": "Small wellness-first hotel with an on-site studio, class programme, private sessions and retreat hosting.",
+      "modelTag": "Studio hotel",
+      "hook": "Eight-room wellness hotel in Rodney Bay with a yoga studio, daily classes and a free Sunday meditation.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4942,9 +4942,9 @@ module.exports = {
         "nature",
         "community"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Dedicated kite and windsurf instruction, equipment, SUP and kayaking on Sandy Beach.",
+      "model": "Sport and skill: structured kitesurf instruction and rentals, with simple beach lodging on site. Wellbeing here is wind, sea, movement and learning, not a spa.",
+      "modelTag": "Kite and wind sports school",
+      "hook": "St Lucia's first kitesurfing school: lessons, kit and four beach huts on the bay at Sandy Beach.",
       "included": [],
       "addons": [],
       "price": null,
@@ -4993,9 +4993,9 @@ module.exports = {
         "movement",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Adults-only seclusion, spa, private yoga, retreat-hosting potential, and strong snorkelling and diving at Anse Cochon.",
+      "model": "Quiet couples base: a boutique spa and one-to-one yoga, ocean activities from the beach, and groups can enquire about hosting a yoga retreat.",
+      "modelTag": "Adults-only spa and cove resort",
+      "hook": "Adults-only cottages above Anse Cochon with a cliffside spa, private over-water yoga and the cove's snorkelling at the door.",
       "included": [],
       "addons": [],
       "price": null,
@@ -5045,9 +5045,9 @@ module.exports = {
         "nature",
         "stay"
       ],
-      "model": null,
-      "modelTag": null,
-      "hook": "Current resort material describes twice-daily yoga, Pilates and fitness, and a full-service spa with steam rooms.",
+      "model": "Large resort wellness: classes, a 24-hour gym and a full-service spa on site, with complimentary non-motorized water sports. No fixed wellness packages or timetable are published.",
+      "modelTag": "Large beach resort with spa, yoga and gym",
+      "hook": "A 60-acre beachfront resort with twice-daily yoga, a 24-hour gym and the Serene Spa's steam rooms.",
       "included": [],
       "addons": [],
       "price": null,
@@ -5070,352 +5070,2668 @@ module.exports = {
         "confidence": "GUEST SIGNAL",
         "tier": "A"
       }
-    }
-  ],
-  "supporting": [
-    {
-      "name": "Bel Jou Hotel",
-      "village": "rainforest",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Adults-oriented quiet setting; movement-wellness signals",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
     },
     {
-      "name": "Caille Blanc Villa & Hotel",
-      "village": "rainforest",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Private Piton setting; concierge wellness potential",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Crystals St Lucia",
-      "village": "rainforest",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Small Soufrière retreat and yoga-hosting signal",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Tet Rouge Resort",
-      "village": "rainforest",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Retreat canvas; arranged massage; hosted retreats",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Villa Capri",
-      "village": "rainforest",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Yoga-group and retreat-hosting; mobile treatment signals",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Bay Gardens Marina Haven",
-      "village": "ocean",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Marina setting; collection-wide wellness access",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Villa Beach Cottages",
-      "village": "ocean",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Beachfront small property; massage and yoga signals",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Yellow Sands Luxury Villas",
-      "village": "ocean",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Oceanfront villa; yoga and massage signals require verification",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Harmony Marina Suites",
-      "village": "connection",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Quiet Rodney Bay suites; spa and movement proximity",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Sandals Halcyon Beach",
-      "village": "connection",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Couples all-inclusive; Red Lane Spa plus activity",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Sandals Regency La Toc",
-      "village": "connection",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Couples; golf plus Red Lane Spa plus active resort",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "The SoCo House",
-      "village": "connection",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Adults-only boutique; spa plus fitness",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Villa C’est La Vie",
-      "village": "connection",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Private villa; concierge wellness potential",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Bay Gardens Hotel",
-      "village": "movement",
-      "tier": "B",
-      "scorable": false,
-      "signal": "Gym; collection-wide activities",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    },
-    {
-      "name": "Coco Palm",
-      "village": "movement",
-      "tier": "B",
-      "scorable": false,
-      "signal": "New fitness and activity program; social movement",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "GUEST SIGNAL",
-        "tier": "B"
-      }
-    }
-  ],
-  "basecamps": [
-    {
+      "slug": "7-the-harbour",
+      "n": null,
       "name": "#7 The Harbour",
-      "village": "connection",
+      "folder": null,
+      "collection": "basecamp",
       "tier": "C",
-      "scorable": false,
-      "signal": "Rodney Bay social and private basecamp",
+      "scorable": true,
+      "villages": [
+        "ocean",
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Pool and three jacuzzis in landscaped tropical gardens",
+          "source": "ota",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Rodney Bay social and private basecamp",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Only agency and rental-platform listings were found; no owner or operator website. The listing warns its calendar may be outdated and contradicts itself on Bedroom 2 bedding. Confirm with the manager that the pool and jacuzzis are shared development facilities and who maintains them.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
         "tier": "C"
-      }
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "recovery": {
+          "basis": "amenity",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 1.5
     },
     {
+      "slug": "aanola-villas",
+      "n": null,
       "name": "Aanola Villas",
-      "village": "ocean",
+      "folder": null,
+      "collection": "basecamp",
       "tier": "C",
-      "scorable": false,
-      "signal": "Quiet independent coastal apartments",
+      "scorable": true,
+      "villages": [
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "explore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Quiet independent coastal apartments",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "A third-party booking page (Enuygun) lists a garden with barbecue grills, a library, a two-bedroom apartment with balcony and kitchen, and no pool or gym. Not on an operator page; confirm the garden, barbecue and library with the property.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "The Airbnb listing is a single bedroom with shared bathroom and kitchenette, while other sites describe two-bedroom apartments. Confirm the full unit mix and which units share the gardens.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
         "tier": "C"
-      }
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "setting",
+          "strength": "light"
+        },
+        "nature": {
+          "basis": "setting",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "setting",
+      "fitWord": "Setting-based fit: privacy, quiet or views. No programmed wellness is evidenced.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1
     },
     {
+      "slug": "bay-gardens-inn",
+      "n": null,
       "name": "Bay Gardens Inn",
-      "village": "ocean",
-      "tier": "C",
-      "scorable": false,
-      "signal": "Collection-connected basecamp",
+      "folder": null,
+      "collection": "basecamp",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "rainforest",
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "movement",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Beach club access with non-motorised watersports and Splash Island Water Park. At the sister resort on Reduit Beach, with a complimentary hourly shuttle.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Pool among tropical gardens",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Spa treatments at the sister Beach Resort, billed to the room. Treatments are at Bay Gardens Beach Resort & Spa, not on site at the Inn.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Collection-connected basecamp",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
-        "tier": "C"
-      }
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "moderate"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 1.5
     },
     {
+      "slug": "beau-rivage-villa",
+      "n": null,
       "name": "Beau Rivage Villa",
-      "village": "connection",
+      "folder": null,
+      "collection": "basecamp",
       "tier": "C",
-      "scorable": false,
-      "signal": "Private-villa relationship canvas",
+      "scorable": true,
+      "villages": [
+        "ocean",
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "nourish",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Private pool with swim-up bar and Jacuzzi",
+          "source": "ota",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Private-villa relationship canvas",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "The VRBO listing mentions an on-site fitness centre and gym room with no equipment described; the Houfy listing for the same villa names no gym. Confirm whether a gym exists.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "The Grenadines Collection sales page shows Beau Rivage as sold, fully furnished. Both rental listings warn their calendars may be outdated. Confirm the villa is still operating as a rental and under what name.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Housekeeper and cook Monday to Saturday.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
         "tier": "C"
-      }
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "setting",
+          "strength": "light"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "amenity",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.25
     },
     {
+      "slug": "halcyon-92",
+      "n": null,
+      "name": "Halcyon 92",
+      "folder": null,
+      "collection": "basecamp",
+      "tier": "C",
+      "scorable": true,
+      "villages": [
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Shared backyard and groomed outdoor grounds",
+          "source": "ota",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "No verified formal WELL offer — invite update",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "C"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 2
+    },
+    {
+      "slug": "la-haut-resort",
+      "n": null,
       "name": "La Haut Resort",
-      "village": "rainforest",
+      "folder": null,
+      "collection": "basecamp",
       "tier": "C",
-      "scorable": false,
-      "signal": "Estate and nature base; Heritage potential",
+      "scorable": true,
+      "villages": [
+        "rainforest",
+        "heritage"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "nourish",
+        "explore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Two swimming pools",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "On-site restaurant (independently operated)",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Estate and nature base; Heritage potential",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Third-party listings and guest reports mention a free morning estate or plantation walk. The official pages do not. Confirm with the resort whether it is offered and when.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Third-party listings give 12 to 16 rooms and a 135-acre estate in one case; the official site gives about 52 acres and no total. Confirm room count.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
         "tier": "C"
-      }
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "setting",
+          "strength": "light"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "amenity",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.25
     },
     {
+      "slug": "marigot-palms",
+      "n": null,
       "name": "Marigot Palms",
-      "village": "connection",
-      "tier": "C",
-      "scorable": false,
-      "signal": "Small Marigot Bay basecamp",
+      "folder": null,
+      "collection": "basecamp",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "rainforest",
+        "ocean",
+        "movement"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "nourish",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement",
+        "mind",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Breakfast included in selected suites and apartments",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Complimentary guest gym",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Garden swimming pool with sun terrace and hammock zone",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Small Marigot Bay basecamp",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Massage, sound therapy or reiki in suite, terrace or garden gazebo.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
-        "tier": "C"
-      }
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "setting",
+          "strength": "light"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "moderate"
+        },
+        "mind": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.33
     },
     {
+      "slug": "oasis-marigot",
+      "n": null,
       "name": "Oasis Marigot",
-      "village": "ocean",
+      "folder": null,
+      "collection": "basecamp",
       "tier": "C",
-      "scorable": false,
-      "signal": "Marigot nature and ocean basecamp",
+      "scorable": true,
+      "villages": [
+        "ocean",
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "explore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "movement"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Hillside hiking trail to a ridge lookout",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Shared garden pool",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Beach five minutes on foot with snorkelling area and paddle rentals",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Marigot nature and ocean basecamp",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
         "tier": "C"
-      }
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "movement": {
+          "basis": "amenity",
+          "strength": "strong"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 2.33
     },
     {
+      "slug": "piton-vacation-villas",
+      "n": null,
       "name": "Piton Vacation Villas",
-      "village": "rainforest",
-      "tier": "C",
-      "scorable": false,
-      "signal": "Piton setting; self-directed renewal",
+      "folder": null,
+      "collection": "basecamp",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "heritage",
+        "rainforest",
+        "connection"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "nourish",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Private pools at the ridge villas",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Home-cooked meals from local staff",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Piton setting; self-directed renewal",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Massage therapists and beauticians arranged on request.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
-        "tier": "C"
-      }
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "setting",
+          "strength": "light"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.2
     },
     {
+      "slug": "villa-atabeyra",
+      "n": null,
       "name": "Villa Atabeyra",
-      "village": "rainforest",
+      "folder": null,
+      "collection": "basecamp",
       "tier": "C",
-      "scorable": false,
-      "signal": "Private nature and romance canvas",
+      "scorable": true,
+      "villages": [
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "explore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "movement"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Private pool with ocean and Piton views",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Private nature and romance canvas",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Booking platforms list the villa about a mile from Soufriere town and about five minutes from Anse Chastanet beach; the official page does not give distances. Confirm before quoting.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
         "tier": "C"
-      }
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "setting",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "amenity",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.33
     },
     {
+      "slug": "villa-vino-lucia",
+      "n": null,
       "name": "Villa Vino Lucia",
-      "village": "connection",
+      "folder": null,
+      "collection": "basecamp",
       "tier": "C",
-      "scorable": false,
-      "signal": "Scenic Marigot social and romance base",
+      "scorable": true,
+      "villages": [
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "reconnect",
+        "nourish",
+        "explore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "community"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Scenic Marigot social and romance base",
+          "source": "catalogue",
+          "verified_at": "11 Aug 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "The home page shows a photo captioned as relaxing in the pool but gives no written description of the pool. Third-party listings mention a pool deck; confirm size and access with the property.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
       "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
         "tier": "C"
-      }
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "setting",
+          "strength": "light"
+        },
+        "nature": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "community": {
+          "basis": "amenity",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.25
     },
+    {
+      "slug": "bay-gardens-hotel",
+      "n": null,
+      "name": "Bay Gardens Hotel",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "reconnect",
+        "move",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "movement",
+        "community",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Non-motorized watersports at the Beach Club (shared across the Bay Gardens group)",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "On-site gym",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Splash Island Water Park passes (shared across the Bay Gardens group)",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Three swimming pools",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Spa treatments at the sister Beach Resort, billable to the room. No spa at the hotel itself; treatments are at Bay Gardens Beach Resort & Spa.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "The group wellness page lists morning yoga and afternoon aquarobics under Staying Fit for Bay Gardens Resorts generally, without saying where they run or whether hotel guests may join. The hotel page mentions no classes.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "community": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.4
+    },
+    {
+      "slug": "bay-gardens-marina-haven",
+      "n": null,
+      "name": "Bay Gardens Marina Haven",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "movement",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Non-motorized watersports at the Beach Club (shared across the Bay Gardens group)",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Pool overlooked by the rooms",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Spa treatments at the sister Beach Resort, billable to the room. No spa at the hotel itself; treatments are at Bay Gardens Beach Resort & Spa.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "The Marina Haven page states no gym and no spa. The group amenities page names a gym at Bay Gardens Hotel and one at Sapphire Sands Villas for guests; it does not say Marina Haven guests may use them. Confirm access with the hotel.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.25
+    },
+    {
+      "slug": "bel-jou-hotel",
+      "n": null,
+      "name": "Bel Jou Hotel",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "reflect"
+      ],
+      "continuum": [
+        "relax"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "movement"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Two pools",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Third-party travel listings (British Airways, Saga) mention weekly rotating fitness classes including yoga, Pilates and aqua aerobics, a 24-hour gym and the Sugar Cane Spa. The official home page does not. Confirm with the hotel before relying on any of it.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "A third-party listing gives 76 rooms; the official page gives no number.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "movement": {
+          "basis": "amenity",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 1.5
+    },
+    {
+      "slug": "caille-blanc-villa-hotel",
+      "n": null,
+      "name": "Caille Blanc Villa & Hotel",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "heritage",
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "nourish",
+        "explore",
+        "reflect",
+        "celebrate",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "culture",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "65-foot infinity pool with waterfall",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Massage overlooking the Pitons, and in-suite massage",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "The Pavilion Restaurant",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "No gym, yoga or structured wellness programme is stated on the pages read. Field Guide wording of concierge wellness potential rests on the massage and excursion booking only.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Island experiences and excursions arranged through the concierge.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "moderate"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "culture": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.4
+    },
+    {
+      "slug": "coco-palm",
+      "n": null,
+      "name": "Coco Palm",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "movement",
+        "heritage"
+      ],
+      "compass": [
+        "restore",
+        "reconnect",
+        "move",
+        "explore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "movement",
+        "community"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "24-hour exercise and weight room",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Pool with swim-up suites",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Palm Perks membership: 4 nights with breakfast and 6 wellness or fitness classes",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "PUBLIC PRICE"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Confirm whether this is included: Fitness and activities programme: stretch and flow, aqua fitness, total body tone, Caribbean dance.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Guided walks to Pigeon Island.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "programmed",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "community": {
+          "basis": "programmed",
+          "strength": "strong"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 2.25
+    },
+    {
+      "slug": "crystals-st-lucia",
+      "n": null,
+      "name": "Crystals St Lucia",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "heritage",
+        "movement",
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "nourish",
+        "explore",
+        "reflect",
+        "celebrate"
+      ],
+      "continuum": [
+        "relax",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement",
+        "culture"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Private pool at each villa",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Treetop Restaurant: Indian-Caribbean set menu",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "PUBLIC PRICE"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "A third-party hotel listing describes a tent below the restaurant used for special events or yoga retreats, and the experiences list includes Tai Chi classes or mixed martial arts. Neither the home page nor the restaurant site mentions yoga, spa, massage or retreats. Confirm before relying on any of",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Third-party listings disagree on size (one says 7 villas and 14 rooms, others 5 or 6 rooms); the official pages give no number.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Island excursions listed by the hotel (hikes, plantation, sailing, diving).",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "moderate"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "culture": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.4
+    },
+    {
+      "slug": "harmony-marina-suites",
+      "n": null,
+      "name": "Harmony Marina Suites",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "movement"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "movement",
+        "mind",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Fully equipped gym",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Yoga room. A room is listed; no classes or instructor are stated.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Despite the name, neither official page describes marina facilities or a pool. Third-party listings give 28 to 30 rooms and two restaurants; confirm with the hotel.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Spa services.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "mind": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 1.67
+    },
+    {
+      "slug": "sandals-halcyon-beach",
+      "n": null,
+      "name": "Sandals Halcyon Beach",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "connection",
+        "ocean",
+        "movement",
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "reconnect",
+        "move",
+        "nourish",
+        "explore",
+        "reflect",
+        "celebrate",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement",
+        "community",
+        "culture",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Fitness center, tennis, land sports and golf green fees. Green fees at Cap Estate Golf & Country Club; TechnoGym equipment.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Group fitness classes. High-energy group classes in the fitness center; the page publishes no timetable.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "PADI-certified scuba diving",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Water sports: kayaks, snorkeling, Hobie Cats, paddle boarding, waterskiing and wakeboarding",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Island tours and private excursions",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Private candlelight dinner",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Red Lane Spa treatments. Optional; no menu or prices read for this resort.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "The Sandals Halcyon Beach pages on sandals.com returned an access-denied response to automated reading on 2026-10-16. Nothing about this property was read from the operator directly.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Search-result summaries of the Sandals page describe an adults-only, couples all-inclusive resort in Gros Islet with unlimited food and drinks, PADI scuba, snorkelling, watersports, green fees at Cap Estate Golf and Country Club, and Red Lane Spa treatments as an option. Confirm each item with Sanda",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Sources disagree on whether there is a spa on site: one airline listing says there is none and that guests use nearby Sandals resort spas or ocean-view gazebo massages. Confirm where Red Lane Spa treatments take place for Halcyon guests.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "community": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "culture": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 1.71
+    },
+    {
+      "slug": "sandals-regency-la-toc",
+      "n": null,
+      "name": "Sandals Regency La Toc",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "connection",
+        "ocean",
+        "movement",
+        "heritage"
+      ],
+      "compass": [
+        "restore",
+        "reconnect",
+        "move",
+        "nourish",
+        "explore",
+        "reflect",
+        "celebrate",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement",
+        "community",
+        "culture",
+        "recovery"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Fitness center, land sports and golf green fees. Green fees at Cap Estate Golf & Country Club; Life Fitness equipment.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Group fitness classes. High-energy group classes in the fitness center; the page publishes no timetable.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "PADI-certified scuba diving",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Water sports: kayaks, windsurfing, snorkeling, Hobie Cats and paddle boarding",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Island tours and private excursions",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Private candlelight dinner",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Red Lane Spa treatments. Optional; no menu or prices read for this resort.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "The Sandals Regency La Toc pages on sandals.com (resort, golf, reviews and fact-sheet PDF) could not be read: each returned HTTP 403. No operator statement was verified.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Search-result summaries of third-party listings mention the Red Lane Spa, a full-service fitness centre with group classes, a nine-hole golf course with green fees listed as free, and an adults/couples-only all-inclusive format on a large estate. Confirm each against the Sandals page, including what",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "community": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "culture": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 1.71
+    },
+    {
+      "slug": "tet-rouge-resort",
+      "n": null,
+      "name": "Tet Rouge Resort",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "ocean",
+        "rainforest"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "nourish",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement",
+        "recovery"
+      ],
+      "model": "Quiet adults-only boutique stay; wellbeing is a pool, a garden setting and massage on request, with hiking and boat trips arranged on request. Not a programmed wellness property.",
+      "modelTag": "Boutique stay with on-request massage",
+      "hook": "Six sea-view suites between Gros Piton and the sea, with a saltwater infinity pool and massage brought to the suite.",
+      "included": [
+        {
+          "text": "Saltwater infinity pool with swim-up bar",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Ti Coco open-air restaurant. Breakfast is complimentary; lunch and dinner are paid.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Catamaran day sail with snorkelling",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Gros Piton Nature Trail hike on request",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "In-suite massage and body treatments",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "The Field Guide signalled a retreat canvas and hosted retreats. The official site does not mention yoga, retreats or hosted groups; third-party listings only. Confirm with the resort whether it hosts retreats.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 2
+    },
+    {
+      "slug": "the-soco-house",
+      "n": null,
+      "name": "The SoCo House",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "movement"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "nourish",
+        "explore",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "food",
+        "movement",
+        "recovery"
+      ],
+      "model": "Adults-only boutique stay with a spa and gym as facilities; no programmed classes, retreats or wellness menu is published.",
+      "modelTag": "Boutique stay with spa and gym",
+      "hook": "Adults-only boutique at Reduit Beach with an on-site spa, a fitness centre and a pool.",
+      "included": [
+        {
+          "text": "Fitness centre",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Outdoor pool with poolside afternoon tea",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Third-party travel listings describe an all-inclusive format, a 24-hour gym, a spa menu of massages, facials and body wraps at extra charge, and a tennis court. The official pages do not state these (the FAQ is silent on all-inclusive terms). Confirm with the hotel.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Oasis Spa.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: SoCo a la carte restaurant.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1
+    },
+    {
+      "slug": "villa-beach-cottages",
+      "n": null,
+      "name": "Villa Beach Cottages",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "explore",
+        "reflect",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "movement",
+        "recovery"
+      ],
+      "model": "Self-catering beachfront stay with massage and ocean gear as add-ons; a tour desk arranges island activities. No yoga or programmed wellness found.",
+      "modelTag": "Beachfront self-catering with massage",
+      "hook": "Self-catering beachfront villa suites at Choc Bay, with kayaks, paddleboards and massage in the room or gazebo.",
+      "included": [
+        {
+          "text": "Two pools with heated jacuzzi",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "In-room or gazebo massage. Reflexology, Swedish, deep tissue, hot stone and couples massage; a couples massage is part of the Honeymoon Package.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Tour desk: hiking, diving, kite surfing and island tours",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Confirm whether this is included: Ocean kayaks, paddleboards and snorkelling gear.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 2.25
+    },
+    {
+      "slug": "villa-capri",
+      "n": null,
+      "name": "Villa Capri",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "heritage",
+        "movement"
+      ],
+      "compass": [
+        "restore",
+        "reconnect",
+        "move",
+        "nourish",
+        "explore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax",
+        "restore",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "food",
+        "movement",
+        "mind",
+        "community"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Fully staffed villa with chef",
+          "source": "ota",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Pool, gazebo and hammocks",
+          "source": "ota",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "The Field Guide signalled mobile treatments. The Airbnb listing does not mention massage. Only third-party listings (Expedia, Travelocity) mention spa treatments or events being arranged. Confirm what treatments can be brought in.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Bedroom counts conflict: the Airbnb listing gives 6 bedrooms and 6.5 baths; other listings and the tourism board summary say 9. Confirm with the owner.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        },
+        {
+          "text": "Confirm whether this is included: Yoga retreats hosted by arrangement.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "food": {
+          "basis": "amenity",
+          "strength": "light"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "mind": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "community": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "light",
+      "vectorStrengthRank": 1.2
+    },
+    {
+      "slug": "villa-cest-la-vie",
+      "n": null,
+      "name": "Villa C’est La Vie",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "A",
+      "scorable": true,
+      "villages": [
+        "heritage",
+        "rainforest",
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "move",
+        "nourish",
+        "explore",
+        "reflect",
+        "celebrate",
+        "return"
+      ],
+      "continuum": [
+        "relax",
+        "restore",
+        "reconnect"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay",
+        "nature",
+        "food",
+        "movement",
+        "culture",
+        "recovery"
+      ],
+      "model": "Private-villa stay with a concierge-arranged layer: in-villa massage and beauty treatments, private dining and excursions. No fixed programme.",
+      "modelTag": "Private villa with in-villa treatments",
+      "hook": "A private Trouya Pointe villa with a garden pool, a secluded cove and on-call therapists who treat guests in the villa or garden.",
+      "included": [
+        {
+          "text": "Garden pool with sugar mill waterfall",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Kayaking and snorkelling at the private cove",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [
+        {
+          "text": "Chocolate-making workshop",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "In-villa massage and beauty treatments. Swedish and hot stone massage, facial and pedicure, in the villa or the garden.",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        },
+        {
+          "text": "Local hikes and horseback riding",
+          "source": "property_official",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "Confirm whether this is included: Private dining at the villa.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "A"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        },
+        "nature": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "food": {
+          "basis": "programmed",
+          "strength": "moderate"
+        },
+        "movement": {
+          "basis": "programmed",
+          "strength": "strong"
+        },
+        "culture": {
+          "basis": "programmed",
+          "strength": "light"
+        },
+        "recovery": {
+          "basis": "programmed",
+          "strength": "light"
+        }
+      },
+      "fitBasis": "programmed",
+      "fitWord": "Programmed wellness: classes, spa or protocols the property runs.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 2
+    },
+    {
+      "slug": "yellow-sands-luxury-villas",
+      "n": null,
+      "name": "Yellow Sands Luxury Villas",
+      "folder": null,
+      "collection": "supporting",
+      "tier": "B",
+      "scorable": true,
+      "villages": [
+        "ocean"
+      ],
+      "compass": [
+        "restore",
+        "reflect"
+      ],
+      "continuum": [
+        "relax"
+      ],
+      "continuumNote": null,
+      "pillars": [
+        "stay"
+      ],
+      "model": null,
+      "modelTag": null,
+      "hook": null,
+      "included": [
+        {
+          "text": "Saltwater pool and rooftop terrace",
+          "source": "ota",
+          "verified_at": "16 Oct 2026",
+          "confidence": "VERIFIED OFFER"
+        }
+      ],
+      "addons": [],
+      "price": null,
+      "priceTag": null,
+      "bestFor": null,
+      "role": null,
+      "watch": [
+        {
+          "text": "The Field Guide signalled yoga and massage. The listing mentions neither, nor any fitness or spa facility. Confirm with the owner whether any treatment or class can be arranged.",
+          "source": "catalogue",
+          "verified_at": "16 Oct 2026",
+          "confidence": "QUOTE / CONFIRM"
+        }
+      ],
+      "watchLevel": null,
+      "image": null,
+      "provenance": {
+        "source": "catalogue",
+        "verified_at": "16 Oct 2026",
+        "confidence": "VERIFIED OFFER",
+        "tier": "B"
+      },
+      "vectorSource": "derived",
+      "vectorBasis": {
+        "stay": {
+          "basis": "amenity",
+          "strength": "moderate"
+        }
+      },
+      "fitBasis": "amenity",
+      "fitWord": "Amenity-based fit: a pool, gym, garden or similar. No programmed wellness is evidenced.",
+      "vectorStrength": "moderate",
+      "vectorStrengthRank": 2
+    }
+  ],
+  "supporting": [],
+  "basecamps": [
     {
       "name": "Casa De Amor Suites and Tours",
       "village": "rainforest",
-      "tier": "D",
-      "scorable": false,
-      "signal": "No verified formal WELL offer — invite update",
-      "provenance": {
-        "source": "field-guide-expanded",
-        "verified_at": "11 Aug 2026",
-        "confidence": "QUOTE / CONFIRM",
-        "tier": "D"
-      }
-    },
-    {
-      "name": "Halcyon 92",
-      "village": "connection",
       "tier": "D",
       "scorable": false,
       "signal": "No verified formal WELL offer — invite update",

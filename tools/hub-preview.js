@@ -319,6 +319,7 @@ async function designWorkspace(step) {
   const need = await N.seedFrom(j.answers || {});
   const bank = await K.version();
   const shortlist = bank.ready ? await M.shortlistFor(need) : [];
+  const strip = bank.ready ? await M.shortlistFor(need, { derived: true }) : [];
   const vocab = await N.vocabulary();
   const topVillage = Object.keys(need.villages || {})
     .sort((a, b) => need.villages[b] - need.villages[a])[0] || null;
@@ -349,7 +350,7 @@ async function designWorkspace(step) {
 
   return buildBody({
     id: j.id, name: fullName(j), need: needWithNights, seeded: need, stored: null, clientEmail: 'm•••@example.invalid',
-    vocab, shortlist, also, topVillage, frameworks: await K.frameworks(),
+    vocab, shortlist, strip, also, topVillage, frameworks: await K.frameworks(),
     /* Ranked for real against this fixture's own need-state, and a session that
        has already chosen one — so the preview shows both halves of the shape
        block: the week an advisor talks through, and the ranking underneath it. */

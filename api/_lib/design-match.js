@@ -191,6 +191,11 @@ async function scoreProperty(need, property) {
        happens otherwise. COLLECTION has no number and sorts after the deep
        profiles at equal standing, because we know more about a deep profile. */
     order: [place.raw, direction.raw, depth.raw, askedIngredients ? ingredients.raw : 0,
+            /* Strength of the evidence behind a DERIVED vector (1 light .. 3 strong). A hand-authored
+               Field Guide vector carries no such field and counts as 3. It breaks ties between
+               properties identical on all four axes, so a pool-and-gym rental never sits ahead of
+               a retreat that is otherwise the same fit. It is not one of the four axes. */
+            property.vectorStrengthRank == null ? 3 : property.vectorStrengthRank,
             -(property.n == null ? 999 : property.n)]
   };
 }
@@ -298,7 +303,7 @@ const SHORTLIST = 5;
 
 async function shortlistFor(need, opts) {
   const o = opts || {};
-  const all = await K.properties(o.collection ? { collection: o.collection } : undefined);
+  const all = await K.properties({ collection: o.collection, derived: Boolean(o.derived) });
 
   const scored = [];
   for (let i = 0; i < all.length; i++) scored.push(await scoreProperty(need, all[i]));

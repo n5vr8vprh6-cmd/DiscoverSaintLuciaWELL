@@ -165,6 +165,10 @@ module.exports = async function handler(req, res) {
   const need = stored ? D.toNeedState(stored) : seeded;
 
   const shortlist = bank.ready ? await M.shortlistFor(need) : [];
+  /* "Also worth a look": the same need scored against the catalogue's DERIVED
+     vectors, kept apart so they never displace a Field Guide profile. Empty
+     until the bank carries any. */
+  const strip = bank.ready ? await M.shortlistFor(need, { derived: true }) : [];
   const vocab = await N.vocabulary();
 
   /* The rest of the strongest village, listed and never ranked. One village and
@@ -207,7 +211,7 @@ module.exports = async function handler(req, res) {
 
   const want = str(url.searchParams.get('step'), 12);
   const step = STAGES.indexOf(want) !== -1 ? want : resumeStage(stored, session);
-  const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, also,
+  const body_ = buildBody({ id, name, need, seeded, stored, vocab, shortlist, strip, also,
                             topVillage, caps, bank, frameworks, issued, ranked, session, step,
                             chosenSlugs, chosenProps, recipe, plan, estimate, previewDoc, travelFrom,
                             brand: IT.brandOf(advisor),
@@ -445,7 +449,7 @@ async function actionChoose(res, form, v) {
   if (!chain.ok) return back('consult_failed');
   const session = chain.session;
 
-  const shortlist = await M.shortlistFor(need);
+  const shortlist = (await M.shortlistFor(need)).concat(await M.shortlistFor(need, { derived: true }));
   const known = shortlist.map((c) => c.slug);
   const rawCarry = form.carry == null ? [] : (Array.isArray(form.carry) ? form.carry : [form.carry]);
   const slugs = rawCarry.map((s) => str(s, 60)).filter((s) => known.indexOf(s) !== -1);
@@ -482,7 +486,7 @@ async function actionDecline(res, form, v) {
   /* The row has to exist to carry a reason. Saving the whole shortlist here is
      idempotent — saveCandidates replaces the session's rows — so a decline
      before any choose still lands. */
-  const shortlist = await M.shortlistFor(need);
+  const shortlist = (await M.shortlistFor(need)).concat(await M.shortlistFor(need, { derived: true }));
   if (!shortlist.some((c) => c.slug === slug)) return back('declined');
   await D.saveCandidates(session.id, advisor.id, shortlist);
   const kept = (session.shortlist && session.shortlist.chosen) || [];
@@ -1000,12 +1004,14 @@ function stageNav(id, step) {
    the `form` attribute, because a form inside a form is not HTML. */
 function compareStage(v) {
   const { id, need, shortlist, session, caps, topVillage, also, vocab, frameworks } = v;
+  const strip = v.strip || [];
   const chosen = (session && session.shortlist && session.shortlist.chosen) || [];
   const tied = shortlist.length && shortlist[0].tiedGroup;
   const fw = frameworks || {};
 
   const cards = shortlist.map((c) => propertyCard(id, c, need, chosen, fw)).join('');
-  const declines = shortlist.map((c) => `<form method="POST" id="decline-${esc(c.slug)}"
+  const stripCards = strip.map((c) => propertyCard(id, c, need, chosen, fw)).join('');
+  const declines = shortlist.concat(strip).map((c) => `<form method="POST" id="decline-${esc(c.slug)}"
     action="/hub/journeys/${esc(id)}/design?step=compare">
     <input type="hidden" name="action" value="decline"><input type="hidden" name="slug" value="${esc(c.slug)}"></form>`).join('');
 
@@ -1016,6 +1022,14 @@ function compareStage(v) {
   <form method="POST" action="/hub/journeys/${esc(id)}/design?step=compare" class="design-choose">
     <input type="hidden" name="action" value="choose">
     <ol class="design-props">${cards}</ol>
+    ${strip.length ? `<div class="design-strip" data-hide-in-present>
+      <h2>Also worth a look</h2>
+      <p class="design-note">Matched against the same brief, but kept apart. Each of these is a Tier A, B or C property whose
+        fit was worked out from what is known to be there (a pool, a gym, a setting, sometimes a programme), not drawn from
+        a Field Guide profile. Read the line under each name for what its fit rests on before carrying one.</p>
+      ${strip[0].tiedGroup ? `<p class="design-note">These ${strip.length} tie on every axis on what has been said so far.</p>` : ''}
+      <ol class="design-props design-props--derived">${stripCards}</ol>
+    </div>` : ''}
     <div class="design-actions design-choose-actions" data-hide-in-present>
       <button class="btn btn--sm" type="submit"${caps.consultation ? '' : ' disabled'}>Carry these into the shape</button>
       <span class="design-hint">Up to three. ${chosen.length ? chosen.length + ' carried so far.' : ''}
@@ -1052,6 +1066,14 @@ const DECLINE_REASONS = [
   ['price', 'Price'], ['availability', 'Availability'], ['other', 'Something else']
 ];
 
+/* What a derived vector rests on, in words an advisor can repeat. Fixed here,
+   not sliced out of the bank's own sentence, so a bank change cannot reword it. */
+const FIT_LINE = {
+  programmed: 'Rests on classes, spa or protocols the property runs.',
+  amenity: 'Rests on a pool, gym, garden or similar. No programmed wellness is evidenced.',
+  setting: 'Rests on privacy, quiet or views. No programmed wellness is evidenced.'
+};
+
 function propertyCard(id, c, need, chosen, fw) {
   const p = c.property || {};
   const vk = villageFor(p, need);
@@ -1066,6 +1088,7 @@ function propertyCard(id, c, need, chosen, fw) {
     ${p.modelTag ? `<p class="eyebrow">${esc(p.modelTag)}</p>` : ''}
     <h3>${esc(c.name)}</h3>
     ${p.hook ? `<p class="design-prop-hook">${esc(p.hook)}</p>` : ''}
+    ${p.fitWord ? `<p class="design-prop-fit"><b>${esc(p.fitBasis === 'programmed' ? 'Programmed' : p.fitBasis === 'amenity' ? 'Amenity-based' : 'Setting-based')} fit, ${esc(p.vectorStrength || 'light')} evidence.</b> ${esc(FIT_LINE[p.fitBasis] || '')} <em>(derived from the catalogue, not a Field Guide profile)</em></p>` : ''}
     ${p.bestFor ? `<p class="design-prop-best"><b>Best for</b> ${esc(p.bestFor)}</p>` : ''}
     ${included.length ? `<ul class="design-prop-inc">${included.map((s) => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
     <div class="design-prop-meta">

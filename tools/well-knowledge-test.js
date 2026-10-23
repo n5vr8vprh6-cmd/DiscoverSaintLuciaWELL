@@ -68,7 +68,11 @@ console.log('\n  WELL KNOWLEDGE — ADAPTER\n  ' + '─'.repeat(60) + '\n');
   /* ══ What is scorable ════════════════════════════════════════════════════ */
   console.log('\n  What may be scored');
   const all = await K.properties();
-  ok('thirty scorable properties', all.length === 30, String(all.length));
+  ok('thirty Field Guide profiles in the default pool', all.length === 30, String(all.length));
+  const derivedPool = await K.properties({ derived: true });
+  ok('derived-vector properties are a separate pool, each saying what its fit rests on',
+    derivedPool.every((p) => p.vectorSource === 'derived' && p.fitBasis && p.vectorBasis && p.vectorStrength) &&
+    !derivedPool.some((p) => all.some((q) => q.slug === p.slug)));
   ok('fifteen deep, fifteen collection',
     all.filter((p) => p.collection === 'deep').length === 15 &&
     all.filter((p) => p.collection === 'collection').length === 15);
@@ -78,10 +82,10 @@ console.log('\n  WELL KNOWLEDGE — ADAPTER\n  ' + '─'.repeat(60) + '\n');
   ok('filtering by village works', (await K.properties({ village: 'longevity' })).length > 0);
 
   const extra = await K.alsoInVillage('rainforest');
-  ok('supporting and basecamp inventory is reachable',
-    extra.supporting.length > 0 && extra.basecamps.length > 0);
-  ok('and is not in the scorable list',
-    !all.some((p) => p.name === extra.supporting[0].name),
+  ok('the unscored landscape lists are reachable',
+    Array.isArray(extra.supporting) && Array.isArray(extra.basecamps));
+  ok('and nothing in them is scorable (a promoted property leaves the list)',
+    extra.supporting.concat(extra.basecamps).every((s) => !all.concat(derivedPool).some((p) => p.name === s.name)),
     'one village and one line of signal is not a vector');
 
   /* ══ Nothing is imputed ══════════════════════════════════════════════════ */

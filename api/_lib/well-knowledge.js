@@ -137,12 +137,22 @@ async function continuumIndex(key) {
 
 /* ── Properties ──────────────────────────────────────────────────────────── */
 
-/* Everything the matcher may score. DEEP and COLLECTION only — SUPPORTING and
-   BASECAMPS carry a village and one line of signal, which is not a vector, and
-   inventing one for them is exactly the smoothing this system refuses. */
+/* Everything the matcher may score. Two pools, never mixed:
+
+     the Field Guide's own profiles (the default) — hand-authored vectors;
+     DERIVED ones ({ derived: true }) — tier A, B and C properties whose vectors
+     the catalogue computed from evidenced offers, amenities and settings, each
+     carrying vectorBasis / fitBasis / vectorStrength saying what it rests on.
+
+   Derived vectors are real but thinner, and a derived record is broader than a
+   hand-authored one, so ranked together they crowd the profiles out (coverage:
+   thirteen properties never surfaced). They are ranked against the same need but
+   shown apart, as "also worth a look". SUPPORTING and BASECAMPS not in the
+   catalogue's A/B/C set carry a village and one line of signal, which is not a
+   vector, and inventing one for them is exactly the smoothing this system refuses. */
 async function properties(filter) {
   const f = filter || {};
-  let list = B().properties.filter((p) => p.scorable);
+  let list = B().properties.filter((p) => p.scorable && (f.derived ? p.vectorSource === 'derived' : p.vectorSource !== 'derived'));
   if (f.village) list = list.filter((p) => p.villages.indexOf(f.village) !== -1);
   if (f.collection) list = list.filter((p) => p.collection === f.collection);
   if (f.tier) list = list.filter((p) => p.tier === f.tier);

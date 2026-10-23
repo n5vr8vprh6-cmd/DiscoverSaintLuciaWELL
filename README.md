@@ -739,6 +739,7 @@ deployment can see it" with an exit code.
 
 ```bash
 node tools/design-match-test.js
+node tools/design-strip-test.js     # derived properties stay in their own strip
 node tools/design-coverage.js        # all 270 need-states; fails on a never-surfacing property
 node tools/design-privacy-test.js    # sentinel sweep, stubbed, no network
 node tools/design-itinerary-test.js
@@ -858,6 +859,7 @@ system after.
 | `node tools/rls-test.js` | `.env` | Cross-advisor denial, proved by planting a row and failing to read it |
 | `node tools/auth-test.js [url]` | deployed site | The auth lifecycle end to end, then cleans up after itself |
 | `node tools/design-match-test.js` | nothing | The four axes, the bands, the tie-break |
+| `node tools/design-strip-test.js` | nothing | Derived-vector properties are ranked apart ("Also worth a look"), never into the profiles' shortlist |
 | `node tools/design-coverage.js` | nothing | All 270 need-states. **Fails** if a scorable property never surfaces |
 | `node tools/design-privacy-test.js` | nothing | The sentinel sweep — no consumer value reaches any prompt |
 | `node tools/design-itinerary-test.js` | nothing | The day layout, what the document may carry, the four dead-link states |
